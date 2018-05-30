@@ -1,0 +1,104 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6.4
+    
+    working_directory: ~/repo
+    
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          - v1-dependencies-
+      
+      - run:
+          name: submodules
+          command: |
+            git submodule update --init
+            
+      - run:
+          name: install apt-transport-https
+          command: |
+            sudo apt-get update
+            sudo apt-get install apt-transport-https
+
+      - run:
+          name: install C++ dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install libunwind8 curl
+            sudo apt-get install libunwind8 liblttng-ust0 libcurl3 libuuid1 libkrb5-3 zlib1g
+            sudo apt-get install libssl1.0.0
+
+      - run:
+          name: install cmake
+          command: |
+            sudo apt-get install cmake
+            cmake --version
+
+      - run:
+          name: install mono
+          command: |
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+            sudo apt install apt-transport-https
+            echo "deb https://download.mono-project.com/repo/debian stable-jessie main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+            sudo apt-get update
+            sudo apt-get install mono-devel ca-certificates-mono
+
+      - run:
+          name: install dotnet
+          command: |
+            curl -sSL "https://packages.microsoft.com/keys/microsoft.asc" | sudo -E apt-key add -
+            echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" | sudo tee -a /etc/apt/sources.list > /dev/null
+            echo "Done (1)"
+            sudo apt-get update
+            echo "Done (2)"
+            sudo -E apt-get -yq update &>> ~/apt-get-update.log
+            echo "Done (3)"
+            sudo -E apt-get -yqf --no-install-suggests --no-install-recommends --force-yes install dotnet-sdk-2.1.200
+            echo "Done (4)"
+
+      - run:
+          name: remove clang
+          command: |
+                    sudo apt-get remove clang
+
+      - run:
+          name: install clang 6.0
+          command: |
+                    # wget http://http.debian.net/debian/pool/main/l/llvm-toolchain-5.0/llvm-toolchain-5.0_5.0.1.orig-clang.tar.bz2
+                    # Next file is already a compiled version of clang for Debian 8.
+                    wget  http://releases.llvm.org/6.0.0/clang+llvm-6.0.0-x86_64-linux-gnu-debian8.tar.xz
+                    tar xvf clang+llvm-6.0.0-x86_64-linux-gnu-debian8.tar.xz
+                    export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
+                    sudo echo "export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:\$PATH" >> ~/.bashrc
+                    clang --version
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+        
+      - run:
+          name: build machinelearning
+          env:
+            DOTNET_CLI_TELEMETRY_OPTOUT:1
+          command: |
+            . venv/bin/activate
+            export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
+            cd machinelearning
+            bash --verbose build.sh -Release
+            cd ..
+
+      - run:
+          name: run tests machine learning
+          env:
+            DOTNET_CLI_TELEMETRY_OPTOUT:1
+          command: |
+            . venv/bin/activate
+            cd machinelearning
+            bash build.sh -Release -runtests
+            cd ..

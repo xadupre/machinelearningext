@@ -1,0 +1,35 @@
+environment:
+
+  global:
+    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+    # /E:ON and /V:ON options are not enabled in the batch script intepreter
+    # See: http://stackoverflow.com/a/13751649/163740
+    WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
+
+  matrix:
+
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.x"
+      PYTHON_ARCH: "64"
+
+init:
+  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+
+install:
+  - git submodule update --init
+  - set DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+build: off
+
+before_build:
+  - cmd: dotnet --version
+
+before_test:
+  - cd machinelearning
+  - build.cmd -Release
+  - cd ..
+  
+test_script:
+  - cd machinelearning
+  - build.cmd -runTests -Release
+  - cd ..
