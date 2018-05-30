@@ -11,7 +11,7 @@ jobs:
 
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
+          - v1-dependencies-{{ checksum ".gitmodules" }}
           - v1-dependencies-
       
       - run:
@@ -80,7 +80,7 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          key: v1-dependencies-{{ checksum ".gitmodules" }}
         
       - run:
           name: build machinelearning
@@ -90,7 +90,7 @@ jobs:
             . venv/bin/activate
             export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
             cd machinelearning
-            bash --verbose build.sh -Release
+            bash build.sh
             cd ..
 
       - run:
@@ -100,5 +100,5 @@ jobs:
           command: |
             . venv/bin/activate
             cd machinelearning
-            bash build.sh -Release -runtests
+            bash build.sh -runtests
             cd ..

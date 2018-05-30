@@ -65,10 +65,10 @@ before_script:
   - sudo unlink /usr/bin/gcc && sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
   - gcc --version
   - cd machinelearning
-  - bash --verbose build.sh -Release
+  - bash build.sh
   - cd ..
 
 script:
   - cd machinelearning
-  - bash build.sh -Release -runTests
+  - bash build.sh -runTests
   - cd ..

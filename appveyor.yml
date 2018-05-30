@@ -26,10 +26,10 @@ before_build:
 
 before_test:
   - cd machinelearning
-  - build.cmd -Release
+  - build.cmd
   - cd ..
   
 test_script:
   - cd machinelearning
-  - build.cmd -runTests -Release
+  - build.cmd -runTests
   - cd ..
