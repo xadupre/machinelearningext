@@ -26,10 +26,12 @@ before_build:
 
 before_test:
   - cd machinelearning
-  - build.cmd
+  - build.cmd Release x64
+  - build.cmd Debug x64
   - cd ..
   
 test_script:
   - cd machinelearning
-  - build.cmd -runTests
+  - build.cmd -release -runtests
+  - build.cmd -debug -runtests
   - cd ..

@@ -87,7 +87,6 @@ jobs:
           env:
             DOTNET_CLI_TELEMETRY_OPTOUT:1
           command: |
-            . venv/bin/activate
             export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
             cd machinelearning
             bash build.sh
@@ -98,7 +97,6 @@ jobs:
           env:
             DOTNET_CLI_TELEMETRY_OPTOUT:1
           command: |
-            . venv/bin/activate
             cd machinelearning
             bash build.sh -runtests
             cd ..
