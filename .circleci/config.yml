@@ -106,6 +106,7 @@ jobs:
             DOTNET_CLI_TELEMETRY_OPTOUT:1
           command: |
             export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
+            export LANG=C.UTF-8
             cd machinelearning
             bash build.sh -runtests
             cd ..
