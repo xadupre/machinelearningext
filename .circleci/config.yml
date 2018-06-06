@@ -20,7 +20,7 @@ jobs:
             # sudo echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
             # sudo locale-gen --help
             sudo locale-gen C.UTF-8 || true
-            sudo export LANG=C.UTF-8
+            export LANG=C.UTF-8
       
       - run:
           name: submodules
@@ -106,6 +106,6 @@ jobs:
             DOTNET_CLI_TELEMETRY_OPTOUT:1
           command: |
             export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
-              cd machinelearning
+            cd machinelearning
             bash build.sh -runtests
             cd ..
