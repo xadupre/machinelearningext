@@ -18,7 +18,9 @@ jobs:
           name: local-gen
           command: |
             # sudo echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
-            sudo locale-gen --help
+            # sudo locale-gen --help
+            sudo locale-gen C.UTF-8 || true
+            sudo export LANG=C.UTF-8
       
       - run:
           name: submodules
