@@ -1,0 +1,3 @@
+[submodule "machinelearning"]
+	path = machinelearning
+	url = https://github.com/dotnet/machinelearning.git
