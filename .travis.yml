@@ -8,6 +8,7 @@ matrix:
   include:
     - python: 3.6
       env: &xplat-env
+        - BUILD_OPTS=--xplat
         - NUNIT_PATH=~/.nuget/packages/nunit.consolerunner/3.*/tools/nunit3-console.exe
       addons: &xplat-addons
         apt:
