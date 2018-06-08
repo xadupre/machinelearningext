@@ -26,10 +26,16 @@ before_build:
 
 before_test:
   - cd machinelearning
-  - cmd /C build.cmd
+  - cd ..
+  - cd machinelearningext
+  - cmd /C dotnet build -c Debug
+  - cmd /C dotnet build -c Release
   - cd ..
   
 test_script:
   - cd machinelearning
-  - cmd /C build.cmd -runTests
+  - cd ..
+  - cd machinelearningext
+  - cmd /C dotnet test -c Debug
+  - cmd /C dotnet test -c Release
   - cd ..

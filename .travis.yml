@@ -68,8 +68,16 @@ before_script:
   - cd machinelearning
   - bash build.sh
   - cd ..
+  - cd machinelearningext
+  - dotnet build -c Debug
+  - dotnet build -c Release
+  - cd ..
 
 script:
   - cd machinelearning
   - bash build.sh -runTests
+  - cd ..
+  - cd machinelearningext
+  - dotnet test -c Debug
+  - dotnet test -c Release
   - cd ..

@@ -1,0 +1,78 @@
+﻿// See the LICENSE file in the project root for more information.
+
+using System;
+using System.IO;
+using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Runtime.Data;
+
+
+namespace MlFood.ML.PipelineHelper
+{
+    /// <summary>
+    /// Helpers about DataView.
+    /// </summary>
+    public static class DataViewHelper
+    {
+        /// <summary>
+        /// Handles specific cases DataViewUtils does not handle.
+        /// </summary>
+        /// <param name="view"></param>
+        /// <param name="predicate">column selector (null for all)</param>
+        /// <returns>number of rows</returns>
+        public static long ComputeRowCount(IDataView view, Func<int, bool> predicate = null)
+        {
+            var res = view.GetRowCount(false);
+            if (res.HasValue)
+                return res.Value;
+            long lres = 0;
+            using (var cur = view.GetRowCursor(predicate == null ? i => false : predicate))
+            {
+                while (cur.MoveNext())
+                    ++lres;
+            }
+            return lres;
+        }
+
+        /// <summary>
+        /// Dump a view in csv format
+        /// </summary>
+        /// <param name="host">IHost</param>
+        /// <param name="view">view to dump</param>
+        /// <param name="filename">output filename</param>
+        /// <param name="sep">column separator</param>
+        /// <param name="schema">include the schema</param>
+        public static void ToCsv(IHost host, IDataView view, string filename, string sep = "\t", bool schema = true)
+        {
+            var settings = string.Format("Text{{sep={0} header=+ schema={1}}}",
+                sep == "\t" ? "tab" : sep, schema ? "+" : "-");
+            var saver = ComponentCreation.CreateSaver(host, settings);
+            string full_output = Path.GetFullPath(filename);
+            using (var ch = host.Start("ToCsv"))
+            {
+                ch.Info("Saving data into file '{0}' or '{1}'.", filename, full_output);
+                using (var fs0 = host.CreateOutputFile(full_output))
+                    DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
+            }
+        }
+
+        /// <summary>
+        /// Dump a view in binary format
+        /// </summary>
+        /// <param name="host">IHost</param>
+        /// <param name="view">view to dump</param>
+        /// <param name="filename">output filename</param>
+        public static void ToIdv(IHost host, IDataView view, string filename)
+        {
+            var settings = "Binary";
+            var saver = ComponentCreation.CreateSaver(host, settings);
+            string full_output = Path.GetFullPath(filename);
+            using (var ch = host.Start("ToIdv"))
+            {
+                ch.Info("Saving data into file '{0}' or '{1}'.", filename, full_output);
+                using (var fs0 = host.CreateOutputFile(full_output))
+                    DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
+            }
+        }
+    }
+}
