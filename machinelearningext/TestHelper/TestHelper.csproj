@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.ML.Core">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Core.dll</HintPath>
     </Reference>
@@ -23,7 +27,7 @@
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
-
+    
   <ItemGroup>
     <Compile Update="EnvHelper.cs">
       <SubType>Component</SubType>

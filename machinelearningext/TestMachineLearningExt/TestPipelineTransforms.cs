@@ -50,31 +50,16 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
 
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
-            var saver = env.CreateSaver("Text");
-            using (var fs2 = File.Create(outputDataFilePath))
-                saver.SaveData(fs2, tr, 0);
+            StreamHelper.SavePredictions(env, tr, outputDataFilePath);
             Assert.IsTrue(File.Exists(outputDataFilePath));
 
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
-            using (var ch = env.Start("SaveModel"))
-            using (var fs = File.Create(outModelFilePath))
-            {
-                var trainingExamples = env.CreateExamples(tr, null);
-                TrainUtils.SaveModel(env, ch, fs, null, trainingExamples);
-            }
+            StreamHelper.SaveModel(env, tr, outModelFilePath);
             Assert.IsTrue(File.Exists(outModelFilePath));
 
-            var outputDataFilePath2 = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
-            using (var fs = File.OpenRead(outModelFilePath))
-            {
-                var deserializedData = env.LoadTransforms(fs, data);
-                var saver2 = env.CreateSaver("Text");
-                var columns = new int[deserializedData.Schema.ColumnCount];
-                for (int i = 0; i < columns.Length; ++i)
-                    columns[i] = i;
-                using (var fs2 = File.Create(outputDataFilePath2))
-                    saver2.SaveData(fs2, deserializedData, columns);
-            }
+            var outputDataFilePath2 = FileHelper.GetOutputFile("outputDataFilePath2.txt", methodName);
+            StreamHelper.SavePredictions(env, outModelFilePath, outputDataFilePath2, data);
+            Assert.IsTrue(File.Exists(outputDataFilePath2));
 
             var d1 = File.ReadAllText(outputDataFilePath);
             Assert.IsTrue(d1.Length > 0);

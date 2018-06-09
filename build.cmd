@@ -12,15 +12,19 @@ cd ..
 
 if not exist machinelearning\bin\x64.Debug goto end:
 
-@echo [build.cmd] Publish
-cd machinelearning
-dotnet publish Microsoft.ML.sln -o ..\..\dist\Debug -c Debug --self-contained
-dotnet publish Microsoft.ML.sln -o ..\..\dist\Release -c Release --self-contained
-cd ..
-
-@echo [build.cmd] copy Native DLL
-copy machinelearning\bin\x64.Debug\Native\*.dll machinelearning\dist\Debug
+@echo [build.cmd] Publish Release
+if not exist machinelearning\dist\Release mkdir machinelearning\dist\Release
+copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Release
+copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Release
+copy machinelearning\bin\AnyCPU.Release\Microsoft.ML\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
+
+@echo [build.cmd] Publish Debug
+if not exist machinelearning\dist\Debug mkdir machinelearning\dist\Debug
+copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Debug
+copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Debug
+copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML\netstandard2.0\*.dll machinelearning\dist\Debug
+copy machinelearning\bin\x64.Debug\Native\*.dll machinelearning\dist\Debug
 
 @echo [build.cmd] build machinelearningext
 cd machinelearningext

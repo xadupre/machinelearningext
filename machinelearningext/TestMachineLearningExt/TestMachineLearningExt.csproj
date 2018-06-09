@@ -34,15 +34,5 @@
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
-  
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
-  </ItemGroup>  
 
 </Project>
