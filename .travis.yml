@@ -84,6 +84,6 @@ script:
   - bash build.sh -runTests -Release
   - cd ..
   - cd machinelearningext
-  - dotnet test -c Debug
-  - dotnet test -c Release
+  - dotnet test -c Debug TestMachineLearningExt
+  - dotnet test -c Release TestMachineLearningExt
   - cd ..
