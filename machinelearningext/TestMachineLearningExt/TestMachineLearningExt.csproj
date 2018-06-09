@@ -19,24 +19,26 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.ML.Core">
-      <HintPath>..\..\machinelearning\bin\AnyCPU.Release\Microsoft.ML.Core\netstandard2.0\Microsoft.ML.Core.dll</HintPath>
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.Data">
-      <HintPath>..\..\machinelearning\bin\AnyCPU.Release\Microsoft.ML.Data\netstandard2.0\Microsoft.ML.Data.dll</HintPath>
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Data.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML">
-      <HintPath>..\..\machinelearning\bin\AnyCPU.Release\Microsoft.ML\netstandard2.0\Microsoft.ML.dll</HintPath>
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.Maml">
-      <HintPath>..\..\machinelearning\bin\AnyCPU.Release\Microsoft.ML.Maml\netstandard2.0\Microsoft.ML.Maml.dll</HintPath>
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Maml.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.Api">
-      <HintPath>..\..\machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0\Microsoft.ML.Api.dll</HintPath>
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
