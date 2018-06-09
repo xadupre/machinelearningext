@@ -4,8 +4,8 @@ bash build.sh -debug
 cd ..
 
 cd machinelearning
-dotnet publish Microsoft.ML.sln -o ../../dist/Debug -c Debug --self-contained
-dotnet publish Microsoft.ML.sln -o ../../dist/Release -c Release --self-contained
+bash -c "dotnet publish Microsoft.ML.sln -o ../../dist/Debug -c Debug --self-contained" || true
+bash -c "dotnet publish Microsoft.ML.sln -o ../../dist/Release -c Release --self-contained" || true
 cd ..
 
 copy machinelearning/bin/x64.Debug/Native/*.dll machinelearning/dist/Debug
