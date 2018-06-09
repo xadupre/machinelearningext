@@ -125,7 +125,7 @@ jobs:
           command: |
             export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
             cd machinelearning
-            dotnet publish Microsoft.ML.sln -o ../../dist/Release -c Release --self-contained
+            bash -c "dotnet publish Microsoft.ML.sln -o ../../dist/Release -c Release --self-contained"
             cd ..
 
       - run:
@@ -133,7 +133,7 @@ jobs:
           command: |
             export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
             cd machinelearning
-            dotnet publish Microsoft.ML.sln -o ../../dist/Debug -c Debug --self-contained
+            bash -c "dotnet publish Microsoft.ML.sln -o ../../dist/Debug -c Debug --self-contained"
             cd ..
 
       - run:

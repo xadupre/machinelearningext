@@ -28,8 +28,8 @@ before_test:
   - cd machinelearning
   - cmd /C build.cmd -Debug
   - cmd /C build.cmd -Release
-  - dotnet publish Microsoft.ML.sln -o ..\..\dist\Debug -c Debug --self-contained
-  - dotnet publish Microsoft.ML.sln -o ..\..\dist\Release -c Release --self-contained
+  - cmd /C dotnet publish Microsoft.ML.sln -o ..\..\dist\Debug -c Debug --self-contained
+  - cmd /C dotnet publish Microsoft.ML.sln -o ..\..\dist\Release -c Release --self-contained
   - cd ..
   - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
