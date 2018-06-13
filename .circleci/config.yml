@@ -37,7 +37,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install libunwind8 curl
             sudo apt-get install libunwind8 liblttng-ust0 libcurl3 libuuid1 libkrb5-3 zlib1g
-            sudo apt-get install libssl
+            # sudo apt-get install libssl
 
       - run:
           name: install cmake
