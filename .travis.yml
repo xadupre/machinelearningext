@@ -15,11 +15,7 @@ matrix:
           sources:
           - sourceline: deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main
             key_url: https://packages.microsoft.com/keys/microsoft.asc
-          - sourceline: deb http://download.mono-project.com/repo/ubuntu trusty main
-            key_url: http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xA6A19B38D3D831EF
           packages:
-            - mono-devel
-            - ca-certificates-mono 
             - dotnet-sdk-2.1.200
 
 env:
@@ -31,12 +27,7 @@ env:
 
 addons:
   apt:
-    sources:
-      - sourceline: deb http://download.mono-project.com/repo/ubuntu trusty main
-        key_url: http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xA6A19B38D3D831EF
     packages:
-      - mono-devel
-      - ca-certificates-mono
       - clang
       - cmake
       - libunwind8

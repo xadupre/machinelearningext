@@ -46,26 +46,13 @@ jobs:
             cmake --version
 
       - run:
-          name: install mono
-          command: |
-            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-            sudo apt install apt-transport-https
-            echo "deb https://download.mono-project.com/repo/debian stable-jessie main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-            sudo apt-get update
-            sudo apt-get install mono-devel ca-certificates-mono
-
-      - run:
           name: install dotnet
           command: |
             curl -sSL "https://packages.microsoft.com/keys/microsoft.asc" | sudo -E apt-key add -
             echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" | sudo tee -a /etc/apt/sources.list > /dev/null
-            echo "Done (1)"
             sudo apt-get update
-            echo "Done (2)"
             sudo -E apt-get -yq update &>> ~/apt-get-update.log
-            echo "Done (3)"
             sudo -E apt-get -yqf --no-install-suggests --no-install-recommends --force-yes install dotnet-sdk-2.1.200
-            echo "Done (4)"
 
       - run:
           name: remove clang
@@ -75,8 +62,6 @@ jobs:
       - run:
           name: install clang 6.0
           command: |
-                    # wget http://http.debian.net/debian/pool/main/l/llvm-toolchain-5.0/llvm-toolchain-5.0_5.0.1.orig-clang.tar.bz2
-                    # Next file is already a compiled version of clang for Debian 8.
                     wget  http://releases.llvm.org/6.0.0/clang+llvm-6.0.0-x86_64-linux-gnu-debian8.tar.xz
                     tar xvf clang+llvm-6.0.0-x86_64-linux-gnu-debian8.tar.xz
                     export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
