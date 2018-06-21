@@ -52,3 +52,16 @@ test_script:
   - cmd /C dotnet test -c Debug TestMachineLearningExt
   - cmd /C dotnet test -c Release TestMachineLearningExt
   - cd ..
+
+after_test:
+  - if not exist dist mkdir dist
+  - if not exist dist\Release mkdir dist\Release
+  - if not exist dist\Debug mkdir dist\Debug
+  - copy machinelearningext\PipelineTransforms\bin\Release\netstandard2.0\MlFood.ML.PipelineTransforms* dist\Release
+  - copy machinelearningext\PipelineTransforms\bin\Debug\netstandard2.0\MlFood.ML.PipelineTransforms* dist\Debug
+  - copy machinelearningext\PipelineHelper\bin\Release\netstandard2.0\MlFood.ML.PipelineHelper* dist\Release
+  - copy machinelearningext\PipelineHelper\bin\Debug\netstandard2.0\MlFood.ML.PipelineHelper* dist\Debug
+
+artifacts:
+  - path: dist
+    name: machinelearningext

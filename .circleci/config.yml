@@ -166,3 +166,18 @@ jobs:
             cd machinelearningext
             dotnet test -c Release TestMachineLearningExt
             cd ..
+            
+      - run:
+          name: copy artifacts
+          command: |
+            mkdir -p test-reports/dist
+            mkdir -p test-reports/dist/Debug
+            mkdir -p test-reports/dist/Release
+            cp -r  machinelearningext/PipelineTransforms/bin/Release/netstandard2.0/MlFood.ML.PipelineTransforms* test-reports/dist/Release
+            cp -r  machinelearningext/PipelineTransforms/bin/Debug/netstandard2.0/MlFood.ML.PipelineTransforms* test-reports/dist/Debug
+            cp -r  machinelearningext/PipelineHelper/bin/Release/netstandard2.0/MlFood.ML.PipelineHelper* test-reports/dist/Release
+            cp -r  machinelearningext/PipelineHelper/bin/Debug/netstandard2.0/MlFood.ML.PipelineHelper* test-reports/dist/Debug
+            
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
