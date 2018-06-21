@@ -7,7 +7,7 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace MlFood.ML.PipelineHelper
+namespace Microsoft.ML.Ext.PipelineHelper
 {
     /// <summary>
     /// Helpers about DataView.

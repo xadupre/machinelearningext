@@ -7,7 +7,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace MlFood.ML.PipelineHelper
+namespace Microsoft.ML.Ext.PipelineHelper
 {
     /// <summary>
     /// Extends an existing Schema.

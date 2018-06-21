@@ -7,7 +7,7 @@ using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.CommandLine;
 
 
-namespace MlFood.ML.PipelineHelper
+namespace Microsoft.ML.Ext.PipelineHelper
 {
     /// <summary>
     /// Helpers about ISchema.

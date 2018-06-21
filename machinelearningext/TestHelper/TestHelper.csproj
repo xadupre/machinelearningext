@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>MlFood.ML.TestHelper</AssemblyName>
-    <RootNamespace>MlFood.ML.TestHelper</RootNamespace>
+    <AssemblyName>Microsoft.ML.Ext.TestHelper</AssemblyName>
+    <RootNamespace>Microsoft.ML.Ext.TestHelper</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

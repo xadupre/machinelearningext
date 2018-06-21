@@ -5,7 +5,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace MlFood.ML.TestHelper
+namespace Microsoft.ML.Ext.TestHelper
 {
     public static class EnvHelper
     {

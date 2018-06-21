@@ -7,7 +7,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 
 
-namespace MlFood.ML.PipelineHelper
+namespace Microsoft.ML.Ext.PipelineHelper
 {
     public static class IOHelper
     {

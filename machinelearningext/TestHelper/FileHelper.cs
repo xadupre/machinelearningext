@@ -7,7 +7,7 @@ using System.Reflection;
 using Microsoft.ML.Runtime.Tools;
 
 
-namespace MlFood.ML.TestHelper
+namespace Microsoft.ML.Ext.TestHelper
 {
     public static class FileHelper
     {

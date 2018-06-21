@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
-using MlFood.ML.PipelineTransforms;
-using MlFood.ML.TestHelper;
+using Microsoft.ML.Ext.PipelineTransforms;
+using Microsoft.ML.Ext.TestHelper;
 
 
 namespace TestMachineLearningExt

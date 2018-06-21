@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>MlFood.ML.PipelineTransforms</AssemblyName>
+    <AssemblyName>Microsoft.ML.Ext.PipelineTransforms</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>MlFood.ML.PipelineHelper</AssemblyName>
-    <RootNamespace>MlFood.ML.PipelineHelper</RootNamespace>
+    <AssemblyName>Microsoft.ML.Ext.PipelineHelper</AssemblyName>
+    <RootNamespace>Microsoft.ML.Ext.PipelineHelper</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

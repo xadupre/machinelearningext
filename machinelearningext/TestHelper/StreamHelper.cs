@@ -9,7 +9,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 
 
-namespace MlFood.ML.TestHelper
+namespace Microsoft.ML.Ext.TestHelper
 {
     public static class StreamHelper
     {
