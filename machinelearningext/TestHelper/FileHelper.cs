@@ -36,9 +36,9 @@ namespace Microsoft.ML.Ext.TestHelper
         }
 
         /// <summary>
-        /// Returns the TLC version used to build TLC-CONTRIB.
+        /// Returns the ML.net version.
         /// </summary>
-        public static string GetUsedTlcVersion()
+        public static string GetUsedMLVersion()
         {
             return typeof(VersionCommand).GetTypeInfo().Assembly.GetName().Version.ToString();
         }
@@ -51,44 +51,12 @@ namespace Microsoft.ML.Ext.TestHelper
         public static string GetTestFile(string name)
         {
             var root = GetRoot();
-            var version = GetUsedTlcVersion();
-            var build = GetTlcBuild(version);
-            // we should be in build/tlccontrib
-            var full = name.StartsWith("samples\\")
-                            ? Path.Combine(root, build, "tlc", "Samples", "Data", name.Substring("samples\\".Length))
-                            : Path.Combine(root, "data", name);
+            var version = GetUsedMLVersion();
+            var full = Path.Combine(root, "data", name);
             if (!File.Exists(full))
                 throw new FileNotFoundException(string.Format("Unable to find '{0}'\nFull='{1}'\nroot='{2}'\ncurrent='{3}'.",
                                     name, full, root, Path.GetFullPath(Directory.GetCurrentDirectory())));
             return full;
-        }
-
-        /// <summary>
-        /// Retrieve the build folder, checks its existence.
-        /// </summary>
-        /// <param name="version"></param>
-        public static string GetTlcBuild(string version)
-        {
-            if (string.IsNullOrEmpty(version))
-                throw new Exception("version is null");
-            string build = null;
-            if (version.Contains(","))
-            {
-                foreach(var vers in version.Split(','))
-                {
-                    var maml = Path.Combine(GetRoot(), "build" + vers, "tlc", "maml.exe");
-                    if (File.Exists(maml))
-                    {
-                        build = Path.Combine(GetRoot(), "build" + vers);
-                        break;
-                    }
-                }
-            }
-            else
-                build = Path.Combine(GetRoot(), "build" + version);
-            if (!Directory.Exists(build))
-                throw new DirectoryNotFoundException(build);
-            return build;
         }
 
         /// <summary>
@@ -105,7 +73,7 @@ namespace Microsoft.ML.Ext.TestHelper
 #else
             var version = "Release";
 #endif
-            var vers = GetUsedTlcVersion();
+            var vers = GetUsedMLVersion();
             var root = GetRoot();
             var tests = Path.Combine(root, "_tests");
             var unittest = Path.Combine(tests, vers, version, testFunction);

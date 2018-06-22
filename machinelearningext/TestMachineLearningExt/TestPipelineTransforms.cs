@@ -5,7 +5,6 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Ext.PipelineTransforms;
 using Microsoft.ML.Ext.TestHelper;
 
@@ -18,7 +17,7 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDescribeTransformCode()
         {
-            var env = EnvHelper.NewTlcEnvironmentTest();
+            var env = EnvHelper.NewTestEnvironment();
             var inputs = InputOutput.CreateInputs();
             var data = env.CreateStreamingDataView(inputs);
             var args = new DescribeTransform.Arguments() { columns = new[] { "X" } };
@@ -41,7 +40,7 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDescribeTransformSaveDataAndZip()
         {
-            var env = EnvHelper.NewTlcEnvironmentTest();
+            var env = EnvHelper.NewTestEnvironment();
             var inputs = InputOutput.CreateInputs();
             var data = env.CreateStreamingDataView(inputs);
             var args = new DescribeTransform.Arguments() { columns = new[] { "X" } };

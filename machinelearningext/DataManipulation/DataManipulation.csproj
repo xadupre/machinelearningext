@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Microsoft.ML.Ext.TestHelper</AssemblyName>
-    <RootNamespace>Microsoft.ML.Ext.TestHelper</RootNamespace>
+    <AssemblyName>Microsoft.ML.Ext.DataManipulation</AssemblyName>
+    <RootNamespace>Microsoft.ML.Ext.DataManipulation</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,18 +26,6 @@
     <Reference Include="Microsoft.ML.Api">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.ML.StandardLearners">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.StandardLearners.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML.CpuMath">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.CpuMath.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-    
-  <ItemGroup>
-    <Compile Update="EnvHelper.cs">
-      <SubType>Component</SubType>
-    </Compile>
   </ItemGroup>
 
 </Project>

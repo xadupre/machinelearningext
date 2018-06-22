@@ -3,13 +3,14 @@
 using System.IO;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Runtime.CommandLine;
 
 
 namespace Microsoft.ML.Ext.TestHelper
 {
     public static class EnvHelper
     {
-        public static TlcEnvironment NewTlcEnvironmentTest(int? seed = null, bool verbose = false,
+        public static TlcEnvironment NewTestEnvironment(int? seed = null, bool verbose = false,
                             MessageSensitivity sensitivity = (MessageSensitivity)(-1),
                             int conc = 0, TextWriter outWriter = null, TextWriter errWriter = null)
         {
@@ -20,6 +21,13 @@ namespace Microsoft.ML.Ext.TestHelper
             if (errWriter == null)
                 errWriter = new StreamWriter(new MemoryStream());
             return new TlcEnvironment(seed, verbose, sensitivity, conc, outWriter, errWriter);
+        }
+
+        public static ITrainer CreateTrainer(this IHostEnvironment env, string settings, out string loadName, params object[] extraArgs)
+        {
+            var sc = SubComponent.Parse<ITrainer, SignatureTrainer>(settings);
+            loadName = sc.Kind;
+            return sc.CreateInstance(env, extraArgs);
         }
     }
 }

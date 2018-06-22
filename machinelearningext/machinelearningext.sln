@@ -5,11 +5,13 @@ VisualStudioVersion = 15.0.27703.2000
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineTransforms", "PipelineTransforms\PipelineTransforms.csproj", "{EEBC3CF5-156C-41C6-8593-470E948DFF5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipelineHelper", "PipelineHelper\PipelineHelper.csproj", "{97DA97CB-5670-4706-9A32-47D65A84EC8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineHelper", "PipelineHelper\PipelineHelper.csproj", "{97DA97CB-5670-4706-9A32-47D65A84EC8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMachineLearningExt", "TestMachineLearningExt\TestMachineLearningExt.csproj", "{5F3D8D2A-A0D8-48D0-B824-7B62763C7266}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMachineLearningExt", "TestMachineLearningExt\TestMachineLearningExt.csproj", "{5F3D8D2A-A0D8-48D0-B824-7B62763C7266}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHelper", "TestHelper\TestHelper.csproj", "{1BA16118-01CB-4E54-9970-48953174CEF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHelper", "TestHelper\TestHelper.csproj", "{1BA16118-01CB-4E54-9970-48953174CEF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataManipulation", "DataManipulation\DataManipulation.csproj", "{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{1BA16118-01CB-4E54-9970-48953174CEF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BA16118-01CB-4E54-9970-48953174CEF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BA16118-01CB-4E54-9970-48953174CEF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

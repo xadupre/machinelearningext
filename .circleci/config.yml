@@ -173,10 +173,12 @@ jobs:
             mkdir -p test-reports/dist
             mkdir -p test-reports/dist/Debug
             mkdir -p test-reports/dist/Release
-            cp -r  machinelearningext/PipelineTransforms/bin/Release/netstandard2.0/Microsoft.ML.Ext.PipelineTransforms* test-reports/dist/Release
-            cp -r  machinelearningext/PipelineTransforms/bin/Debug/netstandard2.0/Microsoft.ML.Ext.PipelineTransforms* test-reports/dist/Debug
+            cp -r  machinelearningext/DataManipulation/bin/Release/netstandard2.0/Microsoft.ML.Ext.DataManipulation* test-reports/dist/Release
+            cp -r  machinelearningext/DataManipulation/bin/Debug/netstandard2.0/Microsoft.ML.Ext.DataManipulation* test-reports/dist/Debug
             cp -r  machinelearningext/PipelineHelper/bin/Release/netstandard2.0/Microsoft.ML.Ext.PipelineHelper* test-reports/dist/Release
             cp -r  machinelearningext/PipelineHelper/bin/Debug/netstandard2.0/Microsoft.ML.Ext.PipelineHelper* test-reports/dist/Debug
+            cp -r  machinelearningext/PipelineTransforms/bin/Release/netstandard2.0/Microsoft.ML.Ext.PipelineTransforms* test-reports/dist/Release
+            cp -r  machinelearningext/PipelineTransforms/bin/Debug/netstandard2.0/Microsoft.ML.Ext.PipelineTransforms* test-reports/dist/Debug
             
       - store_artifacts:
           path: test-reports

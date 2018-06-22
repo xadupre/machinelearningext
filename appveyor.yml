@@ -33,11 +33,13 @@ before_test:
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Release
+  - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.StandardLearners\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
   - mkdir machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Debug
+  - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.StandardLearners\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearning\dist\Debug
   - cd machinelearningext
   - cmd /C dotnet build -c Debug
@@ -57,10 +59,12 @@ after_test:
   - if not exist dist mkdir dist
   - if not exist dist\Release mkdir dist\Release
   - if not exist dist\Debug mkdir dist\Debug
-  - copy machinelearningext\PipelineTransforms\bin\Release\netstandard2.0\Microsoft.ML.Ext.PipelineTransforms* dist\Release
-  - copy machinelearningext\PipelineTransforms\bin\Debug\netstandard2.0\Microsoft.ML.Ext.PipelineTransforms* dist\Debug
+  - copy machinelearningext\DataManipulation\bin\Release\netstandard2.0\Microsoft.ML.Ext.DataManipulation* dist\Release
+  - copy machinelearningext\DataManipulation\bin\Debug\netstandard2.0\Microsoft.ML.Ext.DataManipulation* dist\Debug
   - copy machinelearningext\PipelineHelper\bin\Release\netstandard2.0\Microsoft.ML.Ext.PipelineHelper* dist\Release
   - copy machinelearningext\PipelineHelper\bin\Debug\netstandard2.0\Microsoft.ML.Ext.PipelineHelper* dist\Debug
+  - copy machinelearningext\PipelineTransforms\bin\Release\netstandard2.0\Microsoft.ML.Ext.PipelineTransforms* dist\Release
+  - copy machinelearningext\PipelineTransforms\bin\Debug\netstandard2.0\Microsoft.ML.Ext.PipelineTransforms* dist\Debug
 
 artifacts:
   - path: dist

@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DataManipulation\DataManipulation.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
     <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
   </ItemGroup>
@@ -33,6 +34,32 @@
     <Reference Include="Microsoft.ML.Api">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ML.StandardLearners">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.StandardLearners.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.CpuMath">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.CpuMath.dll</HintPath>
+    </Reference>
   </ItemGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="echo OS-Platform: $(OS)-$(Platform)" />
+    <Exec Command="echo Copy from $(SolutionDir)../machinelearning/dist/$(ConfigurationName)" />
+    <Exec Command="echo Copy to: $(OutDir)" />
+    
+    <Copy Condition=" '$(OS)' == 'Unix' AND '$(SolutionDir)' != '*Undefined*' "
+          SourceFiles="$(SolutionDir)../machinelearning/dist/$(ConfigurationName)\libCpuMathNative.so"
+          DestinationFolder="$(OutDir)" />          
+    <Copy Condition=" '$(OS)' == 'Unix' AND '$(SolutionDir)' != '*Undefined*' "
+          SourceFiles="$(SolutionDir)../machinelearning/dist/$(ConfigurationName)\libFastTreeNative.so"
+          DestinationFolder="$(OutDir)" />
+          
+    <Copy Condition=" '$(OS)' == 'Windows_NT' AND '$(SolutionDir)' != '*Undefined*' "
+          SourceFiles="$(SolutionDir)../machinelearning/dist/$(ConfigurationName)\CpuMathNative.dll"
+          DestinationFolder="$(OutDir)" />
+    <Copy Condition=" '$(OS)' == 'Windows_NT' AND '$(SolutionDir)' != '*Undefined*' "
+          SourceFiles="$(SolutionDir)../machinelearning/dist/$(ConfigurationName)\FastTreeNative.dll"
+          DestinationFolder="$(OutDir)" />
+  </Target>    
 
 </Project>

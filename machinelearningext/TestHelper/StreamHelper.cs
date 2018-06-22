@@ -18,7 +18,7 @@ namespace Microsoft.ML.Ext.TestHelper
         /// and some data in a view.
         /// </summary>
         public static void SavePredictions(TlcEnvironment env, string modelPath,
-                                   string outFilePath, IDataView data)
+                                           string outFilePath, IDataView data)
         {
             using (var fs = File.OpenRead(modelPath))
             {
