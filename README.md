@@ -19,9 +19,12 @@ On Linux: ``build.sh``.
 
 ``doxygen conf.dox``
 
-Example
+**Example 1: inner API**
 
-```
+This example relies on the inner API, mostly used
+inside components of ML.net.
+
+```CSharp
 var env = new TlcEnvironment();
 var iris = "iris.txt";
 
@@ -63,3 +66,11 @@ using (var ch = env.Start("test"))
 The current interface of 
 [DataFrame](https://github.com/xadupre/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs)
 is not rich. It will improve in the future.
+
+**Example 2: common API**
+
+This example relies on the inner API, mostly used
+inside components of ML.net.
+
+```CSharp
+```
