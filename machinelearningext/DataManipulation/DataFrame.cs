@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Data.IO;
-using Microsoft.ML.Ext.PipelineHelper;
 
 
 namespace Microsoft.ML.Ext.DataManipulation
@@ -25,6 +24,9 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
 
+        /// <summary>
+        /// Initializes an empty dataframe.
+        /// </summary>
         public DataFrame(IHost host)
         {
             _host = host;
@@ -39,7 +41,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public bool CanShuffle { get { return true; } }
 
         /// <summary>
-        /// Returns the number of rows
+        /// Returns the number of rows. lazy is unused as the data is stored in memory.
         /// </summary>
         public long? GetRowCount(bool lazy = true)
         {
@@ -56,20 +58,27 @@ namespace Microsoft.ML.Ext.DataManipulation
             return _data.GetRowCursorSet(out consolidator, needCol, n, rand);
         }
 
+        /// <summary>
+        /// Returns the schema of the dataframe, used schema used for IDataView.
+        /// </summary>
         public ISchema Schema => _data.Schema;
 
         #endregion
 
         #region DataFrame
 
+        /// <summary>
+        /// Returns the shape of the dataframe (number of rows, number of columns).
+        /// </summary>
         public Tuple<int, int> Shape => _data.Shape;
 
         /// <summary>
-        /// Adds a new column.
+        /// Adds a new column. The length must be specified for the first column.
+        /// It must be the same for all columns.
         /// </summary>
         /// <param name="name">column name</param>
         /// <param name="kind">column type</param>
-        /// <param name="length">overwrites length</param>
+        /// <param name="length">length is needed for the first column to allocated space</param>
         public int AddColumn(string name, DataKind kind, int? length)
         {
             return _data.AddColumn(name, kind, length);
@@ -79,6 +88,10 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #region IO
 
+        /// <summary>
+        /// Returns the name and the type of a column such as
+        /// <pre>name:type:index</pre>.
+        /// </summary>
         public string NameType(int col) { return _data.NameType(col); }
 
         /// <summary>
@@ -411,6 +424,9 @@ namespace Microsoft.ML.Ext.DataManipulation
             return res;
         }
 
+        /// <summary>
+        /// Determines the more generic type with two types.
+        /// </summary>
         static DataKind DetermineDataKind(bool first, DataKind suggested, DataKind previous)
         {
             if (first)
@@ -419,6 +435,9 @@ namespace Microsoft.ML.Ext.DataManipulation
                 return MaxKind(suggested, previous);
         }
 
+        /// <summary>
+        /// Determines the more generic type with two types.
+        /// </summary>
         static DataKind MaxKind(DataKind a, DataKind b)
         {
             if (a == DataKind.TX || b == DataKind.TX)
@@ -437,7 +456,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
-        /// Changes the value for an entire row.
+        /// Changes the values for an entire row.
         /// </summary>
         /// <param name="row"></param>
         /// <param name="values"></param>
@@ -450,16 +469,32 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #region pandas API (slow)
 
+        /// <summary>
+        /// Artefacts inspired from pandas.
+        /// Not necessarily very efficient, it can be used
+        /// to modify one value but should not to modify value
+        /// in a batch.
+        /// </summary>
         public Iloc iloc => new Iloc(this);
 
+        /// <summary>
+        /// Artefacts inspired from pandas.
+        /// Not necessarily very efficient, it can be used
+        /// to modify one value but should not to modify value
+        /// in a batch.
+        /// </summary>
         public class Iloc
         {
             DataFrame _parent;
+
             public Iloc(DataFrame parent)
             {
                 _parent = parent;
             }
 
+            /// <summary>
+            /// Gets or sets elements [i,j].
+            /// </summary>
             public object this[int row, int col]
             {
                 get
@@ -477,21 +512,33 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #region assert
 
+        /// <summary>
+        /// Exact comparison between two dataframes.
+        /// </summary>
         public static bool operator ==(DataFrame df1, DataFrame df2)
         {
             return df1._data == df2._data;
         }
 
+        /// <summary>
+        /// Exact difference between two dataframes.
+        /// </summary>
         public static bool operator !=(DataFrame df1, DataFrame df2)
         {
             return df1._data != df2._data;
         }
 
+        /// <summary>
+        /// Exact comparison between two dataframes.
+        /// </summary>
         public bool Equals(DataFrame df)
         {
             return _data.Equals(df._data);
         }
 
+        /// <summary>
+        /// Exact comparison between two dataframes.
+        /// </summary>
         public override bool Equals(object o)
         {
             var df = o as DataFrame;
@@ -500,6 +547,9 @@ namespace Microsoft.ML.Ext.DataManipulation
             return Equals(df);
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public override int GetHashCode()
         {
             throw new NotImplementedException();

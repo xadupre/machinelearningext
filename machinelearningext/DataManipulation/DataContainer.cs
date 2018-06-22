@@ -115,6 +115,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             _length = 0;
             _names = null;
             _kinds = null;
+            _colsBL = null;
             _colsI4 = null;
             _colsI8 = null;
             _colsR4 = null;
@@ -129,6 +130,10 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public Tuple<int, int> Shape => new Tuple<int, int>(Length, _names.Count);
 
+        /// <summary>
+        /// Returns the name and the type of a column such as
+        /// <pre>name:type:index</pre>.
+        /// </summary>
         public string NameType(int col) { return string.Format("{0}:{1}:{2}", _names[col], _kinds[col], col); }
 
         /// <summary>
@@ -142,7 +147,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public string GetColumnName(int col) { return _names[col]; }
 
         /// <summary>
-        /// Returns the name of a column.
+        /// Returns the position of a column.
         /// </summary>
         public int GetColumnIndex(string name) { return _naming[name]; }
 
@@ -152,7 +157,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public DataKind GetDType(int col) { return _kinds[col]; }
 
         /// <summary>
-        /// Returns the container of column col.
+        /// Returns a typed container of column col.
         /// </summary>
         public void GetTypedColumn<DType>(int col, out DataColumn<DType> column)
             where DType : IEquatable<DType>
@@ -188,7 +193,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
-        /// Returns the container of column col.
+        /// Returns the container of column col as an interface.
         /// </summary>
         public IDataColumn GetColumn(int col)
         {
@@ -305,7 +310,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
-        /// Changes a value.
+        /// Changes a value at a specific location.
         /// </summary>
         /// <param name="row">row</param>
         /// <param name="col">column</param>
@@ -370,8 +375,14 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
         }
 
+        /// <summary>
+        /// Returns the schema.
+        /// </summary>
         public ISchema Schema => new DataContainerSchema(this);
 
+        /// <summary>
+        /// Returns a cursor on the data.
+        /// </summary>
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
             return new RowCursor(this, needCol, rand);
@@ -387,6 +398,9 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
         }
 
+        /// <summary>
+        /// Returns a set of aliased cursors on the data.
+        /// </summary>
         public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
         {
             n = DataViewUtils.GetThreadCount(_host, n);
@@ -408,6 +422,11 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
         }
 
+        /// <summary>
+        /// Fills the value with values coming from a IDataView.
+        /// nrow must be specified for the first column.
+        /// The method checks that all column have the same number of elements.
+        /// </summary>
         public void FillValues(IDataView view, int nrows = -1)
         {
             long? numRows = view.GetRowCount(false);
@@ -444,6 +463,10 @@ namespace Microsoft.ML.Ext.DataManipulation
                 FillValues(cursor, memory);
         }
 
+        /// <summary>
+        /// Fills the value with values coming from a IRowCursor.
+        /// Called by the previous method.
+        /// </summary>
         void FillValues(IRowCursor cursor, Dictionary<int, Tuple<int, int>> memory)
         {
             var getterBL = new ValueGetter<DvBool>[_colsBL == null ? 0 : _colsBL.Count];
@@ -526,6 +549,9 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
         }
 
+        /// <summary>
+        /// Returns a getter of a certain type.
+        /// </summary>
         ValueGetter<DType> GetGetterCursor<DType>(IRowCursor cursor, int col, int index, DType defaultValue)
         {
             var dt = cursor.Schema.GetColumnType(col);
@@ -560,6 +586,9 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #region Cursor
 
+        /// <summary>
+        /// Implements a cursor for this container.
+        /// </summary>
         public class RowCursor : IRowCursor
         {
             DataContainer _cont;
@@ -656,6 +685,12 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #region pandas API, operators (slow)
 
+        /// <summary>
+        /// Usual operator [i,j].
+        /// </summary>
+        /// <param name="row">row</param>
+        /// <param name="col">column</param>
+        /// <returns>value</returns>
         public object this[int row, int col]
         {
             get
@@ -668,16 +703,25 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
         }
 
+        /// <summary>
+        /// Checks that containers are exactly the same.
+        /// </summary>
         public static bool operator ==(DataContainer c1, DataContainer c2)
         {
             return c1.Equals(c2);
         }
 
+        /// <summary>
+        /// Checks that containers are different.
+        /// </summary>
         public static bool operator !=(DataContainer c1, DataContainer c2)
         {
             return !c1.Equals(c2);
         }
 
+        /// <summary>
+        /// Checks that containers are exactly the same.
+        /// </summary>
         public override bool Equals(object c)
         {
             var cd = c as DataContainer;
@@ -686,11 +730,17 @@ namespace Microsoft.ML.Ext.DataManipulation
             return Equals(cd);
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public override int GetHashCode()
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Checks that containers are exactly the same.
+        /// </summary>
         public bool Equals(DataContainer c)
         {
             if (Shape.Item1 != c.Shape.Item1 || Shape.Item2 != c.Shape.Item2)
@@ -703,6 +753,12 @@ namespace Microsoft.ML.Ext.DataManipulation
                     return false;
                 if (_mapping[i].Item1 != c._mapping[i].Item1 || _mapping[i].Item2 != c._mapping[i].Item2)
                     return false;
+            }
+            if (_colsBL != null)
+            {
+                for (int i = 0; i < _colsBL.Count; ++i)
+                    if (!_colsBL[i].Equals(c._colsBL[i]))
+                        return false;
             }
             if (_colsI4 != null)
             {
