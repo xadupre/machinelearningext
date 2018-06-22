@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Data.IO;
+using Microsoft.ML.Ext.PipelineHelper;
 
 
 namespace Microsoft.ML.Ext.DataManipulation
@@ -373,6 +374,22 @@ namespace Microsoft.ML.Ext.DataManipulation
                     }
                 }
 
+
+                try
+                {
+                    var v = uint.Parse(val);
+                    res = DetermineDataKind(nbline == 0, DataKind.U4, res);
+                    continue;
+                }
+                catch (Exception /*e*/)
+                {
+                    if (string.IsNullOrEmpty(val))
+                    {
+                        res = DetermineDataKind(nbline == 0, DataKind.U4, res);
+                        continue;
+                    }
+                }
+
                 try
                 {
                     var v = Int64.Parse(val);
@@ -448,6 +465,8 @@ namespace Microsoft.ML.Ext.DataManipulation
                 return DataKind.R4;
             if (a == DataKind.I8 || b == DataKind.I8)
                 return DataKind.I8;
+            if (a == DataKind.U4 || b == DataKind.U4)
+                return DataKind.U4;
             if (a == DataKind.I4 || b == DataKind.I4)
                 return DataKind.I4;
             if (a == DataKind.BL || b == DataKind.BL)
@@ -553,6 +572,24 @@ namespace Microsoft.ML.Ext.DataManipulation
         public override int GetHashCode()
         {
             throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region EntryPoints
+
+        public Data.TextLoader EPTextLoader(string dataPath, char sep = ',', bool header = true)
+        {
+            var loader = new Data.TextLoader(dataPath)
+            {
+                Arguments = new Data.TextLoaderArguments()
+                {
+                    Separator = new[] { sep },
+                    HasHeader = header,
+                    Column = SchemaHelper.ToColumnArgArray(Schema)
+                }
+            };
+            return loader;
         }
 
         #endregion

@@ -19,7 +19,7 @@ On Linux: ``build.sh``.
 
 ``doxygen conf.dox``
 
-**Example 1: inner API**
+### Example 1: inner API
 
 This example relies on the inner API, mostly used
 inside components of ML.net.
@@ -40,16 +40,15 @@ var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", d
 var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
 
 // We create a trainer, here a One Versus Rest with a logistic regression as inner model.
-string loadName;
-var trainer = env.CreateTrainer("ova{p=lr}", out loadName);
+var trainer = env.CreateTrainer("ova{p=lr}");
 
 using (var ch = env.Start("test"))
 {
     // We train the model.
-    var pred = TrainUtils.Train(env, ch, trainingData, trainer, loadName, null, null, 0, false);
+    var pred = trainer.Train(env, ch, trainingData);
     
     // We compute the prediction (here with the same training data but it should not be the same).
-    var scorer = ScoreUtils.GetScorer(pred, trainingData, env, null);
+    var scorer = trainer.GetScorer(pred, trainingData, env, null);
     
     // We store the predictions on a file.
     DataFrame.ViewToCsv(env, scorer, "iris_predictions.txt");
@@ -67,10 +66,26 @@ The current interface of
 [DataFrame](https://github.com/xadupre/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs)
 is not rich. It will improve in the future.
 
-**Example 2: common API**
+### Example 2: common API
 
-This example relies on the inner API, mostly used
-inside components of ML.net.
+This is the same example based on
+[Iris Classification](https://github.com/dotnet/machinelearning-samples/tree/master/samples/getting-started/MulticlassClassification_Iris)
+but using the new class DataFrame. It is not necessary anymore
+to create a class specific to the data used to train. It is a
+little bit less efficient.
 
 ```CSharp
+var env = new TlcEnvironment();
+var iris = "iris.txt";
+
+// We read the text data and create a dataframe / dataview.
+var df = DataFrame.ReadCsv(env.Register("DataFrame"),
+                           iris, sep: '\t',
+                           dtypes: new DataKind?[] { DataKind.R4 });
+
+var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+var learningPipeline = new LearningPipeline();
+learningPipeline.Add(importData);
+learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
 ```

@@ -22,12 +22,5 @@ namespace Microsoft.ML.Ext.TestHelper
                 errWriter = new StreamWriter(new MemoryStream());
             return new TlcEnvironment(seed, verbose, sensitivity, conc, outWriter, errWriter);
         }
-
-        public static ITrainer CreateTrainer(this IHostEnvironment env, string settings, out string loadName, params object[] extraArgs)
-        {
-            var sc = SubComponent.Parse<ITrainer, SignatureTrainer>(settings);
-            loadName = sc.Kind;
-            return sc.CreateInstance(env, extraArgs);
-        }
     }
 }

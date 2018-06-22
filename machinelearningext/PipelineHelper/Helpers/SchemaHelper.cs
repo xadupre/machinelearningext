@@ -367,5 +367,25 @@ namespace Microsoft.ML.Ext.PipelineHelper
                     throw Contracts.Except("Unable to build the schema for kind {0}", kind);
             }
         }
+
+        public static Data.DataKind DataKind2DataDataKind(DataKind kind)
+        {
+            return (Data.DataKind)kind;
+        }
+
+        public static Data.TextLoaderColumn[] ToColumnArgArray(ISchema schema)
+        {
+            var res = new Data.TextLoaderColumn[schema.ColumnCount];
+            for (int i = 0; i < res.Length; ++i)
+            {
+                res[i] = new Data.TextLoaderColumn()
+                {
+                    Name = schema.GetColumnName(i),
+                    Type = DataKind2DataDataKind(schema.GetColumnType(i).RawKind),
+                    Source = new[] { new ML.Data.TextLoaderRange(i) }
+                };
+            }
+            return res;
+        }
     }
 }

@@ -3,10 +3,16 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using Microsoft.ML;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Ext.DataManipulation;
 using Microsoft.ML.Ext.TestHelper;
 using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Ext.PipelineHelper;
+using Microsoft.ML.Trainers;
+using Microsoft.ML.Transforms;
+using Data = Microsoft.ML.Data;
 
 
 namespace TestMachineLearningExt
@@ -91,7 +97,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestReadStr()
         {
-            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var env = EnvHelper.NewTestEnvironment();
             var iris = FileHelper.GetTestFile("iris.txt");
             var df1 = DataFrame.ReadCsv(env.Register("DataFrame"), iris, sep: '\t');
@@ -101,20 +106,41 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestDataFrameScoring()
+        public void TestDataFrameScoringMulti()
         {
-            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var env = EnvHelper.NewTestEnvironment(conc: 1);
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(env.Register("DataFrame"), iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
             var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
             var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
-            string loadName;
-            var trainer = env.CreateTrainer("lr", out loadName);
+            var trainer = env.CreateTrainer("ova{p=lr}");
             using (var ch = env.Start("test"))
             {
-                var pred = TrainUtils.Train(env, ch, trainingData, trainer, loadName, null, null, 0, false);
-                var scorer = ScoreUtils.GetScorer(pred, trainingData, env, null);
+                var pred = trainer.Train(env, ch, trainingData);
+                var scorer = trainer.GetScorer(pred, trainingData, env, null);
+                var predictions = DataFrame.ReadView(env.Register("predictions"), scorer);
+                var v = predictions.iloc[0, 7];
+                Assert.AreEqual(v, (uint)1);
+                Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
+                Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
+                Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
+                Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 11));
+            }
+        }
+
+        [TestMethod]
+        public void TestDataFrameScoringBinary()
+        {
+            var env = EnvHelper.NewTestEnvironment(conc: 1);
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrame.ReadCsv(env.Register("DataFrame"), iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+            var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
+            var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
+            var trainer = env.CreateTrainer("lr");
+            using (var ch = env.Start("test"))
+            {
+                var pred = trainer.Train(env, ch, trainingData);
+                var scorer = trainer.GetScorer(pred, trainingData, env, null);
                 var predictions = DataFrame.ReadView(env.Register("predictions"), scorer);
                 var v = predictions.iloc[0, 7];
                 Assert.AreEqual(v, DvBool.False);
@@ -123,6 +149,20 @@ namespace TestMachineLearningExt
                 Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
                 Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
             }
+        }
+
+        [TestMethod]
+        public void TestDataFrameScoringMultiEntryPoints2()
+        {
+            var env = EnvHelper.NewTestEnvironment(conc: 1);
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrame.ReadCsv(env.Register("DataFrame"), iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+
+            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+            var learningPipeline = new LearningPipeline();
+            learningPipeline.Add(importData);
+            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
         }
     }
 }

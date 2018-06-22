@@ -91,6 +91,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         List<DataColumn<DvBool>> _colsBL;
         List<DataColumn<DvInt4>> _colsI4;
+        List<DataColumn<uint>> _colsU4;
         List<DataColumn<DvInt8>> _colsI8;
         List<DataColumn<float>> _colsR4;
         List<DataColumn<double>> _colsR8;
@@ -117,6 +118,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             _kinds = null;
             _colsBL = null;
             _colsI4 = null;
+            _colsU4 = null;
             _colsI8 = null;
             _colsR4 = null;
             _colsR8 = null;
@@ -172,6 +174,9 @@ namespace Microsoft.ML.Ext.DataManipulation
                 case DataKind.I4:
                     found = _colsI4[coor.Item2] as DataColumn<DType>;
                     break;
+                case DataKind.U4:
+                    found = _colsU4[coor.Item2] as DataColumn<DType>;
+                    break;
                 case DataKind.I8:
                     found = _colsI8[coor.Item2] as DataColumn<DType>;
                     break;
@@ -208,6 +213,10 @@ namespace Microsoft.ML.Ext.DataManipulation
                     DataColumn<DvInt4> obji4;
                     GetTypedColumn(col, out obji4);
                     return obji4;
+                case DataKind.U4:
+                    DataColumn<uint> obju4;
+                    GetTypedColumn(col, out obju4);
+                    return obju4;
                 case DataKind.I8:
                     DataColumn<DvInt8> obji8;
                     GetTypedColumn(col, out obji8);
@@ -263,6 +272,12 @@ namespace Microsoft.ML.Ext.DataManipulation
                         _colsI4 = new List<DataColumn<DvInt4>>();
                     pos = _colsI4.Count;
                     _colsI4.Add(new DataColumn<DvInt4>(nb));
+                    break;
+                case DataKind.U4:
+                    if (_colsU4 == null)
+                        _colsU4 = new List<DataColumn<uint>>();
+                    pos = _colsU4.Count;
+                    _colsU4.Add(new DataColumn<uint>(nb));
                     break;
                 case DataKind.I8:
                     if (_colsI8 == null)
@@ -325,6 +340,9 @@ namespace Microsoft.ML.Ext.DataManipulation
                     break;
                 case DataKind.I4:
                     _colsI4[coor.Item2].Set(row, int.Parse(value));
+                    break;
+                case DataKind.U4:
+                    _colsU4[coor.Item2].Set(row, int.Parse(value));
                     break;
                 case DataKind.I8:
                     _colsI8[coor.Item2].Set(row, Int64.Parse(value));
@@ -471,6 +489,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             var getterBL = new ValueGetter<DvBool>[_colsBL == null ? 0 : _colsBL.Count];
             var getterI4 = new ValueGetter<DvInt4>[_colsI4 == null ? 0 : _colsI4.Count];
+            var getterU4 = new ValueGetter<uint>[_colsU4 == null ? 0 : _colsU4.Count];
             var getterI8 = new ValueGetter<DvInt8>[_colsI8 == null ? 0 : _colsI8.Count];
             var getterR4 = new ValueGetter<float>[_colsR4 == null ? 0 : _colsR4.Count];
             var getterR8 = new ValueGetter<double>[_colsR8 == null ? 0 : _colsR8.Count];
@@ -485,6 +504,9 @@ namespace Microsoft.ML.Ext.DataManipulation
                         break;
                     case DataKind.I4:
                         getterI4[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvInt4.NA);
+                        break;
+                    case DataKind.U4:
+                        getterU4[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, (uint)0);
                         break;
                     case DataKind.I8:
                         getterI8[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvInt8.NA);
@@ -506,6 +528,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             int row = 0;
             var valueBL = new DvBool();
             var valueI4 = new DvInt4();
+            uint valueU4 = 0;
             var valueI8 = new DvInt8();
             float valueR4 = 0;
             double valueR8 = 0;
@@ -524,6 +547,10 @@ namespace Microsoft.ML.Ext.DataManipulation
                         case DataKind.I4:
                             getterI4[coor.Item2](ref valueI4);
                             _colsI4[coor.Item2].Set(row, valueI4);
+                            break;
+                        case DataKind.U4:
+                            getterU4[coor.Item2](ref valueU4);
+                            _colsU4[coor.Item2].Set(row, valueU4);
                             break;
                         case DataKind.I8:
                             getterI8[coor.Item2](ref valueI8);
@@ -667,6 +694,8 @@ namespace Microsoft.ML.Ext.DataManipulation
                         return _cont._colsBL[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
                     case DataKind.I4:
                         return _cont._colsI4[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
+                    case DataKind.U4:
+                        return _cont._colsU4[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
                     case DataKind.I8:
                         return _cont._colsI8[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
                     case DataKind.R4:
@@ -764,6 +793,12 @@ namespace Microsoft.ML.Ext.DataManipulation
             {
                 for (int i = 0; i < _colsI4.Count; ++i)
                     if (!_colsI4[i].Equals(c._colsI4[i]))
+                        return false;
+            }
+            if (_colsU4 != null)
+            {
+                for (int i = 0; i < _colsU4.Count; ++i)
+                    if (!_colsU4[i].Equals(c._colsU4[i]))
                         return false;
             }
             if (_colsI8 != null)
