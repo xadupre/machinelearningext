@@ -56,12 +56,26 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Returns type data kind.
+        /// </summary>
+        public DataKind Kind => SchemaHelper.GetKind<DType>();
+
+        /// <summary>
         /// Creates a getter on the column. The getter returns the element at
         /// cursor.Position.
         /// </summary>
-        public ValueGetter<DType> GetGetter(IRowCursor cursor)
+        public ValueGetter<DType2> GetGetter<DType2>(IRowCursor cursor)
         {
-            return (ref DType value) => { value = _data[cursor.Position]; };
+            var _data2 = _data as DType2[];
+            return (ref DType2 value) => { value = _data2[cursor.Position]; };
+        }
+
+        public bool Equals(IDataColumn c)
+        {
+            var obj = c as DataColumn<DType>;
+            if (obj == null)
+                return false;
+            return Equals(obj);
         }
 
         public bool Equals(DataColumn<DType> c)
@@ -89,13 +103,13 @@ namespace Microsoft.ML.Ext.DataManipulation
         Dictionary<int, Tuple<DataKind, int>> _mapping;
         ISchema _schema;
 
-        List<DataColumn<DvBool>> _colsBL;
-        List<DataColumn<DvInt4>> _colsI4;
-        List<DataColumn<uint>> _colsU4;
-        List<DataColumn<DvInt8>> _colsI8;
-        List<DataColumn<float>> _colsR4;
-        List<DataColumn<double>> _colsR8;
-        List<DataColumn<DvText>> _colsTX;
+        List<IDataColumn> _colsBL;
+        List<IDataColumn> _colsI4;
+        List<IDataColumn> _colsU4;
+        List<IDataColumn> _colsI8;
+        List<IDataColumn> _colsR4;
+        List<IDataColumn> _colsR8;
+        List<IDataColumn> _colsTX;
 
         #endregion
 
@@ -200,6 +214,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns the container of column col as an interface.
         /// </summary>
+        public IDataColumn GetColumn(string colname)
+        {
+            return GetColumn(_naming[colname]);
+        }
+
+        /// <summary>
+        /// Returns the container of column col as an interface.
+        /// </summary>
         public IDataColumn GetColumn(int col)
         {
             var coor = _mapping[col];
@@ -244,7 +266,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="name">column name</param>
         /// <param name="kind">column type</param>
         /// <param name="length">changes the length</param>
-        public int AddColumn(string name, DataKind kind, int? length)
+        /// <param name="values">values (can be null)</param>
+        public int AddColumn(string name, DataKind kind, int? length, IDataColumn values = null)
         {
             if (_names == null)
                 _names = new List<string>();
@@ -263,45 +286,45 @@ namespace Microsoft.ML.Ext.DataManipulation
             {
                 case DataKind.BL:
                     if (_colsBL == null)
-                        _colsBL = new List<DataColumn<DvBool>>();
+                        _colsBL = new List<IDataColumn>();
                     pos = _colsBL.Count;
-                    _colsBL.Add(new DataColumn<DvBool>(nb));
+                    _colsBL.Add(values ?? new DataColumn<DvBool>(nb));
                     break;
                 case DataKind.I4:
                     if (_colsI4 == null)
-                        _colsI4 = new List<DataColumn<DvInt4>>();
+                        _colsI4 = new List<IDataColumn>();
                     pos = _colsI4.Count;
-                    _colsI4.Add(new DataColumn<DvInt4>(nb));
+                    _colsI4.Add(values ?? new DataColumn<DvInt4>(nb));
                     break;
                 case DataKind.U4:
                     if (_colsU4 == null)
-                        _colsU4 = new List<DataColumn<uint>>();
+                        _colsU4 = new List<IDataColumn>();
                     pos = _colsU4.Count;
-                    _colsU4.Add(new DataColumn<uint>(nb));
+                    _colsU4.Add(values ?? new DataColumn<uint>(nb));
                     break;
                 case DataKind.I8:
                     if (_colsI8 == null)
-                        _colsI8 = new List<DataColumn<DvInt8>>();
+                        _colsI8 = new List<IDataColumn>();
                     pos = _colsI8.Count;
-                    _colsI8.Add(new DataColumn<DvInt8>(nb));
+                    _colsI8.Add(values ?? new DataColumn<DvInt8>(nb));
                     break;
                 case DataKind.R4:
                     if (_colsR4 == null)
-                        _colsR4 = new List<DataColumn<float>>();
+                        _colsR4 = new List<IDataColumn>();
                     pos = _colsR4.Count;
-                    _colsR4.Add(new DataColumn<float>(nb));
+                    _colsR4.Add(values ?? new DataColumn<float>(nb));
                     break;
                 case DataKind.R8:
                     if (_colsR8 == null)
-                        _colsR8 = new List<DataColumn<double>>();
+                        _colsR8 = new List<IDataColumn>();
                     pos = _colsR8.Count;
-                    _colsR8.Add(new DataColumn<double>(nb));
+                    _colsR8.Add(values ?? new DataColumn<double>(nb));
                     break;
                 case DataKind.TX:
                     if (_colsTX == null)
-                        _colsTX = new List<DataColumn<DvText>>();
+                        _colsTX = new List<IDataColumn>();
                     pos = _colsTX.Count;
-                    _colsTX.Add(new DataColumn<DvText>(nb));
+                    _colsTX.Add(values ?? new DataColumn<DvText>(nb));
                     break;
                 default:
                     throw new DataTypeError(string.Format("Type {0} is not handled.", kind));
@@ -336,16 +359,16 @@ namespace Microsoft.ML.Ext.DataManipulation
             switch (_kinds[col])
             {
                 case DataKind.BL:
-                    _colsBL[coor.Item2].Set(row, int.Parse(value));
+                    _colsBL[coor.Item2].Set(row, (DvBool)bool.Parse(value));
                     break;
                 case DataKind.I4:
-                    _colsI4[coor.Item2].Set(row, int.Parse(value));
+                    _colsI4[coor.Item2].Set(row, (DvInt4)int.Parse(value));
                     break;
                 case DataKind.U4:
-                    _colsU4[coor.Item2].Set(row, int.Parse(value));
+                    _colsU4[coor.Item2].Set(row, uint.Parse(value));
                     break;
                 case DataKind.I8:
-                    _colsI8[coor.Item2].Set(row, Int64.Parse(value));
+                    _colsI8[coor.Item2].Set(row, (DvInt8)Int64.Parse(value));
                     break;
                 case DataKind.R4:
                     _colsR4[coor.Item2].Set(row, float.Parse(value));
@@ -354,7 +377,7 @@ namespace Microsoft.ML.Ext.DataManipulation
                     _colsR8[coor.Item2].Set(row, double.Parse(value));
                     break;
                 case DataKind.TX:
-                    _colsTX[coor.Item2].Set(row, value);
+                    _colsTX[coor.Item2].Set(row, new DvText(value));
                     break;
                 default:
                     throw new DataTypeError(string.Format("Type {0} is not handled.", coor.Item1));
@@ -690,19 +713,19 @@ namespace Microsoft.ML.Ext.DataManipulation
                 switch (coor.Item1)
                 {
                     case DataKind.BL:
-                        return _cont._colsBL[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
+                        return _cont._colsBL[coor.Item2].GetGetter<TValue>(this);
                     case DataKind.I4:
-                        return _cont._colsI4[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
+                        return _cont._colsI4[coor.Item2].GetGetter<TValue>(this);
                     case DataKind.U4:
-                        return _cont._colsU4[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
+                        return _cont._colsU4[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
                     case DataKind.I8:
-                        return _cont._colsI8[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
+                        return _cont._colsI8[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
                     case DataKind.R4:
-                        return _cont._colsR4[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
+                        return _cont._colsR4[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
                     case DataKind.R8:
-                        return _cont._colsR8[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
+                        return _cont._colsR8[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
                     case DataKind.TX:
-                        return _cont._colsTX[coor.Item2].GetGetter(this) as ValueGetter<TValue>;
+                        return _cont._colsTX[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
                     default:
                         throw new NotImplementedException();
                 }
@@ -728,6 +751,47 @@ namespace Microsoft.ML.Ext.DataManipulation
             set
             {
                 GetColumn(col).Set(row, value);
+            }
+        }
+
+        /// <summary>
+        /// Usual operator [i,colname].
+        /// </summary>
+        /// <param name="row">row</param>
+        /// <param name="col">column</param>
+        /// <returns>value</returns>
+        public object this[int row, string colname]
+        {
+            get
+            {
+                return GetColumn(colname).Get(row);
+            }
+            set
+            {
+                GetColumn(colname).Set(row, value);
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataColumn this[string colname]
+        {
+            get { return GetColumn(colname); }
+        }
+
+        /// <summary>
+        /// Returns all values in a row as a dictionary.
+        /// </summary>
+        public Dictionary<string, object> this[int row]
+        {
+            get
+            {
+                var res = new Dictionary<string, object>();
+                for (int i = 0; i < _names.Count; ++i)
+                    res[_names[i]] = this[row, i];
+                return res;
             }
         }
 

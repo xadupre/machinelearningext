@@ -1,5 +1,9 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System;
+using Microsoft.ML.Runtime.Data;
+
+
 namespace Microsoft.ML.Ext.DataManipulation
 {
     /// <summary>
@@ -22,7 +26,11 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// </summary>
     public interface IDataColumn
     {
+        int Length { get; }
+        DataKind Kind { get; }
         object Get(int row);
         void Set(int row, object value);
+        ValueGetter<DType> GetGetter<DType>(IRowCursor cursor);
+        bool Equals(IDataColumn col);
     }
 }

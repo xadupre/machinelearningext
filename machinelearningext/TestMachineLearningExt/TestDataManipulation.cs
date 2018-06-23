@@ -3,8 +3,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
-using Microsoft.ML;
-using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Ext.DataManipulation;
 using Microsoft.ML.Ext.TestHelper;
@@ -12,7 +10,6 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Ext.PipelineHelper;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms;
-using Data = Microsoft.ML.Data;
 
 
 namespace TestMachineLearningExt
@@ -37,6 +34,18 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[140, 0], (DvInt4)2);
             df.iloc[1, 0] = (DvInt4)10;
             Assert.AreEqual(df.iloc[1, 0], (DvInt4)10);
+            df.loc[1, "Label"] = (DvInt4)11;
+            Assert.AreEqual(df.loc[1, "Label"], (DvInt4)11);
+            var d = df[1];
+            Assert.AreEqual(d.Count, 5);
+            Assert.AreEqual(d["Label"], (DvInt4)11);
+            var col = df["Label"];
+            Assert.AreEqual(col.Length, 150);
+            df["Label2"] = df["Label"];
+            col = df["Label2"];
+            Assert.AreEqual(col.Length, 150);
+            Assert.AreEqual(df.loc[1, "Label2"], (DvInt4)11);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 6));
         }
 
         [TestMethod]

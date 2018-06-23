@@ -83,6 +83,17 @@ namespace Microsoft.ML.Ext.DataManipulation
             return _data.AddColumn(name, kind, length);
         }
 
+        /// <summary>
+        /// Adds a new column. The length must be specified for the first column.
+        /// It must be the same for all columns.
+        /// </summary>
+        /// <param name="name">column name</param>
+        /// <param name="values">new column</param>
+        public int AddColumn(string name, IDataColumn values)
+        {
+            return _data.AddColumn(name, values.Kind, values.Length, values);
+        }
+
         #endregion
 
         #region IO
@@ -522,6 +533,62 @@ namespace Microsoft.ML.Ext.DataManipulation
                     _parent._data[row, col] = value;
                 }
             }
+        }
+
+        /// <summary>
+        /// Artefacts inspired from pandas.
+        /// Not necessarily very efficient, it can be used
+        /// to modify one value but should not to modify value
+        /// in a batch.
+        /// </summary>
+        public Loc loc => new Loc(this);
+
+        /// <summary>
+        /// Artefacts inspired from pandas.
+        /// Not necessarily very efficient, it can be used
+        /// to modify one value but should not to modify value
+        /// in a batch.
+        /// </summary>
+        public class Loc
+        {
+            DataFrame _parent;
+
+            public Loc(DataFrame parent)
+            {
+                _parent = parent;
+            }
+
+            /// <summary>
+            /// Gets or sets elements [i,j].
+            /// </summary>
+            public object this[int row, string col]
+            {
+                get
+                {
+                    return _parent._data[row, col];
+                }
+                set
+                {
+                    _parent._data[row, col] = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataColumn this[string colname]
+        {
+            get { return _data[colname]; }
+            set { AddColumn(colname, value); }
+        }
+
+        /// <summary>
+        /// Returns all values in a row as a dictionary.
+        /// </summary>
+        public Dictionary<string, object> this[int row]
+        {
+            get { return _data[row]; }
         }
 
         #endregion

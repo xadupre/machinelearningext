@@ -1,5 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
@@ -386,6 +387,32 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 };
             }
             return res;
+        }
+
+        /// <summary>
+        /// Returns the data kind based on a type.
+        /// </summary>
+        public static DataKind GetKind<TLabel>()
+        {
+            if (typeof(TLabel) == typeof(DvBool) || typeof(TLabel) == typeof(bool))
+                return DataKind.BL;
+            if (typeof(TLabel) == typeof(byte))
+                return DataKind.U1;
+            if (typeof(TLabel) == typeof(ushort))
+                return DataKind.U2;
+            if (typeof(TLabel) == typeof(uint))
+                return DataKind.U4;
+            if (typeof(TLabel) == typeof(int) || typeof(TLabel) == typeof(DvInt4))
+                return DataKind.I4;
+            if (typeof(TLabel) == typeof(Int64) || typeof(TLabel) == typeof(DvInt8))
+                return DataKind.I8;
+            if (typeof(TLabel) == typeof(float))
+                return DataKind.R4;
+            if (typeof(TLabel) == typeof(double))
+                return DataKind.R8;
+            if (typeof(TLabel) == typeof(DvText) || typeof(TLabel) == typeof(string))
+                return DataKind.TX;
+            throw Contracts.ExceptNotSupp("Unsupported output type {0}.", typeof(TLabel));
         }
     }
 }
