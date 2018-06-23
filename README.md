@@ -71,7 +71,10 @@ This is the same example based on
 [Iris Classification](https://github.com/dotnet/machinelearning-samples/tree/master/samples/getting-started/MulticlassClassification_Iris)
 but using the new class DataFrame. It is not necessary anymore
 to create a class specific to the data used to train. It is a
-little bit less efficient.
+little bit less efficient for predictions as two consecutive
+calls to method ``Predict`` on generic data requires
+some the pipeline to build new iterators at every call.
+This extra work can be saved when the prediction instance is known.
 
 ```CSharp
 var iris = "iris.txt";
