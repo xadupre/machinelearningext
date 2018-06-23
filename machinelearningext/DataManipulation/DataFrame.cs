@@ -20,7 +20,6 @@ namespace Microsoft.ML.Ext.DataManipulation
     {
         #region members
 
-        IHost _host;
         DataContainer _data;
 
         #endregion
@@ -28,10 +27,9 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Initializes an empty dataframe.
         /// </summary>
-        public DataFrame(IHost host)
+        public DataFrame()
         {
-            _host = host;
-            _data = new DataContainer(_host);
+            _data = new DataContainer();
         }
 
         #region IDataView API
@@ -104,7 +102,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="encoding">encoding</param>
         public void ToCsv(string filename, string sep = ",", bool header = true, Encoding encoding = null)
         {
-            ViewToCsv(_host, this, filename, sep: sep, header: header, encoding: encoding);
+            ViewToCsv(this, filename, sep: sep, header: header, encoding: encoding);
         }
 
         /// <summary>
@@ -114,9 +112,10 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="sep">column separator</param>
         /// <param name="header">add header</param>
         /// <param name="encoding">encoding</param>
-        public static void ViewToCsv(IHost host, IDataView view, string filename, string sep = ",", bool header = true, Encoding encoding = null)
+        public static void ViewToCsv(IDataView view, string filename, string sep = ",", bool header = true, Encoding encoding = null)
         {
-            var saver = new TextSaver(host, new TextSaver.Arguments()
+            var env = new TlcEnvironment();
+            var saver = new TextSaver(env, new TextSaver.Arguments()
             {
                 Separator = sep,
                 OutputSchema = false,
@@ -133,7 +132,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Reads a text file as a IDataView.
         /// Follows pandas API.
         /// </summary>
-        /// <param name="host">host</param>
         /// <param name="filename">filename</param>
         /// <param name="sep">column separator</param>
         /// <param name="header">has a header or not</param>
@@ -144,16 +142,17 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="encoding">text encoding</param>
         /// <param name="useThreads">specific to TextLoader</param>
         /// <returns>TextLoader</returns>
-        public static TextLoader ReadCsvToTextLoader(IHost host, string filename,
+        public static TextLoader ReadCsvToTextLoader(string filename,
                                         char sep = ',', bool header = true,
                                         string[] names = null,
                                         DataKind?[] dtypes = null,
                                         int nrows = -1,
                                         int guess_rows = 10,
                                         Encoding encoding = null,
-                                        bool useThreads = true)
+                                        bool useThreads = true,
+                                        IHost host = null)
         {
-            var df = ReadCsv(host, filename, sep: sep, header: header, names: names, dtypes: dtypes,
+            var df = ReadCsv(filename, sep: sep, header: header, names: names, dtypes: dtypes,
                              nrows: guess_rows, guess_rows: guess_rows, encoding: encoding);
             var sch = df.Schema;
             var cols = new TextLoader.Column[sch.ColumnCount];
@@ -170,6 +169,8 @@ namespace Microsoft.ML.Ext.DataManipulation
                 HasHeader = header,
                 MaxRows = nrows > 0 ? (int?)nrows : null
             };
+            if (host == null)
+                host = new TlcEnvironment().Register("TextLoader");
             return new TextLoader(host, args, new MultiFileSource(filename));
         }
 
@@ -177,7 +178,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Reads a string as a IDataView.
         /// Follows pandas API.
         /// </summary>
-        /// <param name="host">host</param>
         /// <param name="content">data as single string</param>
         /// <param name="sep">column separator</param>
         /// <param name="header">has a header or not</param>
@@ -187,14 +187,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="guess_rows">number of rows used to guess types</param>
         /// <param name="encoding">text encoding</param>
         /// <returns>DataFrame</returns>
-        public static DataFrame ReadStr(IHost host, string content,
+        public static DataFrame ReadStr(string content,
                                     char sep = ',', bool header = true,
                                     string[] names = null,
                                     DataKind?[] dtypes = null,
                                     int nrows = -1,
                                     int guess_rows = 10)
         {
-            return ReadStream(host, () => new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(content))),
+            return ReadStream(() => new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(content))),
                               sep: sep, header: header, names: names, dtypes: dtypes, nrows: nrows,
                               guess_rows: guess_rows);
         }
@@ -203,7 +203,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Reads a text file as a IDataView.
         /// Follows pandas API.
         /// </summary>
-        /// <param name="host">host</param>
         /// <param name="filename">filename</param>
         /// <param name="sep">column separator</param>
         /// <param name="header">has a header or not</param>
@@ -213,7 +212,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="guess_rows">number of rows used to guess types</param>
         /// <param name="encoding">text encoding</param>
         /// <returns>DataFrame</returns>
-        public static DataFrame ReadCsv(IHost host, string filename,
+        public static DataFrame ReadCsv(string filename,
                                 char sep = ',', bool header = true,
                                 string[] names = null,
                                 DataKind?[] dtypes = null,
@@ -221,7 +220,7 @@ namespace Microsoft.ML.Ext.DataManipulation
                                 int guess_rows = 10,
                                 Encoding encoding = null)
         {
-            return ReadStream(host, () => new StreamReader(filename, encoding ?? Encoding.ASCII),
+            return ReadStream(() => new StreamReader(filename, encoding ?? Encoding.ASCII),
                               sep: sep, header: header, names: names, dtypes: dtypes, nrows: nrows,
                               guess_rows: guess_rows);
         }
@@ -232,7 +231,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Reads a text file as a IDataView.
         /// Follows pandas API.
         /// </summary>
-        /// <param name="host">host</param>
         /// <param name="createStream">function which creates a stream</param>
         /// <param name="sep">column separator</param>
         /// <param name="header">has a header or not</param>
@@ -242,7 +240,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="guess_rows">number of rows used to guess types</param>
         /// <param name="encoding">text encoding</param>
         /// <returns>DataFrame</returns>
-        public static DataFrame ReadStream(IHost host, FunctionCreateStreamReader createStream,
+        public static DataFrame ReadStream(FunctionCreateStreamReader createStream,
                                 char sep = ',', bool header = true,
                                 string[] names = null,
                                 DataKind?[] dtypes = null,
@@ -279,7 +277,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             if (lines.Count == 0)
                 throw new FormatException("File is empty.");
             int numCol = lines.Select(c => c.Length).Max();
-            var df = new DataFrame(host);
+            var df = new DataFrame();
 
             // Guesses types and adds columns.
             for (int i = 0; i < numCol; ++i)
@@ -317,14 +315,13 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Reads a text file as a IDataView.
         /// Follows pandas API.
         /// </summary>
-        /// <param name="host">host</param>
         /// <param name="view">IDataView</param>
         /// <param name="sep">column separator</param>
         /// <param name="nrows">number of rows to read</param>
         /// <returns>DataFrame</returns>
-        public static DataFrame ReadView(IHost host, IDataView view, int nrows = -1)
+        public static DataFrame ReadView(IDataView view, int nrows = -1)
         {
-            var df = new DataFrame(host);
+            var df = new DataFrame();
             df.FillValues(view, nrows: nrows);
             return df;
         }

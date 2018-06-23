@@ -82,12 +82,12 @@ namespace Microsoft.ML.Ext.DataManipulation
     {
         #region All possible types to hold data.
 
-        IHost _host;
         List<string> _names;
         List<DataKind> _kinds;
         int _length;
         Dictionary<string, int> _naming;
         Dictionary<int, Tuple<DataKind, int>> _mapping;
+        ISchema _schema;
 
         List<DataColumn<DvBool>> _colsBL;
         List<DataColumn<DvInt4>> _colsI4;
@@ -102,9 +102,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Data Container.
         /// </summary>
-        public DataContainer(IHost host)
+        public DataContainer()
         {
-            _host = host;
             _init();
         }
 
@@ -125,6 +124,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             _colsTX = null;
             _mapping = new Dictionary<int, Tuple<DataKind, int>>();
             _naming = new Dictionary<string, int>();
+            _schema = new DataContainerSchema(this);
         }
 
         /// <summary>
@@ -396,7 +396,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns the schema.
         /// </summary>
-        public ISchema Schema => new DataContainerSchema(this);
+        public ISchema Schema => _schema;
 
         /// <summary>
         /// Returns a cursor on the data.
@@ -421,7 +421,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
         {
-            n = DataViewUtils.GetThreadCount(_host, n);
+            var host = new TlcEnvironment().Register("Estimate n threads");
+            n = DataViewUtils.GetThreadCount(host, n);
             if (n > 1 && (long)n > Length)
                 n = (int)Length;
 
@@ -432,10 +433,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
             else
             {
-                consolidator = new Consolidator();
                 var cursors = new IRowCursor[n];
                 for (int i = 0; i < cursors.Length; ++i)
                     cursors[i] = new RowCursor(this, predicate, rand, n, i);
+                consolidator = new Consolidator();
                 return cursors;
             }
         }
@@ -620,19 +621,17 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             DataContainer _cont;
             public long Position => _position;
-            public long Batch => _batch;
+            public long Batch => _first;
             IRandom _rand;
             Func<int, bool> _needCol;
             long _inc;
             long _first;
             long _position;
-            long _batch;
 
             public RowCursor(DataContainer cont, Func<int, bool> needCol, IRandom rand = null, int inc = 1, int first = 0)
             {
                 _cont = cont;
                 _position = -1;
-                _batch = -1;
                 _inc = inc;
                 _first = first;
                 _needCol = needCol;

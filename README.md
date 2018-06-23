@@ -29,8 +29,7 @@ var env = new TlcEnvironment();
 var iris = "iris.txt";
 
 // We read the text data and create a dataframe / dataview.
-var df = DataFrame.ReadCsv(env.Register("DataFrame"),
-                           iris, sep: '\t',
+var df = DataFrame.ReadCsv(iris, sep: '\t',
                            dtypes: new DataKind?[] { DataKind.R4 });
                            
 // We add a transform to concatenate two features in one vector columns.
@@ -54,7 +53,7 @@ using (var ch = env.Start("test"))
     DataFrame.ViewToCsv(env, scorer, "iris_predictions.txt");
     
     // Or we could put the predictions into a dataframe.
-    var predictions = DataFrame.ReadView(env.Register("predictions"), scorer);
+    var predictions = DataFrame.ReadView(scorer);
     
     // And access one value...
     var v = predictions.iloc[0, 7];
@@ -79,8 +78,7 @@ var env = new TlcEnvironment();
 var iris = "iris.txt";
 
 // We read the text data and create a dataframe / dataview.
-var df = DataFrame.ReadCsv(env.Register("DataFrame"),
-                           iris, sep: '\t',
+var df = DataFrame.ReadCsv(iris, sep: '\t',
                            dtypes: new DataKind?[] { DataKind.R4 });
 
 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
@@ -88,4 +86,16 @@ var learningPipeline = new LearningPipeline();
 learningPipeline.Add(importData);
 learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
 learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+var predictor = learningPipeline.Train();
+var predictions = predictor.Predict(df);
+
+// We store the predictions on a file.
+DataFrame.ViewToCsv(env, scorer, "iris_predictions.txt");
+
+// Or we could put the predictions into a dataframe.
+var df = DataFrame.ReadView(predictions);
+
+// And access one value...
+var v = df.iloc[0, 7];
+Console.WriteLine("{0}: {1}", vdf.Schema.GetColumnName(7), v.iloc[0, 7]);
 ```
