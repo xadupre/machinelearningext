@@ -74,7 +74,6 @@ to create a class specific to the data used to train. It is a
 little bit less efficient.
 
 ```CSharp
-var env = new TlcEnvironment();
 var iris = "iris.txt";
 
 // We read the text data and create a dataframe / dataview.
@@ -90,7 +89,7 @@ var predictor = learningPipeline.Train();
 var predictions = predictor.Predict(df);
 
 // We store the predictions on a file.
-DataFrame.ViewToCsv(env, scorer, "iris_predictions.txt");
+DataFrame.ViewToCsv(scorer, "iris_predictions.txt");
 
 // Or we could put the predictions into a dataframe.
 var df = DataFrame.ReadView(predictions);
