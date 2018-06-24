@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
 
 
@@ -47,6 +48,31 @@ namespace Microsoft.ML.Ext.DataManipulation
         void Set(int row, object value);
 
         /// <summary>
+        /// Updates all values.
+        /// </summary>
+        void Set(object value);
+
+        /// <summary>
+        /// Updates values based on a condition.
+        /// </summary>
+        void Set(IEnumerable<bool> rows, object value);
+
+        /// <summary>
+        /// Updates values based on a condition.
+        /// </summary>
+        void Set(IEnumerable<int> rows, object value);
+
+        /// <summary>
+        /// Updates values based on a condition.
+        /// </summary>
+        void Set(IEnumerable<bool> rows, IEnumerable<object> values);
+
+        /// <summary>
+        /// Updates values based on a condition.
+        /// </summary>
+        void Set(IEnumerable<int> rows, IEnumerable<object> values);
+
+        /// <summary>
         /// The returned getter returns the element
         /// at position <pre>cursor.Position</pre>
         /// </summary>
@@ -56,5 +82,10 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// exact comparison
         /// </summary>
         bool Equals(IDataColumn col);
+
+        /// <summary>
+        /// Linq
+        /// </summary>
+        IEnumerable<bool> Filter<TSource>(Func<TSource, bool> predicate);
     }
 }

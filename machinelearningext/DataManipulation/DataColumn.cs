@@ -1,6 +1,9 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Ext.PipelineHelper;
 
@@ -10,7 +13,7 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// <summary>
     /// Implements a dense column container.
     /// </summary>
-    public class DataColumn<DType> : IDataColumn, IEquatable<DataColumn<DType>>
+    public class DataColumn<DType> : IDataColumn, IEquatable<DataColumn<DType>>, IEnumerable<DType>
         where DType : IEquatable<DType>
     {
         #region memeber
@@ -38,6 +41,9 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public DataKind Kind => SchemaHelper.GetKind<DType>();
 
+        public IEnumerator<DType> GetEnumerator() { foreach (var v in _data) yield return v; }
+        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+
         #endregion
 
         #region constructor
@@ -57,6 +63,76 @@ namespace Microsoft.ML.Ext.DataManipulation
         public void Set(int row, DType value)
         {
             _data[row] = value;
+        }
+
+        /// <summary>
+        /// Changes all values.
+        /// </summary>
+        public void Set(object value)
+        {
+            for (var row = 0; row < Length; ++row)
+                _data[row] = (DType)value;
+        }
+
+        /// <summary>
+        /// Updates values based on a condition.
+        /// </summary>
+        public void Set(IEnumerable<bool> rows, object value)
+        {
+            var irow = 0;
+            foreach (var row in rows)
+            {
+                if (row)
+                    Set(irow, value);
+                ++irow;
+            }
+        }
+
+        /// <summary>
+        /// Updates values based on a condition.
+        /// </summary>
+        public void Set(IEnumerable<int> rows, object value)
+        {
+            foreach (var row in rows)
+                Set(row, value);
+        }
+
+        /// <summary>
+        /// Updates values based on a condition.
+        /// </summary>
+        public void Set(IEnumerable<bool> rows, IEnumerable<object> values)
+        {
+            var iter = values.GetEnumerator();
+            var irow = 0;
+            foreach (var row in rows)
+            {
+                iter.MoveNext();
+                if (row)
+                    Set(irow, iter.Current);
+                ++irow;
+            }
+        }
+
+        /// <summary>
+        /// Updates values based on a condition.
+        /// </summary>
+        public void Set(IEnumerable<int> rows, IEnumerable<object> values)
+        {
+            var iter = values.GetEnumerator();
+            foreach (var row in rows)
+            {
+                iter.MoveNext();
+                Set(row, iter.Current);
+            }
+        }
+
+        #endregion
+
+        #region linq
+
+        public IEnumerable<bool> Filter<DType2>(Func<DType2, bool> predicate)
+        {
+            return (_data as DType2[]).Select(c => predicate(c));
         }
 
         #endregion

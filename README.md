@@ -101,3 +101,52 @@ var df = DataFrame.ReadView(predictions);
 var v = df.iloc[0, 7];
 Console.WriteLine("{0}: {1}", vdf.Schema.GetColumnName(7), v.iloc[0, 7]);
 ```
+
+### Example 3: DataFrame in C#
+
+The class ``DataFrame`` replicates some functionalities
+datascientist are used to in others languages such as
+*Python* or *R*. It is possible to do basic operations
+on columns:
+
+
+```CSharp
+var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+var df = DataFrame.ReadStr(text);
+df["AA+BB"] = df["AA"] + df["BB"];
+Console.WriteLine(df.ToString());
+```
+
+```
+AA,BB,CC,AA+BB
+0,1,text,1
+1,1.1,text2,2.1
+```
+
+Or:
+
+```CSharp
+df["AA2"] = df["AA"] + 10;
+Console.WriteLine(df.ToString());
+```
+
+```
+AA,BB,CC,AA+BB,AA2
+0,1,text,1,10
+1,1.1,text2,2.1,11
+```
+
+
+The next instructions changes one value
+based on a condition.
+
+```CSharp
+df[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = new DvText("changed");
+Console.WriteLine(df.ToString());
+```
+
+```
+AA,BB,CC,AA+BB,AA2
+0,1,text,1,10
+1,1.1,changed,2.1,11
+```

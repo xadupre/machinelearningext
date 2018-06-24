@@ -818,6 +818,22 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
         }
 
+        /// <summary>
+        /// Changes the value of a column and a subset of rows.
+        /// </summary>
+        public object this[IEnumerable<bool> rows, int col]
+        {
+            set { GetColumn(col).Set(rows, value); }
+        }
+
+        /// <summary>
+        /// Changes the value of a column and a subset of rows.
+        /// </summary>
+        public object this[IEnumerable<bool> rows, string col]
+        {
+            set { GetColumn(col).Set(rows, value); }
+        }
+
         #endregion
     }
 }

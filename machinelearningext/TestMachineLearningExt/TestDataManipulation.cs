@@ -208,5 +208,33 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[0, 6].ToString(), "text10");
             Assert.AreEqual(df.iloc[1, 6].ToString(), "text210");
         }
+
+        [TestMethod]
+        public void TestDataFrameOperationSet()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+            df["CC"].Set(new DvText("changed"));
+            Assert.AreEqual(df.iloc[1, 2].ToString(), "changed");
+        }
+
+        [TestMethod]
+        public void TestDataFrameOperationIEnumerable()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+            df[df["AA"].Filter<DvInt4>(c => (int)c == 1), 2] = new DvText("changed");
+            Assert.AreEqual(df.iloc[1, 2].ToString(), "changed");
+            df[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = new DvText("changed2");
+            Assert.AreEqual(df.iloc[1, 2].ToString(), "changed2");
+        }
     }
 }

@@ -680,7 +680,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public NumericColumn this[string colname]
         {
             get { return _data[colname]; }
-            set { AddColumn(colname, value); }
+            set { AddColumn(colname, value as NumericColumn); }
         }
 
         /// <summary>
@@ -689,6 +689,22 @@ namespace Microsoft.ML.Ext.DataManipulation
         public Dictionary<string, object> this[int row]
         {
             get { return _data[row]; }
+        }
+
+        /// <summary>
+        /// Changes the value of a column and a subset of rows.
+        /// </summary>
+        public object this[IEnumerable<bool> rows, int col]
+        {
+            set { _data[rows, col] = value; }
+        }
+
+        /// <summary>
+        /// Changes the value of a column and a subset of rows.
+        /// </summary>
+        public object this[IEnumerable<bool> rows, string col]
+        {
+            set { _data[rows, col] = value; }
         }
 
         #endregion
