@@ -9,131 +9,6 @@ using Microsoft.ML.Ext.PipelineHelper;
 
 namespace Microsoft.ML.Ext.DataManipulation
 {
-    #region numerical column
-
-    public class NumericColumn : IDataColumn
-    {
-        protected IDataColumn _column;
-
-        public NumericColumn(IDataColumn column)
-        {
-            _column = column;
-        }
-
-        public IDataColumn Column { get { return _column; } }
-        public int Length => _column.Length;
-        public DataKind Kind => _column.Kind;
-        public object Get(int row) => _column.Get(row);
-        public void Set(int row, object value) { _column.Set(row, value); }
-        public ValueGetter<DType> GetGetter<DType>(IRowCursor cursor) => _column.GetGetter<DType>(cursor);
-        public bool Equals(IDataColumn col) => _column.Equals(col);
-
-        public virtual DType[] GetData<DType>()
-        {
-            throw new NotImplementedException("This function must be overwritten.");
-        }
-
-        public static NumericColumn operator +(NumericColumn c1, NumericColumn c2)
-        {
-            return DataFrameOperationHelper.Addition(c1, c2);
-        }
-    }
-
-    #endregion
-
-    #region typeed column
-
-    /// <summary>
-    /// Implements a dense column container.
-    /// </summary>
-    public class DataColumn<DType> : IDataColumn, IEquatable<DataColumn<DType>>
-        where DType : IEquatable<DType>
-    {
-        #region memeber
-
-        /// <summary>
-        /// Data for the column.
-        /// </summary>
-        DType[] _data;
-
-        /// <summary>
-        /// Number of elements.
-        /// </summary>
-        public int Length => (_data == null ? 0 : _data.Length);
-
-        /// <summary>
-        /// Get a pointer on the raw data.
-        /// </summary>
-        public DType[] Data => _data;
-
-        public object Get(int row) { return _data[row]; }
-        public void Set(int row, object value) { Set(row, (DType)value); }
-
-        /// <summary>
-        /// Returns type data kind.
-        /// </summary>
-        public DataKind Kind => SchemaHelper.GetKind<DType>();
-
-        #endregion
-
-        #region constructor
-
-        /// <summary>
-        /// Builds the columns.
-        /// </summary>
-        /// <param name="nb"></param>
-        public DataColumn(int nb)
-        {
-            _data = new DType[nb];
-        }
-
-        /// <summary>
-        /// Changes the value at a specific row.
-        /// </summary>
-        public void Set(int row, DType value)
-        {
-            _data[row] = value;
-        }
-
-        #endregion
-
-        #region getter and comparison
-
-        /// <summary>
-        /// Creates a getter on the column. The getter returns the element at
-        /// cursor.Position.
-        /// </summary>
-        public ValueGetter<DType2> GetGetter<DType2>(IRowCursor cursor)
-        {
-            var _data2 = _data as DType2[];
-            return (ref DType2 value) => { value = _data2[cursor.Position]; };
-        }
-
-        public bool Equals(IDataColumn c)
-        {
-            var obj = c as DataColumn<DType>;
-            if (obj == null)
-                return false;
-            return Equals(obj);
-        }
-
-        public bool Equals(DataColumn<DType> c)
-        {
-            if (Length != c.Length)
-                return false;
-            for (int i = 0; i < Length; ++i)
-                if (!_data[i].Equals(c._data[i]))
-                    return false;
-            return true;
-        }
-
-        #endregion
-    }
-
-    #endregion
-
-    #region container
-
     /// <summary>
     /// Contains data.
     /// </summary>
@@ -321,6 +196,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="values">values (can be null)</param>
         public int AddColumn(string name, DataKind kind, int? length, IDataColumn values = null)
         {
+            if (_naming.ContainsKey(name))
+                throw new DataNameError(string.Format("Column '{0}' already exists, it cannot be created again.", name));
             if (values != null && (values as NumericColumn != null))
                 values = (values as NumericColumn).Column;
             if (_names == null)
@@ -536,6 +413,8 @@ namespace Microsoft.ML.Ext.DataManipulation
             int pos = 0;
             for (int i = 0; i < sch.ColumnCount; ++i)
             {
+                if (sch.IsHidden(i))
+                    continue;
                 var ty = sch.GetColumnType(i);
                 if (ty.IsVector)
                 {
@@ -900,14 +779,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <returns>value</returns>
         public object this[int row, int col]
         {
-            get
-            {
-                return GetColumn(col).Get(row);
-            }
-            set
-            {
-                GetColumn(col).Set(row, value);
-            }
+            get { return GetColumn(col).Get(row); }
+            set { GetColumn(col).Set(row, value); }
         }
 
         /// <summary>
@@ -918,14 +791,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <returns>value</returns>
         public object this[int row, string colname]
         {
-            get
-            {
-                return GetColumn(colname).Get(row);
-            }
-            set
-            {
-                GetColumn(colname).Set(row, value);
-            }
+            get { return GetColumn(colname).Get(row); }
+            set { GetColumn(colname).Set(row, value); }
         }
 
 
@@ -953,6 +820,4 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
     }
-
-    #endregion
 }

@@ -175,7 +175,38 @@ namespace TestMachineLearningExt
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 10));
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
+        }
+
+        [TestMethod]
+        public void TestDataFrameOperation()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["BBxBB"] = df["AA"] + df["BB"];
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], 1f);
+            Assert.AreEqual(df.iloc[1, 3], 2.1f);
+
+            df["BBxBB2"] = df["BB"] + df["AA"];
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 5));
+            Assert.AreEqual(df.iloc[0, 4], 1f);
+            Assert.AreEqual(df.iloc[1, 4], 2.1f);
+
+            df["AA2"] = df["AA"] + 10;
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 6));
+            Assert.AreEqual(df.iloc[0, 5], (DvInt4)10);
+            Assert.AreEqual(df.iloc[1, 5], (DvInt4)11);
+
+            df["CC2"] = df["CC"] + "10";
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 7));
+            Assert.AreEqual(df.iloc[0, 6].ToString(), "text10");
+            Assert.AreEqual(df.iloc[1, 6].ToString(), "text210");
         }
     }
 }

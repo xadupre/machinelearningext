@@ -43,6 +43,9 @@ namespace Microsoft.ML.Ext.PipelineHelper
             }
         }
 
+        /// <summary>
+        /// Concatenation of two schemas.
+        /// </summary>
         public static ExtendedSchema operator +(ExtendedSchema sch1, ExtendedSchema sch2)
         {
             if (sch1._schemaInput != sch2._schemaInput)
@@ -147,6 +150,10 @@ namespace Microsoft.ML.Ext.PipelineHelper
         /// </summary>
         public int ColumnCount { get { return (_schemaInput == null ? 0 : _schemaInput.ColumnCount) + _names.Length; } }
 
+        /// <summary>
+        /// Returns the index of a column. If multiple columns
+        /// share the same name, it returns the last one.
+        /// </summary>
         public int GetColumnIndex(string name)
         {
             int res;
@@ -159,6 +166,8 @@ namespace Microsoft.ML.Ext.PipelineHelper
         /// <summary>
         /// If multiple columns share the same name, the function tries to find
         /// a name in the new columns and then in the previous schema.
+        /// That follows the specifications: if two columns
+        /// share the same name, the first is considered as hidden.
         /// </summary>
         public bool TryGetColumnIndex(string name, out int res)
         {
@@ -184,6 +193,9 @@ namespace Microsoft.ML.Ext.PipelineHelper
             return false;
         }
 
+        /// <summary>
+        /// Returns the column name for column <i>col</i>.
+        /// </summary>
         public string GetColumnName(int col)
         {
             int count = _schemaInput == null ? 0 : _schemaInput.ColumnCount;
@@ -194,6 +206,9 @@ namespace Microsoft.ML.Ext.PipelineHelper
             throw new IndexOutOfRangeException();
         }
 
+        /// <summary>
+        /// Returns the column type for column <i>col</i>.
+        /// </summary>
         public ColumnType GetColumnType(int col)
         {
             int count;
@@ -210,12 +225,15 @@ namespace Microsoft.ML.Ext.PipelineHelper
             throw new IndexOutOfRangeException();
         }
 
+        /// <summary>
+        /// Returns the metadata.
+        /// </summary>
         public void GetMetadata<TValue>(string kind, int col, ref TValue value)
         {
             int count = _schemaInput == null ? 0 : _schemaInput.ColumnCount;
             if (col < count)
             {
-                _schemaInput.GetMetadata<TValue>(kind, col, ref value);
+                _schemaInput.GetMetadata(kind, col, ref value);
                 return;
             }
             if (kind == MetadataUtils.Kinds.SlotNames)
@@ -248,6 +266,9 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 throw new IndexOutOfRangeException();
         }
 
+        /// <summary>
+        /// Returns all slots names for column <i>col</i>.
+        /// </summary>
         string[] GetSlotNames(int col)
         {
             string name = GetColumnName(col);
@@ -266,6 +287,9 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 return new string[] { name };
         }
 
+        /// <summary>
+        /// Returns the metadata.
+        /// </summary>
         public ColumnType GetMetadataTypeOrNull(string kind, int col)
         {
             int count = _schemaInput == null ? 0 : _schemaInput.ColumnCount;
@@ -280,6 +304,9 @@ namespace Microsoft.ML.Ext.PipelineHelper
             return null;
         }
 
+        /// <summary>
+        /// Returns an enumerator on the metadata.
+        /// </summary>
         public IEnumerable<KeyValuePair<string, ColumnType>> GetMetadataTypes(int col)
         {
             int count = _schemaInput == null ? 0 : _schemaInput.ColumnCount;

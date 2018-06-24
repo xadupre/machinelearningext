@@ -109,6 +109,21 @@ namespace Microsoft.ML.Ext.DataManipulation
         public string NameType(int col) { return _data.NameType(col); }
 
         /// <summary>
+        /// Converts the data frame into a string.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            using (var stream = new MemoryStream())
+            {
+                ViewToCsv(this, stream);
+                stream.Position = 0;
+                using (var reader = new StreamReader(stream))
+                    return reader.ReadToEnd().Replace("\r", "").TrimEnd(new char[] { '\n' });
+            }
+        }
+
+        /// <summary>
         /// Saves the dataframe as a file.
         /// </summary>
         /// <param name="filename">filename</param>
@@ -127,7 +142,20 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="sep">column separator</param>
         /// <param name="header">add header</param>
         /// <param name="encoding">encoding</param>
-        public static void ViewToCsv(IDataView view, string filename, string sep = ",", bool header = true, Encoding encoding = null)
+        public static void ViewToCsv(IDataView view, string filename, string sep = ",",
+                                     bool header = true, Encoding encoding = null)
+        {
+            using (var fs = new StreamWriter(filename, false, encoding ?? Encoding.ASCII))
+                ViewToCsv(view, fs.BaseStream, sep: sep, header: header);
+        }
+
+        /// <summary>
+        /// Saves the dataframe in a stream as text format.
+        /// </summary>
+        /// <param name="filename">filename</param>
+        /// <param name="sep">column separator</param>
+        /// <param name="header">add header</param>
+        public static void ViewToCsv(IDataView view, Stream st, string sep = ",", bool header = true)
         {
             var env = new TlcEnvironment();
             var saver = new TextSaver(env, new TextSaver.Arguments()
@@ -139,8 +167,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             var columns = new int[view.Schema.ColumnCount];
             for (int i = 0; i < columns.Length; ++i)
                 columns[i] = i;
-            using (var fs = new StreamWriter(filename, false, encoding ?? Encoding.ASCII))
-                saver.SaveData(fs.BaseStream, view, columns);
+            saver.SaveData(st, view, columns);
         }
 
         /// <summary>

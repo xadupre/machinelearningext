@@ -13,4 +13,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
         }
     }
+
+    /// <summary>
+    /// Raised when there is an error in names.
+    /// </summary>
+    public class DataNameError : Exception
+    {
+        public DataNameError(string msg) : base(msg)
+        {
+        }
+    }
 }
