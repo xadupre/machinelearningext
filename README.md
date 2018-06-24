@@ -137,7 +137,7 @@ AA,BB,CC,AA+BB,AA2
 ```
 
 
-The next instructions changes one value
+The next instructions change one value
 based on a condition.
 
 ```CSharp
