@@ -222,7 +222,7 @@ namespace Microsoft.ML.Ext.DataManipulation
                     throw new DataTypeError(string.Format("Type {0} is not handled.", coor.Item1));
             }
             if (found == null)
-                throw new DataTypeError(string.Format("Column {0} is not of type {1} (kind={2}, c={3})", 
+                throw new DataTypeError(string.Format("Column {0} is not of type {1} (kind={2}, c={3})",
                                 col, typeof(DType), coor.Item1, coor.Item2));
             column = found;
         }
