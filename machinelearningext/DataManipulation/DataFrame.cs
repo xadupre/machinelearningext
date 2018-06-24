@@ -24,6 +24,8 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
 
+        #region constructor
+
         /// <summary>
         /// Initializes an empty dataframe.
         /// </summary>
@@ -31,6 +33,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             _data = new DataContainer();
         }
+
+        #endregion
 
         #region IDataView API
 
@@ -494,7 +498,72 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
 
-        #region pandas API (slow)
+        #region comparison
+
+        /// <summary>
+        /// Exact comparison between two dataframes.
+        /// </summary>
+        public static bool operator ==(DataFrame df1, DataFrame df2)
+        {
+            return df1._data == df2._data;
+        }
+
+        /// <summary>
+        /// Exact difference between two dataframes.
+        /// </summary>
+        public static bool operator !=(DataFrame df1, DataFrame df2)
+        {
+            return df1._data != df2._data;
+        }
+
+        /// <summary>
+        /// Exact comparison between two dataframes.
+        /// </summary>
+        public bool Equals(DataFrame df)
+        {
+            return _data.Equals(df._data);
+        }
+
+        /// <summary>
+        /// Exact comparison between two dataframes.
+        /// </summary>
+        public override bool Equals(object o)
+        {
+            var df = o as DataFrame;
+            if (df == null)
+                return false;
+            return Equals(df);
+        }
+
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region EntryPoints
+
+        public Data.TextLoader EPTextLoader(string dataPath, char sep = ',', bool header = true)
+        {
+            var loader = new Data.TextLoader(dataPath)
+            {
+                Arguments = new Data.TextLoaderArguments()
+                {
+                    Separator = new[] { sep },
+                    HasHeader = header,
+                    Column = SchemaHelper.ToColumnArgArray(Schema)
+                }
+            };
+            return loader;
+        }
+
+        #endregion
+
+        #region loc / iloc
 
         /// <summary>
         /// Artefacts inspired from pandas.
@@ -574,10 +643,14 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
         }
 
+        #endregion
+
+        #region operators []
+
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataColumn this[string colname]
+        public NumericColumn this[string colname]
         {
             get { return _data[colname]; }
             set { AddColumn(colname, value); }
@@ -593,69 +666,5 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
 
-        #region assert
-
-        /// <summary>
-        /// Exact comparison between two dataframes.
-        /// </summary>
-        public static bool operator ==(DataFrame df1, DataFrame df2)
-        {
-            return df1._data == df2._data;
-        }
-
-        /// <summary>
-        /// Exact difference between two dataframes.
-        /// </summary>
-        public static bool operator !=(DataFrame df1, DataFrame df2)
-        {
-            return df1._data != df2._data;
-        }
-
-        /// <summary>
-        /// Exact comparison between two dataframes.
-        /// </summary>
-        public bool Equals(DataFrame df)
-        {
-            return _data.Equals(df._data);
-        }
-
-        /// <summary>
-        /// Exact comparison between two dataframes.
-        /// </summary>
-        public override bool Equals(object o)
-        {
-            var df = o as DataFrame;
-            if (df == null)
-                return false;
-            return Equals(df);
-        }
-
-        /// <summary>
-        /// Not implemented.
-        /// </summary>
-        public override int GetHashCode()
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region EntryPoints
-
-        public Data.TextLoader EPTextLoader(string dataPath, char sep = ',', bool header = true)
-        {
-            var loader = new Data.TextLoader(dataPath)
-            {
-                Arguments = new Data.TextLoaderArguments()
-                {
-                    Separator = new[] { sep },
-                    HasHeader = header,
-                    Column = SchemaHelper.ToColumnArgArray(Schema)
-                }
-            };
-            return loader;
-        }
-
-        #endregion
     }
 }

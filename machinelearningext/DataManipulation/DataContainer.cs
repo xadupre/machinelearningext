@@ -9,15 +9,39 @@ using Microsoft.ML.Ext.PipelineHelper;
 
 namespace Microsoft.ML.Ext.DataManipulation
 {
-    /// <summary>
-    /// Raised when there is a type mismatch.
-    /// </summary>
-    public class DataTypeError : Exception
+    #region numerical column
+
+    public class NumericColumn : IDataColumn
     {
-        public DataTypeError(string msg) : base(msg)
+        protected IDataColumn _column;
+
+        public NumericColumn(IDataColumn column)
         {
+            _column = column;
+        }
+
+        public IDataColumn Column { get { return _column; } }
+        public int Length => _column.Length;
+        public DataKind Kind => _column.Kind;
+        public object Get(int row) => _column.Get(row);
+        public void Set(int row, object value) { _column.Set(row, value); }
+        public ValueGetter<DType> GetGetter<DType>(IRowCursor cursor) => _column.GetGetter<DType>(cursor);
+        public bool Equals(IDataColumn col) => _column.Equals(col);
+
+        public virtual DType[] GetData<DType>()
+        {
+            throw new NotImplementedException("This function must be overwritten.");
+        }
+
+        public static NumericColumn operator +(NumericColumn c1, NumericColumn c2)
+        {
+            return DataFrameOperationHelper.Addition(c1, c2);
         }
     }
+
+    #endregion
+
+    #region typeed column
 
     /// <summary>
     /// Implements a dense column container.
@@ -25,6 +49,8 @@ namespace Microsoft.ML.Ext.DataManipulation
     public class DataColumn<DType> : IDataColumn, IEquatable<DataColumn<DType>>
         where DType : IEquatable<DType>
     {
+        #region memeber
+
         /// <summary>
         /// Data for the column.
         /// </summary>
@@ -35,8 +61,22 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public int Length => (_data == null ? 0 : _data.Length);
 
+        /// <summary>
+        /// Get a pointer on the raw data.
+        /// </summary>
+        public DType[] Data => _data;
+
         public object Get(int row) { return _data[row]; }
         public void Set(int row, object value) { Set(row, (DType)value); }
+
+        /// <summary>
+        /// Returns type data kind.
+        /// </summary>
+        public DataKind Kind => SchemaHelper.GetKind<DType>();
+
+        #endregion
+
+        #region constructor
 
         /// <summary>
         /// Builds the columns.
@@ -55,10 +95,9 @@ namespace Microsoft.ML.Ext.DataManipulation
             _data[row] = value;
         }
 
-        /// <summary>
-        /// Returns type data kind.
-        /// </summary>
-        public DataKind Kind => SchemaHelper.GetKind<DType>();
+        #endregion
+
+        #region getter and comparison
 
         /// <summary>
         /// Creates a getter on the column. The getter returns the element at
@@ -87,7 +126,13 @@ namespace Microsoft.ML.Ext.DataManipulation
                     return false;
             return true;
         }
+
+        #endregion
     }
+
+    #endregion
+
+    #region container
 
     /// <summary>
     /// Contains data.
@@ -110,36 +155,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         List<IDataColumn> _colsR4;
         List<IDataColumn> _colsR8;
         List<IDataColumn> _colsTX;
-
-        #endregion
-
-        /// <summary>
-        /// Data Container.
-        /// </summary>
-        public DataContainer()
-        {
-            _init();
-        }
-
-        /// <summary>
-        /// Initializes the class as empty.
-        /// </summary>
-        void _init()
-        {
-            _length = 0;
-            _names = null;
-            _kinds = null;
-            _colsBL = null;
-            _colsI4 = null;
-            _colsU4 = null;
-            _colsI8 = null;
-            _colsR4 = null;
-            _colsR8 = null;
-            _colsTX = null;
-            _mapping = new Dictionary<int, Tuple<DataKind, int>>();
-            _naming = new Dictionary<string, int>();
-            _schema = new DataContainerSchema(this);
-        }
 
         /// <summary>
         /// Returns the dimension of the container.
@@ -207,7 +222,8 @@ namespace Microsoft.ML.Ext.DataManipulation
                     throw new DataTypeError(string.Format("Type {0} is not handled.", coor.Item1));
             }
             if (found == null)
-                throw new DataTypeError(string.Format("Column {0} is not of type {1}", col, typeof(DType)));
+                throw new DataTypeError(string.Format("Column {0} is not of type {1} (kind={2}, c={3})", 
+                                col, typeof(DType), coor.Item1, coor.Item2));
             column = found;
         }
 
@@ -260,6 +276,42 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
         }
 
+        #endregion
+
+        #region constructor
+
+        /// <summary>
+        /// Data Container.
+        /// </summary>
+        public DataContainer()
+        {
+            _init();
+        }
+
+        /// <summary>
+        /// Initializes the class as empty.
+        /// </summary>
+        void _init()
+        {
+            _length = 0;
+            _names = null;
+            _kinds = null;
+            _colsBL = null;
+            _colsI4 = null;
+            _colsU4 = null;
+            _colsI8 = null;
+            _colsR4 = null;
+            _colsR8 = null;
+            _colsTX = null;
+            _mapping = new Dictionary<int, Tuple<DataKind, int>>();
+            _naming = new Dictionary<string, int>();
+            _schema = new DataContainerSchema(this);
+        }
+
+        #endregion
+
+        #region column
+
         /// <summary>
         /// Adds a new column.
         /// </summary>
@@ -269,6 +321,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="values">values (can be null)</param>
         public int AddColumn(string name, DataKind kind, int? length, IDataColumn values = null)
         {
+            if (values != null && (values as NumericColumn != null))
+                values = (values as NumericColumn).Column;
             if (_names == null)
                 _names = new List<string>();
             if (_kinds == null)
@@ -383,6 +437,8 @@ namespace Microsoft.ML.Ext.DataManipulation
                     throw new DataTypeError(string.Format("Type {0} is not handled.", coor.Item1));
             }
         }
+
+        #endregion
 
         #region IDataView API
 
@@ -734,66 +790,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
 
-        #region pandas API, operators (slow)
-
-        /// <summary>
-        /// Usual operator [i,j].
-        /// </summary>
-        /// <param name="row">row</param>
-        /// <param name="col">column</param>
-        /// <returns>value</returns>
-        public object this[int row, int col]
-        {
-            get
-            {
-                return GetColumn(col).Get(row);
-            }
-            set
-            {
-                GetColumn(col).Set(row, value);
-            }
-        }
-
-        /// <summary>
-        /// Usual operator [i,colname].
-        /// </summary>
-        /// <param name="row">row</param>
-        /// <param name="col">column</param>
-        /// <returns>value</returns>
-        public object this[int row, string colname]
-        {
-            get
-            {
-                return GetColumn(colname).Get(row);
-            }
-            set
-            {
-                GetColumn(colname).Set(row, value);
-            }
-        }
-
-
-        /// <summary>
-        /// Returns a column.
-        /// </summary>
-        public IDataColumn this[string colname]
-        {
-            get { return GetColumn(colname); }
-        }
-
-        /// <summary>
-        /// Returns all values in a row as a dictionary.
-        /// </summary>
-        public Dictionary<string, object> this[int row]
-        {
-            get
-            {
-                var res = new Dictionary<string, object>();
-                for (int i = 0; i < _names.Count; ++i)
-                    res[_names[i]] = this[row, i];
-                return res;
-            }
-        }
+        #region comparison
 
         /// <summary>
         /// Checks that containers are exactly the same.
@@ -892,5 +889,70 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         #endregion
+
+        #region operators
+
+        /// <summary>
+        /// Usual operator [i,j].
+        /// </summary>
+        /// <param name="row">row</param>
+        /// <param name="col">column</param>
+        /// <returns>value</returns>
+        public object this[int row, int col]
+        {
+            get
+            {
+                return GetColumn(col).Get(row);
+            }
+            set
+            {
+                GetColumn(col).Set(row, value);
+            }
+        }
+
+        /// <summary>
+        /// Usual operator [i,colname].
+        /// </summary>
+        /// <param name="row">row</param>
+        /// <param name="col">column</param>
+        /// <returns>value</returns>
+        public object this[int row, string colname]
+        {
+            get
+            {
+                return GetColumn(colname).Get(row);
+            }
+            set
+            {
+                GetColumn(colname).Set(row, value);
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public NumericColumn this[string colname]
+        {
+            get { return new NumericColumn(GetColumn(colname)); }
+        }
+
+        /// <summary>
+        /// Returns all values in a row as a dictionary.
+        /// </summary>
+        public Dictionary<string, object> this[int row]
+        {
+            get
+            {
+                var res = new Dictionary<string, object>();
+                for (int i = 0; i < _names.Count; ++i)
+                    res[_names[i]] = this[row, i];
+                return res;
+            }
+        }
+
+        #endregion
     }
+
+    #endregion
 }

@@ -26,11 +26,35 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// </summary>
     public interface IDataColumn
     {
+        /// <summary>
+        /// Length of the column
+        /// </summary>
         int Length { get; }
+
+        /// <summary>
+        /// type of the column 
+        /// </summary>
         DataKind Kind { get; }
+
+        /// <summary>
+        /// Returns the element at position row
+        /// </summary>
         object Get(int row);
+
+        /// <summary>
+        /// Updates value at position row
+        /// </summary>
         void Set(int row, object value);
+
+        /// <summary>
+        /// The returned getter returns the element
+        /// at position <pre>cursor.Position</pre>
+        /// </summary>
         ValueGetter<DType> GetGetter<DType>(IRowCursor cursor);
+
+        /// <summary>
+        /// exact comparison
+        /// </summary>
         bool Equals(IDataColumn col);
     }
 }
