@@ -65,7 +65,7 @@ The current interface of
 [DataFrame](https://github.com/xadupre/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs)
 is not rich. It will improve in the future.
 
-### Example 2: common API
+### Example 2: EntryPoints API
 
 This is the same example based on
 [Iris Classification](https://github.com/dotnet/machinelearning-samples/tree/master/samples/getting-started/MulticlassClassification_Iris)
