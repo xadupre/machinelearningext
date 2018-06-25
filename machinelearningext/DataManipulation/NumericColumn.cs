@@ -63,12 +63,12 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
 
-        #region addition
-
         public virtual DType[] GetData<DType>()
         {
             throw new NotImplementedException("This function must be overwritten.");
         }
+
+        #region addition
 
         public static NumericColumn operator +(NumericColumn c1, NumericColumn c2)
         {
@@ -113,6 +113,123 @@ namespace Microsoft.ML.Ext.DataManipulation
         public static NumericColumn operator +(NumericColumn c1, string value)
         {
             return DataFrameOpAdditionHelper.Operation(c1, value);
+        }
+
+        #endregion
+
+        #region multiplication
+
+        public static NumericColumn operator *(NumericColumn c1, NumericColumn c2)
+        {
+            return DataFrameOpMultiplicationHelper.Operation(c1, c2);
+        }
+
+        public static NumericColumn operator *(NumericColumn c1, int value)
+        {
+            return DataFrameOpMultiplicationHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator *(NumericColumn c1, DvInt4 value)
+        {
+            return DataFrameOpMultiplicationHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator *(NumericColumn c1, Int64 value)
+        {
+            return DataFrameOpMultiplicationHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator *(NumericColumn c1, DvInt8 value)
+        {
+            return DataFrameOpMultiplicationHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator *(NumericColumn c1, float value)
+        {
+            return DataFrameOpMultiplicationHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator *(NumericColumn c1, double value)
+        {
+            return DataFrameOpMultiplicationHelper.Operation(c1, value);
+        }
+
+        #endregion
+
+        #region division
+
+        public static NumericColumn operator /(NumericColumn c1, NumericColumn c2)
+        {
+            return DataFrameOpDivisionHelper.Operation(c1, c2);
+        }
+
+        public static NumericColumn operator /(NumericColumn c1, int value)
+        {
+            return DataFrameOpDivisionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator /(NumericColumn c1, DvInt4 value)
+        {
+            return DataFrameOpDivisionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator /(NumericColumn c1, Int64 value)
+        {
+            return DataFrameOpDivisionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator /(NumericColumn c1, DvInt8 value)
+        {
+            return DataFrameOpDivisionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator /(NumericColumn c1, float value)
+        {
+            return DataFrameOpDivisionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator /(NumericColumn c1, double value)
+        {
+            return DataFrameOpDivisionHelper.Operation(c1, value);
+        }
+
+        #endregion
+
+        #region soustraction
+
+        public static NumericColumn operator -(NumericColumn c1, NumericColumn c2)
+        {
+            return DataFrameOpSoustractionHelper.Operation(c1, c2);
+        }
+
+        public static NumericColumn operator -(NumericColumn c1, int value)
+        {
+            return DataFrameOpSoustractionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator -(NumericColumn c1, DvInt4 value)
+        {
+            return DataFrameOpSoustractionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator -(NumericColumn c1, Int64 value)
+        {
+            return DataFrameOpSoustractionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator -(NumericColumn c1, DvInt8 value)
+        {
+            return DataFrameOpSoustractionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator -(NumericColumn c1, float value)
+        {
+            return DataFrameOpSoustractionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator -(NumericColumn c1, double value)
+        {
+            return DataFrameOpSoustractionHelper.Operation(c1, value);
         }
 
         #endregion
