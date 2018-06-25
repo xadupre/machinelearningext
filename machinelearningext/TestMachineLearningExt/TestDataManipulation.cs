@@ -218,7 +218,7 @@ namespace TestMachineLearningExt
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
-            df["CC"].Set(new DvText("changed"));
+            df.loc["CC"] = "changed";
             Assert.AreEqual(df.iloc[1, 2].ToString(), "changed");
         }
 

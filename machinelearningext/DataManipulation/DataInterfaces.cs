@@ -84,7 +84,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         bool Equals(IDataColumn col);
 
         /// <summary>
-        /// Linq
+        /// Returns an enumerator on every row telling if each of them
+        /// verfies the condition.
         /// </summary>
         IEnumerable<bool> Filter<TSource>(Func<TSource, bool> predicate);
     }

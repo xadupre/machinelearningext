@@ -70,8 +70,10 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public void Set(object value)
         {
+            DType dt;
+            ObjectConversion.Convert(value, out dt);
             for (var row = 0; row < Length; ++row)
-                _data[row] = (DType)value;
+                _data[row] = dt;
         }
 
         /// <summary>

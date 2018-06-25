@@ -620,14 +620,8 @@ namespace Microsoft.ML.Ext.DataManipulation
             /// </summary>
             public object this[int row, int col]
             {
-                get
-                {
-                    return _parent._data[row, col];
-                }
-                set
-                {
-                    _parent._data[row, col] = value;
-                }
+                get { return _parent._data[row, col]; }
+                set { _parent._data[row, col] = value; }
             }
         }
 
@@ -659,14 +653,16 @@ namespace Microsoft.ML.Ext.DataManipulation
             /// </summary>
             public object this[int row, string col]
             {
-                get
-                {
-                    return _parent._data[row, col];
-                }
-                set
-                {
-                    _parent._data[row, col] = value;
-                }
+                get { return _parent._data[row, col]; }
+                set { _parent._data[row, col] = value; }
+            }
+
+            /// <summary>
+            /// Gets or sets elements [i,j].
+            /// </summary>
+            public object this[string col]
+            {
+                set { _parent._data[col].Set(value); }
             }
         }
 
@@ -675,20 +671,20 @@ namespace Microsoft.ML.Ext.DataManipulation
         #region operators []
 
         /// <summary>
+        /// Returns all values in a row as a dictionary.
+        /// </summary>
+        public Dictionary<string, object> this[int row]
+        {
+            get { return _data[row]; }
+        }
+
+        /// <summary>
         /// Returns a column.
         /// </summary>
         public NumericColumn this[string colname]
         {
             get { return _data[colname]; }
             set { AddColumn(colname, value as NumericColumn); }
-        }
-
-        /// <summary>
-        /// Returns all values in a row as a dictionary.
-        /// </summary>
-        public Dictionary<string, object> this[int row]
-        {
-            get { return _data[row]; }
         }
 
         /// <summary>
