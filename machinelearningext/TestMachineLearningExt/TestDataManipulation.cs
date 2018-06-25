@@ -231,9 +231,9 @@ namespace TestMachineLearningExt
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
-            df[df["AA"].Filter<DvInt4>(c => (int)c == 1), 2] = "changed";
+            df.iloc[df["AA"].Filter<DvInt4>(c => (int)c == 1), 2] = "changed";
             Assert.AreEqual(df.iloc[1, 2].ToString(), "changed");
-            df[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = "changed2";
+            df.loc[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = "changed2";
             Assert.AreEqual(df.iloc[1, 2].ToString(), "changed2");
         }
 
@@ -247,7 +247,7 @@ namespace TestMachineLearningExt
             var copy = df.Copy();
             var tos2 = copy.ToString();
             Assert.AreEqual(tos, tos2);
-            copy[copy["AA"].Filter<DvInt4>(c => (int)c == 1), 2] = "changed";
+            copy.iloc[copy["AA"].Filter<DvInt4>(c => (int)c == 1), 2] = "changed";
             tos2 = copy.ToString();
             Assert.AreNotEqual(tos, tos2);
         }

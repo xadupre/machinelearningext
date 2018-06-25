@@ -141,7 +141,7 @@ The next instructions change one value
 based on a condition.
 
 ```CSharp
-df[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = "changed";
+df.loc[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = "changed";
 Console.WriteLine(df.ToString());
 ```
 

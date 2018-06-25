@@ -633,6 +633,14 @@ namespace Microsoft.ML.Ext.DataManipulation
                 get { return _parent._data[row, col]; }
                 set { _parent._data[row, col] = value; }
             }
+
+            /// <summary>
+            /// Changes the value of a column and a subset of rows.
+            /// </summary>
+            public object this[IEnumerable<bool> rows, int col]
+            {
+                set { _parent._data[rows, col] = value; }
+            }
         }
 
         /// <summary>
@@ -674,6 +682,14 @@ namespace Microsoft.ML.Ext.DataManipulation
             {
                 set { _parent._data[col].Set(value); }
             }
+
+            /// <summary>
+            /// Changes the value of a column and a subset of rows.
+            /// </summary>
+            public object this[IEnumerable<bool> rows, string col]
+            {
+                set { _parent._data[rows, col] = value; }
+            }
         }
 
         #endregion
@@ -695,22 +711,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             get { return _data[colname]; }
             set { AddColumn(colname, value as NumericColumn); }
-        }
-
-        /// <summary>
-        /// Changes the value of a column and a subset of rows.
-        /// </summary>
-        public object this[IEnumerable<bool> rows, int col]
-        {
-            set { _data[rows, col] = value; }
-        }
-
-        /// <summary>
-        /// Changes the value of a column and a subset of rows.
-        /// </summary>
-        public object this[IEnumerable<bool> rows, string col]
-        {
-            set { _data[rows, col] = value; }
         }
 
         #endregion
