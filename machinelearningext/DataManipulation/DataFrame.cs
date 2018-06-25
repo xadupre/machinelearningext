@@ -66,6 +66,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public ISchema Schema => _data.Schema;
 
+        /// <summary>
+        /// Returns a copy of the view.
+        /// </summary>
+        public DataFrame Copy()
+        {
+            var df = new DataFrame();
+            df._data = _data.Copy();
+            return df;
+        }
+
         #endregion
 
         #region DataFrame

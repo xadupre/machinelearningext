@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
@@ -30,6 +31,28 @@ namespace Microsoft.ML.Ext.DataManipulation
         List<IDataColumn> _colsR4;
         List<IDataColumn> _colsR8;
         List<IDataColumn> _colsTX;
+
+        /// <summary>
+        /// Returns a copy.
+        /// </summary>
+        public DataContainer Copy()
+        {
+            var dc = new DataContainer();
+            dc._names = new List<string>(_names);
+            dc._kinds = new List<DataKind>(_kinds);
+            dc._length = _length;
+            dc._naming = new Dictionary<string, int>(_naming);
+            dc._mapping = _mapping = new Dictionary<int, Tuple<DataKind, int>>(_mapping);
+            dc._schema = new DataContainerSchema(dc);
+            dc._colsBL = _colsBL == null ? null : new List<IDataColumn>(_colsBL.Select(c => c.Copy()));
+            dc._colsI4 = _colsI4 == null ? null : new List<IDataColumn>(_colsI4.Select(c => c.Copy()));
+            dc._colsU4 = _colsU4 == null ? null : new List<IDataColumn>(_colsU4.Select(c => c.Copy()));
+            dc._colsI8 = _colsI8 == null ? null : new List<IDataColumn>(_colsI8.Select(c => c.Copy()));
+            dc._colsR4 = _colsR4 == null ? null : new List<IDataColumn>(_colsR4.Select(c => c.Copy()));
+            dc._colsR8 = _colsR8 == null ? null : new List<IDataColumn>(_colsR8.Select(c => c.Copy()));
+            dc._colsTX = _colsTX == null ? null : new List<IDataColumn>(_colsTX.Select(c => c.Copy()));
+            return dc;
+        }
 
         /// <summary>
         /// Returns the dimension of the container.
@@ -66,7 +89,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Returns a typed container of column col.
         /// </summary>
         public void GetTypedColumn<DType>(int col, out DataColumn<DType> column)
-            where DType : IEquatable<DType>
+            where DType : IEquatable<DType>, IComparable<DType>
         {
             var coor = _mapping[col];
             DataColumn<DType> found = null;

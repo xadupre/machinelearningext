@@ -14,14 +14,24 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// Implements a dense column container.
     /// </summary>
     public class DataColumn<DType> : IDataColumn, IEquatable<DataColumn<DType>>, IEnumerable<DType>
-        where DType : IEquatable<DType>
+        where DType : IEquatable<DType>, IComparable<DType>
     {
-        #region memeber
+        #region members and easy functions
 
         /// <summary>
         /// Data for the column.
         /// </summary>
         DType[] _data;
+
+        /// <summary>
+        /// Returns a copy.
+        /// </summary>
+        public IDataColumn Copy()
+        {
+            var res = new DataColumn<DType>(Length);
+            Array.Copy(_data, res._data, Length);
+            return res;
+        }
 
         /// <summary>
         /// Number of elements.

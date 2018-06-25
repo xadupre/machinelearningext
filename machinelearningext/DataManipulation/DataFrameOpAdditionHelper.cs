@@ -15,8 +15,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         #region Operation between a column and a value.
 
         static void Operation<T1, T3>(NumericColumn c1, out T1[] a, out DataColumn<T3> res)
-            where T1 : IEquatable<T1>
-            where T3 : IEquatable<T3>
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T3 : IEquatable<T3>, IComparable<T3>
         {
             var c1o = c1.Column as DataColumn<T1>;
             if (c1 == null)
@@ -235,9 +235,9 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         static void Operation<T1, T2, T3>(NumericColumn c1, NumericColumn c2,
                                          out T1[] a, out T2[] b, out DataColumn<T3> res)
-            where T1 : IEquatable<T1>
-            where T2 : IEquatable<T2>
-            where T3 : IEquatable<T3>
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
         {
             var c1o = c1.Column as DataColumn<T1>;
             var c2o = c2.Column as DataColumn<T2>;

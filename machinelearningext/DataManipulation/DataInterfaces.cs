@@ -12,6 +12,10 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// </summary>
     public interface IDataFrameView
     {
+        /// <summary>
+        /// Returns a copy of the view.
+        /// </summary>
+        DataFrame Copy();
     }
 
     /// <summary>
@@ -36,6 +40,11 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// type of the column 
         /// </summary>
         DataKind Kind { get; }
+
+        /// <summary>
+        /// Returns a copy.
+        /// </summary>
+        IDataColumn Copy();
 
         /// <summary>
         /// Returns the element at position row

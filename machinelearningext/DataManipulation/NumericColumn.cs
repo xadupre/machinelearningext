@@ -1,7 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
 
@@ -16,6 +15,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         #region members and simple functions
 
         protected IDataColumn _column;
+
+        /// <summary>
+        /// Returns a copy.
+        /// </summary>
+        public IDataColumn Copy()
+        {
+            return new NumericColumn(_column.Copy());
+        }
 
         public NumericColumn(IDataColumn column)
         {

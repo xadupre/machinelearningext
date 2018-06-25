@@ -236,5 +236,20 @@ namespace TestMachineLearningExt
             df[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = "changed2";
             Assert.AreEqual(df.iloc[1, 2].ToString(), "changed2");
         }
+
+        [TestMethod]
+        public void TestDataFrameOperationCopy()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            var copy = df.Copy();
+            var tos2 = copy.ToString();
+            Assert.AreEqual(tos, tos2);
+            copy[copy["AA"].Filter<DvInt4>(c => (int)c == 1), 2] = "changed";
+            tos2 = copy.ToString();
+            Assert.AreNotEqual(tos, tos2);
+        }
     }
 }
