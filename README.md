@@ -164,7 +164,7 @@ AA,CC
 1,changed
 ```
 
-The dataframe can also be filtered:
+The dataframe also allows basic filtering:
 
 ```CSharp
 var view = df[df["AA"] == 0];
