@@ -84,7 +84,7 @@ var df = DataFrame.ReadCsv(iris, sep: '\t',
                            dtypes: new DataKind?[] { DataKind.R4 });
 
 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-var learningPipeline = new LearningPipeline();
+var learningPipeline = new GenericLearningPipeline();
 learningPipeline.Add(importData);
 learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
 learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
