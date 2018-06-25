@@ -23,4 +23,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
         }
     }
+
+    public class DataFrameViewException:Exception
+    {
+        /// <summary>
+        /// Raised with a operator cannot be done with a DataFrameView.
+        /// </summary>
+        public DataFrameViewException(string msg):base(msg)
+        {
+        }
+    }
 }

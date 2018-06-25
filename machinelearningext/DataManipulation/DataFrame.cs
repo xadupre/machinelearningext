@@ -16,7 +16,7 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// <summary>
     /// Implements a DataFrame based on a IDataView from ML.net.
     /// </summary>
-    public class DataFrame : IDataView, IDataFrameView, IEquatable<DataFrame>
+    public class DataFrame : IDataFrameView
     {
         #region members
 
@@ -61,6 +61,16 @@ namespace Microsoft.ML.Ext.DataManipulation
             return _data.GetRowCursorSet(out consolidator, needCol, n, rand);
         }
 
+        public IRowCursor GetRowCursor(int[] rows, int [] columns, Func<int, bool> needCol, IRandom rand = null)
+        {
+            return _data.GetRowCursor(rows, columns, needCol, rand);
+        }
+
+        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        {
+            return _data.GetRowCursorSet(rows, columns, out consolidator, needCol, n, rand);
+        }
+
         /// <summary>
         /// Returns the schema of the dataframe, used schema used for IDataView.
         /// </summary>
@@ -73,6 +83,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             var df = new DataFrame();
             df._data = _data.Copy();
+            return df;
+        }
+
+        /// <summary>
+        /// Returns a copy of a subpart.
+        /// </summary>
+        public DataFrame Copy(IEnumerable<int> rows, IEnumerable<int> columns)
+        {
+            var df = new DataFrame();
+            df._data = _data.Copy(rows, columns);
             return df;
         }
 
@@ -564,6 +584,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Exact comparison between two dataframes.
         /// </summary>
+        public bool Equals(IDataFrameView dfv)
+        {
+            return Equals(dfv.Copy());
+        }
+
+        /// <summary>
+        /// Exact comparison between two dataframes.
+        /// </summary>
         public override bool Equals(object o)
         {
             var df = o as DataFrame;
@@ -713,6 +741,70 @@ namespace Microsoft.ML.Ext.DataManipulation
             set { AddColumn(colname, value as NumericColumn); }
         }
 
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataFrameView this[IEnumerable<bool> rows, int colname]
+        {
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), new[] { colname }); }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataFrameView this[IEnumerable<bool> rows, IEnumerable<int> colnames]
+        {
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), colnames); }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataFrameView this[IEnumerable<int> rows, int colname]
+        {
+            get { return new DataFrameView(this, rows, new[] { colname }); }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataFrameView this[IEnumerable<int> rows, IEnumerable<int> colnames]
+        {
+            get { return new DataFrameView(this, rows, colnames); }
+        }
+
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataFrameView this[IEnumerable<bool> rows, string colname]
+        {
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), new[] { _data.GetColumnIndex(colname) }); }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataFrameView this[IEnumerable<bool> rows, IEnumerable<string> colnames]
+        {
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), colnames.Select(c=>_data.GetColumnIndex(c))); }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataFrameView this[IEnumerable<int> rows, string colname]
+        {
+            get { return new DataFrameView(this, rows, new[] { _data.GetColumnIndex(colname) }); }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public IDataFrameView this[IEnumerable<int> rows, IEnumerable<string> colnames]
+        {
+            get { return new DataFrameView(this, rows, colnames.Select(c => _data.GetColumnIndex(c))); }
+        }
         #endregion
 
     }

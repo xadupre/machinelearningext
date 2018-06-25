@@ -24,6 +24,14 @@ namespace Microsoft.ML.Ext.DataManipulation
             return new NumericColumn(_column.Copy());
         }
 
+        /// <summary>
+        /// Returns a copy of a subpart.
+        /// </summary>
+        public IDataColumn Copy(IEnumerable<int> rows)
+        {
+            return new NumericColumn(_column.Copy(rows));
+        }
+
         public NumericColumn(IDataColumn column)
         {
             _column = column;

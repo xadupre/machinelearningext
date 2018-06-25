@@ -34,6 +34,18 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Returns a copy of a subpart.
+        /// </summary>
+        public IDataColumn Copy(IEnumerable<int> rows)
+        {
+            var arows = rows.ToArray();
+            var res = new DataColumn<DType>(arows.Length);
+            for (int i = 0; i < arows.Length; ++i)
+                res._data[i] = _data[arows[i]];
+            return res;
+        }
+
+        /// <summary>
         /// Number of elements.
         /// </summary>
         public int Length => (_data == null ? 0 : _data.Length);

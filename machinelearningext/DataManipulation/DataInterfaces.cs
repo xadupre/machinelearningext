@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
 
@@ -10,12 +11,27 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// <summary>
     /// Interface for dataframes and dataframe views.
     /// </summary>
-    public interface IDataFrameView
+    public interface IDataFrameView : IDataView, IEquatable<IDataFrameView>
     {
         /// <summary>
         /// Returns a copy of the view.
         /// </summary>
         DataFrame Copy();
+
+        /// <summary>
+        /// Returns a copy of a subpart.
+        /// </summary>
+        DataFrame Copy(IEnumerable<int> rows, IEnumerable<int> columns);
+
+        /// <summary>
+        /// Sames a GetRowCursor but on a subset of the data.
+        /// </summary>
+        IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null);
+
+        /// <summary>
+        /// Sames a GetRowCursorSet but on a subset of the data.
+        /// </summary>
+        IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null);
     }
 
     /// <summary>
@@ -45,6 +61,11 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Returns a copy.
         /// </summary>
         IDataColumn Copy();
+
+        /// <summary>
+        /// Returns a copy of a subpart.
+        /// </summary>
+        IDataColumn Copy(IEnumerable<int> rows);
 
         /// <summary>
         /// Returns the element at position row
