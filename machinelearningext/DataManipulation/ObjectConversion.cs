@@ -11,7 +11,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 {
     public static class ObjectConversion
     {
-        public static void Convert<T>(object src, out T value)
+        public static void Convert<T>(ref object src, out T value)
         {
             if (src is string)
             {

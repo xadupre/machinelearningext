@@ -34,7 +34,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         public DType[] Data => _data;
 
         public object Get(int row) { return _data[row]; }
-        public void Set(int row, object value) { Set(row, (DType)value); }
+        public void Set(int row, object value)
+        {
+            DType dt;
+            ObjectConversion.Convert(ref value, out dt);
+            Set(row, dt);
+        }
 
         /// <summary>
         /// Returns type data kind.
@@ -71,7 +76,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public void Set(object value)
         {
             DType dt;
-            ObjectConversion.Convert(value, out dt);
+            ObjectConversion.Convert(ref value, out dt);
             for (var row = 0; row < Length; ++row)
                 _data[row] = dt;
         }
