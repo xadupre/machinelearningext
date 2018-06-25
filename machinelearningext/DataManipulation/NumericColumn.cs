@@ -233,5 +233,113 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         #endregion
+
+        #region equality
+
+        public override bool Equals(object o)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, NumericColumn c2)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, c2);
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, int value)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, DvInt4 value)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, Int64 value)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, DvInt8 value)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, float value)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, double value)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, bool value)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator ==(NumericColumn c1, DvBool value)
+        {
+            return DataFrameOpEqualHelper.Operation(c1, value);
+        }
+
+        #endregion
+
+        #region different
+
+        public static NumericColumn operator !=(NumericColumn c1, NumericColumn c2)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, c2);
+        }
+
+        public static NumericColumn operator !=(NumericColumn c1, int value)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator !=(NumericColumn c1, DvInt4 value)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator !=(NumericColumn c1, Int64 value)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator !=(NumericColumn c1, DvInt8 value)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator !=(NumericColumn c1, float value)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator !=(NumericColumn c1, double value)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator !=(NumericColumn c1, bool value)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator !=(NumericColumn c1, DvBool value)
+        {
+            return DataFrameOpNotEqualHelper.Operation(c1, value);
+        }
+
+        #endregion
     }
 }

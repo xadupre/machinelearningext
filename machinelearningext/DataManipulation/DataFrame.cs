@@ -762,6 +762,30 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Returns a subset of rows.
+        /// </summary>
+        public DataFrameView this[IEnumerable<bool> rows]
+        {
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), null); }
+        }
+
+        /// <summary>
+        /// Returns a subset of rows.
+        /// </summary>
+        public DataFrameView this[IEnumerable<int> rows]
+        {
+            get { return new DataFrameView(this, rows, null); }
+        }
+
+        /// <summary>
+        /// Returns a subset of rows.
+        /// </summary>
+        public DataFrameView this[NumericColumn boolCol]
+        {
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(boolCol), null); }
+        }
+
+        /// <summary>
         /// Returns a column.
         /// </summary>
         public DataFrameView this[IEnumerable<bool> rows, int colname]
@@ -793,7 +817,6 @@ namespace Microsoft.ML.Ext.DataManipulation
             get { return new DataFrameView(this, rows, colnames); }
         }
 
-
         /// <summary>
         /// Returns a column.
         /// </summary>
@@ -824,6 +847,22 @@ namespace Microsoft.ML.Ext.DataManipulation
         public DataFrameView this[IEnumerable<int> rows, IEnumerable<string> colnames]
         {
             get { return new DataFrameView(this, rows, colnames.Select(c => _data.GetColumnIndex(c))); }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public DataFrameView this[NumericColumn rows, string colname]
+        {
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), new[] { _data.GetColumnIndex(colname) }); }
+        }
+
+        /// <summary>
+        /// Returns a column.
+        /// </summary>
+        public DataFrameView this[NumericColumn rows, IEnumerable<string> colnames]
+        {
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), colnames.Select(c => _data.GetColumnIndex(c))); }
         }
 
         #endregion

@@ -252,6 +252,30 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
+        public void TestDataFrameOpEqual()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["BB*BB"] = df["AA"] == df["BB"];
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], DvBool.False);
+            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+
+            df["AA2"] = df["AA"] == 0;
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 5));
+            Assert.AreEqual(df.iloc[0, 4], DvBool.True);
+            Assert.AreEqual(df.iloc[1, 4], DvBool.False);
+
+            var view = df[df["AA"] == 0];
+            Assert.AreEqual(view.Shape, new Tuple<int, int>(1, 5));
+        }
+
+        [TestMethod]
         public void TestDataFrameOpDiv()
         {
             var env = EnvHelper.NewTestEnvironment();

@@ -8,9 +8,9 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// <summary>
     /// Implements addition for DataFrame for many types.
     /// </summary>
-    public static class DataFrameOpAdditionHelper
+    public static class DataFrameOpNotEqualHelper
     {
-        public const string OperationName = "Addition";
+        public const string OperationName = "NotEqual";
 
         #region Operation between a column and a value.
 
@@ -25,6 +25,29 @@ namespace Microsoft.ML.Ext.DataManipulation
             a = c1o.Data;
         }
 
+        public static NumericColumn Operation(NumericColumn c1, bool value)
+        {
+            return Operation(c1, (DvBool)value);
+        }
+
+        public static NumericColumn Operation(NumericColumn c1, DvBool value)
+        {
+            switch (c1.Kind)
+            {
+                case DataKind.BL:
+                    {
+                        DvBool[] a;
+                        DataColumn<DvBool> res;
+                        Operation(c1, out a, out res);
+                        for (int i = 0; i < res.Length; ++i)
+                            res.Set(i, a[i] != value);
+                        return new NumericColumn(res);
+                    }
+                default:
+                    throw new DataTypeError(string.Format("{0} not implemented for column {1}.", OperationName, c1.Kind));
+            }
+        }
+
         public static NumericColumn Operation(NumericColumn c1, int value)
         {
             return Operation(c1, (DvInt4)value);
@@ -37,37 +60,37 @@ namespace Microsoft.ML.Ext.DataManipulation
                 case DataKind.I4:
                     {
                         DvInt4[] a;
-                        DataColumn<DvInt4> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + value);
+                            res.Set(i, a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.I8:
                     {
                         DvInt8[] a;
-                        DataColumn<DvInt8> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + value);
+                            res.Set(i, a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.R4:
                     {
                         float[] a;
-                        DataColumn<float> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + (float)value);
+                            res.Set(i, a[i] != (float)value);
                         return new NumericColumn(res);
                     }
                 case DataKind.R8:
                     {
                         double[] a;
-                        DataColumn<double> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + (double)value);
+                            res.Set(i, a[i] != (double)value);
                         return new NumericColumn(res);
                     }
                 default:
@@ -87,37 +110,37 @@ namespace Microsoft.ML.Ext.DataManipulation
                 case DataKind.I4:
                     {
                         DvInt8[] a;
-                        DataColumn<DvInt8> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + value);
+                            res.Set(i, a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.I8:
                     {
                         DvInt8[] a;
-                        DataColumn<DvInt8> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + value);
+                            res.Set(i, a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.R4:
                     {
                         float[] a;
-                        DataColumn<float> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + (float)value);
+                            res.Set(i, a[i] != (float)value);
                         return new NumericColumn(res);
                     }
                 case DataKind.R8:
                     {
                         double[] a;
-                        DataColumn<double> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + (double)value);
+                            res.Set(i, a[i] != (double)value);
                         return new NumericColumn(res);
                     }
                 default:
@@ -132,37 +155,37 @@ namespace Microsoft.ML.Ext.DataManipulation
                 case DataKind.I4:
                     {
                         DvInt4[] a;
-                        DataColumn<float> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, (int)a[i] + value);
+                            res.Set(i, (int)a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.I8:
                     {
                         DvInt8[] a;
-                        DataColumn<float> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, (Int64)a[i] + value);
+                            res.Set(i, (Int64)a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.R4:
                     {
                         float[] a;
-                        DataColumn<float> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + value);
+                            res.Set(i, a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.R8:
                     {
                         double[] a;
-                        DataColumn<double> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + value);
+                            res.Set(i, a[i] != value);
                         return new NumericColumn(res);
                     }
                 default:
@@ -177,28 +200,28 @@ namespace Microsoft.ML.Ext.DataManipulation
                 case DataKind.I4:
                     {
                         DvInt4[] a;
-                        DataColumn<double> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, (int)a[i] + value);
+                            res.Set(i, (int)a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.R4:
                     {
                         float[] a;
-                        DataColumn<double> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + value);
+                            res.Set(i, a[i] != value);
                         return new NumericColumn(res);
                     }
                 case DataKind.R8:
                     {
                         double[] a;
-                        DataColumn<double> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] + value);
+                            res.Set(i, a[i] != value);
                         return new NumericColumn(res);
                     }
                 default:
@@ -218,10 +241,10 @@ namespace Microsoft.ML.Ext.DataManipulation
                 case DataKind.TX:
                     {
                         DvText[] a;
-                        DataColumn<DvText> res;
+                        DataColumn<DvBool> res;
                         Operation(c1, out a, out res);
                         for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, new DvText(a[i].ToString() + value.ToString()));
+                            res.Set(i, a[i].ToString() != value.ToString());
                         return new NumericColumn(res);
                     }
                 default:
@@ -252,6 +275,22 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             switch (c1.Kind)
             {
+                case DataKind.BL:
+                    switch (c2.Kind)
+                    {
+                        case DataKind.BL:
+                            {
+                                DvBool[] a;
+                                DvBool[] b;
+                                DataColumn<DvBool> res;
+                                Operation(c1, c2, out a, out b, out res);
+                                for (int i = 0; i < res.Length; ++i)
+                                    res.Set(i, a[i] != b[i]);
+                                return new NumericColumn(res);
+                            }
+                        default:
+                            throw new DataTypeError(string.Format("{0} not implemented for {1}, {2}.", OperationName, c1.Kind, c2.Kind));
+                    }
                 case DataKind.I4:
                     switch (c2.Kind)
                     {
@@ -259,20 +298,20 @@ namespace Microsoft.ML.Ext.DataManipulation
                             {
                                 DvInt4[] a;
                                 DvInt4[] b;
-                                DataColumn<DvInt4> res;
+                                DataColumn<DvBool> res;
                                 Operation(c1, c2, out a, out b, out res);
                                 for (int i = 0; i < res.Length; ++i)
-                                    res.Set(i, a[i] + b[i]);
+                                    res.Set(i, a[i] != b[i]);
                                 return new NumericColumn(res);
                             }
                         case DataKind.R4:
                             {
                                 DvInt4[] a;
                                 float[] b;
-                                DataColumn<float> res;
+                                DataColumn<DvBool> res;
                                 Operation(c1, c2, out a, out b, out res);
                                 for (int i = 0; i < res.Length; ++i)
-                                    res.Set(i, (int)a[i] + b[i]);
+                                    res.Set(i, (int)a[i] != b[i]);
                                 return new NumericColumn(res);
                             }
                         default:
@@ -285,20 +324,20 @@ namespace Microsoft.ML.Ext.DataManipulation
                             {
                                 float[] a;
                                 DvInt4[] b;
-                                DataColumn<float> res;
+                                DataColumn<DvBool> res;
                                 Operation(c1, c2, out a, out b, out res);
                                 for (int i = 0; i < res.Length; ++i)
-                                    res.Set(i, a[i] + (int)b[i]);
+                                    res.Set(i, a[i] != (int)b[i]);
                                 return new NumericColumn(res);
                             }
                         case DataKind.R4:
                             {
                                 float[] a;
                                 float[] b;
-                                DataColumn<float> res;
+                                DataColumn<DvBool> res;
                                 Operation(c1, c2, out a, out b, out res);
                                 for (int i = 0; i < res.Length; ++i)
-                                    res.Set(i, a[i] + b[i]);
+                                    res.Set(i, a[i] != b[i]);
                                 return new NumericColumn(res);
                             }
                         default:

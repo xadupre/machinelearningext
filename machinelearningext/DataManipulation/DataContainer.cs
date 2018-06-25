@@ -81,6 +81,25 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Converts a filter into a list of row indices.
+        /// </summary>
+        public IEnumerable<int> EnumerateRowsIndex(NumericColumn filter)
+        {
+            if (filter.Kind != DataKind.Bool)
+                throw Contracts.ExceptNotSupp("Only boolean column are allowed for operator [].");
+            var th = filter.Column as DataColumn<DvBool>;
+            if(th == null)
+                throw Contracts.ExceptNotSupp("filter is not a boolean column.");
+            int row = 0;
+            foreach (var b in th.Data)
+            {
+                if ((bool)b)
+                    yield return row;
+                ++row;
+            }
+        }
+
+        /// <summary>
         /// Returns the dimension of the container.
         /// </summary>
         public Tuple<int, int> Shape => new Tuple<int, int>(Length, _names.Count);
@@ -252,7 +271,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             if (_naming.ContainsKey(name))
                 throw new DataNameError(string.Format("Column '{0}' already exists, it cannot be created again.", name));
-            if (values != null && (values as NumericColumn != null))
+            if (values != null && ((object)(values as NumericColumn) != null))
                 values = (values as NumericColumn).Column;
             if (_names == null)
                 _names = new List<string>();

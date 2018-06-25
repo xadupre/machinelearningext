@@ -163,3 +163,15 @@ AA,CC
 0,text
 1,changed
 ```
+
+The dataframe can also be filtered:
+
+```CSharp
+var view = df[df["AA"] == 0];
+Console.WriteLine(view.ToString());
+```
+
+```
+AA,BB,CC,AA+BB,AA2
+0,1,text,1,10
+```
