@@ -14,6 +14,16 @@ namespace Microsoft.ML.Ext.DataManipulation
     public interface IDataFrameView : IDataView, IEquatable<IDataFrameView>
     {
         /// <summary>
+        /// All rows or all columns.
+        /// </summary>
+        int[] ALL { get; }
+
+        /// <summary>
+        /// Returns the number of rows.
+        /// </summary>
+        int Length { get; }
+
+        /// <summary>
         /// Returns a copy of the view.
         /// </summary>
         DataFrame Copy();
@@ -32,6 +42,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Sames a GetRowCursorSet but on a subset of the data.
         /// </summary>
         IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null);
+
+        /// <summary>
+        /// Retrieves a column by its name.
+        /// </summary>
+        NumericColumn GetColumn(string colname, int[] rows = null);
+
+        /// <summary>
+        /// Retrieves a column by its position.
+        /// </summary>
+        NumericColumn GetColumn(int col, int[] rows = null);
     }
 
     /// <summary>

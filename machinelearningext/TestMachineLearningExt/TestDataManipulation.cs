@@ -251,5 +251,28 @@ namespace TestMachineLearningExt
             tos2 = copy.ToString();
             Assert.AreNotEqual(tos, tos2);
         }
+
+        [TestMethod]
+        public void TestDataViewFrame()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,2.1,text3";
+            var df = DataFrame.ReadStr(text);
+            var view = df[new int[] { 0, 2 }, new int[] { 0, 2 }];
+            var tv = view.ToString();
+            Assert.AreEqual("AA,CC\n0,text\n2,text3", tv);
+            var dfview = view.Copy();
+            var tv2 = dfview.ToString();
+            Assert.AreEqual("AA,CC\n0,text\n2,text3", tv2);
+            dfview["AA1"] = view["AA"] + 1;
+            var tv3 = dfview.ToString();
+            Assert.AreEqual("AA,CC,AA1\n0,text,1\n2,text3,3", tv3);
+            var view2 = df[df.ALL, new[] { "AA", "CC" }];
+            var tv4 = view2.ToString();
+            Assert.AreEqual("AA,CC\n0,text\n1,text2\n2,text3", tv4);
+            var view3 = df[new[] { 0 }, df.ALL];
+            var tv5 = view3.ToString();
+            Assert.AreEqual("AA,BB,CC\n0,1,text", tv5);
+        }
     }
 }

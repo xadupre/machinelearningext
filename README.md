@@ -150,3 +150,16 @@ AA,BB,CC,AA+BB,AA2
 0,1,text,1,10
 1,1.1,changed,2.1,11
 ```
+
+A specific set of columns or rows can be extracted:
+
+```CSharp
+var view = df[df.ALL, new [] {"AA", "CC"}];
+Console.WriteLine(view.ToString());
+```
+
+```
+AA,CC
+0,text
+1,changed
+```

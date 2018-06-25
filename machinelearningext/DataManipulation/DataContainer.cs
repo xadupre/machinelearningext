@@ -114,7 +114,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns a typed container of column col.
         /// </summary>
-        public void GetTypedColumn<DType>(int col, out DataColumn<DType> column)
+        public void GetTypedColumn<DType>(int col, out DataColumn<DType> column, int[] rows = null)
             where DType : IEquatable<DType>, IComparable<DType>
         {
             var coor = _mapping[col];
@@ -148,52 +148,57 @@ namespace Microsoft.ML.Ext.DataManipulation
             if (found == null)
                 throw new DataTypeError(string.Format("Column {0} is not of type {1} (kind={2}, c={3})",
                                 col, typeof(DType), coor.Item1, coor.Item2));
+            if (rows != null)
+            {
+                // TODO: This is not absolutely efficient as it copies the data.
+                found = found.Copy(rows) as DataColumn<DType>;
+            }
             column = found;
         }
 
         /// <summary>
         /// Returns the container of column col as an interface.
         /// </summary>
-        public IDataColumn GetColumn(string colname)
+        public IDataColumn GetColumn(string colname, int[] rows = null)
         {
-            return GetColumn(_naming[colname]);
+            return GetColumn(_naming[colname], rows);
         }
 
         /// <summary>
         /// Returns the container of column col as an interface.
         /// </summary>
-        public IDataColumn GetColumn(int col)
+        public IDataColumn GetColumn(int col, int[] rows = null)
         {
             var coor = _mapping[col];
             switch (coor.Item1)
             {
                 case DataKind.BL:
                     DataColumn<DvBool> objbl;
-                    GetTypedColumn(col, out objbl);
+                    GetTypedColumn(col, out objbl, rows);
                     return objbl;
                 case DataKind.I4:
                     DataColumn<DvInt4> obji4;
-                    GetTypedColumn(col, out obji4);
+                    GetTypedColumn(col, out obji4, rows);
                     return obji4;
                 case DataKind.U4:
                     DataColumn<uint> obju4;
-                    GetTypedColumn(col, out obju4);
+                    GetTypedColumn(col, out obju4, rows);
                     return obju4;
                 case DataKind.I8:
                     DataColumn<DvInt8> obji8;
-                    GetTypedColumn(col, out obji8);
+                    GetTypedColumn(col, out obji8, rows);
                     return obji8;
                 case DataKind.R4:
                     DataColumn<float> objf;
-                    GetTypedColumn(col, out objf);
+                    GetTypedColumn(col, out objf, rows);
                     return objf;
                 case DataKind.R8:
                     DataColumn<double> objd;
-                    GetTypedColumn(col, out objd);
+                    GetTypedColumn(col, out objd, rows);
                     return objd;
                 case DataKind.TX:
                     DataColumn<DvText> objs;
-                    GetTypedColumn(col, out objs);
+                    GetTypedColumn(col, out objs, rows);
                     return objs;
                 default:
                     throw new DataTypeError(string.Format("Type {0} is not handled.", coor.Item1));
@@ -591,7 +596,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null)
         {
-            return new RowCursor(this, needCol, rand, rows:rows, columns:columns);
+            return new RowCursor(this, needCol, rand, rows: rows, columns: columns);
         }
 
         private sealed class Consolidator : IRowCursorConsolidator
@@ -631,7 +636,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             {
                 var cursors = new IRowCursor[n];
                 for (int i = 0; i < cursors.Length; ++i)
-                    cursors[i] = new RowCursor(this, predicate, rand, n, i, rows:rows, columns:columns);
+                    cursors[i] = new RowCursor(this, predicate, rand, n, i, rows: rows, columns: columns);
                 consolidator = new Consolidator();
                 return cursors;
             }
@@ -657,7 +662,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
             public RowCursor(DataContainer cont, Func<int, bool> needCol,
                              IRandom rand = null, int inc = 1, int first = 0,
-                             int[] rows=null, int[] columns=null)
+                             int[] rows = null, int[] columns = null)
             {
                 _cont = cont;
                 _position = -1;

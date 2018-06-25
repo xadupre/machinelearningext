@@ -22,6 +22,8 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         DataContainer _data;
 
+        public int[] ALL { get { return null; } }
+
         #endregion
 
         #region constructor
@@ -51,6 +53,8 @@ namespace Microsoft.ML.Ext.DataManipulation
             return _data.Length;
         }
 
+        public int Length { get { return _data.Length; } }
+
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
             return _data.GetRowCursor(needCol, rand);
@@ -61,7 +65,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             return _data.GetRowCursorSet(out consolidator, needCol, n, rand);
         }
 
-        public IRowCursor GetRowCursor(int[] rows, int [] columns, Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null)
         {
             return _data.GetRowCursor(rows, columns, needCol, rand);
         }
@@ -733,18 +737,34 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Retrieves a column by its name.
+        /// </summary>
+        public NumericColumn GetColumn(string colname, int[] rows = null)
+        {
+            return new NumericColumn(_data.GetColumn(colname, rows));
+        }
+
+        /// <summary>
+        /// Retrieves a column by its position.
+        /// </summary>
+        public NumericColumn GetColumn(int col, int[] rows = null)
+        {
+            return new NumericColumn(_data.GetColumn(col, rows));
+        }
+
+        /// <summary>
         /// Returns a column.
         /// </summary>
         public NumericColumn this[string colname]
         {
-            get { return _data[colname]; }
+            get { return GetColumn(colname); }
             set { AddColumn(colname, value as NumericColumn); }
         }
 
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataFrameView this[IEnumerable<bool> rows, int colname]
+        public DataFrameView this[IEnumerable<bool> rows, int colname]
         {
             get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), new[] { colname }); }
         }
@@ -752,7 +772,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataFrameView this[IEnumerable<bool> rows, IEnumerable<int> colnames]
+        public DataFrameView this[IEnumerable<bool> rows, IEnumerable<int> colnames]
         {
             get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), colnames); }
         }
@@ -760,7 +780,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataFrameView this[IEnumerable<int> rows, int colname]
+        public DataFrameView this[IEnumerable<int> rows, int colname]
         {
             get { return new DataFrameView(this, rows, new[] { colname }); }
         }
@@ -768,7 +788,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataFrameView this[IEnumerable<int> rows, IEnumerable<int> colnames]
+        public DataFrameView this[IEnumerable<int> rows, IEnumerable<int> colnames]
         {
             get { return new DataFrameView(this, rows, colnames); }
         }
@@ -777,7 +797,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataFrameView this[IEnumerable<bool> rows, string colname]
+        public DataFrameView this[IEnumerable<bool> rows, string colname]
         {
             get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), new[] { _data.GetColumnIndex(colname) }); }
         }
@@ -785,15 +805,15 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataFrameView this[IEnumerable<bool> rows, IEnumerable<string> colnames]
+        public DataFrameView this[IEnumerable<bool> rows, IEnumerable<string> colnames]
         {
-            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), colnames.Select(c=>_data.GetColumnIndex(c))); }
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), colnames.Select(c => _data.GetColumnIndex(c))); }
         }
 
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataFrameView this[IEnumerable<int> rows, string colname]
+        public DataFrameView this[IEnumerable<int> rows, string colname]
         {
             get { return new DataFrameView(this, rows, new[] { _data.GetColumnIndex(colname) }); }
         }
@@ -801,11 +821,11 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public IDataFrameView this[IEnumerable<int> rows, IEnumerable<string> colnames]
+        public DataFrameView this[IEnumerable<int> rows, IEnumerable<string> colnames]
         {
             get { return new DataFrameView(this, rows, colnames.Select(c => _data.GetColumnIndex(c))); }
         }
-        #endregion
 
+        #endregion
     }
 }
