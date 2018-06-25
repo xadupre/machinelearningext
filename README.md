@@ -53,10 +53,10 @@ using (var ch = env.Start("test"))
     DataFrame.ViewToCsv(env, scorer, "iris_predictions.txt");
     
     // Or we could put the predictions into a dataframe.
-    var predictions = DataFrame.ReadView(scorer);
+    var dfout = DataFrame.ReadView(scorer);
     
     // And access one value...
-    var v = predictions.iloc[0, 7];
+    var v = dfout.iloc[0, 7];
     Console.WriteLine("PredictedLabel: {0}", v);
 }
 ```
@@ -91,14 +91,10 @@ learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
 var predictor = learningPipeline.Train();
 var predictions = predictor.Predict(df);
 
-// We store the predictions on a file.
-DataFrame.ViewToCsv(scorer, "iris_predictions.txt");
-
-// Or we could put the predictions into a dataframe.
-var df = DataFrame.ReadView(predictions);
+var dfout = DataFrame.ReadView(predictions);
 
 // And access one value...
-var v = df.iloc[0, 7];
+var v = dfout.iloc[0, 7];
 Console.WriteLine("{0}: {1}", vdf.Schema.GetColumnName(7), v.iloc[0, 7]);
 ```
 
