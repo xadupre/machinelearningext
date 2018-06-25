@@ -48,7 +48,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
 
-        #region operators
+        #region addition
 
         public virtual DType[] GetData<DType>()
         {
@@ -57,37 +57,47 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         public static NumericColumn operator +(NumericColumn c1, NumericColumn c2)
         {
-            return DataFrameOperationHelper.Addition(c1, c2);
+            return DataFrameOpAdditionHelper.Operation(c1, c2);
         }
 
         public static NumericColumn operator +(NumericColumn c1, int value)
         {
-            return DataFrameOperationHelper.Addition(c1, (DvInt4)value);
+            return DataFrameOpAdditionHelper.Operation(c1, value);
         }
 
         public static NumericColumn operator +(NumericColumn c1, DvInt4 value)
         {
-            return DataFrameOperationHelper.Addition(c1, value);
+            return DataFrameOpAdditionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator +(NumericColumn c1, Int64 value)
+        {
+            return DataFrameOpAdditionHelper.Operation(c1, value);
+        }
+
+        public static NumericColumn operator +(NumericColumn c1, DvInt8 value)
+        {
+            return DataFrameOpAdditionHelper.Operation(c1, value);
         }
 
         public static NumericColumn operator +(NumericColumn c1, float value)
         {
-            return DataFrameOperationHelper.Addition(c1, value);
+            return DataFrameOpAdditionHelper.Operation(c1, value);
         }
 
         public static NumericColumn operator +(NumericColumn c1, double value)
         {
-            return DataFrameOperationHelper.Addition(c1, value);
+            return DataFrameOpAdditionHelper.Operation(c1, value);
         }
 
         public static NumericColumn operator +(NumericColumn c1, DvText value)
         {
-            return DataFrameOperationHelper.Addition(c1, value);
+            return DataFrameOpAdditionHelper.Operation(c1, value);
         }
 
         public static NumericColumn operator +(NumericColumn c1, string value)
         {
-            return DataFrameOperationHelper.Addition(c1, new DvText(value));
+            return DataFrameOpAdditionHelper.Operation(c1, value);
         }
 
         #endregion
