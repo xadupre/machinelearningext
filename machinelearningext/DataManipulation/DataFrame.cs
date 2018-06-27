@@ -127,7 +127,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         /// <param name="name">column name</param>
         /// <param name="values">new column</param>
-        public int AddColumn(string name, IDataColumn values)
+        public int AddColumn(string name, IDataColumn values) 
         {
             return _data.AddColumn(name, values.Kind, values.Length, values);
         }

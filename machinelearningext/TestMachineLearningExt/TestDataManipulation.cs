@@ -288,7 +288,7 @@ namespace TestMachineLearningExt
             df["BB*BB"] = df["AA"] / df["BB"];
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
             Assert.AreEqual(df.iloc[0, 3], 0f);
-            Assert.AreEqual(df.iloc[1, 3], 1/1.1f);
+            Assert.AreEqual(df.iloc[1, 3], 1 / 1.1f);
 
             df["AA2"] = df["AA"] / 10;
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 5));
@@ -361,5 +361,16 @@ namespace TestMachineLearningExt
             var tv5 = view3.ToString();
             Assert.AreEqual("AA,BB,CC\n0,1,text", tv5);
         }
+
+        [TestMethod]
+        public void TestCreateFromArrays()
+        {
+            var df = new DataFrame();
+            df.AddColumn("i", new int[] { 0, 1 });
+            df.AddColumn("x", new float[] { 0.5f, 1.5f });
+            var tx = df.ToString();
+            Assert.AreEqual(tx, "i,x\n0,0.5\n1,1.5");
+        }
     }
 }
+
