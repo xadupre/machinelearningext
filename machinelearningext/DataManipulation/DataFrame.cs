@@ -156,6 +156,7 @@ namespace Microsoft.ML.Ext.DataManipulation
                 buf[i] = values[i];
             return AddColumn(name, new DataColumn<DvInt8>(buf));
         }
+        public int AddColumn(string name, uint[] values) { return AddColumn(name, new DataColumn<uint>(values)); }
         public int AddColumn(string name, float[] values) { return AddColumn(name, new DataColumn<float>(values)); }
         public int AddColumn(string name, double[] values) { return AddColumn(name, new DataColumn<double>(values)); }
         public int AddColumn(string name, DvText[] values) { return AddColumn(name, new DataColumn<DvText>(values)); }
