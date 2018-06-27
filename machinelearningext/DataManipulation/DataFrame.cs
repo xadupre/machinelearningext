@@ -132,6 +132,41 @@ namespace Microsoft.ML.Ext.DataManipulation
             return _data.AddColumn(name, values.Kind, values.Length, values);
         }
 
+        public int AddColumn(string name, DvBool[] values) { return AddColumn(name, new DataColumn<DvBool>(values)); }
+        public int AddColumn(string name, bool[] values)
+        {
+            var buf = new DvBool[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = values[i];
+            return AddColumn(name, new DataColumn<DvBool>(buf));
+        }
+        public int AddColumn(string name, DvInt4[] values) { return AddColumn(name, new DataColumn<DvInt4>(values)); }
+        public int AddColumn(string name, int[] values)
+        {
+            var buf = new DvInt4[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = values[i];
+            return AddColumn(name, new DataColumn<DvInt4>(buf));
+        }
+        public int AddColumn(string name, DvInt8[] values) { return AddColumn(name, new DataColumn<DvInt8>(values)); }
+        public int AddColumn(string name, Int64[] values)
+        {
+            var buf = new DvInt8[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = values[i];
+            return AddColumn(name, new DataColumn<DvInt8>(buf));
+        }
+        public int AddColumn(string name, float[] values) { return AddColumn(name, new DataColumn<float>(values)); }
+        public int AddColumn(string name, double[] values) { return AddColumn(name, new DataColumn<double>(values)); }
+        public int AddColumn(string name, DvText[] values) { return AddColumn(name, new DataColumn<DvText>(values)); }
+        public int AddColumn(string name, string[] values)
+        {
+            var buf = new DvText[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new DvText(values[i]);
+            return AddColumn(name, new DataColumn<DvText>(buf));
+        }
+
         #endregion
 
         #region IO
@@ -150,7 +185,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             using (var stream = new MemoryStream())
             {
-                ViewToCsv(this, stream);
+                ViewToCsv(this, stream, silent: true);
                 stream.Position = 0;
                 using (var reader = new StreamReader(stream))
                     return reader.ReadToEnd().Replace("\r", "").TrimEnd(new char[] { '\n' });
@@ -164,9 +199,10 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="sep">column separator</param>
         /// <param name="header">add header</param>
         /// <param name="encoding">encoding</param>
-        public void ToCsv(string filename, string sep = ",", bool header = true, Encoding encoding = null)
+        /// <param name="silent">Suppress any info output (not warnings or errors)</param>
+        public void ToCsv(string filename, string sep = ",", bool header = true, Encoding encoding = null, bool silent = false)
         {
-            ViewToCsv(this, filename, sep: sep, header: header, encoding: encoding);
+            ViewToCsv(this, filename, sep: sep, header: header, encoding: encoding, silent: silent);
         }
 
         /// <summary>
@@ -176,11 +212,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="sep">column separator</param>
         /// <param name="header">add header</param>
         /// <param name="encoding">encoding</param>
+        /// <param name="silent">Suppress any info output (not warnings or errors)</param>
         public static void ViewToCsv(IDataView view, string filename, string sep = ",",
-                                     bool header = true, Encoding encoding = null)
+                                     bool header = true, Encoding encoding = null, bool silent = false)
         {
             using (var fs = new StreamWriter(filename, false, encoding ?? Encoding.ASCII))
-                ViewToCsv(view, fs.BaseStream, sep: sep, header: header);
+                ViewToCsv(view, fs.BaseStream, sep: sep, header: header, silent: silent);
         }
 
         /// <summary>
@@ -189,14 +226,17 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="filename">filename</param>
         /// <param name="sep">column separator</param>
         /// <param name="header">add header</param>
-        public static void ViewToCsv(IDataView view, Stream st, string sep = ",", bool header = true)
+        /// <param name="silent">Suppress any info output (not warnings or errors)</param>
+        public static void ViewToCsv(IDataView view, Stream st, string sep = ",", bool header = true,
+                                     bool silent = false)
         {
             var env = new TlcEnvironment();
             var saver = new TextSaver(env, new TextSaver.Arguments()
             {
                 Separator = sep,
                 OutputSchema = false,
-                OutputHeader = header
+                OutputHeader = header,
+                Silent = silent
             });
             var columns = new int[view.Schema.ColumnCount];
             for (int i = 0; i < columns.Length; ++i)
