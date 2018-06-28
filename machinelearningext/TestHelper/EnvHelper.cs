@@ -3,7 +3,6 @@
 using System.IO;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.CommandLine;
 
 
 namespace Microsoft.ML.Ext.TestHelper

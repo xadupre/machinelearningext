@@ -1,12 +1,8 @@
 ﻿// See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
-using System.Reflection;
-using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
 
 
 namespace Microsoft.ML.Ext.TestHelper

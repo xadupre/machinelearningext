@@ -874,6 +874,76 @@ namespace Microsoft.ML.Ext.DataManipulation
             return true;
         }
 
+        /// <summary>
+        /// Checks that containers are almost exactly the same for real values
+        /// or exactly the same of other types.
+        /// </summary>
+        public bool AlmostEquals(DataContainer c, float precision=1e-6f)
+        {
+            if (Shape.Item1 != c.Shape.Item1 || Shape.Item2 != c.Shape.Item2)
+                return false;
+            for (int i = 0; i < _names.Count; ++i)
+            {
+                if (_names[i] != c._names[i])
+                    return false;
+                if (_kinds[i] != c._kinds[i])
+                    return false;
+                if (_mapping[i].Item1 != c._mapping[i].Item1 || _mapping[i].Item2 != c._mapping[i].Item2)
+                    return false;
+            }
+            if (_colsBL != null)
+            {
+                for (int i = 0; i < _colsBL.Count; ++i)
+                    if (!_colsBL[i].Equals(c._colsBL[i]))
+                        return false;
+            }
+            if (_colsI4 != null)
+            {
+                for (int i = 0; i < _colsI4.Count; ++i)
+                    if (!_colsI4[i].Equals(c._colsI4[i]))
+                        return false;
+            }
+            if (_colsU4 != null)
+            {
+                for (int i = 0; i < _colsU4.Count; ++i)
+                    if (!_colsU4[i].Equals(c._colsU4[i]))
+                        return false;
+            }
+            if (_colsI8 != null)
+            {
+                for (int i = 0; i < _colsI8.Count; ++i)
+                    if (!_colsI8[i].Equals(c._colsI8[i]))
+                        return false;
+            }
+            if (_colsR4 != null)
+            {
+                for (int i = 0; i < _colsR4.Count; ++i)
+                {
+                    var c1 = (_colsR4[i] as DataColumn<float>).Data;
+                    var c2 = (c._colsR4[i] as DataColumn<float>).Data;
+                    if (!NumericHelper.AlmostEquals(c1, c2, precision))
+                        return false;
+                }
+            }
+            if (_colsR8 != null)
+            {
+                for (int i = 0; i < _colsR8.Count; ++i)
+                {
+                    var c1 = (_colsR8[i] as DataColumn<double>).Data;
+                    var c2 = (c._colsR8[i] as DataColumn<double>).Data;
+                    if (!NumericHelper.AlmostEquals(c1, c2, precision))
+                        return false;
+                }
+            }
+            if (_colsTX != null)
+            {
+                for (int i = 0; i < _colsTX.Count; ++i)
+                    if (!_colsTX[i].Equals(c._colsTX[i]))
+                        return false;
+            }
+            return true;
+        }
+
         #endregion
 
         #region operators

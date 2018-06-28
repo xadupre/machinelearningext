@@ -17,6 +17,8 @@ namespace TestMachineLearningExt
     [TestClass]
     public class TestDataManipulation
     {
+        #region DataFrame IO
+
         [TestMethod]
         public void TestReadCsvSimple()
         {
@@ -114,6 +116,10 @@ namespace TestMachineLearningExt
             Assert.IsTrue(df1 == df2);
         }
 
+        #endregion
+
+        #region DataFrame ML
+
         [TestMethod]
         public void TestDataFrameScoringMulti()
         {
@@ -177,6 +183,10 @@ namespace TestMachineLearningExt
             var dfout = DataFrame.ReadView(predictions);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
         }
+
+        #endregion
+
+        #region DataFrame Operators
 
         [TestMethod]
         public void TestDataFrameOperation()
@@ -339,6 +349,10 @@ namespace TestMachineLearningExt
             Assert.AreNotEqual(tos, tos2);
         }
 
+        #endregion
+
+        #region DataFrame Copy
+
         [TestMethod]
         public void TestDataViewFrame()
         {
@@ -371,6 +385,8 @@ namespace TestMachineLearningExt
             var tx = df.ToString();
             Assert.AreEqual(tx, "i,x\n0,0.5\n1,1.5");
         }
+
+        #endregion
     }
 }
 

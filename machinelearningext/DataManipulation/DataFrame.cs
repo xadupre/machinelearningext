@@ -127,7 +127,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         /// <param name="name">column name</param>
         /// <param name="values">new column</param>
-        public int AddColumn(string name, IDataColumn values) 
+        public int AddColumn(string name, IDataColumn values)
         {
             return _data.AddColumn(name, values.Kind, values.Length, values);
         }
@@ -624,6 +624,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         public bool Equals(DataFrame df)
         {
             return _data.Equals(df._data);
+        }
+
+        /// <summary>
+        /// Approximated comparison between two dataframes.
+        /// </summary>
+        public bool AlmostEquals(DataFrame df, float precision = 1e-6f)
+        {
+            return _data.AlmostEquals(df._data, precision);
         }
 
         /// <summary>

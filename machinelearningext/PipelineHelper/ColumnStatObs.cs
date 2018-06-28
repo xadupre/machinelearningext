@@ -11,6 +11,9 @@ using Microsoft.ML.Runtime.Model;
 
 namespace Microsoft.ML.Ext.PipelineHelper
 {
+    /// <summary>
+    /// Retains statistiques computed in a streaming mode.
+    /// </summary>
     public class ColumnStatObs
     {
         public enum StatKind

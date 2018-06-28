@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMachineLearningExt", "T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestHelper", "TestHelper\TestHelper.csproj", "{1BA16118-01CB-4E54-9970-48953174CEF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataManipulation", "DataManipulation\DataManipulation.csproj", "{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataManipulation", "DataManipulation\DataManipulation.csproj", "{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeaturesTransforms", "FeaturesTransforms\FeaturesTransforms.csproj", "{024BF6AE-3A53-4ADB-95EE-87BA45A92AE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C042FDB2-AF20-4A77-94C6-3AE6DCB0BD63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{024BF6AE-3A53-4ADB-95EE-87BA45A92AE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{024BF6AE-3A53-4ADB-95EE-87BA45A92AE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{024BF6AE-3A53-4ADB-95EE-87BA45A92AE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{024BF6AE-3A53-4ADB-95EE-87BA45A92AE3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
