@@ -85,6 +85,15 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Builds the columns.
+        /// </summary>
+        /// <param name="nb"></param>
+        public DataColumn(DType[] data)
+        {
+            _data = data;
+        }
+
+        /// <summary>
         /// Changes the value at a specific row.
         /// </summary>
         public void Set(int row, DType value)

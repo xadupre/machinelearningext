@@ -31,7 +31,7 @@ var iris = "iris.txt";
 // We read the text data and create a dataframe / dataview.
 var df = DataFrame.ReadCsv(iris, sep: '\t',
                            dtypes: new DataKind?[] { DataKind.R4 });
-                           
+
 // We add a transform to concatenate two features in one vector columns.
 var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
 
@@ -45,23 +45,23 @@ using (var ch = env.Start("test"))
 {
     // We train the model.
     var pred = trainer.Train(env, ch, trainingData);
-    
+
     // We compute the prediction (here with the same training data but it should not be the same).
     var scorer = trainer.GetScorer(pred, trainingData, env, null);
-    
+
     // We store the predictions on a file.
     DataFrame.ViewToCsv(env, scorer, "iris_predictions.txt");
-    
+
     // Or we could put the predictions into a dataframe.
     var dfout = DataFrame.ReadView(scorer);
-    
+
     // And access one value...
     var v = dfout.iloc[0, 7];
     Console.WriteLine("PredictedLabel: {0}", v);
 }
 ```
 
-The current interface of 
+The current interface of
 [DataFrame](https://github.com/xadupre/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs)
 is not rich. It will improve in the future.
 
@@ -105,7 +105,6 @@ datascientist are used to in others languages such as
 *Python* or *R*. It is possible to do basic operations
 on columns:
 
-
 ```CSharp
 var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
 var df = DataFrame.ReadStr(text);
@@ -131,7 +130,6 @@ AA,BB,CC,AA+BB,AA2
 0,1,text,1,10
 1,1.1,text2,2.1,11
 ```
-
 
 The next instructions change one value
 based on a condition.
