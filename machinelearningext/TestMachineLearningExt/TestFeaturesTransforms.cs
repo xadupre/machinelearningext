@@ -71,8 +71,7 @@ namespace TestMachineLearningExt
             {
                 var args = new PolynomialTransform.Arguments
                 {
-                    inputColumn = "X",
-                    outputColumn = "poly",
+                    column = new Column1x1() { Source = "X", Name = "poly" },
                     degree = degree,
                 };
 
@@ -136,7 +135,7 @@ namespace TestMachineLearningExt
             };
 
             IDataView loader = host.CreateStreamingDataView(inputs);
-            var data = host.CreateTransform("poly{in=X out=poly d=3}", loader);
+            var data = host.CreateTransform("poly{col=poly:X d=3}", loader);
 
             // We create a specific folder in build/UnitTest which will contain the output.
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
@@ -149,7 +148,6 @@ namespace TestMachineLearningExt
             TransformHelper.SerializationTestTransform(host, outModelFilePath, data, loader, outData, outData2);
         }
 
-        /*
         [TestMethod]
         public void TestPolyniomTransformNumericValues()
         {
@@ -157,14 +155,12 @@ namespace TestMachineLearningExt
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
             var loader = host.CreateTransform("concat{col=X:A,B}", raw);
             var data = host.CreateTransform("Poly{col=X}", loader);
-            (data as ITrainableTransform).Estimate();
             var res = DataFrame.ReadView(data);
             var txt = res.ToString();
-            var exp = "A,B,X.0,X.1\n1.0,2.0,0.0,0.0\n2.0,3.0,0.11111111,0.11111111\n10.0,11.0,1.0,1.0";
+            var exp = "A,B,X.0,X.1,X.2,X.3,X.4\n1.0,2.0,1.0,2.0,1.0,2.0,4.0\n2.0,3.0,2.0,3.0,4.0,6.0,9.0\n10.0,11.0,10.0,11.0,100.0,110.0,121.0";
             var dfexp = DataFrame.ReadStr(exp);
-            Assert.IsTrue(dfexp.AlmostEquals(res));
+            Assert.AreEqual(dfexp.AlmostEquals(res), 0);
         }
-        */
 
         #endregion
 
@@ -202,7 +198,7 @@ namespace TestMachineLearningExt
         {
             var args = new ScalerTransform.Arguments
             {
-                columns = new[] { new ScalerTransform.Column() { Name = "X", Source = "X" } },
+                columns = new[] { new Column1x1() { Name = "X", Source = "X" } },
                 scaling = strategy
             };
 
@@ -299,7 +295,7 @@ namespace TestMachineLearningExt
             var txt = res.ToString();
             var exp = "A,B,X.0,X.1\n1.0,2.0,-0.827605963,-0.827605963\n2.0,3.0,-0.5793242,-0.5793242\n10.0,11.0,1.40693,1.40693";
             var dfexp = DataFrame.ReadStr(exp);
-            Assert.IsTrue(dfexp.AlmostEquals(res));
+            Assert.AreEqual(dfexp.AlmostEquals(res), 0);
         }
 
         [TestMethod]
@@ -314,7 +310,7 @@ namespace TestMachineLearningExt
             var txt = res.ToString();
             var exp = "A,B,X.0,X.1\n1.0,2.0,0.0,0.0\n2.0,3.0,0.11111111,0.11111111\n10.0,11.0,1.0,1.0";
             var dfexp = DataFrame.ReadStr(exp);
-            Assert.IsTrue(dfexp.AlmostEquals(res));
+            Assert.AreEqual(dfexp.AlmostEquals(res), 0);
         }
 
         #endregion

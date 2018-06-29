@@ -86,11 +86,8 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         /// </summary>
         public class Arguments
         {
-            [Argument(ArgumentType.Required, HelpText = "Features columns (a vector)", ShortName = "in")]
-            public string inputColumn;
-
-            [Argument(ArgumentType.AtMostOnce, HelpText = "New vector with the polynomial features. If empty, it is equal to the input column.", ShortName = "out")]
-            public string outputColumn = null;
+            [Argument(ArgumentType.Required, HelpText = "Features columns (a vector)", ShortName = "col")]
+            public Column1x1 column;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Highest degree of the polynomial features", ShortName = "d")]
             public int degree = 2;
@@ -104,16 +101,15 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
 
             public void Write(ModelSaveContext ctx, IHost host)
             {
-                ctx.Writer.Write(inputColumn);
-                ctx.Writer.Write(outputColumn);
+                ctx.Writer.Write(column.ToLine());
                 ctx.Writer.Write(degree);
                 ctx.Writer.Write(numThreads ?? -1);
             }
 
             public void Read(ModelLoadContext ctx, IHost host)
             {
-                inputColumn = ctx.Reader.ReadString();
-                outputColumn = ctx.Reader.ReadString();
+                var scol = ctx.Reader.ReadString();
+                column = Column1x1.Parse(scol);
                 degree = ctx.Reader.ReadInt32();
                 int nb = ctx.Reader.ReadInt32();
                 numThreads = nb > 0 ? (int?)nb : null;
@@ -141,17 +137,14 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
             _host = env.Register("PolynomialTransform");
             _host.CheckValue(args, "args");                 // Checks values are valid.
             _host.CheckValue(input, "input");
-            _host.CheckValue(args.inputColumn, "inputColumn");
+            _host.CheckValue(args.column.Source, "inputColumn");
             _host.Check(args.degree > 1, "degree must be > 1");
-
-            if (string.IsNullOrEmpty(args.outputColumn))
-                args.outputColumn = args.inputColumn;
 
             _input = input;
 
             int ind;
-            if (!input.Schema.TryGetColumnIndex(args.inputColumn, out ind))
-                throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.inputColumn);
+            if (!input.Schema.TryGetColumnIndex(args.column.Source, out ind))
+                throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.column.Source);
             _args = args;
             _transform = CreateTemplatedTransform();
         }
@@ -242,8 +235,8 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
 
             // The column is a vector.
             int index;
-            if (!_input.Schema.TryGetColumnIndex(_args.inputColumn, out index))
-                throw _host.Except("Unable to find '{0}'", _args.inputColumn);
+            if (!_input.Schema.TryGetColumnIndex(_args.column.Source, out index))
+                throw _host.Except("Unable to find '{0}'", _args.column.Source);
 
             var typeCol = _input.Schema.GetColumnType(index);
             if (!typeCol.IsVector)
@@ -304,8 +297,8 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                 _multiplication = multiplication;
                 using (var ch = _host.Start("PolynomialState"))
                 {
-                    if (!input.Schema.TryGetColumnIndex(args.inputColumn, out _inputCol))
-                        throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.inputColumn);
+                    if (!input.Schema.TryGetColumnIndex(args.column.Source, out _inputCol))
+                        throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.column.Source);
                     var type = input.Schema.GetColumnType(_inputCol);
                     if (!type.IsVector)
                         throw _host.Except("Input column type must be a vector.");
@@ -318,7 +311,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                     ch.Trace("PolynomialTransform {0}->{1}.", dim, size);
 
                     // We extend the input schema. The new type has the same type as the input.
-                    _schema = new ExtendedSchema(input.Schema, new[] { args.outputColumn }, new[] { new VectorType(type.AsVector.ItemType, size) });
+                    _schema = new ExtendedSchema(input.Schema, new[] { args.column.Name }, new[] { new VectorType(type.AsVector.ItemType, size) });
                 }
             }
 

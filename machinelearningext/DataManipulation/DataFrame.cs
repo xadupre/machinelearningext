@@ -628,8 +628,10 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         /// <summary>
         /// Approximated comparison between two dataframes.
+        /// It returns 0 if the difference is below the precision
+        /// or the difference otherwise, Inf if shapes or schema are different.
         /// </summary>
-        public bool AlmostEquals(DataFrame df, float precision = 1e-6f)
+        public double AlmostEquals(DataFrame df, double precision = 1e-6f)
         {
             return _data.AlmostEquals(df._data, precision);
         }

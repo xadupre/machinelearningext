@@ -63,55 +63,27 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
             minMax = 1
         }
 
-        public sealed class Column : OneToOneColumn
-        {
-            public static Column Parse(string str)
-            {
-                Contracts.AssertNonEmpty(str);
-
-                var res = new Column();
-                if (res.TryParse(str))
-                    return res;
-                return null;
-            }
-
-            public bool TryUnparse(StringBuilder sb)
-            {
-                Contracts.AssertValue(sb);
-                return TryUnparseCore(sb);
-            }
-        }
-
         /// <summary>
         /// Parameters which defines the transform.
         /// </summary>
         public class Arguments
         {
             [Argument(ArgumentType.MultipleUnique, HelpText = "Columns to normalize.", ShortName = "col")]
-            public Column[] columns;
+            public Column1x1[] columns;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Scaling strategy.", ShortName = "scale")]
             public ScalerStrategy scaling = ScalerStrategy.meanVar;
 
             public void Write(ModelSaveContext ctx, IHost host)
             {
-                ctx.Writer.Write(string.Join(",", columns.Select(c => string.Format("{0}:{1}", c.Source, c.Name))));
+                ctx.Writer.Write(Column1x1.ArrayToLine(columns));
                 ctx.Writer.Write((int)scaling);
             }
 
             public void Read(ModelLoadContext ctx, IHost host)
             {
                 string sr = ctx.Reader.ReadString();
-                host.CheckValue(sr, "columns");
-                var spl = sr.Split(',');
-                columns = new Column[spl.Length];
-                for (int i = 0; i < spl.Length; ++i)
-                {
-                    var sub = spl[i].Split(':');
-                    if (sub.Length != 2)
-                        throw host.Except("Unable to parse '{0}'.", spl[i]);
-                    columns[i] = new Column() { Source = sub[0], Name = sub[1] };
-                }
+                columns = Column1x1.ParseMulti(sr);
                 scaling = (ScalerStrategy)ctx.Reader.ReadInt32();
             }
 
