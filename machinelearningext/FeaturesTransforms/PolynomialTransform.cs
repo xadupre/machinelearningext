@@ -15,7 +15,7 @@ using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
 using PolynomialTransform = Microsoft.ML.Ext.FeaturesTransforms.PolynomialTransform;
-using EntryPointPolynom = Microsoft.ML.Ext.FeaturesTransforms.EntryPointPolynom;
+using EntryPointPolynomial = Microsoft.ML.Ext.FeaturesTransforms.EntryPointPolynomial;
 
 [assembly: LoadableClass(PolynomialTransform.Summary, typeof(PolynomialTransform),
     typeof(PolynomialTransform.Arguments), typeof(SignatureDataTransform),
@@ -25,8 +25,8 @@ using EntryPointPolynom = Microsoft.ML.Ext.FeaturesTransforms.EntryPointPolynom;
     null, typeof(SignatureLoadDataTransform),
     PolynomialTransform.LongName, PolynomialTransform.LoaderSignature, PolynomialTransform.ShortName)]
 
-[assembly: LoadableClass(typeof(void), typeof(EntryPointPolynom), null,
-                         typeof(SignatureEntryPointModule), PolynomialTransform.ShortName)]
+[assembly: LoadableClass(typeof(void), typeof(EntryPointPolynomial), null,
+                         typeof(SignatureEntryPointModule), PolynomialTransform.EntryPointName)]
 
 
 namespace Microsoft.ML.Ext.FeaturesTransforms
@@ -44,7 +44,8 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                                       "each time it is needed. Use CacheTransform.";
         public const string RegistrationName = LoaderSignature;
         public const string ShortName = "Poly";
-        public const string LongName = "Polynom Transform";
+        public const string LongName = "Polynomial Transform";
+        public const string EntryPointName = "Polynomial";
 
         /// <summary>
         /// Identify the object for dynamic instantiation.
@@ -84,10 +85,10 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         /// <summary>
         /// Parameters which defines the transform.
         /// </summary>
-        public class Arguments
+        public class Arguments : BaseTransformArguments
         {
             [Argument(ArgumentType.Required, HelpText = "Features columns (a vector)", ShortName = "col")]
-            public Column1x1 column;
+            public Column1x1[] columns;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Highest degree of the polynomial features", ShortName = "d")]
             public int degree = 2;
@@ -101,15 +102,15 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
 
             public void Write(ModelSaveContext ctx, IHost host)
             {
-                ctx.Writer.Write(column.ToLine());
+                ctx.Writer.Write(Column1x1.ArrayToLine(columns));
                 ctx.Writer.Write(degree);
                 ctx.Writer.Write(numThreads ?? -1);
             }
 
             public void Read(ModelLoadContext ctx, IHost host)
             {
-                var scol = ctx.Reader.ReadString();
-                column = Column1x1.Parse(scol);
+                string sr = ctx.Reader.ReadString();
+                columns = Column1x1.ParseMulti(sr);
                 degree = ctx.Reader.ReadInt32();
                 int nb = ctx.Reader.ReadInt32();
                 numThreads = nb > 0 ? (int?)nb : null;
@@ -137,14 +138,15 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
             _host = env.Register("PolynomialTransform");
             _host.CheckValue(args, "args");                 // Checks values are valid.
             _host.CheckValue(input, "input");
-            _host.CheckValue(args.column.Source, "inputColumn");
+            _host.CheckValue(args.columns, "columns");
             _host.Check(args.degree > 1, "degree must be > 1");
 
             _input = input;
 
             int ind;
-            if (!input.Schema.TryGetColumnIndex(args.column.Source, out ind))
-                throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.column.Source);
+            foreach (var col in args.columns)
+                if (!input.Schema.TryGetColumnIndex(col.Source, out ind))
+                    throw _host.ExceptParam("columns", "Column '{0}' not found in schema.", col.Source);
             _args = args;
             _transform = CreateTemplatedTransform();
         }
@@ -234,9 +236,12 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
             IDataTransform transform = null;
 
             // The column is a vector.
-            int index;
-            if (!_input.Schema.TryGetColumnIndex(_args.column.Source, out index))
-                throw _host.Except("Unable to find '{0}'", _args.column.Source);
+            int index = -1;
+            foreach (var col in _args.columns)
+                if (!_input.Schema.TryGetColumnIndex(col.Source, out index))
+                    throw _host.Except("Unable to find '{0}'", col.Source);
+            if (_args.columns.Length != 1)
+                throw _host.Except("Only one column allowed not '{0}'.", _args.columns.Length);
 
             var typeCol = _input.Schema.GetColumnType(index);
             if (!typeCol.IsVector)
@@ -295,10 +300,11 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                 // _lock = new object();
                 _args = args;
                 _multiplication = multiplication;
+                var column = _args.columns[0];
                 using (var ch = _host.Start("PolynomialState"))
                 {
-                    if (!input.Schema.TryGetColumnIndex(args.column.Source, out _inputCol))
-                        throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.column.Source);
+                    if (!input.Schema.TryGetColumnIndex(column.Source, out _inputCol))
+                        throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", column.Source);
                     var type = input.Schema.GetColumnType(_inputCol);
                     if (!type.IsVector)
                         throw _host.Except("Input column type must be a vector.");
@@ -311,7 +317,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                     ch.Trace("PolynomialTransform {0}->{1}.", dim, size);
 
                     // We extend the input schema. The new type has the same type as the input.
-                    _schema = new ExtendedSchema(input.Schema, new[] { args.column.Name }, new[] { new VectorType(type.AsVector.ItemType, size) });
+                    _schema = new ExtendedSchema(input.Schema, new[] { column.Name }, new[] { new VectorType(type.AsVector.ItemType, size) });
                 }
             }
 
@@ -574,19 +580,22 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         #endregion
     }
 
-    public static class EntryPointPolynom
+    public static class EntryPointPolynomial
     {
-        [TlcModule.EntryPoint(Name = "Transforms.Poly", Desc = ScalerTransform.Summary,
-                              UserName = ScalerTransform.ShortName, ShortName = "Poly")]
-        public static CommonOutputs.TransformOutput Poly(IHostEnvironment env, PolynomialTransform.Arguments input, IDataView data)
+        [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms.Polynomial", Desc = PolynomialTransform.Summary,
+                              UserName = PolynomialTransform.EntryPointName)]
+        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform.Arguments input)
         {
             Contracts.CheckValue(env, nameof(env));
-            var host = env.Register("Polynom");
-            host.CheckValue(input, nameof(input));
-            EntryPointUtils.CheckInputArgs(host, input);
+            env.CheckValue(input, nameof(input));
 
-            var xf = new PolynomialTransform(host, input, data);
-            return new CommonOutputs.TransformOutput { Model = new TransformModel(env, xf, data), OutputData = xf };
+            var h = EntryPointUtils.CheckArgsAndCreateHost(env, PolynomialTransform.EntryPointName, input);
+            var view = new PolynomialTransform(h, input, input.Data);
+            return new CommonOutputs.TransformOutput()
+            {
+                Model = new TransformModel(h, view, input.Data),
+                OutputData = view
+            };
         }
     }
 }

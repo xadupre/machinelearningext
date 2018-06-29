@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Ext.TestHelper;
 using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Trainers;
+using Microsoft.ML.Transforms;
 using Microsoft.ML.Ext.PipelineHelper;
 using Microsoft.ML.Ext.FeaturesTransforms;
 using Microsoft.ML.Ext.DataManipulation;
@@ -71,7 +73,7 @@ namespace TestMachineLearningExt
             {
                 var args = new PolynomialTransform.Arguments
                 {
-                    column = new Column1x1() { Source = "X", Name = "poly" },
+                    columns = new[] { new Column1x1() { Source = "X", Name = "poly" } },
                     degree = degree,
                 };
 
@@ -145,11 +147,11 @@ namespace TestMachineLearningExt
 
             // This function serializes the output data twice, once before saving the pipeline, once after loading the pipeline.
             // It checks it gives the same result.
-            TransformHelper.SerializationTestTransform(host, outModelFilePath, data, loader, outData, outData2);
+            TestTransformHelper.SerializationTestTransform(host, outModelFilePath, data, loader, outData, outData2);
         }
 
         [TestMethod]
-        public void TestPolyniomTransformNumericValues()
+        public void TestPolynomialTransformNumericValues()
         {
             var host = EnvHelper.NewTestEnvironment();
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
@@ -160,6 +162,25 @@ namespace TestMachineLearningExt
             var exp = "A,B,X.0,X.1,X.2,X.3,X.4\n1.0,2.0,1.0,2.0,1.0,2.0,4.0\n2.0,3.0,2.0,3.0,4.0,6.0,9.0\n10.0,11.0,10.0,11.0,100.0,110.0,121.0";
             var dfexp = DataFrame.ReadStr(exp);
             Assert.AreEqual(dfexp.AlmostEquals(res), 0);
+        }
+
+        [TestMethod]
+        public void TestPolynomialTransformLearningPipeline()
+        {
+            var env = EnvHelper.NewTestEnvironment(conc: 1);
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+
+            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+            var learningPipeline = new GenericLearningPipeline(conc: 1);
+            learningPipeline.Add(importData);
+            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Microsoft.ML.Ext.EntryPoints.Polynomial("Features"));
+            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            var predictor = learningPipeline.Train();
+            var predictions = predictor.Predict(df);
+            var dfout = DataFrame.ReadView(predictions);
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 11));
         }
 
         #endregion
@@ -280,7 +301,7 @@ namespace TestMachineLearningExt
 
             // This function serializes the output data twice, once before saving the pipeline, once after loading the pipeline.
             // It checks it gives the same result.
-            TransformHelper.SerializationTestTransform(host, outModelFilePath, data, loader, outData, outData2);
+            TestTransformHelper.SerializationTestTransform(host, outModelFilePath, data, loader, outData, outData2);
         }
 
         [TestMethod]
@@ -311,6 +332,25 @@ namespace TestMachineLearningExt
             var exp = "A,B,X.0,X.1\n1.0,2.0,0.0,0.0\n2.0,3.0,0.11111111,0.11111111\n10.0,11.0,1.0,1.0";
             var dfexp = DataFrame.ReadStr(exp);
             Assert.AreEqual(dfexp.AlmostEquals(res), 0);
+        }
+
+        [TestMethod]
+        public void TestScalerTransformLearningPipeline()
+        {
+            var env = EnvHelper.NewTestEnvironment(conc: 1);
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+
+            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+            var learningPipeline = new GenericLearningPipeline(conc: 1);
+            learningPipeline.Add(importData);
+            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Microsoft.ML.Ext.EntryPoints.Scaler("Features"));
+            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            var predictor = learningPipeline.Train();
+            var predictions = predictor.Predict(df);
+            var dfout = DataFrame.ReadView(predictions);
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
         }
 
         #endregion

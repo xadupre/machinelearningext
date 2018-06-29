@@ -61,6 +61,12 @@ after_test:
   - if not exist dist\Debug mkdir dist\Debug
   - copy machinelearningext\DataManipulation\bin\Release\netstandard2.0\Microsoft.ML.Ext.DataManipulation* dist\Release
   - copy machinelearningext\DataManipulation\bin\Debug\netstandard2.0\Microsoft.ML.Ext.DataManipulation* dist\Debug
+  - copy machinelearningext\EntryPoints\bin\Release\netstandard2.0\Microsoft.ML.Ext.EntryPoints* dist\Release
+  - copy machinelearningext\EntryPoints\bin\Debug\netstandard2.0\Microsoft.ML.Ext.EntryPoints* dist\Debug
+  - copy machinelearningext\FeaturesTransforms\bin\Release\netstandard2.0\Microsoft.ML.Ext.FeaturesTransforms* dist\Release
+  - copy machinelearningext\FeaturesTransforms\bin\Debug\netstandard2.0\Microsoft.ML.Ext.FeaturesTransforms* dist\Debug
+  - copy machinelearningext\NearestNeighbours\bin\Release\netstandard2.0\Microsoft.ML.Ext.NearestNeighbours* dist\Release
+  - copy machinelearningext\NearestNeighbours\bin\Debug\netstandard2.0\Microsoft.ML.Ext.NearestNeighbours* dist\Debug
   - copy machinelearningext\PipelineHelper\bin\Release\netstandard2.0\Microsoft.ML.Ext.PipelineHelper* dist\Release
   - copy machinelearningext\PipelineHelper\bin\Debug\netstandard2.0\Microsoft.ML.Ext.PipelineHelper* dist\Debug
   - copy machinelearningext\PipelineTransforms\bin\Release\netstandard2.0\Microsoft.ML.Ext.PipelineTransforms* dist\Release

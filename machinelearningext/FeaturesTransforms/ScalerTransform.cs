@@ -1,7 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,7 +26,7 @@ using EntryPointScaler = Microsoft.ML.Ext.FeaturesTransforms.EntryPointScaler;
     ScalerTransform.LongName, ScalerTransform.LoaderSignature, ScalerTransform.ShortName)]
 
 [assembly: LoadableClass(typeof(void), typeof(EntryPointScaler), null,
-    typeof(SignatureEntryPointModule), ScalerTransform.ShortName)]
+    typeof(SignatureEntryPointModule), ScalerTransform.EntryPointName)]
 
 
 namespace Microsoft.ML.Ext.FeaturesTransforms
@@ -42,6 +41,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         public const string RegistrationName = LoaderSignature;
         public const string ShortName = "Scaler";
         public const string LongName = "Scaler Transform";
+        public const string EntryPointName = ShortName;
 
         /// <summary>
         /// Identify the object for dynamic instantiation.
@@ -66,7 +66,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         /// <summary>
         /// Parameters which defines the transform.
         /// </summary>
-        public class Arguments
+        public class Arguments : BaseTransformArguments
         {
             [Argument(ArgumentType.MultipleUnique, HelpText = "Columns to normalize.", ShortName = "col")]
             public Column1x1[] columns;
@@ -131,20 +131,20 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         public void Save(ModelSaveContext ctx)
         {
             _host.CheckValue(ctx, "ctx");
-            if (_scalingFactors == null)
-                throw _host.ExceptValue("The transform cannot be saved without being trained.");
             ctx.CheckAtModel();
             ctx.SetVersionInfo(GetVersionInfo());
             _args.Write(ctx, _host);
-            ctx.Writer.Write(_scalingStat.Count);
-            foreach (var pair in _scalingStat)
+            ctx.Writer.Write(_scalingStat == null ? 0 : _scalingStat.Count);
+            if (_scalingFactors != null)
             {
-                ctx.Writer.Write(pair.Key);
-                ctx.Writer.Write(pair.Value.Count);
-                foreach (var val in pair.Value)
-                    val.Write(ctx);
+                foreach (var pair in _scalingStat)
+                {
+                    ctx.Writer.Write(pair.Key);
+                    ctx.Writer.Write(pair.Value.Count);
+                    foreach (var val in pair.Value)
+                        val.Write(ctx);
+                }
             }
-            _extendedSchema = ComputeExtendedSchema();
         }
 
         private ScalerTransform(IHost host, ModelLoadContext ctx, IDataView input)
@@ -159,18 +159,26 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
             _args = new Arguments();
             _args.Read(ctx, _host);
             int nbStat = ctx.Reader.ReadInt32();
-            _scalingStat = new Dictionary<string, List<ColumnStatObs>>();
-            for (int i = 0; i < nbStat; ++i)
-            {
-                string key = ctx.Reader.ReadString();
-                int nb = ctx.Reader.ReadInt32();
-                var li = new List<ColumnStatObs>();
-                for (int k = 0; k < nb; ++k)
-                    li.Add(new ColumnStatObs(ctx));
-                _scalingStat[key] = li;
-            }
             _extendedSchema = ComputeExtendedSchema();
-            _scalingFactors = GetScalingParameters();
+            if (nbStat == 0)
+            {
+                _scalingFactors = null;
+                _scalingStat = null;
+            }
+            else
+            {
+                _scalingStat = new Dictionary<string, List<ColumnStatObs>>();
+                for (int i = 0; i < nbStat; ++i)
+                {
+                    string key = ctx.Reader.ReadString();
+                    int nb = ctx.Reader.ReadInt32();
+                    var li = new List<ColumnStatObs>();
+                    for (int k = 0; k < nb; ++k)
+                        li.Add(new ColumnStatObs(ctx));
+                    _scalingStat[key] = li;
+                }
+                _scalingFactors = GetScalingParameters();
+            }
         }
 
         ISchema ComputeExtendedSchema()
@@ -594,17 +602,20 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
 
     public static class EntryPointScaler
     {
-        [TlcModule.EntryPoint(Name = "Transforms.Scaler", Desc = ScalerTransform.Summary,
-                              UserName = ScalerTransform.ShortName, ShortName = "Scaler")]
-        public static CommonOutputs.TransformOutput Scaler(IHostEnvironment env, ScalerTransform.Arguments input, IDataView data)
+        [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms.Scaler", Desc = ScalerTransform.Summary,
+                              UserName = ScalerTransform.EntryPointName)]
+        public static CommonOutputs.TransformOutput Scaler(IHostEnvironment env, ScalerTransform.Arguments input)
         {
             Contracts.CheckValue(env, nameof(env));
-            var host = env.Register("Scaler");
-            host.CheckValue(input, nameof(input));
-            EntryPointUtils.CheckInputArgs(host, input);
+            env.CheckValue(input, nameof(input));
 
-            var xf = new ScalerTransform(host, input, data);
-            return new CommonOutputs.TransformOutput { Model = new TransformModel(env, xf, data), OutputData = xf };
+            var h = EntryPointUtils.CheckArgsAndCreateHost(env, ScalerTransform.EntryPointName, input);
+            var view = new ScalerTransform(h, input, input.Data);
+            return new CommonOutputs.TransformOutput()
+            {
+                Model = new TransformModel(h, view, input.Data),
+                OutputData = view
+            };
         }
     }
 }

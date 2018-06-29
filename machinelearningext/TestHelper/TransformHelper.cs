@@ -8,7 +8,7 @@ using Microsoft.ML.Runtime.Data;
 
 namespace Microsoft.ML.Ext.TestHelper
 {
-    public static class TransformHelper
+    public static class TestTransformHelper
     {
         /// <summary>
         /// Finalize the test on a transform, calls the transform,

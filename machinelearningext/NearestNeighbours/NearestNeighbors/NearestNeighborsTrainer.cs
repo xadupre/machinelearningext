@@ -1,0 +1,146 @@
+﻿// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Runtime.Training;
+
+
+namespace Microsoft.ML.Ext.NearestNeighbours
+{
+    public interface INearestNeighborsPredictor : IPredictor
+    {
+    }
+
+    /// <summary>
+    /// Train a MultiToBinary predictor. It multiplies the rows by the number of classes to predict.
+    /// (multi class problem).
+    /// </summary>
+    public abstract class NearestNeighborsTrainer : TrainerBase<RoleMappedData, INearestNeighborsPredictor>
+    {
+        #region parameters / command line
+
+        /// <summary>
+        /// Parameters which defines the transform.
+        /// </summary>
+        public class Arguments : NearestNeighborsArguments
+        {
+        }
+
+        #endregion
+
+        #region internal members / accessors
+
+        protected readonly Arguments _args;
+        private INearestNeighborsPredictor _predictor;
+
+        public override PredictionKind PredictionKind { get { return _predictor.PredictionKind; } }
+
+        public override bool NeedNormalization { get { return false; } }
+        public override bool NeedCalibration { get { return false; } }
+        public override bool WantCaching { get { return false; } }
+
+        #endregion
+
+        #region public constructor / serialization / load / save
+
+        /// <summary>
+        /// Create a NearestNeighborsTrainer transform.
+        /// </summary>
+        public NearestNeighborsTrainer(IHostEnvironment env, Arguments args, string loaderSignature)
+            : base(env, loaderSignature)
+        {
+            Host.CheckValue(args, "args");
+            Host.Check(args.k > 0, "k must be > 0.");
+            _args = args;
+        }
+
+        public override INearestNeighborsPredictor CreatePredictor()
+        {
+            Host.Assert(_predictor != null);
+            return _predictor;
+        }
+
+        public override void Train(RoleMappedData data)
+        {
+            Contracts.CheckValue(data, "data");
+            data.CheckFeatureFloatVector();
+
+            using (var ch = Host.Start("Training kNN"))
+            {
+                // Train one-vs-all models.
+                _predictor = TrainPredictor(ch, data);
+                ch.Done();
+            }
+        }
+
+        /// <summary>
+        /// Train the predictor.
+        /// </summary>
+        protected INearestNeighborsPredictor TrainPredictor(IChannel ch, RoleMappedData data)
+        {
+            var labType = data.Schema.Label.Type;
+            var initialLabKind = labType.RawKind;
+            INearestNeighborsPredictor predictor;
+
+            switch (initialLabKind)
+            {
+                case DataKind.BL:
+                    predictor = TrainPredictorLabel<DvBool>(ch, data);
+                    break;
+                case DataKind.R4:
+                    predictor = TrainPredictorLabel<float>(ch, data);
+                    break;
+                case DataKind.U1:
+                    predictor = TrainPredictorLabel<byte>(ch, data);
+                    break;
+                case DataKind.U2:
+                    predictor = TrainPredictorLabel<ushort>(ch, data);
+                    break;
+                case DataKind.U4:
+                    predictor = TrainPredictorLabel<uint>(ch, data);
+                    break;
+                default:
+                    throw ch.ExceptNotSupp("Unsupported type for a label.");
+            }
+
+            Host.Assert(predictor != null);
+            return predictor;
+        }
+
+        private INearestNeighborsPredictor TrainPredictorLabel<TLabel>(IChannel ch, RoleMappedData data)
+            where TLabel : IComparable<TLabel>
+        {
+            int featureIndex = data.Schema.Feature.Index;
+            int labelIndex = data.Schema.Label.Index;
+            int idIndex = -1;
+            int weightIndex = data.Schema.Weight == null ? -1 : data.Schema.Weight.Index;
+            var indexes = new HashSet<int>() { featureIndex, labelIndex, weightIndex };
+            if (!string.IsNullOrEmpty(_args.colId) && data.Schema.Schema.TryGetColumnIndex(_args.colId, out idIndex))
+                indexes.Add(idIndex);
+            if (idIndex != -1)
+            {
+                var colType = data.Schema.Schema.GetColumnType(idIndex);
+                if (colType.IsVector || colType.RawKind != DataKind.I8)
+                    throw ch.Except("Column '{0}' must be of type '{1}' not '{2}'", _args.colId, DataKind.I8, colType);
+            }
+
+            Dictionary<long, Tuple<TLabel, float>> merged;
+            var kdtrees = NearestNeighborsBuilder.NearestNeighborsBuild<TLabel>(ch, data.Data, featureIndex, labelIndex,
+                                idIndex, weightIndex, out merged, _args);
+
+            // End.
+            return CreateTrainedPredictor(kdtrees.Trees, merged);
+        }
+
+        protected virtual INearestNeighborsPredictor CreateTrainedPredictor<TLabel>(KdTree[] kdtrees,
+            Dictionary<long, Tuple<TLabel, float>> labelsWeights)
+            where TLabel : IComparable<TLabel>
+        {
+            throw new NotImplementedException("This function is different for each kind of classifier.");
+        }
+
+        #endregion
+    }
+}

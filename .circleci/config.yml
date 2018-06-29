@@ -175,6 +175,12 @@ jobs:
             mkdir -p test-reports/dist/Release
             cp -r  machinelearningext/DataManipulation/bin/Release/netstandard2.0/Microsoft.ML.Ext.DataManipulation* test-reports/dist/Release
             cp -r  machinelearningext/DataManipulation/bin/Debug/netstandard2.0/Microsoft.ML.Ext.DataManipulation* test-reports/dist/Debug
+            cp -r  machinelearningext/EntryPoints/bin/Release/netstandard2.0/Microsoft.ML.Ext.EntryPoints* test-reports/dist/Release
+            cp -r  machinelearningext/EntryPoints/bin/Debug/netstandard2.0/Microsoft.ML.Ext.EntryPoints* test-reports/dist/Debug
+            cp -r  machinelearningext/FeaturesTransforms/bin/Release/netstandard2.0/Microsoft.ML.Ext.FeaturesTransforms* test-reports/dist/Release
+            cp -r  machinelearningext/FeaturesTransforms/bin/Debug/netstandard2.0/Microsoft.ML.Ext.FeaturesTransforms* test-reports/dist/Debug
+            cp -r  machinelearningext/NearestNeighbours/bin/Release/netstandard2.0/Microsoft.ML.Ext.NearestNeighbours* test-reports/dist/Release
+            cp -r  machinelearningext/NearestNeighbours/bin/Debug/netstandard2.0/Microsoft.ML.Ext.NearestNeighbours* test-reports/dist/Debug
             cp -r  machinelearningext/PipelineHelper/bin/Release/netstandard2.0/Microsoft.ML.Ext.PipelineHelper* test-reports/dist/Release
             cp -r  machinelearningext/PipelineHelper/bin/Debug/netstandard2.0/Microsoft.ML.Ext.PipelineHelper* test-reports/dist/Debug
             cp -r  machinelearningext/PipelineTransforms/bin/Release/netstandard2.0/Microsoft.ML.Ext.PipelineTransforms* test-reports/dist/Release

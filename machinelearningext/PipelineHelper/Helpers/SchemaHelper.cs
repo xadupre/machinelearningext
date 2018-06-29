@@ -6,6 +6,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.Runtime.Data.Conversion;
 
 
 namespace Microsoft.ML.Ext.PipelineHelper
@@ -413,6 +414,58 @@ namespace Microsoft.ML.Ext.PipelineHelper
             if (typeof(TLabel) == typeof(DvText) || typeof(TLabel) == typeof(string))
                 return DataKind.TX;
             throw Contracts.ExceptNotSupp("Unsupported output type {0}.", typeof(TLabel));
+        }
+
+        public static ColumnType GetColumnType<TLabel>()
+        {
+            var kind = GetKind<TLabel>();
+            switch (kind)
+            {
+                case DataKind.BL:
+                    return BoolType.Instance;
+                case DataKind.U1:
+                    return NumberType.U1;
+                case DataKind.U2:
+                    return NumberType.U2;
+                case DataKind.U4:
+                    return NumberType.U4;
+                case DataKind.I4:
+                    return NumberType.I4;
+                case DataKind.R4:
+                    return NumberType.R4;
+                default:
+                    throw Contracts.ExceptNotSupp($"Unsupported output type: {kind}.");
+            }
+        }
+
+        public static ValueMapper<TLabel, TDest> GetConverter<TLabel, TDest>(out bool identity)
+        {
+            var col1 = GetColumnType<TLabel>();
+            var col2 = GetColumnType<TDest>();
+            if (typeof(TLabel) == typeof(float))
+            {
+                if (typeof(TDest) == typeof(uint))
+                {
+                    ValueMapper<float, uint> temp = (ref float src, ref uint dst) =>
+                    {
+                        if (src < 0)
+                            throw Contracts.ExceptValue("Unable to converter {0} '{1}' into {2}.", typeof(float).ToString(), src, typeof(uint));
+                        dst = (uint)src;
+                    };
+                    identity = false;
+                    return temp as ValueMapper<TLabel, TDest>;
+                }
+                else if (typeof(TDest) == typeof(int))
+                {
+                    ValueMapper<float, int> temp = (ref float src, ref int dst) =>
+                    {
+                        dst = (int)src;
+                    };
+                    identity = false;
+                    return temp as ValueMapper<TLabel, TDest>;
+                }
+            }
+            return Conversions.Instance.GetStandardConversion<TLabel, TDest>(col1, col2, out identity);
         }
     }
 }
