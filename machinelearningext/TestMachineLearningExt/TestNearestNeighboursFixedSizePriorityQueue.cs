@@ -4,13 +4,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.ML.Ext.NearestNeighbours;
+using Microsoft.ML.Ext.NearestNeighbors;
 
 
 namespace TestMachineLearningExt
 {
     [TestClass()]
-    public class TestNearestNeighboursFixedSizePriorityQueue
+    public class TestNearestNeighborsFixedSizePriorityQueue
     {
         private static readonly Random Rnd = new Random();
         private static readonly object syncLock = new object();

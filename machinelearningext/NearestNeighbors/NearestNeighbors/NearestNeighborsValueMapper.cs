@@ -10,7 +10,7 @@ using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Ext.PipelineHelper;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbours
+namespace Microsoft.ML.Ext.NearestNeighbors
 {
     public interface INearestNeighborsValueMapper
     {
@@ -200,7 +200,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
                     hist[key] = 0;
             }
 
-            var neighbors = trees.NearestNNeighbours(input, k);
+            var neighbors = trees.NearestNNeighbors(input, k);
             TLabel lab;
             foreach (var pair in neighbors)
             {
@@ -259,7 +259,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
             }
 
             int dec = typeof(TLabel) == typeof(float) ? 0 : 1;
-            var neighbors = trees.NearestNNeighbours(input, k);
+            var neighbors = trees.NearestNNeighbors(input, k);
             TLabel lab;
             foreach (var pair in neighbors)
             {

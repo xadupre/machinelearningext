@@ -10,7 +10,7 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Ext.PipelineHelper;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbours
+namespace Microsoft.ML.Ext.NearestNeighbors
 {
     public interface INearestNeighborsPredictor : IPredictor
     {

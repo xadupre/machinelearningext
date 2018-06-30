@@ -11,10 +11,10 @@ using Microsoft.ML.Ext.PipelineHelper;
 // The following files makes the object visible to maml.
 // This way, it can be added to any pipeline.
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using NearestNeighborsTrainer = Microsoft.ML.Ext.NearestNeighbours.NearestNeighborsTrainer;
-using NearestNeighborsBinaryClassificationTrainer = Microsoft.ML.Ext.NearestNeighbours.NearestNeighborsBinaryClassificationTrainer;
-using NearestNeighborsMultiClassClassificationTrainer = Microsoft.ML.Ext.NearestNeighbours.NearestNeighborsMultiClassClassificationTrainer;
-using EntryPointNearestNeighborsBc = Microsoft.ML.Ext.NearestNeighbours.EntryPointNearestNeighborsBc;
+using NearestNeighborsTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsTrainer;
+using NearestNeighborsBinaryClassificationTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsBinaryClassificationTrainer;
+using NearestNeighborsMultiClassClassificationTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsMultiClassClassificationTrainer;
+using EntryPointNearestNeighborsBc = Microsoft.ML.Ext.NearestNeighbors.EntryPointNearestNeighborsBc;
 
 [assembly: LoadableClass(NearestNeighborsBinaryClassificationTrainer.Summary,
     typeof(NearestNeighborsBinaryClassificationTrainer),
@@ -36,7 +36,7 @@ using EntryPointNearestNeighborsBc = Microsoft.ML.Ext.NearestNeighbours.EntryPoi
     typeof(SignatureEntryPointModule), NearestNeighborsBinaryClassificationTrainer.EntryPointName)]
 
 
-namespace Microsoft.ML.Ext.NearestNeighbours
+namespace Microsoft.ML.Ext.NearestNeighbors
 {
     public class NearestNeighborsBinaryClassificationTrainer : NearestNeighborsTrainer
     {

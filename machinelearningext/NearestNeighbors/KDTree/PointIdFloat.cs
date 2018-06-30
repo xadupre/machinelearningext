@@ -9,7 +9,7 @@ using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Internal.Utilities;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbours
+namespace Microsoft.ML.Ext.NearestNeighbors
 {
     /// <summary>
     /// Common interface for observations clustered with DBScan and Optics algorithms.

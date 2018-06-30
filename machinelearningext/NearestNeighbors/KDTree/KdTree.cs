@@ -8,7 +8,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbours
+namespace Microsoft.ML.Ext.NearestNeighbors
 {
     /// <summary>
     /// Implements a kd tree.
@@ -307,9 +307,9 @@ namespace Microsoft.ML.Ext.NearestNeighbours
         /// <summary>
         /// Returns the N points in the tree which are closest to the target.
         /// </summary>
-        public IList<IPointIdFloat> NearestNNeighbours(IPointIdFloat target, int N)
+        public IList<IPointIdFloat> NearestNNeighbors(IPointIdFloat target, int N)
         {
-            var nns = NearestNNeighboursAndDistance(target, N)
+            var nns = NearestNNeighborsAndDistance(target, N)
                                           .ToList()
                                           .OrderBy(kvp => -kvp.Key)
                                           .Select(kvp => kvp.Value)
@@ -331,7 +331,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
             return nns;
         }
 
-        public FixedSizePriorityQueue<float, IPointIdFloat> NearestNNeighboursAndDistance(IPointIdFloat target, int N)
+        public FixedSizePriorityQueue<float, IPointIdFloat> NearestNNeighborsAndDistance(IPointIdFloat target, int N)
         {
             ValidatePoint(target);
             ValidateSize(N, "N");
@@ -340,7 +340,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
                 throw new ArgumentException("N must be positive.");
 
             var results = new FixedSizePriorityQueue<float, IPointIdFloat>(N);
-            var nns = root.NearestNNeighbours(target, results, _distFunc);
+            var nns = root.NearestNNeighbors(target, results, _distFunc);
             return nns;
         }
 
@@ -413,7 +413,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
             bool Contains(IPointIdFloat p);
             void PointsWithinDistance(IPointIdFloat center, float distance, ref IList<IPointIdFloat> results, Func<VBuffer<float>, VBuffer<float>, float> distFunc);
             IPointIdFloat NearestNeighbour(IPointIdFloat target, IPointIdFloat nn, ref float nnDist, Func<VBuffer<float>, VBuffer<float>, float> distFunc);
-            FixedSizePriorityQueue<float, IPointIdFloat> NearestNNeighbours(IPointIdFloat target, FixedSizePriorityQueue<float, IPointIdFloat> nns, Func<VBuffer<float>, VBuffer<float>, float> distFunc);
+            FixedSizePriorityQueue<float, IPointIdFloat> NearestNNeighbors(IPointIdFloat target, FixedSizePriorityQueue<float, IPointIdFloat> nns, Func<VBuffer<float>, VBuffer<float>, float> distFunc);
             void Save(ModelSaveContext ctx);
             IEnumerable<IKdTreeNode> EnumerateNodes();
         }
@@ -580,7 +580,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
                 return nn;
             }
 
-            public FixedSizePriorityQueue<float, IPointIdFloat> NearestNNeighbours(IPointIdFloat target,
+            public FixedSizePriorityQueue<float, IPointIdFloat> NearestNNeighbors(IPointIdFloat target,
                                                         FixedSizePriorityQueue<float, IPointIdFloat> nns,
                                                         Func<VBuffer<float>, VBuffer<float>, float> distFunc)
             {
@@ -607,11 +607,11 @@ namespace Microsoft.ML.Ext.NearestNeighbours
                     fartherBranch = left;
                 }
 
-                nns = closestBranch.NearestNNeighbours(target, nns, distFunc);
+                nns = closestBranch.NearestNNeighbors(target, nns, distFunc);
 
                 nthNnDist = -nns.Peek().GetValueOrDefault(InfinitePoint).Key;
                 if (Math.Abs(targetKey - key) <= nthNnDist)
-                    nns = fartherBranch.NearestNNeighbours(target, nns, distFunc);
+                    nns = fartherBranch.NearestNNeighbors(target, nns, distFunc);
                 return nns;
             }
         }
@@ -700,7 +700,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
                 return nn;
             }
 
-            public FixedSizePriorityQueue<float, IPointIdFloat> NearestNNeighbours(IPointIdFloat target, FixedSizePriorityQueue<float, IPointIdFloat> nns, Func<VBuffer<float>, VBuffer<float>, float> distFunc)
+            public FixedSizePriorityQueue<float, IPointIdFloat> NearestNNeighbors(IPointIdFloat target, FixedSizePriorityQueue<float, IPointIdFloat> nns, Func<VBuffer<float>, VBuffer<float>, float> distFunc)
             {
                 return nns;
             }

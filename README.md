@@ -30,7 +30,7 @@ The documentation can be build with: ``doxygen conf.dox``.
   * [Key Values](https://github.com/dotnet/machinelearning/blob/master/docs/code/KeyValues.md)
   * [VBuffer Care and Feeding](https://github.com/dotnet/machinelearning/blob/master/docs/code/VBufferCareFeeding.md)
 * [IDV File Format](https://github.com/dotnet/machinelearning/blob/master/docs/code/IdvFileFormat.md)
-* [machineleanringext](docs/index.rst)
+* [machinelearningext](docs/README.rst)
 
 ### Example 1: inner API
 

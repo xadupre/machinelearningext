@@ -4,13 +4,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.ML.Ext.NearestNeighbours;
+using Microsoft.ML.Ext.NearestNeighbors;
 
 
 namespace TestMachineLearningExt
 {
     [TestClass()]
-    public class TestNearestNeighboursKdTree
+    public class TestNearestNeighborsKdTree
     {
         private static Random rnd = new Random();
         private IPointIdFloat point1D = new PointIdFloat(0, new List<float>() { 1.0f });
@@ -535,42 +535,42 @@ namespace TestMachineLearningExt
 
         #endregion
 
-        #region NearestNNeighbours
+        #region NearestNNeighbors
 
         [TestMethod()]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ClasNearestNNeighboursNullPointTest()
+        public void ClasNearestNNeighborsNullPointTest()
         {
             KdTree kdt = new KdTree(new List<IPointIdFloat>() { new PointIdFloat(0, 1f, 2f) });
-            kdt.NearestNNeighbours(null, 1);
+            kdt.NearestNNeighbors(null, 1);
         }
 
         [TestMethod()]
         [ExpectedException(typeof(ArgumentException), "Wrong Point dimension: expected 2, got 3")]
-        public void ClasNearestNNeighboursWrongDimensionPointTest()
+        public void ClasNearestNNeighborsWrongDimensionPointTest()
         {
             KdTree kdt = new KdTree(new List<IPointIdFloat>() { new PointIdFloat(0, 1f, 2f) });
-            kdt.NearestNNeighbours(new PointIdFloat(1, 1f, 2f, 3f), 2);
+            kdt.NearestNNeighbors(new PointIdFloat(1, 1f, 2f, 3f), 2);
         }
 
         [TestMethod()]
         [ExpectedException(typeof(ArgumentException), "Argument 'N': passed 0 while it must be positive")]
-        public void ClasNearestNNeighboursInvalidSizeZeroTest()
+        public void ClasNearestNNeighborsInvalidSizeZeroTest()
         {
             KdTree kdt = new KdTree(new List<IPointIdFloat>() { new PointIdFloat(0, 1f, 2f) });
-            kdt.NearestNNeighbours(new PointIdFloat(1, 2f, 3f), 0);
+            kdt.NearestNNeighbors(new PointIdFloat(1, 2f, 3f), 0);
         }
 
         [TestMethod()]
         [ExpectedException(typeof(ArgumentException), "Argument 'N': passed -3 while it must be positive")]
-        public void ClasNearestNNeighboursInvalidSizeNegativeTest()
+        public void ClasNearestNNeighborsInvalidSizeNegativeTest()
         {
             KdTree kdt = new KdTree(new List<IPointIdFloat>() { new PointIdFloat(0, 1f, 2f, 3f) });
-            kdt.NearestNNeighbours(new PointIdFloat(1, -2f, -3f, -4f), -3);
+            kdt.NearestNNeighbors(new PointIdFloat(1, -2f, -3f, -4f), -3);
         }
 
         [TestMethod()]
-        public void ClasNearestNNeighboursTest()
+        public void ClasNearestNNeighborsTest()
         {
             var points2D = new List<IPointIdFloat>() {
                 new PointIdFloat(0, 1f, 2f),
@@ -592,25 +592,25 @@ namespace TestMachineLearningExt
             //should return the closest N points (2D)
             var kdt = new KdTree(points2D);
             Assert.IsTrue(points2D.All(p =>
-                kdt.NearestNNeighbours(p, 1).SequenceEqual(new List<IPointIdFloat>() { p })));
+                kdt.NearestNNeighbors(p, 1).SequenceEqual(new List<IPointIdFloat>() { p })));
 
             var expectedResult = new List<IPointIdFloat>() {
                 points2D[0]
             };
-            var result = kdt.NearestNNeighbours(new PointIdFloat(0, 1.1f, 1.9f), 1).ToList();
+            var result = kdt.NearestNNeighbors(new PointIdFloat(0, 1.1f, 1.9f), 1).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
 
             expectedResult = new List<IPointIdFloat>() {
                 points2D[1],
                 points2D[0]
             };
-            result = kdt.NearestNNeighbours(new PointIdFloat(1, -5f, -5f), 2).ToList();
+            result = kdt.NearestNNeighbors(new PointIdFloat(1, -5f, -5f), 2).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
 
             expectedResult = new List<IPointIdFloat>() {
                 points2D[2]
             };
-            result = kdt.NearestNNeighbours(new PointIdFloat(2, 3.01f, 2.9999f), 1).ToList();
+            result = kdt.NearestNNeighbors(new PointIdFloat(2, 3.01f, 2.9999f), 1).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
 
             expectedResult = new List<IPointIdFloat>() {
@@ -618,7 +618,7 @@ namespace TestMachineLearningExt
                 points2D[0],
                 points2D[2]
             };
-            result = kdt.NearestNNeighbours(new PointIdFloat(3, 1.6f, 2f), 3).ToList();
+            result = kdt.NearestNNeighbors(new PointIdFloat(3, 1.6f, 2f), 3).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
 
             expectedResult = new List<IPointIdFloat>() {
@@ -627,31 +627,31 @@ namespace TestMachineLearningExt
                 points2D[2],
                 points2D[1]
             };
-            result = kdt.NearestNNeighbours(new PointIdFloat(4, 1.6f, 2f), 4).ToList();
+            result = kdt.NearestNNeighbors(new PointIdFloat(4, 1.6f, 2f), 4).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
 
             expectedResult = new List<IPointIdFloat>() {
                 points2D[4],
                 points2D[2]
             };
-            result = kdt.NearestNNeighbours(new PointIdFloat(6, 160f, 2f), 2).ToList();
+            result = kdt.NearestNNeighbors(new PointIdFloat(6, 160f, 2f), 2).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
 
             //should return the closest points (3D)
             kdt = new KdTree(points3D);
             Assert.IsTrue(points3D.All(p =>
-                kdt.NearestNNeighbours(p, 1).SequenceEqual(new List<IPointIdFloat>() { p })));
+                kdt.NearestNNeighbors(p, 1).SequenceEqual(new List<IPointIdFloat>() { p })));
 
             expectedResult = new List<IPointIdFloat>() {
                 points3D[0]
             };
-            result = kdt.NearestNNeighbours(new PointIdFloat(7, 1.1f, 1.9f, 49f), 1).ToList();
+            result = kdt.NearestNNeighbors(new PointIdFloat(7, 1.1f, 1.9f, 49f), 1).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
 
             expectedResult = new List<IPointIdFloat>() {
                 points3D[1]
             };
-            result = kdt.NearestNNeighbours(new PointIdFloat(8, -5f, -5f, 1f), 1).ToList();
+            result = kdt.NearestNNeighbors(new PointIdFloat(8, -5f, -5f, 1f), 1).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
 
             expectedResult = new List<IPointIdFloat>() {
@@ -660,7 +660,7 @@ namespace TestMachineLearningExt
                 points3D[1],
 
             };
-            result = kdt.NearestNNeighbours(new PointIdFloat(10, 3.01f, 2.9999f, -1f), 3).ToList();
+            result = kdt.NearestNNeighbors(new PointIdFloat(10, 3.01f, 2.9999f, -1f), 3).ToList();
             Assert.IsTrue(expectedResult.SequenceEqual(result));
         }
 

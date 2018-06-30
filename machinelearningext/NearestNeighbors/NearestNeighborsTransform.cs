@@ -17,8 +17,8 @@ using Microsoft.ML.Ext.PipelineHelper;
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
-using NearestNeighborsTransform = Microsoft.ML.Ext.NearestNeighbours.NearestNeighborsTransform;
-using EntryPointNearestNeighbors = Microsoft.ML.Ext.NearestNeighbours.EntryPointNearestNeighbors;
+using NearestNeighborsTransform = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsTransform;
+using EntryPointNearestNeighbors = Microsoft.ML.Ext.NearestNeighbors.EntryPointNearestNeighbors;
 [assembly: LoadableClass(NearestNeighborsTransform.Summary, typeof(NearestNeighborsTransform),
     typeof(NearestNeighborsTransform.Arguments), typeof(SignatureDataTransform),
     NearestNeighborsTransform.LongName, NearestNeighborsTransform.LoaderSignature,
@@ -32,7 +32,7 @@ using EntryPointNearestNeighbors = Microsoft.ML.Ext.NearestNeighbours.EntryPoint
     typeof(SignatureEntryPointModule), NearestNeighborsTransform.EntryPointName)]
 
 
-namespace Microsoft.ML.Ext.NearestNeighbours
+namespace Microsoft.ML.Ext.NearestNeighbors
 {
     public class NearestNeighborsTransform : IDataTransform
     {
@@ -377,7 +377,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
             void RetrieveNeighbors()
             {
                 _getterFeatures(ref _tempFeatures);
-                var res = _trees.NearestNNeighbours(_tempFeatures, _k);
+                var res = _trees.NearestNNeighbors(_tempFeatures, _k);
                 if (res.Length > _distance.Length || res.Length > _distance.Count ||
                     res.Length > _distance.Values.Length || _distance.Values == null)
                 {

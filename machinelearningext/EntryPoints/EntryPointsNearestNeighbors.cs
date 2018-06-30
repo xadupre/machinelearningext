@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Ext.NearestNeighbours;
+using Microsoft.ML.Ext.NearestNeighbors;
 
 
 namespace Microsoft.ML.Ext.EntryPoints

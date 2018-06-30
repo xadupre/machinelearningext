@@ -93,17 +93,18 @@ jobs:
             bash build.sh -Debug
             cd ..
 
-      - run:
-          name: run tests machinelearning release
-          env:
-            DOTNET_CLI_TELEMETRY_OPTOUT:1
-          command: |
-            export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
-            export LANG=en_US.UTF-8
-            export DOTNET_CLI_TELEMETRY_OPTOUT=1
-            cd machinelearning
-            bash build.sh -runtests -Release
-            cd ..
+# Too long
+#      - run:
+#          name: run tests machinelearning release
+#          env:
+#            DOTNET_CLI_TELEMETRY_OPTOUT:1
+#          command: |
+#            export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
+#            export LANG=en_US.UTF-8
+#            export DOTNET_CLI_TELEMETRY_OPTOUT=1
+#            cd machinelearning
+#            bash build.sh -runtests -Release
+#            cd ..
 
       - run:
           name: publish machinelearning release
@@ -179,8 +180,8 @@ jobs:
             cp -r  machinelearningext/EntryPoints/bin/Debug/netstandard2.0/Microsoft.ML.Ext.EntryPoints* test-reports/dist/Debug
             cp -r  machinelearningext/FeaturesTransforms/bin/Release/netstandard2.0/Microsoft.ML.Ext.FeaturesTransforms* test-reports/dist/Release
             cp -r  machinelearningext/FeaturesTransforms/bin/Debug/netstandard2.0/Microsoft.ML.Ext.FeaturesTransforms* test-reports/dist/Debug
-            cp -r  machinelearningext/NearestNeighbours/bin/Release/netstandard2.0/Microsoft.ML.Ext.NearestNeighbours* test-reports/dist/Release
-            cp -r  machinelearningext/NearestNeighbours/bin/Debug/netstandard2.0/Microsoft.ML.Ext.NearestNeighbours* test-reports/dist/Debug
+            cp -r  machinelearningext/NearestNeighbors/bin/Release/netstandard2.0/Microsoft.ML.Ext.NearestNeighbors* test-reports/dist/Release
+            cp -r  machinelearningext/NearestNeighbors/bin/Debug/netstandard2.0/Microsoft.ML.Ext.NearestNeighbors* test-reports/dist/Debug
             cp -r  machinelearningext/PipelineHelper/bin/Release/netstandard2.0/Microsoft.ML.Ext.PipelineHelper* test-reports/dist/Release
             cp -r  machinelearningext/PipelineHelper/bin/Debug/netstandard2.0/Microsoft.ML.Ext.PipelineHelper* test-reports/dist/Debug
             cp -r  machinelearningext/PipelineTransforms/bin/Release/netstandard2.0/Microsoft.ML.Ext.PipelineTransforms* test-reports/dist/Release

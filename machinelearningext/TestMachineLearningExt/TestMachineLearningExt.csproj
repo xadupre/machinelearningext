@@ -17,7 +17,7 @@
     <ProjectReference Include="..\DataManipulation\DataManipulation.csproj" />
     <ProjectReference Include="..\EntryPoints\EntryPoints.csproj" />
     <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
-    <ProjectReference Include="..\NearestNeighbours\NearestNeighbours.csproj" />
+    <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
     <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
   </ItemGroup>

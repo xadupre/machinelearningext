@@ -9,14 +9,14 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms;
 using Microsoft.ML.Ext.PipelineHelper;
-using Microsoft.ML.Ext.NearestNeighbours;
+using Microsoft.ML.Ext.NearestNeighbors;
 using Microsoft.ML.Ext.DataManipulation;
 
 
 namespace TestMachineLearningExt
 {
     [TestClass]
-    public class TestNearestNeighbours
+    public class TestNearestNeighbors
     {
         static void TrainkNNBinaryClassification(int k, NearestNeighborsWeights weight, int threads, float ratio = 0.2f,
                                                  string distance = "L2", int conc = 0)

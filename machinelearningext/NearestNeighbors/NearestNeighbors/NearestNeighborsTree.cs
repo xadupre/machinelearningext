@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.ML.Runtime;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbours
+namespace Microsoft.ML.Ext.NearestNeighbors
 {
     public enum NearestNeighborsWeights
     {
@@ -72,13 +72,13 @@ namespace Microsoft.ML.Ext.NearestNeighbours
             _inputType = new VectorType(NumberType.R4, _kdtrees[0].dimension);
         }
 
-        public KeyValuePair<float, long>[] NearestNNeighbours(VBuffer<float> target, int k)
+        public KeyValuePair<float, long>[] NearestNNeighbors(VBuffer<float> target, int k)
         {
             var point = new PointIdFloat(-1, target, false);
             KeyValuePair<float, long>[] neighbors;
             if (_kdtrees.Length == 1)
                 // kdtrees returns the opposite of the distance.
-                neighbors = _kdtrees[0].NearestNNeighboursAndDistance(point, k).Select(c => new KeyValuePair<float, long>(-c.Key, c.Value.id)).ToArray();
+                neighbors = _kdtrees[0].NearestNNeighborsAndDistance(point, k).Select(c => new KeyValuePair<float, long>(-c.Key, c.Value.id)).ToArray();
             else
             {
                 KeyValuePair<float, long>[][] stack = new KeyValuePair<float, long>[_kdtrees.Length][];
@@ -89,7 +89,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
                     ops[i] = () =>
                     {
                         // kdtrees returns the opposite of the distance.
-                        stack[chunkId] = _kdtrees[chunkId].NearestNNeighboursAndDistance(point, k).Select(c => new KeyValuePair<float, long>(-c.Key, c.Value.id)).ToArray();
+                        stack[chunkId] = _kdtrees[chunkId].NearestNNeighborsAndDistance(point, k).Select(c => new KeyValuePair<float, long>(-c.Key, c.Value.id)).ToArray();
                     };
                 }
                 Parallel.Invoke(new ParallelOptions() { MaxDegreeOfParallelism = ops.Length }, ops);

@@ -71,9 +71,11 @@ before_script:
   - cd ..
 
 script:
-  - cd machinelearning
-  - bash build.sh -runTests -Release
-  - cd ..
+  # unit tests for machinelearning: too long
+  #- cd machinelearning
+  #- bash build.sh -runTests -Release
+  #- cd ..
+  # unit tests for machinelearningext
   - cd machinelearningext
   - dotnet test -c Debug TestMachineLearningExt
   - dotnet test -c Release TestMachineLearningExt

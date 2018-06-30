@@ -53,9 +53,11 @@ before_test:
   - cd ..
   
 test_script:
-  - cd machinelearning
-  - cmd /C build.cmd -runTests -Release
-  - cd ..
+  # unit tests for machinelearning (too long)
+  # - cd machinelearning
+  # - cmd /C build.cmd -runTests -Release
+  # - cd ..
+  # unit tests for machinelearningext
   - cd machinelearningext
   - cmd /C dotnet test -c Debug TestMachineLearningExt
   - cmd /C dotnet test -c Release TestMachineLearningExt
@@ -71,8 +73,8 @@ after_test:
   - copy machinelearningext\EntryPoints\bin\Debug\netstandard2.0\Microsoft.ML.Ext.EntryPoints* dist\Debug
   - copy machinelearningext\FeaturesTransforms\bin\Release\netstandard2.0\Microsoft.ML.Ext.FeaturesTransforms* dist\Release
   - copy machinelearningext\FeaturesTransforms\bin\Debug\netstandard2.0\Microsoft.ML.Ext.FeaturesTransforms* dist\Debug
-  - copy machinelearningext\NearestNeighbours\bin\Release\netstandard2.0\Microsoft.ML.Ext.NearestNeighbours* dist\Release
-  - copy machinelearningext\NearestNeighbours\bin\Debug\netstandard2.0\Microsoft.ML.Ext.NearestNeighbours* dist\Debug
+  - copy machinelearningext\NearestNeighbors\bin\Release\netstandard2.0\Microsoft.ML.Ext.NearestNeighbors* dist\Release
+  - copy machinelearningext\NearestNeighbors\bin\Debug\netstandard2.0\Microsoft.ML.Ext.NearestNeighbors* dist\Debug
   - copy machinelearningext\PipelineHelper\bin\Release\netstandard2.0\Microsoft.ML.Ext.PipelineHelper* dist\Release
   - copy machinelearningext\PipelineHelper\bin\Debug\netstandard2.0\Microsoft.ML.Ext.PipelineHelper* dist\Debug
   - copy machinelearningext\PipelineTransforms\bin\Release\netstandard2.0\Microsoft.ML.Ext.PipelineTransforms* dist\Release

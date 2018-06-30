@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataManipulation", "DataMan
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FeaturesTransforms", "FeaturesTransforms\FeaturesTransforms.csproj", "{024BF6AE-3A53-4ADB-95EE-87BA45A92AE3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NearestNeighbours", "NearestNeighbours\NearestNeighbours.csproj", "{D82D8A18-6386-49C8-A43E-412AF399B23B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NearestNeighbors", "NearestNeighbors\NearestNeighbors.csproj", "{D82D8A18-6386-49C8-A43E-412AF399B23B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntryPoints", "EntryPoints\EntryPoints.csproj", "{83B71022-5D12-43AD-9E9A-05956A30BC86}"
 EndProject
