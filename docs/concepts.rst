@@ -42,9 +42,6 @@ Other interfaces
 * `IDataTransform <https://github.com/dotnet/machinelearning/blob/master/src/Microsoft.ML.Data/Data/IDataLoader.cs#L91>`_
 * `IRow <https://github.com/dotnet/machinelearning/blob/master/src/Microsoft.ML.Core/Data/IDataView.cs#L154>`_
 
-.. image:: cursor.png
-
-
 Subleties
 =========
 
@@ -57,4 +54,14 @@ step in the pipeline requires this transform to be instantiated.
 The transforms in this extension postpones the training step
 until some cursors are created:
 `GetRowCursor <https://github.com/xadupre/machinelearningext/blob/master/machinelearningext/FeaturesTransforms/ScalerTransform.cs#L206>`_.
+Pipeline instanciation happens following the blue arrow (forward).
+Computing the prediction requires to get cursor
+from every step and it follows the red path (backward).
+You can either train a transform on the blue path
+(called from the constructor) or on the red path
+(called by the cursor instanciation). As the scoring process
+may create several cursors working in parallel, the training
+must be protected against multithreading.
+
+.. image:: cursor.png
 
