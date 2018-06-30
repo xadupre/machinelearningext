@@ -79,7 +79,7 @@ namespace Microsoft.ML.Ext.NearestNeighbors
             host.CheckValue(input, nameof(input));
             EntryPointUtils.CheckInputArgs(host, input);
 
-            return EntryPointsHelper.Train<NearestNeighborsBinaryClassificationTrainer.ArgumentsEntryPoint, 
+            return EntryPointsHelper.Train<NearestNeighborsBinaryClassificationTrainer.ArgumentsEntryPoint,
                                            CommonOutputs.BinaryClassificationOutput>(host, input,
                 () => new NearestNeighborsBinaryClassificationTrainer(host, input),
                 getLabel: () => LearnerEntryPointsUtils.FindColumn(host, input.TrainingData.Schema, input.LabelColumn));

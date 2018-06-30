@@ -631,9 +631,22 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// It returns 0 if the difference is below the precision
         /// or the difference otherwise, Inf if shapes or schema are different.
         /// </summary>
-        public double AlmostEquals(DataFrame df, double precision = 1e-6f, bool exc = false)
+        public double AlmostEquals(DataFrame df, double precision = 1e-6f, bool exc = false, bool printDf = false)
         {
-            return _data.AlmostEquals(df._data, precision, exc);
+            if (exc && printDf)
+            {
+                try
+                {
+                    return _data.AlmostEquals(df._data, precision, exc);
+                }
+                catch (Exception e)
+                {
+                    var addition = $"----\n{ToString()}\n-----\n{df.ToString()}";
+                    throw new Exception(addition, e);
+                }
+            }
+            else
+                return _data.AlmostEquals(df._data, precision, exc);
         }
 
         /// <summary>

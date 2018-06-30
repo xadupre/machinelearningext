@@ -215,7 +215,8 @@ namespace Microsoft.ML.Ext.TestHelper
             }
             if (linesN.Count > t1.Length * 4 / 100)
             {
-                var rows = linesN.Select(i => string.Format("Mismatch on line (1) {0}/{3}:\n{1}\n{2}", i, t1[i], t2[i], t1.Length));
+                var rows = linesN.Select(i => string.Format("1-Mismatch on line {0}/{3}:\n{1}\n{2}", i, t1[i], t2[i], t1.Length)).ToList();
+                rows.Add($"Number of differences: {linesN.Count}/{t1.Length}");
                 throw new Exception(string.Join("\n", rows));
             }
 
@@ -468,6 +469,6 @@ namespace Microsoft.ML.Ext.TestHelper
                                     nbError * 1.0 / nbTotal));
                 }
             }
-        }        
+        }
     }
 }

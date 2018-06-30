@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
@@ -889,6 +890,26 @@ namespace Microsoft.ML.Ext.DataManipulation
             return true;
         }
 
+        string AlmostEqualsSchemaMessage(DataContainer c)
+        {
+            var rows = new List<string>();
+            for (int i = 0; i < Math.Max(Shape.Item1, c.Shape.Item1); ++i)
+            {
+                var row = new List<string>();
+                if (i < Schema.ColumnCount)
+                    row.Add($"'{Schema.GetColumnName(i)}':{Schema.GetColumnType(i)}");
+                else
+                    row.Add("###");
+                if (i < c.Schema.ColumnCount)
+                    row.Add($"'{c.Schema.GetColumnName(i)}':{c.Schema.GetColumnType(i)}");
+                else
+                    row.Add("###");
+                var s = string.Join(" --- ", row);
+                rows.Add($"{i}: {s}");
+            }
+            return string.Join("\n", rows);
+        }
+
         /// <summary>
         /// Checks that containers are almost exactly the same for real values
         /// or exactly the same of other types.
@@ -908,19 +929,19 @@ namespace Microsoft.ML.Ext.DataManipulation
                 if (_names[i] != c._names[i])
                 {
                     if (exc)
-                        throw new Exception($"Name at position {i} do not match: '{_names[i]}' != '{c._names[i]}'");
+                        throw new Exception($"Name at position {i} do not match: '{_names[i]}' != '{c._names[i]}'\n{AlmostEqualsSchemaMessage(c)}");
                     return double.PositiveInfinity;
                 }
                 if (_kinds[i] != c._kinds[i])
                 {
                     if (exc)
-                        throw new Exception($"Type at position {i} do not match: '{_kinds[i]}' != '{c._kinds[i]}'");
+                        throw new Exception($"Type at position {i} do not match: '{_kinds[i]}' != '{c._kinds[i]}'\n{AlmostEqualsSchemaMessage(c)}");
                     return double.PositiveInfinity;
                 }
                 if (_mapping[i].Item1 != c._mapping[i].Item1 || _mapping[i].Item2 != c._mapping[i].Item2)
                 {
                     if (exc)
-                        throw new Exception($"Mapping at position {i} do not match: {_mapping[i].Item1}, {_mapping[i].Item2} != {c._mapping[i].Item1}, {c._mapping[i].Item2}");
+                        throw new Exception($"Mapping at position {i} do not match: {_mapping[i].Item1}, {_mapping[i].Item2} != {c._mapping[i].Item1}, {c._mapping[i].Item2}\n{AlmostEqualsSchemaMessage(c)}");
                     return double.PositiveInfinity;
                 }
             }
@@ -977,7 +998,6 @@ namespace Microsoft.ML.Ext.DataManipulation
                             throw new Exception($"Mismatch in R4 column {i} - {d}");
                         return (double)d;
                     }
-
                 }
             }
             if (_colsR8 != null)

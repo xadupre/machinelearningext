@@ -85,11 +85,11 @@ namespace Microsoft.ML.Ext.TestHelper
                         a += "\t\"\"\t\"\"\t\"\"\t\"\"\t\"\"";
                         var b = t2[i];
                         if ((startsWith && !a.StartsWith(b)) || (!startsWith && a != b))
-                            throw new Exception(string.Format("Mismatch on line (2) {0}/{3}:\n{1}\n{2}", i, t1[i], t2[i], t1.Length));
+                            throw new Exception(string.Format("2-Mismatch on line {0}/{3}:\n{1}\n{2}", i, t1[i], t2[i], t1.Length));
                     }
                     else
                         // The test might fail because one side is dense and the other is sparse.
-                        throw new Exception(string.Format("Mismatch on line (3) {0}/{3}:\n{1}\n{2}", i, t1[i], t2[i], t1.Length));
+                        throw new Exception(string.Format("3-Mismatch on line {0}/{3}:\n{1}\n{2}", i, t1[i], t2[i], t1.Length));
                 }
             }
         }
