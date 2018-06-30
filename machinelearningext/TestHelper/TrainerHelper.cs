@@ -143,11 +143,12 @@ namespace Microsoft.ML.Ext.TestHelper
         /// <param name="kind">prediction kind</param>
         /// <param name="checkError">checks errors</param>
         /// <param name="ratio">check the error is below that threshold (if checkError is true)</param>
+        /// <param name="ratioReadSave">check the predictions difference after reloading the model are below this threshold</param>
         public static void FinalizeSerializationTest(TlcEnvironment env,
                             string outModelFilePath, IPredictor predictor,
                             RoleMappedData roles, string outData, string outData2,
                             PredictionKind kind, bool checkError = true,
-                            float ratio = 0.8f)
+                            float ratio = 0.8f, float ratioReadSave = 0.06f)
         {
             string labelColumn = kind != PredictionKind.Clustering ? roles.Schema.Label.Name : null;
             string featuresColumn = roles.Schema.Feature.Name;
@@ -213,7 +214,7 @@ namespace Microsoft.ML.Ext.TestHelper
                 if (t1[i] != t2[i])
                     linesN.Add(i);
             }
-            if (linesN.Count > t1.Length * 4 / 100)
+            if (linesN.Count > (int)(t1.Length * ratioReadSave))
             {
                 var rows = linesN.Select(i => string.Format("1-Mismatch on line {0}/{3}:\n{1}\n{2}", i, t1[i], t2[i], t1.Length)).ToList();
                 rows.Add($"Number of differences: {linesN.Count}/{t1.Length}");
@@ -229,6 +230,8 @@ namespace Microsoft.ML.Ext.TestHelper
                 return;
 
             #endregion
+
+            #region supervized
 
             string expectedOuput = kind == PredictionKind.Regression ? "Score" : "PredictedLabel";
 
@@ -469,6 +472,8 @@ namespace Microsoft.ML.Ext.TestHelper
                                     nbError * 1.0 / nbTotal));
                 }
             }
+
+            #endregion
         }
     }
 }

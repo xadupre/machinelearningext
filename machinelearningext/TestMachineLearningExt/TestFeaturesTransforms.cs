@@ -307,7 +307,7 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestScalerTransformNumericValuesMeanVar()
         {
-            var host = EnvHelper.NewTestEnvironment();
+            var host = EnvHelper.NewTestEnvironment(conc: 1);
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
             var loader = host.CreateTransform("concat{col=X:A,B}", raw);
             var data = host.CreateTransform("Scaler{col=X}", loader);
@@ -322,7 +322,7 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestScalerTransformNumericValuesMinMax()
         {
-            var host = EnvHelper.NewTestEnvironment();
+            var host = EnvHelper.NewTestEnvironment(conc: 1);
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
             var loader = host.CreateTransform("concat{col=X:A,B}", raw);
             var data = host.CreateTransform("Scaler{col=X scale=minMax}", loader);

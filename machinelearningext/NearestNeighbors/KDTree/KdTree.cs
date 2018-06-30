@@ -592,9 +592,7 @@ namespace Microsoft.ML.Ext.NearestNeighbors
                 float nthNnDist = -nns.Peek().GetValueOrDefault(InfinitePoint).Key;
 
                 if (!nns.IsFull || d < nthNnDist)
-                {
                     nns.Enqueue(-d, point);
-                }
 
                 if (targetKey <= key)
                 {
