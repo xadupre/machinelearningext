@@ -161,7 +161,7 @@ namespace TestMachineLearningExt
             var txt = res.ToString();
             var exp = "A,B,X.0,X.1,X.2,X.3,X.4\n1.0,2.0,1.0,2.0,1.0,2.0,4.0\n2.0,3.0,2.0,3.0,4.0,6.0,9.0\n10.0,11.0,10.0,11.0,100.0,110.0,121.0";
             var dfexp = DataFrame.ReadStr(exp);
-            Assert.AreEqual(dfexp.AlmostEquals(res), 0);
+            Assert.AreEqual(0, dfexp.AlmostEquals(res));
         }
 
         [TestMethod]
@@ -180,7 +180,7 @@ namespace TestMachineLearningExt
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 11));
+            Assert.AreEqual(new Tuple<int, int>(150, 11), dfout.Shape);
         }
 
         #endregion
@@ -316,7 +316,7 @@ namespace TestMachineLearningExt
             var txt = res.ToString();
             var exp = "A,B,X.0,X.1\n1.0,2.0,-0.827605963,-0.827605963\n2.0,3.0,-0.5793242,-0.5793242\n10.0,11.0,1.40693,1.40693";
             var dfexp = DataFrame.ReadStr(exp);
-            Assert.AreEqual(dfexp.AlmostEquals(res), 0);
+            Assert.AreEqual(0, dfexp.AlmostEquals(res, exc:true));
         }
 
         [TestMethod]
@@ -331,7 +331,7 @@ namespace TestMachineLearningExt
             var txt = res.ToString();
             var exp = "A,B,X.0,X.1\n1.0,2.0,0.0,0.0\n2.0,3.0,0.11111111,0.11111111\n10.0,11.0,1.0,1.0";
             var dfexp = DataFrame.ReadStr(exp);
-            Assert.AreEqual(dfexp.AlmostEquals(res), 0);
+            Assert.AreEqual(0, dfexp.AlmostEquals(res, exc:true));
         }
 
         [TestMethod]
@@ -350,7 +350,7 @@ namespace TestMachineLearningExt
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
+            Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
         }
 
         #endregion

@@ -728,10 +728,10 @@ namespace Microsoft.ML.Ext.DataManipulation
 
             public long Position => _rowsSet == null
                                         ? _position
-                                        : (_shuffled == null 
-                                                ? _rowsSet[_position] 
-                                                : (_position < _shuffled.Length 
-                                                    ?_rowsSet[_shuffled[_position]]
+                                        : (_shuffled == null
+                                                ? _rowsSet[_position]
+                                                : (_position < _shuffled.Length
+                                                    ? _rowsSet[_shuffled[_position]]
                                                     : _position));
             int LastPosition => _rowsSet == null ? _cont.Length : _rowsSet.Length;
 
@@ -895,42 +895,74 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// It returns 0 if the difference is below the precision
         /// or the difference otherwise, Inf if shapes or schema are different.
         /// </summary>
-        public double AlmostEquals(DataContainer c, double precision = 1e-6f)
+        public double AlmostEquals(DataContainer c, double precision = 1e-6f, bool exc = false)
         {
             if (Shape.Item1 != c.Shape.Item1 || Shape.Item2 != c.Shape.Item2)
+            {
+                if (exc)
+                    throw new Exception($"Shapes do not match: ({Shape.Item1},{Shape.Item2}) != ({c.Shape.Item1},{c.Shape.Item2})");
                 return double.PositiveInfinity;
+            }
             for (int i = 0; i < _names.Count; ++i)
             {
                 if (_names[i] != c._names[i])
+                {
+                    if (exc)
+                        throw new Exception($"Name at position {i} do not match: '{_names[i]}' != '{c._names[i]}'");
                     return double.PositiveInfinity;
+                }
                 if (_kinds[i] != c._kinds[i])
+                {
+                    if (exc)
+                        throw new Exception($"Type at position {i} do not match: '{_kinds[i]}' != '{c._kinds[i]}'");
                     return double.PositiveInfinity;
+                }
                 if (_mapping[i].Item1 != c._mapping[i].Item1 || _mapping[i].Item2 != c._mapping[i].Item2)
+                {
+                    if (exc)
+                        throw new Exception($"Mapping at position {i} do not match: {_mapping[i].Item1}, {_mapping[i].Item2} != {c._mapping[i].Item1}, {c._mapping[i].Item2}");
                     return double.PositiveInfinity;
+                }
             }
             if (_colsBL != null)
             {
                 for (int i = 0; i < _colsBL.Count; ++i)
                     if (!_colsBL[i].Equals(c._colsBL[i]))
+                    {
+                        if (exc)
+                            throw new Exception($"Mismatch in BL column {i}");
                         return (double)DataKind.BL;
+                    }
             }
             if (_colsI4 != null)
             {
                 for (int i = 0; i < _colsI4.Count; ++i)
                     if (!_colsI4[i].Equals(c._colsI4[i]))
+                    {
+                        if (exc)
+                            throw new Exception($"Mismatch in I4 column {i}");
                         return (double)DataKind.I4;
+                    }
             }
             if (_colsU4 != null)
             {
                 for (int i = 0; i < _colsU4.Count; ++i)
                     if (!_colsU4[i].Equals(c._colsU4[i]))
+                    {
+                        if (exc)
+                            throw new Exception($"Mismatch in U4 column {i}");
                         return (double)DataKind.U4;
+                    }
             }
             if (_colsI8 != null)
             {
                 for (int i = 0; i < _colsI8.Count; ++i)
                     if (!_colsI8[i].Equals(c._colsI8[i]))
+                    {
+                        if (exc)
+                            throw new Exception($"Mismatch in I8 column {i}");
                         return (double)DataKind.I8;
+                    }
             }
             if (_colsR4 != null)
             {
@@ -940,7 +972,11 @@ namespace Microsoft.ML.Ext.DataManipulation
                     var c2 = (c._colsR4[i] as DataColumn<float>).Data;
                     var d = NumericHelper.AlmostEquals(c1, c2, (float)precision);
                     if (d != 0f)
+                    {
+                        if (exc)
+                            throw new Exception($"Mismatch in R4 column {i} - {d}");
                         return (double)d;
+                    }
 
                 }
             }
@@ -952,14 +988,22 @@ namespace Microsoft.ML.Ext.DataManipulation
                     var c2 = (c._colsR8[i] as DataColumn<double>).Data;
                     var d = NumericHelper.AlmostEquals(c1, c2, precision);
                     if (d != 0)
+                    {
+                        if (exc)
+                            throw new Exception($"Mismatch in R8 column {i} - {d}");
                         return d;
+                    }
                 }
             }
             if (_colsTX != null)
             {
                 for (int i = 0; i < _colsTX.Count; ++i)
                     if (!_colsTX[i].Equals(c._colsTX[i]))
+                    {
+                        if (exc)
+                            throw new Exception($"Mismatch in TX column {i}");
                         return (double)DataKind.TX;
+                    }
             }
             return 0;
         }

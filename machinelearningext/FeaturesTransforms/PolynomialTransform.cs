@@ -87,7 +87,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         /// </summary>
         public class Arguments
         {
-            [Argument(ArgumentType.Required, HelpText = "Features columns (a vector)", ShortName = "col")]
+            [Argument(ArgumentType.MultipleUnique, HelpText = "Features columns (a vector)", ShortName = "col")]
             public Column1x1[] columns;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Highest degree of the polynomial features", ShortName = "d")]
@@ -118,7 +118,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         }
 
         [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoints : Arguments
+        public class ArgumentsEntryPoint : Arguments
         {
             [Argument(ArgumentType.Required, HelpText = "Input dataset",
                       Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
@@ -591,9 +591,10 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
 
     public static class EntryPointPolynomial
     {
-        [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms.Polynomial", Desc = PolynomialTransform.Summary,
+        [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms." + PolynomialTransform.EntryPointName, 
+                              Desc = PolynomialTransform.Summary,
                               UserName = PolynomialTransform.EntryPointName)]
-        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform.ArgumentsEntryPoints input)
+        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform.ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));

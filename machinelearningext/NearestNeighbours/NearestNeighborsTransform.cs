@@ -44,7 +44,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
         public const string RegistrationName = LoaderSignature;
         public const string LongName = "Nearest Neighbors Transform";
         public const string ShortName = "knntr";
-        public const string EntryPointName = "NearestNeighbors";
+        public const string EntryPointName = "NearestNeighborsTr";
 
         /// <summary>
         /// Identify the object for dynamic instantiation.
@@ -111,7 +111,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
         }
 
         [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoints : Arguments
+        public class ArgumentsEntryPoint : Arguments
         {
             [Argument(ArgumentType.Required, HelpText = "Input dataset",
                       Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
@@ -445,9 +445,10 @@ namespace Microsoft.ML.Ext.NearestNeighbours
 
     public static class EntryPointNearestNeighbors
     {
-        [TlcModule.EntryPoint(Name = "ExtNearestNeighbors.NearestNeighborsTr", Desc = NearestNeighborsTransform.Summary,
+        [TlcModule.EntryPoint(Name = "ExtNearestNeighbors." + NearestNeighborsTransform.EntryPointName,
+                              Desc = NearestNeighborsTransform.Summary,
                               UserName = NearestNeighborsTransform.EntryPointName)]
-        public static CommonOutputs.TransformOutput NearestNeighborsTr(IHostEnvironment env, NearestNeighborsTransform.ArgumentsEntryPoints input)
+        public static CommonOutputs.TransformOutput NearestNeighborsTr(IHostEnvironment env, NearestNeighborsTransform.ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));

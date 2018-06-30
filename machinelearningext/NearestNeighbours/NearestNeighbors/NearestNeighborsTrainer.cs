@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Training;
+using Microsoft.ML.Runtime.EntryPoints;
+using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.Ext.PipelineHelper;
 
 
 namespace Microsoft.ML.Ext.NearestNeighbours
@@ -26,6 +29,34 @@ namespace Microsoft.ML.Ext.NearestNeighbours
         /// </summary>
         public class Arguments : NearestNeighborsArguments
         {
+        }
+
+        [TlcModule.EntryPointKind(typeof(CommonInputs.ITrainerInput))]
+        public class ArgumentsEntryPoint : Arguments, ILearnerInputBaseArguments
+        {
+            public IDataView ITrainingData => TrainingData;
+            public Optional<string> IFeatureColumn => FeatureColumn;
+            public NormalizeOption INormalizeFeatures => NormalizeFeatures;
+            public CachingOptions ICaching => Caching;
+
+            [Argument(ArgumentType.Required, ShortName = "data", HelpText = "The data to be used for training", SortOrder = 1, Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public IDataView TrainingData;
+
+            [Argument(ArgumentType.AtMostOnce, HelpText = "Column to use for features", ShortName = "feat",
+                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public string FeatureColumn = DefaultColumnNames.Features;
+
+            [Argument(ArgumentType.AtMostOnce, HelpText = "Normalize option for the feature column", ShortName = "norm",
+                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public NormalizeOption NormalizeFeatures = NormalizeOption.Auto;
+
+            [Argument(ArgumentType.LastOccurenceWins, HelpText = "Whether learner should cache input training data", ShortName = "cache",
+                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public CachingOptions Caching = CachingOptions.Auto;
+
+            [Argument(ArgumentType.AtMostOnce, HelpText = "Column to use for labels", ShortName = "lab",
+                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public string LabelColumn = DefaultColumnNames.Label;
         }
 
         #endregion

@@ -93,7 +93,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         }
 
         [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoints : Arguments
+        public class ArgumentsEntryPoint : Arguments
         {
             [Argument(ArgumentType.Required, HelpText = "Input dataset",
                       Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
@@ -611,9 +611,10 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
 
     public static class EntryPointScaler
     {
-        [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms.Scaler", Desc = ScalerTransform.Summary,
+        [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms." + ScalerTransform.EntryPointName,
+                              Desc = ScalerTransform.Summary,
                               UserName = ScalerTransform.EntryPointName)]
-        public static CommonOutputs.TransformOutput Scaler(IHostEnvironment env, ScalerTransform.ArgumentsEntryPoints input)
+        public static CommonOutputs.TransformOutput Scaler(IHostEnvironment env, ScalerTransform.ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));

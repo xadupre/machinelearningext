@@ -32,13 +32,19 @@ before_test:
   - mkdir machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Release
+  - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Ensemble\netstandard2.0\*.dll machinelearning\dist\Release
+  - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.InternalStreams\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Release
+  - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.PCA\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.StandardLearners\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
   - mkdir machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Debug
+  - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Ensemble\netstandard2.0\*.dll machinelearning\dist\Debug
+  - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.InternalStreams\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Debug
+  - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.PCA\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.StandardLearners\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearning\dist\Debug
   - cd machinelearningext
