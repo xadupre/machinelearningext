@@ -45,7 +45,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             _shuffle = shuffle;
         }
 
-        public void SetSuffle(bool shuffle)
+        public void SetShuffle(bool shuffle)
         {
             _shuffle = shuffle;
         }

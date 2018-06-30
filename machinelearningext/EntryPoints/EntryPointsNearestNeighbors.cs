@@ -47,6 +47,22 @@ namespace Microsoft.ML.Ext.EntryPoints
         }
 
         #endregion
+
+        #region multiclass
+
+        public static NearestNeighborsMc.Output Add(this Microsoft.ML.Runtime.Experiment exp, NearestNeighborsMc input)
+        {
+            var output = new NearestNeighborsMc.Output();
+            exp.Add(input, output);
+            return output;
+        }
+
+        public static void Add(this Microsoft.ML.Runtime.Experiment exp, NearestNeighborsMc input, NearestNeighborsMc.Output output)
+        {
+            exp.AddSerialize("ExtNearestNeighbors.NearestNeighborsMc", input, output);
+        }
+
+        #endregion
     }
 
     #region Transform
@@ -320,6 +336,131 @@ namespace Microsoft.ML.Ext.EntryPoints
         private class NearestNeighborsBcPipelineStep : ILearningPipelinePredictorStep
         {
             public NearestNeighborsBcPipelineStep(Output output)
+            {
+                Model = output.PredictorModel;
+            }
+
+            public Var<IPredictorModel> Model { get; }
+        }
+    }
+
+    #endregion
+
+    #region multi-class
+
+    /// <summary>
+    /// k-Nearest Neighbors trainer for Multi-Class Classification
+    /// </summary>
+    public sealed partial class NearestNeighborsMc : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITrainerInput, Microsoft.ML.ILearningPipelineItem
+    {
+        public NearestNeighborsMc()
+        {
+        }
+
+        public NearestNeighborsMc(string featureColumn = null, string labelColumn = null)
+        {
+            if (featureColumn != null)
+                FeatureColumn = featureColumn;
+            if (labelColumn != null)
+                LabelColumn = labelColumn;
+        }
+
+        /// <summary>
+        /// The data to be used for training
+        /// </summary>
+        public Var<Microsoft.ML.Runtime.Data.IDataView> TrainingData { get; set; } = new Var<Microsoft.ML.Runtime.Data.IDataView>();
+
+        /// <summary>
+        /// Column to use for features
+        /// </summary>
+        public string FeatureColumn { get; set; } = "Features";
+
+        /// <summary>
+        /// Normalize option for the feature column
+        /// </summary>
+        public NormalizeOption NormalizeFeatures { get; set; } = NormalizeOption.Auto;
+
+        /// <summary>
+        /// Whether learner should cache input training data
+        /// </summary>
+        public CachingOptions Caching { get; set; } = CachingOptions.Auto;
+
+        /// <summary>
+        /// Column to use for labels
+        /// </summary>
+        public string LabelColumn { get; set; } = "Label";
+
+        /// <summary>
+        /// Number of neighbors to consider.
+        /// </summary>
+        [JsonProperty("k")]
+        public int K { get; set; } = 5;
+
+        /// <summary>
+        /// Weighting strategy for neighbors
+        /// </summary>
+        [JsonProperty("algo")]
+        public NearestNeighborsAlgorithm Algo { get; set; } = NearestNeighborsAlgorithm.kdtree;
+
+        /// <summary>
+        /// Weighting strategy for neighbors
+        /// </summary>
+        [JsonProperty("weight")]
+        public NearestNeighborsWeights Weight { get; set; } = NearestNeighborsWeights.uniform;
+
+        /// <summary>
+        /// Distnace to use
+        /// </summary>
+        [JsonProperty("distance")]
+        public NearestNeighborsDistance Distance { get; set; } = NearestNeighborsDistance.L2;
+
+        /// <summary>
+        /// Number of threads and number of KD-Tree built to sppeed up the search.
+        /// </summary>
+        [JsonProperty("numThreads")]
+        public int? NumThreads { get; set; } = 1;
+
+        /// <summary>
+        /// Seed to distribute example over trees.
+        /// </summary>
+        [JsonProperty("seed")]
+        public int? Seed { get; set; } = 42;
+
+        /// <summary>
+        /// Column which contains a unique identifier for each observation (optional). Type must long.
+        /// </summary>
+        [JsonProperty("colId")]
+        public string ColId { get; set; }
+
+
+        public sealed class Output : Microsoft.ML.Runtime.EntryPoints.CommonOutputs.IMulticlassClassificationOutput, Microsoft.ML.Runtime.EntryPoints.CommonOutputs.ITrainerOutput
+        {
+            /// <summary>
+            /// The trained model
+            /// </summary>
+            public Var<Microsoft.ML.Runtime.EntryPoints.IPredictorModel> PredictorModel { get; set; } = new Var<Microsoft.ML.Runtime.EntryPoints.IPredictorModel>();
+
+        }
+        public Var<IDataView> GetInputData() => TrainingData;
+
+        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
+        {
+            if (previousStep != null)
+            {
+                if (!(previousStep is ILearningPipelineDataStep dataStep))
+                {
+                    throw new InvalidOperationException($"{ nameof(NearestNeighborsMc)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
+                }
+
+                TrainingData = dataStep.Data;
+            }
+            Output output = EntryPointsNearestNeighbors.Add(experiment, this);
+            return new NearestNeighborsMcPipelineStep(output);
+        }
+
+        private class NearestNeighborsMcPipelineStep : ILearningPipelinePredictorStep
+        {
+            public NearestNeighborsMcPipelineStep(Output output)
             {
                 Model = output.PredictorModel;
             }

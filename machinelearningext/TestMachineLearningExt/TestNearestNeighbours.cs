@@ -260,5 +260,22 @@ namespace TestMachineLearningExt
             var dfout = DataFrame.ReadView(predictions);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 9));
         }
+
+        [TestMethod]
+        public void TestNearestNeighborsLPMc()
+        {
+            var env = EnvHelper.NewTestEnvironment(conc: 1);
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+            var learningPipeline = new GenericLearningPipeline(conc: 1);
+            learningPipeline.Add(importData);
+            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Microsoft.ML.Ext.EntryPoints.NearestNeighborsMc());
+            var predictor = learningPipeline.Train();
+            var predictions = predictor.Predict(df);
+            var dfout = DataFrame.ReadView(predictions);
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 11));
+        }
     }
 }

@@ -107,7 +107,10 @@ namespace Microsoft.ML.Ext.NearestNeighbors
     }
 
     public class NearestNeighborsMultiClassClassifierPredictor :
-        NearestNeighborsPredictor, INearestNeighborsPredictor, IValueMapper, ICanSaveModel, IValueMapperDist
+        NearestNeighborsPredictor, INearestNeighborsPredictor, IValueMapper, ICanSaveModel
+#if IMPLIValueMapperDist
+        , IValueMapperDist
+#endif
     {
         public const string LoaderSignature = "kNNMultiClassClassifier";
         public const string RegistrationName = LoaderSignature;
@@ -129,7 +132,9 @@ namespace Microsoft.ML.Ext.NearestNeighbors
 
         public ColumnType OutputType { get { return new VectorType(NumberType.R4, _nbClass); } }
 
+#if IMPLIValueMapperDist
         public ColumnType DistType { get { return OutputType; } }
+#endif
 
         internal static NearestNeighborsMultiClassClassifierPredictor Create<TLabel>(IHost host,
                                 KdTree[] kdtrees, Dictionary<long, Tuple<TLabel, float>> labelWeights,
@@ -202,6 +207,7 @@ namespace Microsoft.ML.Ext.NearestNeighbors
             return res;
         }
 
+#if IMPLIValueMapperDist
         public ValueMapper<TIn, TDst, TDist> GetMapper<TIn, TDst, TDist>()
         {
             _host.Check(typeof(TIn) == typeof(VBuffer<float>));
@@ -215,5 +221,6 @@ namespace Microsoft.ML.Ext.NearestNeighbors
             };
             return resDist as ValueMapper<TIn, TDst, TDist>;
         }
+#endif
     }
 }

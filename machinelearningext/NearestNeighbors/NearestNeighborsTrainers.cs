@@ -15,6 +15,7 @@ using NearestNeighborsTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighbo
 using NearestNeighborsBinaryClassificationTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsBinaryClassificationTrainer;
 using NearestNeighborsMultiClassClassificationTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsMultiClassClassificationTrainer;
 using EntryPointNearestNeighborsBc = Microsoft.ML.Ext.NearestNeighbors.EntryPointNearestNeighborsBc;
+using EntryPointNearestNeighborsMc = Microsoft.ML.Ext.NearestNeighbors.EntryPointNearestNeighborsMc;
 
 [assembly: LoadableClass(NearestNeighborsBinaryClassificationTrainer.Summary,
     typeof(NearestNeighborsBinaryClassificationTrainer),
@@ -34,6 +35,9 @@ using EntryPointNearestNeighborsBc = Microsoft.ML.Ext.NearestNeighbors.EntryPoin
 
 [assembly: LoadableClass(typeof(void), typeof(EntryPointNearestNeighborsBc), null,
     typeof(SignatureEntryPointModule), NearestNeighborsBinaryClassificationTrainer.EntryPointName)]
+
+[assembly: LoadableClass(typeof(void), typeof(EntryPointNearestNeighborsMc), null,
+    typeof(SignatureEntryPointModule), NearestNeighborsMultiClassClassificationTrainer.EntryPointName)]
 
 
 namespace Microsoft.ML.Ext.NearestNeighbors
@@ -93,6 +97,7 @@ namespace Microsoft.ML.Ext.NearestNeighbors
         public const string RegistrationName = LoaderSignature;
         public const string ShortName = "kNNmc";
         public const string LongName = "kNNmcl";
+        public const string EntryPointName = "NearestNeighborsMc";
 
         public NearestNeighborsMultiClassClassificationTrainer(IHostEnvironment env, Arguments args) : base(env, args, LoaderSignature)
         {
@@ -110,6 +115,48 @@ namespace Microsoft.ML.Ext.NearestNeighbors
         {
             return NearestNeighborsMultiClassClassifierPredictor.Create<TLabel>(Host, kdtrees, labelsWeights,
                                 _args.k, _args.algo, _args.weight);
+        }
+
+        public static partial class EntryPointNearestNeighborsBc
+        {
+            [TlcModule.EntryPoint(
+                Name = "ExtNearestNeighbors." + NearestNeighborsBinaryClassificationTrainer.EntryPointName,
+                Desc = NearestNeighborsBinaryClassificationTrainer.Summary,
+                UserName = NearestNeighborsBinaryClassificationTrainer.EntryPointName,
+                ShortName = NearestNeighborsBinaryClassificationTrainer.ShortName)]
+            public static CommonOutputs.BinaryClassificationOutput TrainBinary(IHostEnvironment env, NearestNeighborsBinaryClassificationTrainer.ArgumentsEntryPoint input)
+            {
+                Contracts.CheckValue(env, nameof(env));
+                var host = env.Register("TrainNearestNeighbors");
+                host.CheckValue(input, nameof(input));
+                EntryPointUtils.CheckInputArgs(host, input);
+
+                return EntryPointsHelper.Train<NearestNeighborsBinaryClassificationTrainer.ArgumentsEntryPoint,
+                                               CommonOutputs.BinaryClassificationOutput>(host, input,
+                    () => new NearestNeighborsBinaryClassificationTrainer(host, input),
+                    getLabel: () => LearnerEntryPointsUtils.FindColumn(host, input.TrainingData.Schema, input.LabelColumn));
+            }
+        }
+    }
+
+    public static partial class EntryPointNearestNeighborsMc
+    {
+        [TlcModule.EntryPoint(
+            Name = "ExtNearestNeighbors." + NearestNeighborsMultiClassClassificationTrainer.EntryPointName,
+            Desc = NearestNeighborsMultiClassClassificationTrainer.Summary,
+            UserName = NearestNeighborsMultiClassClassificationTrainer.EntryPointName,
+            ShortName = NearestNeighborsMultiClassClassificationTrainer.ShortName)]
+        public static CommonOutputs.MulticlassClassificationOutput TrainMultiClass(IHostEnvironment env, NearestNeighborsMultiClassClassificationTrainer.ArgumentsEntryPoint input)
+        {
+            Contracts.CheckValue(env, nameof(env));
+            var host = env.Register("TrainNearestNeighbors");
+            host.CheckValue(input, nameof(input));
+            EntryPointUtils.CheckInputArgs(host, input);
+
+            return EntryPointsHelper.Train<NearestNeighborsMultiClassClassificationTrainer.ArgumentsEntryPoint,
+                                           CommonOutputs.MulticlassClassificationOutput>(host, input,
+                () => new NearestNeighborsMultiClassClassificationTrainer(host, input),
+                getLabel: () => LearnerEntryPointsUtils.FindColumn(host, input.TrainingData.Schema, input.LabelColumn));
         }
     }
 }
