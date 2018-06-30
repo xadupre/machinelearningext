@@ -309,6 +309,7 @@ namespace TestMachineLearningExt
         {
             var host = EnvHelper.NewTestEnvironment(conc: 1);
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
+            raw.SetSuffle(false);
             var loader = host.CreateTransform("concat{col=X:A,B}", raw);
             var data = host.CreateTransform("Scaler{col=X}", loader);
             (data as ITrainableTransform).Estimate();
@@ -324,6 +325,7 @@ namespace TestMachineLearningExt
         {
             var host = EnvHelper.NewTestEnvironment(conc: 1);
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
+            raw.SetSuffle(false);
             var loader = host.CreateTransform("concat{col=X:A,B}", raw);
             var data = host.CreateTransform("Scaler{col=X scale=minMax}", loader);
             (data as ITrainableTransform).Estimate();

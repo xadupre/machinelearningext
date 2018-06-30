@@ -21,6 +21,13 @@ namespace Microsoft.ML.Ext.DataManipulation
         #region members
 
         DataContainer _data;
+        bool _shuffle;
+
+        /// <summary>
+        /// Can shuffle the data.
+        /// </summary>
+        public bool CanShuffle => _shuffle;
+
 
         public int[] ALL { get { return null; } }
 
@@ -31,19 +38,21 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Initializes an empty dataframe.
         /// </summary>
-        public DataFrame()
+        /// <param name="shuffle">The dataframe can be shuffled.</param>
+        public DataFrame(bool shuffle = true)
         {
             _data = new DataContainer();
+            _shuffle = shuffle;
+        }
+
+        public void SetSuffle(bool shuffle)
+        {
+            _shuffle = shuffle;
         }
 
         #endregion
 
         #region IDataView API
-
-        /// <summary>
-        /// Can shuffle the data.
-        /// </summary>
-        public bool CanShuffle { get { return true; } }
 
         /// <summary>
         /// Returns the number of rows. lazy is unused as the data is stored in memory.
