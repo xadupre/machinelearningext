@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Microsoft.ML.Ext.NearestNeighbors</AssemblyName>
+    <RootNamespace>Microsoft.ML.Ext.NearestNeighbors</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
