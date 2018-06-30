@@ -15,9 +15,22 @@ On windows: ``build.cmd``.
 
 On Linux: ``build.sh``.
 
+The documentation can be build with: ``doxygen conf.dox``.
+
 ## Documentation
 
-``doxygen conf.dox``
+* [machinelearning](https://github.com/dotnet/machinelearning/tree/master/docs)
+* EntryPoints
+  * [Entry Points And Helper Classes](https://github.com/dotnet/machinelearning/blob/master/docs/code/EntryPoints.md)
+  * [Entry Point JSON Graph format](https://github.com/dotnet/machinelearning/blob/master/docs/code/GraphRunner.md)
+* Data View ansd Cursors
+  * [IDataView Design Principles](https://github.com/dotnet/machinelearning/blob/master/docs/code/IDataViewDesignPrinciples.md)
+  * [IDataView Implementation](https://github.com/dotnet/machinelearning/blob/master/docs/code/IDataViewImplementation.md)
+  * [IDataView Type System](https://github.com/dotnet/machinelearning/blob/master/docs/code/IDataViewTypeSystem.md)
+  * [Key Values](https://github.com/dotnet/machinelearning/blob/master/docs/code/KeyValues.md)
+  * [VBuffer Care and Feeding](https://github.com/dotnet/machinelearning/blob/master/docs/code/VBufferCareFeeding.md)
+* [IDV File Format](https://github.com/dotnet/machinelearning/blob/master/docs/code/IdvFileFormat.md)
+* [machineleanringext](docs/index.rst)
 
 ### Example 1: inner API
 

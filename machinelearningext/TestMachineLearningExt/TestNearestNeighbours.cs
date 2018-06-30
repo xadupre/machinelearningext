@@ -1,12 +1,16 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Ext.TestHelper;
 using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Trainers;
+using Microsoft.ML.Transforms;
 using Microsoft.ML.Ext.PipelineHelper;
 using Microsoft.ML.Ext.NearestNeighbours;
+using Microsoft.ML.Ext.DataManipulation;
 
 
 namespace TestMachineLearningExt
@@ -40,6 +44,7 @@ namespace TestMachineLearningExt
                 var pred = trainer.Train(env, ch, roles);
                 TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
                                                             PredictionKind.BinaryClassification, true, ratio: ratio);
+                ch.Done();
             }
         }
 
@@ -69,6 +74,7 @@ namespace TestMachineLearningExt
                 var pred = trainer.Train(env, ch, roles);
                 TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
                                                         PredictionKind.BinaryClassification, true, ratio: ratio);
+                ch.Done();
             }
         }
 
@@ -96,6 +102,7 @@ namespace TestMachineLearningExt
                 var pred = trainer.Train(env, ch, roles);
                 TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
                                                             PredictionKind.MultiClassClassification, true, ratio: ratio);
+                ch.Done();
             }
         }
 
@@ -216,6 +223,24 @@ namespace TestMachineLearningExt
             TrainkNNTransformId(2, NearestNeighborsWeights.uniform, 2);
             TrainkNNTransformId(10, NearestNeighborsWeights.uniform, 2);
         }
-    }
 
+        [TestMethod]
+        public void TestNearestNeighborsTransformLearningPipeline()
+        {
+            var env = EnvHelper.NewTestEnvironment(conc: 1);
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+
+            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+            var learningPipeline = new GenericLearningPipeline(conc: 1);
+            learningPipeline.Add(importData);
+            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Microsoft.ML.Ext.EntryPoints.NearestNeighborsTr("Features"));
+            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            var predictor = learningPipeline.Train();
+            var predictions = predictor.Predict(df);
+            var dfout = DataFrame.ReadView(predictions);
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 18));
+        }
+    }
 }

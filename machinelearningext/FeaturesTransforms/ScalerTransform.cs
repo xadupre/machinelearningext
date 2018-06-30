@@ -66,7 +66,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         /// <summary>
         /// Parameters which defines the transform.
         /// </summary>
-        public class Arguments : BaseTransformArguments
+        public class Arguments
         {
             [Argument(ArgumentType.MultipleUnique, HelpText = "Columns to normalize.", ShortName = "col")]
             public Column1x1[] columns;
@@ -91,6 +91,15 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
             {
             }
         }
+
+        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
+        public class ArgumentsEntryPoints : Arguments
+        {
+            [Argument(ArgumentType.Required, HelpText = "Input dataset",
+                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public IDataView Data;
+        }
+
 
         IDataView _input;
         Arguments _args;
@@ -604,7 +613,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
     {
         [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms.Scaler", Desc = ScalerTransform.Summary,
                               UserName = ScalerTransform.EntryPointName)]
-        public static CommonOutputs.TransformOutput Scaler(IHostEnvironment env, ScalerTransform.Arguments input)
+        public static CommonOutputs.TransformOutput Scaler(IHostEnvironment env, ScalerTransform.ArgumentsEntryPoints input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));

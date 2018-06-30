@@ -8,6 +8,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Ext.PipelineHelper;
 
 
@@ -17,6 +18,7 @@ using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
 using NearestNeighborsTransform = Microsoft.ML.Ext.NearestNeighbours.NearestNeighborsTransform;
+using EntryPointNearestNeighbors = Microsoft.ML.Ext.NearestNeighbours.EntryPointNearestNeighbors;
 [assembly: LoadableClass(NearestNeighborsTransform.Summary, typeof(NearestNeighborsTransform),
     typeof(NearestNeighborsTransform.Arguments), typeof(SignatureDataTransform),
     NearestNeighborsTransform.LongName, NearestNeighborsTransform.LoaderSignature,
@@ -25,6 +27,9 @@ using NearestNeighborsTransform = Microsoft.ML.Ext.NearestNeighbours.NearestNeig
 [assembly: LoadableClass(NearestNeighborsTransform.Summary, typeof(NearestNeighborsTransform),
     null, typeof(SignatureLoadDataTransform), NearestNeighborsTransform.LongName,
     NearestNeighborsTransform.LoaderSignature, NearestNeighborsTransform.ShortName)]
+
+[assembly: LoadableClass(typeof(void), typeof(EntryPointNearestNeighbors), null,
+    typeof(SignatureEntryPointModule), NearestNeighborsTransform.EntryPointName)]
 
 
 namespace Microsoft.ML.Ext.NearestNeighbours
@@ -39,6 +44,7 @@ namespace Microsoft.ML.Ext.NearestNeighbours
         public const string RegistrationName = LoaderSignature;
         public const string LongName = "Nearest Neighbors Transform";
         public const string ShortName = "knntr";
+        public const string EntryPointName = "NearestNeighbors";
 
         /// <summary>
         /// Identify the object for dynamic instantiation.
@@ -102,6 +108,14 @@ namespace Microsoft.ML.Ext.NearestNeighbours
             {
                 base.PostProcess();
             }
+        }
+
+        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
+        public class ArgumentsEntryPoints : Arguments
+        {
+            [Argument(ArgumentType.Required, HelpText = "Input dataset",
+                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public IDataView Data;
         }
 
         IDataView _input;
@@ -427,6 +441,25 @@ namespace Microsoft.ML.Ext.NearestNeighbours
         }
 
         #endregion
+    }
+
+    public static class EntryPointNearestNeighbors
+    {
+        [TlcModule.EntryPoint(Name = "ExtNearestNeighbors.NearestNeighborsTr", Desc = NearestNeighborsTransform.Summary,
+                              UserName = NearestNeighborsTransform.EntryPointName)]
+        public static CommonOutputs.TransformOutput NearestNeighborsTr(IHostEnvironment env, NearestNeighborsTransform.ArgumentsEntryPoints input)
+        {
+            Contracts.CheckValue(env, nameof(env));
+            env.CheckValue(input, nameof(input));
+
+            var h = EntryPointUtils.CheckArgsAndCreateHost(env, NearestNeighborsTransform.EntryPointName, input);
+            var view = new NearestNeighborsTransform(h, input, input.Data);
+            return new CommonOutputs.TransformOutput()
+            {
+                Model = new TransformModel(h, view, input.Data),
+                OutputData = view
+            };
+        }
     }
 }
 

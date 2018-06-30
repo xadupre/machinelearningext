@@ -53,6 +53,7 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 ch.Info("Saving data into file '{0}' or '{1}'.", filename, full_output);
                 using (var fs0 = host.CreateOutputFile(full_output))
                     DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
+                ch.Done();
             }
         }
 
@@ -72,6 +73,7 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 ch.Info("Saving data into file '{0}' or '{1}'.", filename, full_output);
                 using (var fs0 = host.CreateOutputFile(full_output))
                     DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
+                ch.Done();
             }
         }
     }

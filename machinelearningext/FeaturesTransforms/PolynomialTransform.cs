@@ -85,7 +85,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
         /// <summary>
         /// Parameters which defines the transform.
         /// </summary>
-        public class Arguments : BaseTransformArguments
+        public class Arguments
         {
             [Argument(ArgumentType.Required, HelpText = "Features columns (a vector)", ShortName = "col")]
             public Column1x1[] columns;
@@ -115,6 +115,14 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                 int nb = ctx.Reader.ReadInt32();
                 numThreads = nb > 0 ? (int?)nb : null;
             }
+        }
+
+        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
+        public class ArgumentsEntryPoints : Arguments
+        {
+            [Argument(ArgumentType.Required, HelpText = "Input dataset",
+                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public IDataView Data;
         }
 
         #endregion
@@ -318,6 +326,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
 
                     // We extend the input schema. The new type has the same type as the input.
                     _schema = new ExtendedSchema(input.Schema, new[] { column.Name }, new[] { new VectorType(type.AsVector.ItemType, size) });
+                    ch.Done();
                 }
             }
 
@@ -584,7 +593,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
     {
         [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms.Polynomial", Desc = PolynomialTransform.Summary,
                               UserName = PolynomialTransform.EntryPointName)]
-        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform.Arguments input)
+        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform.ArgumentsEntryPoints input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));

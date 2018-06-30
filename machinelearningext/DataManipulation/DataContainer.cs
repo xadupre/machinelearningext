@@ -5,6 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Runtime.Internal.Utilities;
 using Microsoft.ML.Ext.PipelineHelper;
 
 
@@ -88,7 +89,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             if (filter.Kind != DataKind.Bool)
                 throw Contracts.ExceptNotSupp("Only boolean column are allowed for operator [].");
             var th = filter.Column as DataColumn<DvBool>;
-            if(th == null)
+            if (th == null)
                 throw Contracts.ExceptNotSupp("filter is not a boolean column.");
             int row = 0;
             foreach (var b in th.Data)
@@ -678,6 +679,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             int[] _colsSet;
             Dictionary<int, int> _revColsSet;
             ISchema _schema;
+            int[] _shuffled;
 
             public RowCursor(DataContainer cont, Func<int, bool> needCol,
                              IRandom rand = null, int inc = 1, int first = 0,
@@ -689,8 +691,6 @@ namespace Microsoft.ML.Ext.DataManipulation
                 _first = first;
                 _needCol = needCol;
                 _rand = rand;
-                if (rand != null)
-                    throw new NotImplementedException();
                 _rowsSet = rows;
                 _colsSet = columns;
                 if (_colsSet != null)
@@ -702,6 +702,15 @@ namespace Microsoft.ML.Ext.DataManipulation
                 }
                 else
                     _schema = null;
+                if (_rand != null)
+                {
+                    _shuffled = new int[LastPosition];
+                    for (int i = 0; i < _shuffled.Length; ++i)
+                        _shuffled[i] = i;
+                    Utils.Shuffle(_rand, _shuffled, 0, _shuffled.Length);
+                }
+                else
+                    _shuffled = null;
             }
 
             public ValueGetter<UInt128> GetIdGetter()
@@ -717,7 +726,13 @@ namespace Microsoft.ML.Ext.DataManipulation
             public bool IsColumnActive(int col) { return _needCol(col); }
             public ISchema Schema => _colsSet == null ? _cont.Schema : _schema;
 
-            public long Position => _rowsSet == null ? _position : _rowsSet[_position];
+            public long Position => _rowsSet == null
+                                        ? _position
+                                        : (_shuffled == null 
+                                                ? _rowsSet[_position] 
+                                                : (_position < _shuffled.Length 
+                                                    ?_rowsSet[_shuffled[_position]]
+                                                    : _position));
             int LastPosition => _rowsSet == null ? _cont.Length : _rowsSet.Length;
 
             public CursorState State
@@ -880,7 +895,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// It returns 0 if the difference is below the precision
         /// or the difference otherwise, Inf if shapes or schema are different.
         /// </summary>
-        public double AlmostEquals(DataContainer c, double precision=1e-6f)
+        public double AlmostEquals(DataContainer c, double precision = 1e-6f)
         {
             if (Shape.Item1 != c.Shape.Item1 || Shape.Item2 != c.Shape.Item2)
                 return double.PositiveInfinity;

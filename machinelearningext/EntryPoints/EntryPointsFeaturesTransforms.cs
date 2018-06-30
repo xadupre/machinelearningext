@@ -13,7 +13,7 @@ using Microsoft.ML.Runtime.CommandLine;
 
 namespace Microsoft.ML.Ext.EntryPoints
 {
-    public static class EntryPointFeaturesTransforms
+    public static class EntryPointsFeaturesTransforms
     {
         #region Polynomial
 
@@ -55,7 +55,6 @@ namespace Microsoft.ML.Ext.EntryPoints
     /// </summary>
     public sealed partial class Polynomial : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
     {
-
         public Polynomial()
         {
         }
@@ -146,7 +145,7 @@ namespace Microsoft.ML.Ext.EntryPoints
 
                 Data = dataStep.Data;
             }
-            Output output = EntryPointFeaturesTransforms.Add(experiment, this);
+            Output output = EntryPointsFeaturesTransforms.Add(experiment, this);
             return new PolynomialPipelineStep(output);
         }
 
@@ -263,7 +262,7 @@ namespace Microsoft.ML.Ext.EntryPoints
 
                 Data = dataStep.Data;
             }
-            Output output = EntryPointFeaturesTransforms.Add(experiment, this);
+            Output output = EntryPointsFeaturesTransforms.Add(experiment, this);
             return new ScalerPipelineStep(output);
         }
 
