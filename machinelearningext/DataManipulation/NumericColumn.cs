@@ -116,6 +116,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         public static NumericColumn operator -(NumericColumn c1, float value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
         public static NumericColumn operator -(NumericColumn c1, double value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
 
+        public static NumericColumn operator -(NumericColumn c1) { return DataFrameOpMinusHelper.Operation(c1); }
+
         #endregion
 
         #region ==
