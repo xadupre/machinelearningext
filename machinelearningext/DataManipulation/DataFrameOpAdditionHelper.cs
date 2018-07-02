@@ -304,6 +304,22 @@ namespace Microsoft.ML.Ext.DataManipulation
                         default:
                             throw new DataTypeError(string.Format("{0} not implemented for {1}, {2}.", OperationName, c1.Kind, c2.Kind));
                     }
+                case DataKind.TX:
+                    switch (c2.Kind)
+                    {
+                        case DataKind.TX:
+                            {
+                                DvText[] a;
+                                DvText[] b;
+                                DataColumn<DvBool> res;
+                                Operation(c1, c2, out a, out b, out res);
+                                for (int i = 0; i < res.Length; ++i)
+                                    res.Set(i, new DvText(a[i].ToString() + b[i].ToString()));
+                                return new NumericColumn(res);
+                            }
+                        default:
+                            throw new DataTypeError(string.Format("{0} not implemented for {1}, {2}.", OperationName, c1.Kind, c2.Kind));
+                    }
                 default:
                     throw new DataTypeError(string.Format("{0} not implemented for {1} for left element.", OperationName, c1.Kind));
             }
