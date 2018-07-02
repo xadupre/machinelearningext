@@ -106,10 +106,40 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public void Set(object value)
         {
-            DType dt;
-            ObjectConversion.Convert(ref value, out dt);
-            for (var row = 0; row < Length; ++row)
-                _data[row] = dt;
+            var numCol = value as NumericColumn;
+            if (numCol is null)
+            {
+                var enumerable = value as IEnumerable;
+                if (enumerable == null || value is string || value is DvText)
+                {
+                    DType dt;
+                    ObjectConversion.Convert(ref value, out dt);
+                    for (var row = 0; row < Length; ++row)
+                        _data[row] = dt;
+                }
+                else
+                {
+                    DType[] dt;
+                    ObjectConversion.Convert(ref value, out dt);
+                    for (var row = 0; row < Length; ++row)
+                        _data[row] = dt[row];
+                }
+            }
+            else
+            {
+                var arr = numCol.Column as DataColumn<DType>;
+                if (arr != null)
+                {
+                    DType[] dt = arr.Data;
+                    for (var row = 0; row < Length; ++row)
+                        _data[row] = dt[row];
+                }
+                else
+                {
+                    var t = typeof(DataColumn<DType>);
+                    throw new DataValueError($"Column oof kind {numCol.Column.Kind} cannot be converted into {t}");
+                }
+            }
         }
 
         /// <summary>

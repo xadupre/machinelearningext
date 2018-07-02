@@ -15,6 +15,16 @@ namespace Microsoft.ML.Ext.DataManipulation
     }
 
     /// <summary>
+    /// Raised with irreconceliable values.
+    /// </summary>
+    public class DataValueError : Exception
+    {
+        public DataValueError(string msg) : base(msg)
+        {
+        }
+    }
+
+    /// <summary>
     /// Raised when there is an error in names.
     /// </summary>
     public class DataNameError : Exception
@@ -24,12 +34,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
     }
 
-    public class DataFrameViewException:Exception
+    public class DataFrameViewException : Exception
     {
         /// <summary>
         /// Raised with a operator cannot be done with a DataFrameView.
         /// </summary>
-        public DataFrameViewException(string msg):base(msg)
+        public DataFrameViewException(string msg) : base(msg)
         {
         }
     }

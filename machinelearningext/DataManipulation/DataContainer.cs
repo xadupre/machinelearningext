@@ -272,7 +272,19 @@ namespace Microsoft.ML.Ext.DataManipulation
         public int AddColumn(string name, DataKind kind, int? length, IDataColumn values = null)
         {
             if (_naming.ContainsKey(name))
-                throw new DataNameError(string.Format("Column '{0}' already exists, it cannot be created again.", name));
+            {
+                if (values == null)
+                    throw new DataValueError(string.Format("Values are needed to replace column '{0}'.", name));
+                // Works as replacement.
+                var column = GetColumn(name);
+                if (column.Kind == kind)
+                {
+                    column.Set(values);
+                    return _naming[name];
+                }
+                else
+                    throw new DataNameError(string.Format("Column '{0}' already exists but types are different {1} != {2}", name, column.Kind, kind));
+            }
             if (values != null && ((object)(values as NumericColumn) != null))
                 values = (values as NumericColumn).Column;
             if (_names == null)
