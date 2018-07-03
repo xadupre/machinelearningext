@@ -554,6 +554,20 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[1, 3], 1f);
         }
 
+        [TestMethod]
+        public void TestDataFrameColumnDrop()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            var view = df.Drop(new[] { "AA" });
+            Assert.AreEqual(view.Shape, new Tuple<int, int>(2, 2));
+            Assert.AreEqual(view.iloc[0, 0], 1f);
+            Assert.AreEqual(view.iloc[1, 0], 1.1f);
+        }
+
         #endregion
     }
 }

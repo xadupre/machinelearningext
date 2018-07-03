@@ -34,6 +34,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         #region IDataView API
 
         public ISchema Schema => _schema;
+        public int ColumnCount => _columns == null ? _src.ColumnCount : _columns.Length;
 
         /// <summary>
         /// Can shuffle the data.
@@ -135,6 +136,17 @@ namespace Microsoft.ML.Ext.DataManipulation
             return Copy().Equals(dfv.Copy());
         }
 
+        /// <summary>
+        /// Drops some columns.
+        /// Data is not copied.
+        /// </summary>
+        public DataFrameView Drop(IEnumerable<string> colNames)
+        {
+            var idrop = new HashSet<int>(colNames.Select(c => { int col; Schema.TryGetColumnIndex(c, out col); return col; }));
+            var ikeep = Enumerable.Range(0, ColumnCount).Where(c => !idrop.Contains(c));
+            return new DataFrameView(_src, _rows, ikeep);
+        }
+
         #endregion
 
         #region operators
@@ -169,6 +181,130 @@ namespace Microsoft.ML.Ext.DataManipulation
         public NumericColumn this[string colname]
         {
             get { return GetColumn(colname); }
+        }
+
+        #endregion
+
+        #region loc / iloc
+
+        /// <summary>
+        /// Artefacts inspired from pandas.
+        /// Not necessarily very efficient, it can be used
+        /// to modify one value but should not to modify value
+        /// in a batch.
+        /// </summary>
+        public Iloc iloc => new Iloc(this);
+
+        /// <summary>
+        /// Artefacts inspired from pandas.
+        /// Not necessarily very efficient, it can be used
+        /// to modify one value but should not to modify value
+        /// in a batch.
+        /// </summary>
+        public class Iloc
+        {
+            DataFrameView _parent;
+
+            public Iloc(DataFrameView parent)
+            {
+                _parent = parent;
+            }
+
+            DataFrame AsDataFrame()
+            {
+                var parent = _parent._src as DataFrame;
+                if (parent is null)
+                    throw new NotImplementedException(string.Format("Not implement for type '{0}'.", _parent._src.GetType()));
+                return parent;
+            }
+
+            /// <summary>
+            /// Gets or sets elements [i,j].
+            /// </summary>
+            public object this[int row, int col]
+            {
+                get { return AsDataFrame().iloc[_parent._rows[row], _parent._columns[col]]; }
+                set { AsDataFrame().iloc[_parent._rows[row], col] = value; }
+            }
+
+            /// <summary>
+            /// Changes the value of a column and a subset of rows.
+            /// </summary>
+            public object this[IEnumerable<bool> rows, int col]
+            {
+                set { AsDataFrame().iloc[rows, col] = value; }
+            }
+        }
+
+        /// <summary>
+        /// Artefacts inspired from pandas.
+        /// Not necessarily very efficient, it can be used
+        /// to modify one value but should not to modify value
+        /// in a batch.
+        /// </summary>
+        public Loc loc => new Loc(this);
+
+        /// <summary>
+        /// Artefacts inspired from pandas.
+        /// Not necessarily very efficient, it can be used
+        /// to modify one value but should not to modify value
+        /// in a batch.
+        /// </summary>
+        public class Loc
+        {
+            DataFrameView _parent;
+
+            public Loc(DataFrameView parent)
+            {
+                _parent = parent;
+            }
+
+            DataFrame AsDataFrame()
+            {
+                var parent = _parent._src as DataFrame;
+                if (parent is null)
+                    throw new NotImplementedException(string.Format("Not implement for type '{0}'.", _parent._src.GetType()));
+                return parent;
+            }
+
+            /// <summary>
+            /// Gets or sets elements [i,j].
+            /// </summary>
+            public object this[int row, string col]
+            {
+                get { return AsDataFrame().loc[_parent._rows[row], col]; }
+                set { AsDataFrame().loc[_parent._rows[row], col] = value; }
+            }
+
+            /// <summary>
+            /// Gets or sets elements [i,j].
+            /// </summary>
+            public object this[string col]
+            {
+                set { AsDataFrame().loc[col] = value; }
+            }
+
+            /// <summary>
+            /// Changes the value of a column and a subset of rows.
+            /// </summary>
+            public object this[IEnumerable<int> rows, string col]
+            {
+                get
+                {
+                    int icol;
+                    _parent._src.Schema.TryGetColumnIndex(col, out icol);
+                    return new DataFrameView(_parent._src, rows.Select(c => _parent._rows[c]), new[] { icol });
+                }
+                set { AsDataFrame().loc[rows.Select(c => _parent._rows[c]), col] = value; }
+            }
+
+            /// <summary>
+            /// Changes the value of a column and a subset of rows.
+            /// </summary>
+            public object this[IEnumerable<bool> rows, string col]
+            {
+                set { AsDataFrame().loc[Enumerable.Zip(_parent._rows, rows, (i, b) => b ? -1 : i).Where(c => c >= 0), col] = value; }
+            }
         }
 
         #endregion

@@ -24,6 +24,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         int Length { get; }
 
         /// <summary>
+        /// Returns the number of columns.
+        /// </summary>
+        int ColumnCount { get; }
+
+        /// <summary>
+        /// Returns the shape of the dataframe (number of rows, number of columns).
+        /// </summary>
+        Tuple<int, int> Shape { get; }
+
+        /// <summary>
         /// Returns a copy of the view.
         /// </summary>
         DataFrame Copy();
@@ -52,6 +62,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Retrieves a column by its position.
         /// </summary>
         NumericColumn GetColumn(int col, int[] rows = null);
+
+        /// <summary>
+        /// Drops some columns.
+        /// Data is not copied.
+        /// </summary>
+        DataFrameView Drop(IEnumerable<string> colNames);
     }
 
     /// <summary>
@@ -59,6 +75,9 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// </summary>
     public interface IDataContainer
     {
+        /// <summary>
+        /// Returns a columns based on its position.
+        /// </summary>
         IDataColumn GetColumn(int col);
     }
 
