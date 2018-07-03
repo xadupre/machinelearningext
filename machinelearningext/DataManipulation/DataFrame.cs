@@ -469,7 +469,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = bool.Parse(val);
+                    bool.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.BL, res);
                     continue;
                 }
@@ -484,7 +484,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = int.Parse(val);
+                    int.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.I4, res);
                     continue;
                 }
@@ -500,7 +500,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = uint.Parse(val);
+                    uint.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.U4, res);
                     continue;
                 }
@@ -515,7 +515,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = Int64.Parse(val);
+                    Int64.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.I8, res);
                     continue;
                 }
@@ -530,7 +530,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = float.Parse(val);
+                    float.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.R4, res);
                     continue;
                 }
@@ -545,7 +545,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = double.Parse(val);
+                    double.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.R8, res);
                     continue;
                 }
@@ -831,7 +831,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public NumericColumn this[string colname]
         {
             get { return GetColumn(colname); }
-            set { AddColumn(colname, value as NumericColumn); }
+            set { AddColumn(colname, value); }
         }
 
         /// <summary>

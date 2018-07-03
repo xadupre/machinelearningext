@@ -658,7 +658,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             var host = new TlcEnvironment().Register("Estimate n threads");
             n = DataViewUtils.GetThreadCount(host, n);
             if (n > 1 && (long)n > Length)
-                n = (int)Length;
+                n = Length;
 
             if (n <= 1)
             {

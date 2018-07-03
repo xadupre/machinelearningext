@@ -171,7 +171,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameScoringMultiEntryPoints2()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
 

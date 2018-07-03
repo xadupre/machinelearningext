@@ -292,8 +292,6 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                             ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
                             ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
 
-                            var cols = new HashSet<string>(textCols);
-
                             for (int i = 0; i < _input.Schema.ColumnCount; ++i)
                             {
                                 string name = _input.Schema.GetColumnName(i);
@@ -399,17 +397,17 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                 switch (strategy)
                 {
                     case ScalerStrategy.meanVar:
-                        scalingMethod = ComputeMeanVar(host, colid, obs, out mean, out scale);
+                        scalingMethod = ComputeMeanVar(host, obs, out mean, out scale);
                         break;
                     case ScalerStrategy.minMax:
-                        scalingMethod = ComputeMinMax(host, colid, obs, out mean, out scale);
+                        scalingMethod = ComputeMinMax(host, obs, out mean, out scale);
                         break;
                     default:
                         throw host.ExceptNotSupp($"Unknown scaling strategy {strategy}.");
                 }
             }
 
-            ScalingMethod ComputeMeanVar(IHost host, int col, List<ColumnStatObs> stats,
+            ScalingMethod ComputeMeanVar(IHost host, List<ColumnStatObs> stats,
                                          out VBuffer<float> mean, out VBuffer<float> variance)
             {
                 var nb = stats.Where(c => c.kind == ColumnStatObs.StatKind.nb).ToArray();
@@ -442,7 +440,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                 return ScalingMethod.Affine;
             }
 
-            ScalingMethod ComputeMinMax(IHost host, int col, List<ColumnStatObs> stats,
+            ScalingMethod ComputeMinMax(IHost host, List<ColumnStatObs> stats,
                                         out VBuffer<float> mean, out VBuffer<float> scale)
             {
                 var min = stats.Where(c => c.kind == ColumnStatObs.StatKind.min).ToArray();
@@ -585,7 +583,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                 if (_scalingFactors.ContainsKey(col))
                 {
                     // What do we do with sparse values?
-                    return GetGetterVector(col, _scalingFactors[col]) as ValueGetter<TValue>;
+                    return GetGetterVector(_scalingFactors[col]) as ValueGetter<TValue>;
                 }
                 else if (col < _inputCursor.Schema.ColumnCount)
                     return _inputCursor.GetGetter<TValue>(col);
@@ -593,7 +591,7 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                     throw Contracts.Except("Unexpected columns {0}.", col);
             }
 
-            ValueGetter<VBuffer<float>> GetGetterVector(int col, ScalingFactor scales)
+            ValueGetter<VBuffer<float>> GetGetterVector(ScalingFactor scales)
             {
                 var getter = _inputCursor.GetGetter<VBuffer<float>>(scales.columnId);
                 return (ref VBuffer<float> dst) =>

@@ -37,8 +37,8 @@ namespace Microsoft.ML.Ext.NearestNeighbors
             ctx.Writer.Write((int)algo);
             ctx.Writer.Write((int)weight);
             ctx.Writer.Write((int)distance);
-            ctx.Writer.Write((int)(numThreads ?? -1));
-            ctx.Writer.Write((int)(seed ?? -1));
+            ctx.Writer.Write(numThreads ?? -1);
+            ctx.Writer.Write(seed ?? -1);
             ctx.Writer.Write(string.IsNullOrEmpty(colId) ? "" : colId);
         }
 

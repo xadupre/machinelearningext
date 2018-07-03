@@ -154,8 +154,6 @@ namespace TestMachineLearningExt
             var p4 = new PointIdFloat(3, new List<float>() { 2.0f, 3.0f, 4.0f });
             var p5 = new PointIdFloat(4, new List<float>() { 2.0f, 3.0f, 5.0f });
             var p6 = new PointIdFloat(5, new List<float>() { 2.0f, 3.00001f, 5.00001f });
-            var l1 = (new List<float>() { 1.0f, 2.0f }).GetHashCode();
-            var l2 = (new List<float>() { 1.0f, 2.0f }).GetHashCode();
 
             Assert.IsFalse(p1.GetHashCode() == p2.GetHashCode());
             Assert.IsTrue(p3.GetHashCode() == p4.GetHashCode());

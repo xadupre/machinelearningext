@@ -50,7 +50,6 @@ namespace Microsoft.ML.Ext.TestHelper
         public static string GetTestFile(string name)
         {
             var root = GetRoot();
-            var version = GetUsedMLVersion();
             var full = Path.Combine(root, "data", name);
             if (!File.Exists(full))
                 throw new FileNotFoundException(string.Format("Unable to find '{0}'\nFull='{1}'\nroot='{2}'\ncurrent='{3}'.",

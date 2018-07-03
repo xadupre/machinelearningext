@@ -426,10 +426,10 @@ namespace Microsoft.ML.Ext.FeaturesTransforms
                 };
             }
 
-            public CursorState State { get { return _inputCursor.State; } } // No change.
-            public long Batch { get { return _inputCursor.Batch; } }        // No change.
-            public long Position { get { return _inputCursor.Position; } }  // No change.
-            public ISchema Schema { get { return _view.Schema; } }          // No change.
+            public CursorState State => _inputCursor.State; // No change.
+            public long Batch => _inputCursor.Batch;        // No change.
+            public long Position => _inputCursor.Position;  // No change.
+            public ISchema Schema => _view.Schema;          // No change.
 
             void IDisposable.Dispose()
             {
