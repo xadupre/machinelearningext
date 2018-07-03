@@ -138,7 +138,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #endregion
 
-        #region !=
+        #region !=, !
 
         public static NumericColumn operator !=(NumericColumn c1, NumericColumn c2) { return DataFrameOpNotEqualHelper.Operation(c1, c2); }
         public static NumericColumn operator !=(NumericColumn c1, int value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
@@ -208,6 +208,18 @@ namespace Microsoft.ML.Ext.DataManipulation
         public static NumericColumn operator <=(NumericColumn c1, double value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
         public static NumericColumn operator <=(NumericColumn c1, DvText value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
         public static NumericColumn operator <=(NumericColumn c1, string value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
+
+        #endregion
+
+        #region &, |
+
+        public static NumericColumn operator &(NumericColumn c1, NumericColumn c2) { return DataFrameOpAndHelper.Operation(c1, c2); }
+        public static NumericColumn operator &(NumericColumn c1, bool value) { return DataFrameOpAndHelper.Operation(c1, value); }
+        public static NumericColumn operator &(NumericColumn c1, DvBool value) { return DataFrameOpAndHelper.Operation(c1, value); }
+
+        public static NumericColumn operator |(NumericColumn c1, NumericColumn c2) { return DataFrameOpOrHelper.Operation(c1, c2); }
+        public static NumericColumn operator |(NumericColumn c1, bool value) { return DataFrameOpOrHelper.Operation(c1, value); }
+        public static NumericColumn operator |(NumericColumn c1, DvBool value) { return DataFrameOpOrHelper.Operation(c1, value); }
 
         #endregion
     }

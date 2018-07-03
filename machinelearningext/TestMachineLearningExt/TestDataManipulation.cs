@@ -425,6 +425,38 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[1, 1], 2.1f);
         }
 
+        [TestMethod]
+        public void TestDataFrameOpAnd()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["and"] = (df["AA"] == 0) & (df["BB"] == 1f);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+        }
+
+        [TestMethod]
+        public void TestDataFrameOpOr()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["or"] = (df["AA"] == 1) | (df["BB"] == 1f);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[1, 3], DvBool.True);
+        }
+
         #endregion
 
         #region DataFrame Copy
