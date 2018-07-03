@@ -63,6 +63,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         public int Length { get { return _data.Length; } }
+        public int ColumnCount { get { return _data.ColumnCount; } }
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
@@ -469,7 +470,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = bool.Parse(val);
+                    bool.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.BL, res);
                     continue;
                 }
@@ -484,7 +485,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = int.Parse(val);
+                    int.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.I4, res);
                     continue;
                 }
@@ -500,7 +501,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = uint.Parse(val);
+                    uint.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.U4, res);
                     continue;
                 }
@@ -515,7 +516,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = Int64.Parse(val);
+                    Int64.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.I8, res);
                     continue;
                 }
@@ -530,7 +531,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = float.Parse(val);
+                    float.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.R4, res);
                     continue;
                 }
@@ -545,7 +546,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
                 try
                 {
-                    var v = double.Parse(val);
+                    double.Parse(val);
                     res = DetermineDataKind(nbline == 0, DataKind.R8, res);
                     continue;
                 }
@@ -730,6 +731,14 @@ namespace Microsoft.ML.Ext.DataManipulation
                 _parent = parent;
             }
 
+            DataContainer AsDataContainer()
+            {
+                var dc = _parent._data as DataContainer;
+                if (dc == null)
+                    throw new DataTypeError(string.Format("Unexpected container type '{0}'.", _parent._data.GetType()));
+                return dc;
+            }
+
             /// <summary>
             /// Gets or sets elements [i,j].
             /// </summary>
@@ -740,10 +749,20 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
 
             /// <summary>
+            /// Gets or sets elements [i,j].
+            /// </summary>
+            public object this[IEnumerable<int> rows, int col]
+            {
+                get { return new DataFrameView(_parent, rows, new[] { col }); }
+                set { _parent._data[rows, col] = value; }
+            }
+
+            /// <summary>
             /// Changes the value of a column and a subset of rows.
             /// </summary>
             public object this[IEnumerable<bool> rows, int col]
             {
+                get { return new DataFrameView(_parent, rows.Select((c, i) => c ? -1 : i).Where(c => c >= 0), new[] { col }); }
                 set { _parent._data[rows, col] = value; }
             }
         }
@@ -795,6 +814,20 @@ namespace Microsoft.ML.Ext.DataManipulation
             {
                 set { _parent._data[rows, col] = value; }
             }
+
+            /// <summary>
+            /// Gets or sets elements [i,j].
+            /// </summary>
+            public object this[IEnumerable<int> rows, string col]
+            {
+                get
+                {
+                    int icol;
+                    _parent.Schema.TryGetColumnIndex(col, out icol);
+                    return new DataFrameView(_parent, rows, new[] { icol });
+                }
+                set { _parent._data[rows, col] = value; }
+            }
         }
 
         #endregion
@@ -831,7 +864,15 @@ namespace Microsoft.ML.Ext.DataManipulation
         public NumericColumn this[string colname]
         {
             get { return GetColumn(colname); }
-            set { AddColumn(colname, value as NumericColumn); }
+            set { AddColumn(colname, value); }
+        }
+
+        /// <summary>
+        /// Returns a list of columns.
+        /// </summary>
+        public DataFrameView this[IEnumerable<string> colNames]
+        {
+            get { return new DataFrameView(this, null, colNames.Select(c => _data.GetColumnIndex(c))); }
         }
 
         /// <summary>
@@ -925,17 +966,28 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public DataFrameView this[NumericColumn rows, string colname]
+        public DataFrameView this[NumericColumn rows, string colName]
         {
-            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), new[] { _data.GetColumnIndex(colname) }); }
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), new[] { _data.GetColumnIndex(colName) }); }
         }
 
         /// <summary>
         /// Returns a column.
         /// </summary>
-        public DataFrameView this[NumericColumn rows, IEnumerable<string> colnames]
+        public DataFrameView this[NumericColumn rows, IEnumerable<string> colNames]
         {
-            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), colnames.Select(c => _data.GetColumnIndex(c))); }
+            get { return new DataFrameView(this, _data.EnumerateRowsIndex(rows), colNames.Select(c => _data.GetColumnIndex(c))); }
+        }
+
+        /// <summary>
+        /// Drops some columns.
+        /// Data is not copied.
+        /// </summary>
+        public DataFrameView Drop(IEnumerable<string> colNames)
+        {
+            var idrop = new HashSet<int>(colNames.Select(c => _data.GetColumnIndex(c)));
+            var ikeep = Enumerable.Range(0, ColumnCount).Where(c => !idrop.Contains(c));
+            return new DataFrameView(this, null, ikeep);
         }
 
         #endregion

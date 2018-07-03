@@ -198,7 +198,7 @@ namespace Microsoft.ML.Ext.TestHelper
             using (var fs = File.OpenRead(outModelFilePath))
             {
                 var model = env.LoadPredictorOrNull(fs);
-                scorer = CreateDefaultScorer(env, roles, predictor);
+                scorer = CreateDefaultScorer(env, roles, IPredictorFromPredictor(model));
                 saver = env.CreateSaver("Text");
                 using (var fs2 = File.Create(outData2))
                     saver.SaveData(fs2, scorer, columns);

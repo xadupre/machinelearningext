@@ -187,17 +187,6 @@ namespace Microsoft.ML.Ext.NearestNeighbors
             ((ICollection)_minHeap.Items).CopyTo(array, index);
         }
 
-        /// <summary>
-        /// Gets a value indicating whether access to the ICollection is synchronized with the SyncRoot.
-        /// </summary>
-        bool IsSynchronized
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         /// <summary>Implements a binary heap that prioritizes smaller values.</summary>
         private sealed class MinBinaryHeap
         {

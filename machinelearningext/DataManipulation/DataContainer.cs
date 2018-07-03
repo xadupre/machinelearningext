@@ -118,6 +118,11 @@ namespace Microsoft.ML.Ext.DataManipulation
         public int Length => _length;
 
         /// <summary>
+        /// Returns the number of columns.
+        /// </summary>
+        public int ColumnCount => _names.Count;
+
+        /// <summary>
         /// Returns the name of a column.
         /// </summary>
         public string GetColumnName(int col) { return _names[col]; }
@@ -272,7 +277,19 @@ namespace Microsoft.ML.Ext.DataManipulation
         public int AddColumn(string name, DataKind kind, int? length, IDataColumn values = null)
         {
             if (_naming.ContainsKey(name))
-                throw new DataNameError(string.Format("Column '{0}' already exists, it cannot be created again.", name));
+            {
+                if (values == null)
+                    throw new DataValueError(string.Format("Values are needed to replace column '{0}'.", name));
+                // Works as replacement.
+                var column = GetColumn(name);
+                if (column.Kind == kind)
+                {
+                    column.Set(values);
+                    return _naming[name];
+                }
+                else
+                    throw new DataNameError(string.Format("Column '{0}' already exists but types are different {1} != {2}", name, column.Kind, kind));
+            }
             if (values != null && ((object)(values as NumericColumn) != null))
                 values = (values as NumericColumn).Column;
             if (_names == null)
@@ -646,7 +663,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             var host = new TlcEnvironment().Register("Estimate n threads");
             n = DataViewUtils.GetThreadCount(host, n);
             if (n > 1 && (long)n > Length)
-                n = (int)Length;
+                n = Length;
 
             if (n <= 1)
             {
@@ -1090,7 +1107,23 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <summary>
         /// Changes the value of a column and a subset of rows.
         /// </summary>
+        public object this[IEnumerable<int> rows, int col]
+        {
+            set { GetColumn(col).Set(rows, value); }
+        }
+
+        /// <summary>
+        /// Changes the value of a column and a subset of rows.
+        /// </summary>
         public object this[IEnumerable<bool> rows, string col]
+        {
+            set { GetColumn(col).Set(rows, value); }
+        }
+
+        /// <summary>
+        /// Changes the value of a column and a subset of rows.
+        /// </summary>
+        public object this[IEnumerable<int> rows, string col]
         {
             set { GetColumn(col).Set(rows, value); }
         }

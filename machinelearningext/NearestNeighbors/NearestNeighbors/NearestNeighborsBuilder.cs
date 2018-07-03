@@ -38,7 +38,7 @@ namespace Microsoft.ML.Ext.NearestNeighbors
             if (nt == 1)
             {
                 labelsWeights = new Dictionary<long, Tuple<TLabel, float>>[1];
-                kdtrees = new KdTree[] { BuildKDTree<TLabel>(ch, data,cursors[0],  featureIndex, labelIndex, idIndex, weightIndex,
+                kdtrees = new KdTree[] { BuildKDTree<TLabel>(data,cursors[0],  featureIndex, labelIndex, idIndex, weightIndex,
                     out labelsWeights[0], args) };
             }
             else
@@ -54,7 +54,7 @@ namespace Microsoft.ML.Ext.NearestNeighbors
                     kdtrees[i] = null;
                     ops[i] = new Action(() =>
                     {
-                        kdtrees[chunkId] = BuildKDTree<TLabel>(ch, data, cursors[chunkId],
+                        kdtrees[chunkId] = BuildKDTree<TLabel>(data, cursors[chunkId],
                             featureIndex, labelIndex, idIndex, weightIndex,
                             out labelsWeights[chunkId], args);
                     });
@@ -104,7 +104,7 @@ namespace Microsoft.ML.Ext.NearestNeighbors
             return new NearestNeighborsTrees(ch, kdtrees);
         }
 
-        private static KdTree BuildKDTree<TLabel>(IChannel ch, IDataView data, IRowCursor cursor,
+        private static KdTree BuildKDTree<TLabel>(IDataView data, IRowCursor cursor,
                         int featureIndex, int labelIndex, int idIndex, int weightIndex,
                         out Dictionary<long, Tuple<TLabel, float>> labelsWeights, NearestNeighborsArguments args)
             where TLabel : IComparable<TLabel>

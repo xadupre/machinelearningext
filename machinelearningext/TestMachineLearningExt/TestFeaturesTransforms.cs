@@ -50,7 +50,6 @@ namespace TestMachineLearningExt
             CommonTestPolynomialTransform(host, data, 5, out values);
 
             List<float[]> valuesDense;
-            var inputsDense = inputs.Select(c => new ExampleA() { X = c.X.DenseValues().ToArray() }).ToArray();
             data = host.CreateStreamingDataView(inputs);
             CommonTestPolynomialTransform(host, data, 5, out valuesDense);
 
@@ -160,6 +159,7 @@ namespace TestMachineLearningExt
             var data = host.CreateTransform("Poly{col=X}", loader);
             var res = DataFrame.ReadView(data);
             var txt = res.ToString();
+            Assert.IsFalse(string.IsNullOrEmpty(txt));
             var exp = "A,B,X.0,X.1,X.2,X.3,X.4\n1.0,2.0,1.0,2.0,1.0,2.0,4.0\n2.0,3.0,2.0,3.0,4.0,6.0,9.0\n10.0,11.0,10.0,11.0,100.0,110.0,121.0";
             var dfexp = DataFrame.ReadStr(exp);
             Assert.AreEqual(0, dfexp.AlmostEquals(res, exc: true, printDf: true));
@@ -261,7 +261,6 @@ namespace TestMachineLearningExt
             CommonTestScalerTransform(host, data, 5, ScalerTransform.ScalerStrategy.meanVar, out values);
 
             List<float[]> valuesDense;
-            var inputsDense = inputs.Select(c => new ExampleA() { X = c.X.DenseValues().ToArray() }).ToArray();
             data = host.CreateStreamingDataView(inputs);
             CommonTestScalerTransform(host, data, 5, ScalerTransform.ScalerStrategy.meanVar, out valuesDense);
 
@@ -340,7 +339,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestScalerTransformLearningPipeline()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
 

@@ -171,7 +171,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameScoringMultiEntryPoints2()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
 
@@ -377,6 +376,86 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[1, 3], DvBool.True);
         }
 
+        [TestMethod]
+        public void TestDataFrameOpMinusUni()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["min"] = -df["AA"];
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], (DvInt4)0);
+            Assert.AreEqual(df.iloc[1, 3], (DvInt4)(-1));
+        }
+
+        [TestMethod]
+        public void TestDataFrameOpNotUni()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["min"] = !(df["AA"] == 1);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+        }
+
+        [TestMethod]
+        public void TestDataFrameOpPlusEqual()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["BB"] += df["AA"];
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+            Assert.AreEqual(df.iloc[0, 1], 1f);
+            Assert.AreEqual(df.iloc[1, 1], 2.1f);
+        }
+
+        [TestMethod]
+        public void TestDataFrameOpAnd()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["and"] = (df["AA"] == 0) & (df["BB"] == 1f);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+        }
+
+        [TestMethod]
+        public void TestDataFrameOpOr()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["or"] = (df["AA"] == 1) | (df["BB"] == 1f);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[1, 3], DvBool.True);
+        }
+
         #endregion
 
         #region DataFrame Copy
@@ -455,6 +534,38 @@ namespace TestMachineLearningExt
             df.AddColumn("x", new float[] { 0.5f, 1.5f });
             var tx = df.ToString();
             Assert.AreEqual(tx, "i,x\n0,0.5\n1,1.5");
+        }
+
+        #endregion
+
+        #region dataframe function
+
+        [TestMethod]
+        public void TestDataFrameColumnApply()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["fAA"] = df["AA"].Apply((ref DvInt4 vin, ref float vout) => { vout = (float)vin; });
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], 0f);
+            Assert.AreEqual(df.iloc[1, 3], 1f);
+        }
+
+        [TestMethod]
+        public void TestDataFrameColumnDrop()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            var view = df.Drop(new[] { "AA" });
+            Assert.AreEqual(view.Shape, new Tuple<int, int>(2, 2));
+            Assert.AreEqual(view.iloc[0, 0], 1f);
+            Assert.AreEqual(view.iloc[1, 0], 1.1f);
         }
 
         #endregion
