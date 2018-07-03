@@ -203,6 +203,46 @@ namespace Microsoft.ML.Ext.DataManipulation
             return (_data as DType2[]).Select(c => predicate(c));
         }
 
+        public int[] Sort(bool ascending = true, bool inplace = true)
+        {
+            if (inplace)
+            {
+                Array.Sort(_data);
+                if (!ascending)
+                    Array.Reverse(_data);
+                return null;
+            }
+            else
+            {
+                int[] order = null;
+                Sort(ref order, ascending);
+                return order;
+            }
+        }
+
+        public void Sort(ref int[] order, bool ascending = true)
+        {
+            if (order == null)
+            {
+                order = new int[Length];
+                for (int i = 0; i < order.Length; ++i)
+                    order[i] = i;
+            }
+
+            if (ascending)
+                Array.Sort(order, (x, y) => _data[x].CompareTo(_data[y]));
+            else
+                Array.Sort(order, (x, y) => -_data[x].CompareTo(_data[y]));
+        }
+
+        public void Order(int[] order)
+        {
+            DType[] data = new DType[Length];
+            for (int i = 0; i < Length; ++i)
+                data[i] = Data[order[i]];
+            _data = data;
+        }
+
         #endregion
 
         #region getter and comparison
@@ -243,7 +283,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Applies the same function on every value of the column.
         /// </summary>
         public NumericColumn Apply<TSrc, TDst>(ValueMapper<TSrc, TDst> mapper)
-            where TDst: IEquatable<TDst>, IComparable<TDst>
+            where TDst : IEquatable<TDst>, IComparable<TDst>
         {
             var maptyped = mapper as ValueMapper<DType, TDst>;
             if (maptyped == null)

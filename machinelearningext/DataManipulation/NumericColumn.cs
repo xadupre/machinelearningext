@@ -51,6 +51,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             return Column.Apply(mapper);
         }
 
+        public void Sort(ref int[] order, bool ascending = true) { Column.Sort(ref order, ascending); }
+        public int[] Sort(bool ascending = true, bool inplace = true) { return Column.Sort(ascending, inplace); }
+        public void Order(int[] order) { Column.Order(order); }
+
         #endregion
 
         #region Set + Enumerator

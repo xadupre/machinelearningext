@@ -168,5 +168,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         NumericColumn Apply<TSrc, TDst>(ValueMapper<TSrc, TDst> mapper)
             where TDst : IEquatable<TDst>, IComparable<TDst>;
+
+        /// <summary>
+        /// Sorts the column. Returns the order 
+        /// </summary>
+        void Sort(ref int[] order, bool ascending = true);
+        int[] Sort(bool ascending = true, bool inplace = true);
+
+        /// <summary>
+        /// Order the rows.
+        /// </summary>
+        void Order(int[] order);
     }
 }
