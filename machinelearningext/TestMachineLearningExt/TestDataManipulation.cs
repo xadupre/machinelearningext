@@ -394,6 +394,22 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
+        public void TestDataFrameOpNotUni()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            var tos = df.ToString();
+            Assert.AreEqual(text, tos);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["min"] = !(df["AA"] == 1);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+        }
+
+        [TestMethod]
         public void TestDataFrameOpPlusEqual()
         {
             var env = EnvHelper.NewTestEnvironment();

@@ -151,6 +151,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         public static NumericColumn operator !=(NumericColumn c1, DvBool value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
         public static NumericColumn operator !=(NumericColumn c1, string value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
 
+        public static NumericColumn operator !(NumericColumn c1) { return DataFrameOpNotHelper.Operation(c1); }
+
         #endregion
 
         #region >
