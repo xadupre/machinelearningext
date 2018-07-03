@@ -138,5 +138,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// verfies the condition.
         /// </summary>
         IEnumerable<bool> Filter<TSource>(Func<TSource, bool> predicate);
+
+        /// <summary>
+        /// Applies the same function on every value of the column. Example:
+        /// <code>
+        /// var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+        /// var df = DataFrame.ReadStr(text);
+        /// df["fAA"] = df["AA"].Apply((ref DvInt4 vin, ref float vout) => { vout = (float)vin; });
+        /// </code>
+        /// </summary>
+        NumericColumn Apply<TSrc, TDst>(ValueMapper<TSrc, TDst> mapper)
+            where TDst : IEquatable<TDst>, IComparable<TDst>;
     }
 }

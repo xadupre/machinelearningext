@@ -236,5 +236,24 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         #endregion
+
+        #region dataframe functions
+
+        /// <summary>
+        /// Applies the same function on every value of the column.
+        /// </summary>
+        public NumericColumn Apply<TSrc, TDst>(ValueMapper<TSrc, TDst> mapper)
+            where TDst: IEquatable<TDst>, IComparable<TDst>
+        {
+            var maptyped = mapper as ValueMapper<DType, TDst>;
+            if (maptyped == null)
+                throw new DataValueError("Unexpected input type for this column.");
+            var res = new DataColumn<TDst>(Length);
+            for (int i = 0; i < res.Length; ++i)
+                maptyped(ref Data[i], ref res.Data[i]);
+            return new NumericColumn(res);
+        }
+
+        #endregion
     }
 }

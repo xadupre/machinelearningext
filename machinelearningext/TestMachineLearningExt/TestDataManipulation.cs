@@ -537,6 +537,24 @@ namespace TestMachineLearningExt
         }
 
         #endregion
+
+        #region dataframe function
+
+        [TestMethod]
+        public void TestDataFrameColumnApply()
+        {
+            var env = EnvHelper.NewTestEnvironment();
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            df["fAA"] = df["AA"].Apply((ref DvInt4 vin, ref float vout) => { vout = (float)vin; });
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
+            Assert.AreEqual(df.iloc[0, 3], 0f);
+            Assert.AreEqual(df.iloc[1, 3], 1f);
+        }
+
+        #endregion
     }
 }
 

@@ -46,6 +46,11 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ValueGetter<DType> GetGetter<DType>(IRowCursor cursor) => _column.GetGetter<DType>(cursor);
         public bool Equals(IDataColumn col) => _column.Equals(col);
 
+        public NumericColumn Apply<TSrc, TDst>(ValueMapper<TSrc, TDst> mapper) where TDst : IEquatable<TDst>, IComparable<TDst>
+        {
+            return Column.Apply(mapper);
+        }
+
         #endregion
 
         #region Set + Enumerator
