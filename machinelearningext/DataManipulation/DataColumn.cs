@@ -239,7 +239,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             var data = new DType[Length];
             for (int i = 0; i < Length; ++i)
-                data[i] = Data[order[i]];
+                data[i] = _data[order[i]];
             _data = data;
         }
 

@@ -612,16 +612,16 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[2, 0], (DvInt4)1);
-            Assert.AreEqual(df.iloc[0, 1], 1f);
-            Assert.AreEqual(df.iloc[1, 1], -1.1f);
+            Assert.AreEqual(df.iloc[0, 1], -1.1f);
+            Assert.AreEqual(df.iloc[1, 1], 1f);
             Assert.AreEqual(df.iloc[2, 1], 1.1f);
 
             df.Sort<DvInt4, float>(new[] { "AA", "BB" }, false);
             Assert.AreEqual(df.iloc[2, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[0, 0], (DvInt4)1);
-            Assert.AreEqual(df.iloc[2, 1], 1f);
-            Assert.AreEqual(df.iloc[1, 1], -1.1f);
+            Assert.AreEqual(df.iloc[2, 1], -1.1f);
+            Assert.AreEqual(df.iloc[1, 1], 1f);
             Assert.AreEqual(df.iloc[0, 1], 1.1f);
         }
 
