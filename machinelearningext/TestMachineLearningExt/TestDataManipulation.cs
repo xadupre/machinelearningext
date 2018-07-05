@@ -2,6 +2,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 using System.IO;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Ext.DataManipulation;
@@ -17,12 +18,17 @@ namespace TestMachineLearningExt
     [TestClass]
     public class TestDataManipulation
     {
+        #region automated generation
+
+
+
+        #endregion
+
         #region DataFrame IO
 
         [TestMethod]
         public void TestReadCsvSimple()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t');
             Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
@@ -53,7 +59,7 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestReadView()
         {
-            var env = EnvHelper.NewTestEnvironment();
+            var env = EnvHelper.NewTestEnvironment(conc: 1);
             var iris = FileHelper.GetTestFile("iris.txt");
             var loader = DataFrame.ReadCsvToTextLoader(iris, sep: '\t', host: env.Register("TextLoader"));
             var df = DataFrame.ReadView(loader);
@@ -71,7 +77,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestReadViewEqual()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var iris = FileHelper.GetTestFile("iris.txt");
             var loader = DataFrame.ReadCsvToTextLoader(iris, sep: '\t');
             var df1 = DataFrame.ReadCsv(iris, sep: '\t');
@@ -84,7 +89,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestReadTextLoaderSimple()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var iris = FileHelper.GetTestFile("iris.txt");
             var loader = DataFrame.ReadCsvToTextLoader(iris, sep: '\t');
             var sch = loader.Schema;
@@ -97,7 +101,6 @@ namespace TestMachineLearningExt
         public void TestReadToCsv()
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var env = EnvHelper.NewTestEnvironment();
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t');
             var outfile = FileHelper.GetOutputFile("iris_copy.txt", methodName);
@@ -108,7 +111,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestReadStr()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var iris = FileHelper.GetTestFile("iris.txt");
             var df1 = DataFrame.ReadCsv(iris, sep: '\t');
             var content = File.ReadAllText(iris);
@@ -192,7 +194,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOperation()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -223,7 +224,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpMult()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -244,7 +244,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpMinus()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -265,7 +264,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpEqual()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -294,7 +292,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpDiv()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -315,7 +312,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpSup()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -331,7 +327,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpSupEqual()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -347,7 +342,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpInf()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -363,7 +357,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpInfEqual()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -379,7 +372,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpMinusUni()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -395,7 +387,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpNotUni()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -411,7 +402,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpPlusEqual()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -427,7 +417,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpAnd()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -443,7 +432,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOpOr()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -463,7 +451,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOperationSet()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -476,7 +463,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOperationIEnumerable()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -491,7 +477,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameOperationCopy()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             var tos = df.ToString();
@@ -506,7 +491,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataViewFrame()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,2.1,text3";
             var df = DataFrame.ReadStr(text);
             var view = df[new int[] { 0, 2 }, new int[] { 0, 2 }];
@@ -543,7 +527,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameColumnApply()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -557,7 +540,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameColumnDrop()
         {
-            var env = EnvHelper.NewTestEnvironment();
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
             var df = DataFrame.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -566,6 +548,103 @@ namespace TestMachineLearningExt
             Assert.AreEqual(view.Shape, new Tuple<int, int>(2, 2));
             Assert.AreEqual(view.iloc[0, 0], 1f);
             Assert.AreEqual(view.iloc[1, 0], 1.1f);
+        }
+
+        [TestMethod]
+        public void TestDataFrameSortColumn()
+        {
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            var order = df["AA"].Sort(false, false);
+            Assert.AreEqual(order.Length, 2);
+            Assert.AreEqual(order[0], 1);
+            Assert.AreEqual(order[1], 0);
+
+            df["AA"].Sort(false, true);
+            Assert.AreEqual(order.Length, 2);
+            Assert.AreEqual(df.iloc[0, 0], (DvInt4)1);
+            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
+        }
+
+        [TestMethod]
+        public void TestDataFrameEnumerateItems()
+        {
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+
+            var el1 = df.EnumerateItems<DvInt4>(new[] { "AA" }).Select(c => c.ToTuple()).ToArray();
+            Assert.AreEqual(el1.Length, 2);
+            Assert.AreEqual(el1[0].Item1, 0);
+            Assert.AreEqual(el1[1].Item1, 1);
+
+            var el2 = df.EnumerateItems<DvInt4, float>(new[] { "AA", "BB" }).Select(c => c.ToTuple()).ToArray();
+            Assert.AreEqual(el2.Length, 2);
+            Assert.AreEqual(el2[0].Item1, 0);
+            Assert.AreEqual(el2[1].Item1, 1);
+            Assert.AreEqual(el2[0].Item2, 1f);
+            Assert.AreEqual(el2[1].Item2, 1.1f);
+
+            var el3 = df.EnumerateItems<DvInt4, float, DvText>(new[] { "AA", "BB", "CC" }).Select(c => c.ToTuple()).ToArray();
+            Assert.AreEqual(el3.Length, 2);
+            Assert.AreEqual(el3[0].Item1, 0);
+            Assert.AreEqual(el3[1].Item1, 1);
+            Assert.AreEqual(el3[0].Item2, 1f);
+            Assert.AreEqual(el3[1].Item2, 1.1f);
+            Assert.AreEqual(el3[0].Item3, new DvText("text"));
+            Assert.AreEqual(el3[1].Item3, new DvText("text2"));
+        }
+
+        #endregion
+
+        #region SQL function
+
+        [TestMethod]
+        public void TestDataFrameSort()
+        {
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
+
+            df.Sort<DvInt4, float>(new[] { "AA", "BB" });
+            Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[2, 0], (DvInt4)1);
+            Assert.AreEqual(df.iloc[0, 1], -1.1f);
+            Assert.AreEqual(df.iloc[1, 1], 1f);
+            Assert.AreEqual(df.iloc[2, 1], 1.1f);
+
+            df.Sort<DvInt4, float>(new[] { "AA", "BB" }, false);
+            Assert.AreEqual(df.iloc[2, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[0, 0], (DvInt4)1);
+            Assert.AreEqual(df.iloc[2, 1], -1.1f);
+            Assert.AreEqual(df.iloc[1, 1], 1f);
+            Assert.AreEqual(df.iloc[0, 1], 1.1f);
+        }
+
+        [TestMethod]
+        public void TestDataFrameSortView()
+        {
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
+            var view = df[new int[] { 1, 2 }];
+            Assert.AreEqual(view.Length, 2);
+
+            view.Sort<DvInt4, float>(new[] { "AA", "BB" });
+            Assert.AreEqual(view.iloc[0, 0], (DvInt4)0);
+            Assert.AreEqual(view.iloc[1, 0], (DvInt4)1);
+            Assert.AreEqual(view.iloc[0, 1], -1.1f);
+            Assert.AreEqual(view.iloc[1, 1], 1.1f);
+
+            view.Sort<DvInt4, float>(new[] { "AA", "BB" }, false);
+            Assert.AreEqual(view.iloc[1, 0], (DvInt4)0);
+            Assert.AreEqual(view.iloc[0, 0], (DvInt4)1);
+            Assert.AreEqual(view.iloc[1, 1], -1.1f);
+            Assert.AreEqual(view.iloc[0, 1], 1.1f);
         }
 
         #endregion

@@ -18,7 +18,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         ISchema _schema;
 
         public int[] ALL { get { return null; } }
-        public int Length { get { return _src.Length; } }
+        public int Length { get { return _rows == null ? _src.Length : _rows.Length; } }
 
         /// <summary>
         /// Initializes a view on a dataframe.
@@ -145,6 +145,27 @@ namespace Microsoft.ML.Ext.DataManipulation
             var idrop = new HashSet<int>(colNames.Select(c => { int col; Schema.TryGetColumnIndex(c, out col); return col; }));
             var ikeep = Enumerable.Range(0, ColumnCount).Where(c => !idrop.Contains(c));
             return new DataFrameView(_src, _rows, ikeep);
+        }
+
+        public IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return _src.EnumerateItems<T1>(columns, ascending, rows == null ? _rows : rows.Select(c => _rows[c]));
+        }
+
+        public IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            return _src.EnumerateItems<T1, T2>(columns, ascending, rows == null ? _rows : rows.Select(c => _rows[c]));
+        }
+
+        public IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+                where T1 : IEquatable<T1>, IComparable<T1>
+                where T2 : IEquatable<T2>, IComparable<T2>
+                where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            return _src.EnumerateItems<T1, T2, T3>(columns, ascending, rows == null ? _rows : rows.Select(c => _rows[c]));
         }
 
         #endregion
@@ -305,6 +326,57 @@ namespace Microsoft.ML.Ext.DataManipulation
             {
                 set { AsDataFrame().loc[Enumerable.Zip(_parent._rows, rows, (i, b) => b ? -1 : i).Where(c => c >= 0), col] = value; }
             }
+        }
+
+        #endregion
+
+        #region SQL function
+
+        /// <summary>
+        /// Reorders the rows.
+        /// </summary>
+        public void Order(int[] order)
+        {
+            if (_rows == null)
+                _rows = order;
+            else
+            {
+                var data = new int[Length];
+                for (int i = 0; i < Length; ++i)
+                    data[i] = _rows[order[i]];
+                _rows = data;
+            }
+        }
+
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        public void Sort<T1>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            DataFrameSorting.Sort<T1>(this, ref _rows, columns, ascending);
+        }
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        public void Sort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            DataFrameSorting.Sort<T1, T2>(this, ref _rows, columns, ascending);
+        }
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        public void Sort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            DataFrameSorting.Sort<T1, T2, T3>(this, ref _rows, columns, ascending);
         }
 
         #endregion
