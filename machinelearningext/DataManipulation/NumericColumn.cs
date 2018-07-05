@@ -54,6 +54,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public void Sort(ref int[] order, bool ascending = true) { Column.Sort(ref order, ascending); }
         public int[] Sort(bool ascending = true, bool inplace = true) { return Column.Sort(ascending, inplace); }
         public void Order(int[] order) { Column.Order(order); }
+        public GetterAt<DType> GetGetterAt<DType>() where DType : IEquatable<DType>, IComparable<DType> { return Column.GetGetterAt<DType>(); }
 
         #endregion
 

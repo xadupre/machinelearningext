@@ -68,6 +68,24 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Data is not copied.
         /// </summary>
         DataFrameView Drop(IEnumerable<string> colNames);
+
+        /// <summary>
+        /// Enumerates tuples of items.
+        /// </summary>
+        /// <typeparam name="TTuple">item type</typeparam>
+        /// <param name="columns">list of columns to select</param>
+        /// <param name="ascending">order</param>
+        /// <param name="rows">subset of rows</param>
+        /// <returns></returns>
+        IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>;
+        IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>;
+        IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>;
     }
 
     /// <summary>
@@ -80,6 +98,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         IDataColumn GetColumn(int col);
     }
+
+    public delegate void GetterAt<DType>(int i, ref DType value);
 
     /// <summary>
     /// Interface for a column container.
@@ -110,6 +130,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Returns the element at position row
         /// </summary>
         object Get(int row);
+
+        /// <summary>
+        /// Get a getter for a specific location.
+        /// </summary>
+        GetterAt<DType> GetGetterAt<DType>()
+            where DType : IEquatable<DType>, IComparable<DType>;
 
         /// <summary>
         /// Updates value at position row

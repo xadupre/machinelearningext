@@ -990,6 +990,60 @@ namespace Microsoft.ML.Ext.DataManipulation
             return new DataFrameView(this, null, ikeep);
         }
 
+        public IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1: IEquatable<T1>, IComparable<T1>
+        {
+            var cols = columns.ToArray();
+            if (cols.Length != 1)
+                throw new DataTypeError("This function expects one column.");
+            var getter = GetColumn(cols[0]).GetGetterAt<T1>();
+            var value = new MutableTuple<T1>();
+            for(int i = 0; i < Length;++i)
+            {
+                getter(i, ref value.Item1);
+                yield return value;
+            }
+        }
+
+        public IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            var cols = columns.ToArray();
+            if (cols.Length != 2)
+                throw new DataTypeError("This function expects two columns.");
+            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
+            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
+            var value = new MutableTuple<T1, T2>();
+            for (int i = 0; i < Length; ++i)
+            {
+                g1(i, ref value.Item1);
+                g2(i, ref value.Item2);
+                yield return value;
+            }
+        }
+
+        public IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            var cols = columns.ToArray();
+            if (cols.Length != 3)
+                throw new DataTypeError("This function expects three columns.");
+            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
+            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
+            var g3 = GetColumn(cols[2]).GetGetterAt<T3>();
+            var value = new MutableTuple<T1, T2, T3>();
+            for (int i = 0; i < Length; ++i)
+            {
+                g1(i, ref value.Item1);
+                g2(i, ref value.Item2);
+                g3(i, ref value.Item3);
+                yield return value;
+            }
+        }
+
         #endregion
     }
 }

@@ -147,6 +147,27 @@ namespace Microsoft.ML.Ext.DataManipulation
             return new DataFrameView(_src, _rows, ikeep);
         }
 
+        public IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return _src.EnumerateItems<T1>(columns, ascending, rows == null ? _rows : rows.Select(c => _rows[c]));
+        }
+
+        public IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            return _src.EnumerateItems<T1, T2>(columns, ascending, rows == null ? _rows : rows.Select(c => _rows[c]));
+        }
+
+        public IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+                where T1 : IEquatable<T1>, IComparable<T1>
+                where T2 : IEquatable<T2>, IComparable<T2>
+                where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            return _src.EnumerateItems<T1, T2, T3>(columns, ascending, rows == null ? _rows : rows.Select(c => _rows[c]));
+        }
+
         #endregion
 
         #region operators

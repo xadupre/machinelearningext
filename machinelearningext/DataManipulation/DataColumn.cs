@@ -243,6 +243,20 @@ namespace Microsoft.ML.Ext.DataManipulation
             _data = data;
         }
 
+        public GetterAt<DType2> GetGetterAt<DType2>()
+            where DType2 : IEquatable<DType2>, IComparable<DType2>
+        {
+            var res = GetGetterAtCore() as GetterAt<DType2>;
+            if (res == null)
+                throw new DataTypeError("Type mismatch.");
+            return res;
+        }
+
+        public GetterAt<DType> GetGetterAtCore()
+        {
+            return (int i, ref DType value) => { value = _data[i]; };
+        }
+
         #endregion
 
         #region getter and comparison
