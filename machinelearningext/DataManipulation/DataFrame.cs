@@ -991,14 +991,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         public IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
-            where T1: IEquatable<T1>, IComparable<T1>
+            where T1 : IEquatable<T1>, IComparable<T1>
         {
             var cols = columns.ToArray();
             if (cols.Length != 1)
                 throw new DataTypeError("This function expects one column.");
             var getter = GetColumn(cols[0]).GetGetterAt<T1>();
             var value = new MutableTuple<T1>();
-            for(int i = 0; i < Length;++i)
+            for (int i = 0; i < Length; ++i)
             {
                 getter(i, ref value.Item1);
                 yield return value;
@@ -1042,6 +1042,54 @@ namespace Microsoft.ML.Ext.DataManipulation
                 g3(i, ref value.Item3);
                 yield return value;
             }
+        }
+
+        #endregion
+
+        #region SQL functions
+
+        /// <summary>
+        /// Order the rows.
+        /// </summary>
+        public void Order(int[] order)
+        {
+            _data.Order(order);
+        }
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        public void Sort<T1>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            int[] order = null;
+            DataFrameSorting.Sort<T1>(this, ref order, columns, ascending);
+            Order(order);
+        }
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        public void Sort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            int[] order = null;
+            DataFrameSorting.Sort<T1, T2>(this, ref order, columns, ascending);
+            Order(order);
+        }
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        public void Sort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            int[] order = null;
+            DataFrameSorting.Sort<T1, T2, T3>(this, ref order, columns, ascending);
+            Order(order);
         }
 
         #endregion

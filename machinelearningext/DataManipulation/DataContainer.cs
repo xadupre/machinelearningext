@@ -812,6 +812,15 @@ namespace Microsoft.ML.Ext.DataManipulation
         #region comparison
 
         /// <summary>
+        /// Order the rows.
+        /// </summary>
+        public void Order(int[] order)
+        {
+            for (int i = 0; i < ColumnCount; ++i)
+                GetColumn(i).Order(order);
+        }
+
+        /// <summary>
         /// Checks that containers are exactly the same.
         /// </summary>
         public static bool operator ==(DataContainer c1, DataContainer c2)

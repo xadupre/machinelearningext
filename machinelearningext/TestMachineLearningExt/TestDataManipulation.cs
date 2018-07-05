@@ -18,6 +18,12 @@ namespace TestMachineLearningExt
     [TestClass]
     public class TestDataManipulation
     {
+        #region automated generation
+
+
+
+        #endregion
+
         #region DataFrame IO
 
         [TestMethod]
@@ -589,6 +595,56 @@ namespace TestMachineLearningExt
             Assert.AreEqual(el3[1].Item2, 1.1f);
             Assert.AreEqual(el3[0].Item3, new DvText("text"));
             Assert.AreEqual(el3[1].Item3, new DvText("text2"));
+        }
+
+        #endregion
+
+        #region SQL function
+
+        [TestMethod]
+        public void TestDataFrameSort()
+        {
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
+
+            df.Sort<DvInt4, float>(new[] { "AA", "BB" });
+            Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[2, 0], (DvInt4)1);
+            Assert.AreEqual(df.iloc[0, 1], 1f);
+            Assert.AreEqual(df.iloc[1, 1], -1.1f);
+            Assert.AreEqual(df.iloc[2, 1], 1.1f);
+
+            df.Sort<DvInt4, float>(new[] { "AA", "BB" }, false);
+            Assert.AreEqual(df.iloc[2, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[0, 0], (DvInt4)1);
+            Assert.AreEqual(df.iloc[2, 1], 1f);
+            Assert.AreEqual(df.iloc[1, 1], -1.1f);
+            Assert.AreEqual(df.iloc[0, 1], 1.1f);
+        }
+
+        [TestMethod]
+        public void TestDataFrameSortView()
+        {
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";
+            var df = DataFrame.ReadStr(text);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
+            var view = df[new int[] { 1, 2 }];
+            Assert.AreEqual(view.Length, 2);
+
+            view.Sort<DvInt4, float>(new[] { "AA", "BB" });
+            Assert.AreEqual(view.iloc[0, 0], (DvInt4)0);
+            Assert.AreEqual(view.iloc[1, 0], (DvInt4)1);
+            Assert.AreEqual(view.iloc[0, 1], -1.1f);
+            Assert.AreEqual(view.iloc[1, 1], 1.1f);
+
+            view.Sort<DvInt4, float>(new[] { "AA", "BB" }, false);
+            Assert.AreEqual(view.iloc[1, 0], (DvInt4)0);
+            Assert.AreEqual(view.iloc[0, 0], (DvInt4)1);
+            Assert.AreEqual(view.iloc[1, 1], -1.1f);
+            Assert.AreEqual(view.iloc[0, 1], 1.1f);
         }
 
         #endregion

@@ -9,86 +9,6 @@ using Microsoft.ML.Runtime.Data;
 namespace Microsoft.ML.Ext.DataManipulation
 {
     /// <summary>
-    /// Interface for dataframes and dataframe views.
-    /// </summary>
-    public interface IDataFrameView : IDataView, IEquatable<IDataFrameView>
-    {
-        /// <summary>
-        /// All rows or all columns.
-        /// </summary>
-        int[] ALL { get; }
-
-        /// <summary>
-        /// Returns the number of rows.
-        /// </summary>
-        int Length { get; }
-
-        /// <summary>
-        /// Returns the number of columns.
-        /// </summary>
-        int ColumnCount { get; }
-
-        /// <summary>
-        /// Returns the shape of the dataframe (number of rows, number of columns).
-        /// </summary>
-        Tuple<int, int> Shape { get; }
-
-        /// <summary>
-        /// Returns a copy of the view.
-        /// </summary>
-        DataFrame Copy();
-
-        /// <summary>
-        /// Returns a copy of a subpart.
-        /// </summary>
-        DataFrame Copy(IEnumerable<int> rows, IEnumerable<int> columns);
-
-        /// <summary>
-        /// Sames a GetRowCursor but on a subset of the data.
-        /// </summary>
-        IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null);
-
-        /// <summary>
-        /// Sames a GetRowCursorSet but on a subset of the data.
-        /// </summary>
-        IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null);
-
-        /// <summary>
-        /// Retrieves a column by its name.
-        /// </summary>
-        NumericColumn GetColumn(string colname, int[] rows = null);
-
-        /// <summary>
-        /// Retrieves a column by its position.
-        /// </summary>
-        NumericColumn GetColumn(int col, int[] rows = null);
-
-        /// <summary>
-        /// Drops some columns.
-        /// Data is not copied.
-        /// </summary>
-        DataFrameView Drop(IEnumerable<string> colNames);
-
-        /// <summary>
-        /// Enumerates tuples of items.
-        /// </summary>
-        /// <typeparam name="TTuple">item type</typeparam>
-        /// <param name="columns">list of columns to select</param>
-        /// <param name="ascending">order</param>
-        /// <param name="rows">subset of rows</param>
-        /// <returns></returns>
-        IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
-            where T1 : IEquatable<T1>, IComparable<T1>;
-        IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>;
-        IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-            where T3 : IEquatable<T3>, IComparable<T3>;
-    }
-
-    /// <summary>
     /// Interface for a data container held by a dataframe.
     /// </summary>
     public interface IDataContainer
@@ -97,6 +17,11 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Returns a columns based on its position.
         /// </summary>
         IDataColumn GetColumn(int col);
+
+        /// <summary>
+        /// Orders the rows.
+        /// </summary>
+        void Order(int[] order);
     }
 
     public delegate void GetterAt<DType>(int i, ref DType value);
@@ -202,8 +127,116 @@ namespace Microsoft.ML.Ext.DataManipulation
         int[] Sort(bool ascending = true, bool inplace = true);
 
         /// <summary>
-        /// Order the rows.
+        /// Orders the rows.
         /// </summary>
         void Order(int[] order);
+    }
+
+    /// <summary>
+    /// Interface for dataframes and dataframe views.
+    /// </summary>
+    public interface IDataFrameView : IDataView, IEquatable<IDataFrameView>
+    {
+        /// <summary>
+        /// All rows or all columns.
+        /// </summary>
+        int[] ALL { get; }
+
+        /// <summary>
+        /// Returns the number of rows.
+        /// </summary>
+        int Length { get; }
+
+        /// <summary>
+        /// Returns the number of columns.
+        /// </summary>
+        int ColumnCount { get; }
+
+        /// <summary>
+        /// Returns the shape of the dataframe (number of rows, number of columns).
+        /// </summary>
+        Tuple<int, int> Shape { get; }
+
+        /// <summary>
+        /// Returns a copy of the view.
+        /// </summary>
+        DataFrame Copy();
+
+        /// <summary>
+        /// Returns a copy of a subpart.
+        /// </summary>
+        DataFrame Copy(IEnumerable<int> rows, IEnumerable<int> columns);
+
+        /// <summary>
+        /// Sames a GetRowCursor but on a subset of the data.
+        /// </summary>
+        IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null);
+
+        /// <summary>
+        /// Sames a GetRowCursorSet but on a subset of the data.
+        /// </summary>
+        IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null);
+
+        /// <summary>
+        /// Retrieves a column by its name.
+        /// </summary>
+        NumericColumn GetColumn(string colname, int[] rows = null);
+
+        /// <summary>
+        /// Retrieves a column by its position.
+        /// </summary>
+        NumericColumn GetColumn(int col, int[] rows = null);
+
+        /// <summary>
+        /// Drops some columns.
+        /// Data is not copied.
+        /// </summary>
+        DataFrameView Drop(IEnumerable<string> colNames);
+
+        /// <summary>
+        /// Orders the rows.
+        /// </summary>
+        void Order(int[] order);
+
+        /// <summary>
+        /// Enumerates tuples of MutableTuple.
+        /// The iterated items are reused.
+        /// </summary>
+        /// <typeparam name="TTuple">item type</typeparam>
+        /// <param name="columns">list of columns to select</param>
+        /// <param name="ascending">order</param>
+        /// <param name="rows">subset of rows</param>
+        /// <returns>enumerator on MutableTuple</returns>
+        IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>;
+        IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>;
+        IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>;
+
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        void Sort<T1>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>;
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        void Sort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>;
+
+        /// <summary>
+        /// Sorts by rows.
+        /// </summary>
+        void Sort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>;
     }
 }

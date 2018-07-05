@@ -237,7 +237,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         public void Order(int[] order)
         {
-            DType[] data = new DType[Length];
+            var data = new DType[Length];
             for (int i = 0; i < Length; ++i)
                 data[i] = Data[order[i]];
             _data = data;
@@ -248,7 +248,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             var res = GetGetterAtCore() as GetterAt<DType2>;
             if (res == null)
-                throw new DataTypeError("Type mismatch.");
+                throw new DataTypeError(string.Format("Type mismatch bytween {0} (expected) and {1} (given).", typeof(DType), typeof(DType2)));
             return res;
         }
 
