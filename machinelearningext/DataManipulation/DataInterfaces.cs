@@ -61,6 +61,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         IDataColumn Copy(IEnumerable<int> rows);
 
         /// <summary>
+        /// Creates a new column with the same type but a new length and a constant value.
+        /// </summary>
+        IDataColumn Create(int n, bool NA = false);
+
+        /// <summary>
+        /// Concatenates multiple columns for the same type.
+        /// </summary>
+        IDataColumn Concat(IEnumerable<IDataColumn> cols);
+
+        /// <summary>
         /// Returns the element at position row
         /// </summary>
         object Get(int row);
@@ -170,6 +180,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Returns the number of rows.
         /// </summary>
         int Length { get; }
+
+        /// <summary>
+        /// Returns the list of columns.
+        /// </summary>
+        string[] Columns { get; }
+
+        /// <summary>
+        /// Returns the list of types.
+        /// </summary>
+        DataKind[] Kinds { get; }
 
         /// <summary>
         /// Returns the number of columns.

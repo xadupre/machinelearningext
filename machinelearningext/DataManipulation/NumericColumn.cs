@@ -55,6 +55,18 @@ namespace Microsoft.ML.Ext.DataManipulation
         public int[] Sort(bool ascending = true, bool inplace = true) { return Column.Sort(ascending, inplace); }
         public void Order(int[] order) { Column.Order(order); }
         public GetterAt<DType> GetGetterAt<DType>() where DType : IEquatable<DType>, IComparable<DType> { return Column.GetGetterAt<DType>(); }
+        public IDataColumn Create(int n, bool NA = false) { return Column.Create(n, NA); }
+
+        public IDataColumn Concat(IEnumerable<IDataColumn> cols)
+        {
+            var filt = new List<IDataColumn>();
+            foreach (var col in cols)
+            {
+                var cast = col as NumericColumn;
+                filt.Add(cast is null ? col : cast.Column);
+            }
+            return new NumericColumn(filt[0].Concat(filt));
+        }
 
         #endregion
 

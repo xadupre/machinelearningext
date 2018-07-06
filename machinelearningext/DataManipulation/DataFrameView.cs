@@ -112,6 +112,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         public Tuple<int, int> Shape => new Tuple<int, int>(_rows.Length, _columns.Length);
 
         /// <summary>
+        /// Returns the list of columns.
+        /// </summary>
+        public string[] Columns => _columns == null ? _src.Columns : _columns.Select(c => _src.Columns[c]).ToArray();
+
+        /// <summary>
+        /// Returns the list of types.
+        /// </summary>
+        public DataKind[] Kinds => _columns == null ? _src.Kinds : _columns.Select(c => _src.Kinds[c]).ToArray();
+
+        /// <summary>
         /// A view cannot be modified by adding a column.
         /// </summary>
         public int AddColumn(string name, DataKind kind, int? length)

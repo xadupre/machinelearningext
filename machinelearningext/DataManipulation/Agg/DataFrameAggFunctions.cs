@@ -15,16 +15,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             switch (func)
             {
+                case AggregatedFunction.Mean:
                 case AggregatedFunction.Count:
                     return (DvBool[] arr) => { return DvBool.NA; };
+                case AggregatedFunction.Max:
                 case AggregatedFunction.Sum:
                     return (DvBool[] arr) => { return arr.Aggregate((a, b) => a | b); };
                 case AggregatedFunction.Min:
                     return (DvBool[] arr) => { return arr.Aggregate((a, b) => a & b); };
-                case AggregatedFunction.Max:
-                    return (DvBool[] arr) => { return arr.Aggregate((a, b) => a | b); };
-                case AggregatedFunction.Mean:
-                    return (DvBool[] arr) => { return DvBool.NA; };
                 default:
                     throw new NotImplementedException($"Unkown aggregated function ${func}.");
             }
@@ -129,6 +127,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             switch (func)
             {
+                case AggregatedFunction.Mean:
                 case AggregatedFunction.Count:
                     return (DvText[] arr) => { return DvText.NA; };
                 case AggregatedFunction.Sum:
@@ -137,8 +136,6 @@ namespace Microsoft.ML.Ext.DataManipulation
                     return (DvText[] arr) => { return arr.Aggregate((a, b) => a.CompareTo(b) <= 0 ? a : b); };
                 case AggregatedFunction.Max:
                     return (DvText[] arr) => { return arr.Aggregate((a, b) => a.CompareTo(b) >= 0 ? a : b); };
-                case AggregatedFunction.Mean:
-                    return (DvText[] arr) => { return DvText.NA; };
                 default:
                     throw new NotImplementedException($"Unkown aggregated function ${func}.");
             }

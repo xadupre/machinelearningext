@@ -84,6 +84,8 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         public int Length { get { return _data.Length; } }
         public int ColumnCount { get { return _data.ColumnCount; } }
+        public string[] Column { get { return _data.Columns; } }
+        public DataKind[] Kinds { get { return _data.Kinds; } }
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
@@ -129,6 +131,11 @@ namespace Microsoft.ML.Ext.DataManipulation
             df._data = _data.Copy(rows, columns);
             return df;
         }
+
+        /// <summary>
+        /// Returns the list of columns.
+        /// </summary>
+        public string[] Columns => _data.Columns;
 
         #endregion
 
@@ -1158,6 +1165,49 @@ namespace Microsoft.ML.Ext.DataManipulation
         public DataFrame Count()
         {
             return Aggregate(AggregatedFunction.Count);
+        }
+
+        /// <summary>
+        /// Concatenates many dataframes.
+        /// </summary>
+        public static DataFrame Concat(IEnumerable<IDataFrameView> views)
+        {
+            var arr = views.ToArray();
+            int length = arr.Select(c => c.Length).Sum();
+            var unique = new HashSet<string>();
+            var ordered = new List<string>();
+            foreach (var df in arr)
+            {
+                for (int i = 0; i < df.ColumnCount; ++i)
+                {
+                    var c = df.Schema.GetColumnName(i);
+                    if (!unique.Contains(c))
+                    {
+                        unique.Add(c);
+                        ordered.Add(c);
+                    }
+                }
+            }
+
+            var res = new DataFrame(arr.All(c => c.CanShuffle));
+            int index;
+            foreach (var col in ordered)
+            {
+                var conc = new List<IDataColumn>();
+                var first = arr.Where(df => df.Schema.TryGetColumnIndex(col, out index))
+                               .Select(df => df.GetColumn(col))
+                               .First();
+                foreach (var df in arr)
+                {
+                    if (!df.Schema.TryGetColumnIndex(col, out index))
+                        conc.Add(first.Create(df.Length, true));
+                    else
+                        conc.Add(df.GetColumn(col));
+                }
+                var concCol = first.Concat(conc);
+                res.AddColumn(col, concCol);
+            }
+            return res;
         }
 
         #endregion

@@ -122,6 +122,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         public int ColumnCount => _names.Count;
 
         /// <summary>
+        /// Returns the list of columns.
+        /// </summary>
+        public string[] Columns => _names.ToArray();
+
+        /// <summary>
+        /// Returns the list of columns.
+        /// </summary>
+        public DataKind[] Kinds => _kinds.ToArray();
+
+        /// <summary>
         /// Returns the name of a column.
         /// </summary>
         public string GetColumnName(int col) { return _names[col]; }
@@ -275,7 +285,11 @@ namespace Microsoft.ML.Ext.DataManipulation
             if (kinds == null)
                 kinds = GuessKinds(array);
             foreach (var pair in kinds)
-                AddColumn(pair.Key, pair.Value, array.Length, CreateColumn(pair.Value, array.Select(c => c[pair.Key])));
+            {
+                var values = array.Select(c => c.ContainsKey(pair.Key) ? c[pair.Key] : DataFrameMissingValue.GetMissingValue(pair.Value, array.Where(d => d.ContainsKey(pair.Key)).Select(e => e[pair.Key]).First())).ToArray();
+                var data = CreateColumn(pair.Value, values);
+                AddColumn(pair.Key, pair.Value, array.Length, data);
+            }
         }
 
         Dictionary<string, DataKind> GuessKinds(Dictionary<string, object>[] rows)

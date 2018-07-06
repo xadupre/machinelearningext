@@ -711,6 +711,42 @@ namespace TestMachineLearningExt
             Assert.AreEqual(text, su.ToString());
         }
 
+        [TestMethod]
+        public void TestDataFrameConcatenate()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+            };
+            var df = new DataFrame(rows);
+            var conc = DataFrame.Concat(new[] { df, df });
+            Assert.AreEqual(conc.Shape, new Tuple<int, int>(4, 3));
+
+            rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f } },
+            };
+            var df2 = new DataFrame(rows);
+            conc = DataFrame.Concat(new[] { df, df2 });
+            Assert.AreEqual(conc.Shape, new Tuple<int, int>(4, 3));
+            Assert.AreEqual(conc.iloc[0, 0], (DvInt4)0);
+            Assert.AreEqual(conc.iloc[3, 2], DvText.Empty);
+            Assert.AreEqual(conc.iloc[2, 0], (DvInt4)0);
+
+            rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"BB", 1f }, {"CC", new DvText("text") } },
+                new Dictionary<string, object>() { {"AA", (DvInt4)1 }, {"BB", 1.1f } },
+            };
+            df2 = new DataFrame(rows);
+            conc = DataFrame.Concat(new[] { df, df2 });
+            Assert.AreEqual(conc.Shape, new Tuple<int, int>(4, 3));
+            Assert.AreEqual(conc.iloc[2, 0], DvInt4.NA);
+            Assert.AreEqual(conc.iloc[3, 2], DvText.NA);
+        }
+
         #endregion
     }
 }

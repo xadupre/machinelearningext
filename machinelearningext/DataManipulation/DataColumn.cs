@@ -47,6 +47,60 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Creates a new column with the same type but a new length and a constant value.
+        /// </summary>
+        public IDataColumn Create(int n, bool NA = false)
+        {
+            var res = new DataColumn<DType>(n);
+            if (NA)
+            {
+                switch (Kind)
+                {
+                    case DataKind.Bool:
+                        res.Set(DvBool.NA);
+                        break;
+                    case DataKind.I4:
+                        res.Set(DvInt4.NA);
+                        break;
+                    case DataKind.U4:
+                        res.Set(0);
+                        break;
+                    case DataKind.I8:
+                        res.Set(DvInt8.NA);
+                        break;
+                    case DataKind.R4:
+                        res.Set(float.NaN);
+                        break;
+                    case DataKind.R8:
+                        res.Set(double.NaN);
+                        break;
+                    case DataKind.TX:
+                        res.Set(DvText.NA);
+                        break;
+                    default:
+                        throw new NotImplementedException($"No missing value convention for type '{Kind}'.");
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Concatenates multiple columns for the same type.
+        /// </summary>
+        public IDataColumn Concat(IEnumerable<IDataColumn> cols)
+        {
+            var data = new List<DType>();
+            foreach (var col in cols)
+            {
+                var cast = col as DataColumn<DType>;
+                if (cast == null)
+                    throw new DataTypeError($"Unable to cast {col.GetType()} in {GetType()}.");
+                data.AddRange(cast._data);
+            }
+            return new DataColumn<DType>(data.ToArray());
+        }
+
+        /// <summary>
         /// Number of elements.
         /// </summary>
         public int Length => (_data == null ? 0 : _data.Length);
@@ -100,6 +154,15 @@ namespace Microsoft.ML.Ext.DataManipulation
         public void Set(int row, DType value)
         {
             _data[row] = value;
+        }
+
+        /// <summary>
+        /// Changes all values.
+        /// </summary>
+        public void Set(DType value)
+        {
+            for (int i = 0; i < _data.Length; ++i)
+                _data[i] = value;
         }
 
         /// <summary>
@@ -333,7 +396,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             return converted;
         }
 
-        ValueMapper<DType, DType> GetGenericConverter()
+        static ValueMapper<DType, DType> GetGenericConverter()
         {
             return (ref DType src, ref DType dst) => { dst = src; };
         }
@@ -356,7 +419,6 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         public IDataColumn Aggregate(AggregatedFunction func, int[] rows = null)
         {
-            IEnumerable<DType> iter = rows == null ? _data : rows.Select(c => _data[c]);
             if (typeof(DType) == typeof(DvBool))
                 return new DataColumn<DvBool>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvBool)), rows) });
             if (typeof(DType) == typeof(DvInt4))
