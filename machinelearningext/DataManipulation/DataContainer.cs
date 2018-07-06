@@ -339,7 +339,7 @@ namespace Microsoft.ML.Ext.DataManipulation
                     {
                         return new DataColumn<DvBool>(values.Select(c => (DvBool)c).ToArray());
                     }
-                    catch (InvalidCastException e)
+                    catch (InvalidCastException)
                     {
                         return new DataColumn<DvBool>(values.Select(c => (DvBool)(bool)c).ToArray());
                     }
@@ -1251,6 +1251,33 @@ namespace Microsoft.ML.Ext.DataManipulation
         public object this[IEnumerable<int> rows, string col]
         {
             set { GetColumn(col).Set(rows, value); }
+        }
+
+        #endregion
+
+        #region SQL functions
+
+        /// <summary>
+        /// Aggregates over all rows.
+        /// </summary>
+        public DataContainer Aggregate(AggregatedFunction agg, int[] rows = null, int[] columns = null)
+        {
+            var res = new DataContainer();
+            if (columns == null)
+            {
+                for (int i = 0; i < ColumnCount; ++i)
+                    res.AddColumn(_names[i], _kinds[i], 1, GetColumn(i).Aggregate(agg, rows));
+            }
+            else
+            {
+                int i;
+                for (int c = 0; c < columns.Length; ++c)
+                {
+                    i = columns[c];
+                    res.AddColumn(_names[i], _kinds[i], 1, GetColumn(i).Aggregate(agg, rows));
+                }
+            }
+            return res;
         }
 
         #endregion

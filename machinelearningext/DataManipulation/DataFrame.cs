@@ -28,7 +28,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public bool CanShuffle => _shuffle;
 
-
         public int[] ALL { get { return null; } }
 
         #endregion
@@ -42,6 +41,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         public DataFrame(bool shuffle = true)
         {
             _data = new DataContainer();
+            _shuffle = shuffle;
+        }
+
+        /// <summary>
+        /// Initializes an empty dataframe.
+        /// </summary>
+        /// <param name="shuffle">The dataframe can be shuffled.</param>
+        DataFrame(DataContainer data, bool shuffle)
+        {
+            _data = data;
             _shuffle = shuffle;
         }
 
@@ -1101,6 +1110,54 @@ namespace Microsoft.ML.Ext.DataManipulation
             int[] order = null;
             DataFrameSorting.Sort<T1, T2, T3>(this, ref order, columns, ascending);
             Order(order);
+        }
+
+        /// <summary>
+        /// Aggregates over all rows.
+        /// </summary>
+        public DataFrame Aggregate(AggregatedFunction func, int[] rows = null, int[] columns = null)
+        {
+            return new DataFrame(_data.Aggregate(func, rows, columns), _shuffle);
+        }
+
+        /// <summary>
+        /// Sum over all rows.
+        /// </summary>
+        public DataFrame Sum()
+        {
+            return Aggregate(AggregatedFunction.Sum);
+        }
+
+        /// <summary>
+        /// Min over all rows.
+        /// </summary>
+        public DataFrame Min()
+        {
+            return Aggregate(AggregatedFunction.Min);
+        }
+
+        /// <summary>
+        /// Max over all rows.
+        /// </summary>
+        public DataFrame Max()
+        {
+            return Aggregate(AggregatedFunction.Max);
+        }
+
+        /// <summary>
+        /// Average over all rows.
+        /// </summary>
+        public DataFrame Mean()
+        {
+            return Aggregate(AggregatedFunction.Mean);
+        }
+
+        /// <summary>
+        /// Average over all rows.
+        /// </summary>
+        public DataFrame Count()
+        {
+            return Aggregate(AggregatedFunction.Count);
         }
 
         #endregion

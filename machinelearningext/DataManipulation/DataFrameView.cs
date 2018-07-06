@@ -379,6 +379,62 @@ namespace Microsoft.ML.Ext.DataManipulation
             DataFrameSorting.Sort<T1, T2, T3>(this, ref _rows, columns, ascending);
         }
 
+        /// <summary>
+        /// Aggregates over all rows.
+        /// </summary>
+        public DataFrame Aggregate(AggregatedFunction agg, int[] rows = null, int[] columns = null)
+        {
+            if (rows == null)
+                rows = _rows;
+            else
+                rows = rows.Select(c => _rows[c]).ToArray();
+            if (columns == null)
+                columns = _columns;
+            else
+                columns = columns.Select(c => _columns[c]).ToArray();
+            return _src.Aggregate(agg, rows, columns);
+        }
+
+        /// <summary>
+        /// Sum over all rows.
+        /// </summary>
+        public DataFrame Sum()
+        {
+            return Aggregate(AggregatedFunction.Sum, _rows, _columns);
+        }
+
+        /// <summary>
+        /// Min over all rows.
+        /// </summary>
+        public DataFrame Min()
+        {
+            return Aggregate(AggregatedFunction.Min, _rows, _columns);
+        }
+
+        /// <summary>
+        /// Max over all rows.
+        /// </summary>
+        public DataFrame Max()
+        {
+            return Aggregate(AggregatedFunction.Max, _rows, _columns);
+        }
+
+        /// <summary>
+        /// Average over all rows.
+        /// </summary>
+        public DataFrame Mean()
+        {
+            return Aggregate(AggregatedFunction.Mean, _rows, _columns);
+        }
+
+        /// <summary>
+        /// Average over all rows.
+        /// </summary>
+        public DataFrame Count()
+        {
+            return Aggregate(AggregatedFunction.Count, _rows, _columns);
+        }
+
         #endregion
     }
 }

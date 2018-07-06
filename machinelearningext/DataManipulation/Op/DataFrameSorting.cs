@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace Microsoft.ML.Ext.DataManipulation
 {
+    /// <summary>
+    /// Implements sorting functions for dataframe.
+    /// </summary>
     public static class DataFrameSorting
     {
         static void Sort<T>(IDataFrameView df, ref int[] order, T[] keys, bool ascending)

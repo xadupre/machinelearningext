@@ -232,5 +232,15 @@ namespace Microsoft.ML.Ext.DataManipulation
         public static NumericColumn operator |(NumericColumn c1, DvBool value) { return DataFrameOpOrHelper.Operation(c1, value); }
 
         #endregion
+
+        #region aggregation
+
+        public TSource Aggregate<TSource>(Func<TSource, TSource, TSource> func, int[] rows = null) { return Column.Aggregate(func, null); }
+
+        public TSource Aggregate<TSource>(Func<TSource[], TSource> func, int[] rows = null) { return Column.Aggregate(func, null); }
+
+        public IDataColumn Aggregate(AggregatedFunction func, int[] rows = null) { return Column.Aggregate(func, rows); }
+
+        #endregion
     }
 }

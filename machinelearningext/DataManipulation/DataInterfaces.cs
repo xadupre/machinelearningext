@@ -8,6 +8,15 @@ using Microsoft.ML.Runtime.Data;
 
 namespace Microsoft.ML.Ext.DataManipulation
 {
+    public enum AggregatedFunction
+    {
+        Sum = 1,
+        Count = 2,
+        Mean = 3,
+        Min = 4,
+        Max = 5
+    }
+
     /// <summary>
     /// Interface for a data container held by a dataframe.
     /// </summary>
@@ -130,6 +139,21 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Orders the rows.
         /// </summary>
         void Order(int[] order);
+
+        /// <summary>
+        /// Aggregate a column.
+        /// </summary>
+        TSource Aggregate<TSource>(Func<TSource, TSource, TSource> func, int[] rows = null);
+
+        /// <summary>
+        /// Aggregate a column.
+        /// </summary>
+        TSource Aggregate<TSource>(Func<TSource[], TSource> func, int[] rows = null);
+
+        /// <summary>
+        /// Aggregate a column and produces another column.
+        /// </summary>
+        IDataColumn Aggregate(AggregatedFunction func, int[] rows = null);
     }
 
     /// <summary>
@@ -217,7 +241,6 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>;
 
-
         /// <summary>
         /// Sorts by rows.
         /// </summary>
@@ -238,5 +261,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>;
+
+        /// <summary>
+        /// Aggregates over all rows.
+        /// </summary>
+        DataFrame Aggregate(AggregatedFunction agg, int[] rows = null, int[] columns = null);
     }
 }

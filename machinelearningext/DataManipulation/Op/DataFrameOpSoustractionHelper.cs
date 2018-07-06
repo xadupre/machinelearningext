@@ -6,7 +6,7 @@ using Microsoft.ML.Runtime.Data;
 namespace Microsoft.ML.Ext.DataManipulation
 {
     /// <summary>
-    /// Implements addition for DataFrame for many types.
+    /// Implements operator for DataFrame for many types.
     /// </summary>
     public static class DataFrameOpSoustractionHelper
     {

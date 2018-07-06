@@ -647,6 +647,7 @@ namespace TestMachineLearningExt
             Assert.AreEqual(view.iloc[1, 1], -1.1f);
             Assert.AreEqual(view.iloc[0, 1], 1.1f);
         }
+
         [TestMethod]
         public void TestDataFrameDict()
         {
@@ -668,6 +669,46 @@ namespace TestMachineLearningExt
             df = new DataFrame(rows2);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
             Assert.AreEqual(text, df.ToString());
+        }
+
+        [TestMethod]
+        public void TestDataFrameAggregated()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+            };
+            var df = new DataFrame(rows);
+            var su = df.Sum();
+            Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
+            var text = "AA,BB,CC\n1,2.1,texttext2";
+            Assert.AreEqual(text, su.ToString());
+
+            su = df.Min();
+            Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
+            text = "AA,BB,CC\n0,1,text";
+            Assert.AreEqual(text, su.ToString());
+
+            su = df.Max();
+            Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
+            text = "AA,BB,CC\n1,1.1,text2";
+            Assert.AreEqual(text, su.ToString());
+
+            su = df.Mean();
+            Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
+            text = "AA,BB,CC\n0,1.05,";
+            Assert.AreEqual(text, su.ToString());
+
+            su = df.Count();
+            Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
+            text = "AA,BB,CC\n2,2,";
+            Assert.AreEqual(text, su.ToString());
+
+            su = df[new[] { 0 }].Count();
+            Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
+            text = "AA,BB,CC\n1,1,";
+            Assert.AreEqual(text, su.ToString());
         }
 
         #endregion
