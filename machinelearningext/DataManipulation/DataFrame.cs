@@ -1209,6 +1209,27 @@ namespace Microsoft.ML.Ext.DataManipulation
             return res;
         }
 
+        public DataFrameViewGroupResults<Tuple<T1>> GroupBy<T1>(IEnumerable<string> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return new DataFrameView(this, null, null).GroupBy<T1>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<Tuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            return new DataFrameView(this, null, null).GroupBy<T1, T2>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<Tuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            return new DataFrameView(this, null, null).GroupBy<T1, T2, T3>(cols, sort);
+        }
+
         #endregion
     }
 }

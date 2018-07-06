@@ -286,5 +286,18 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Aggregates over all rows.
         /// </summary>
         DataFrame Aggregate(AggregatedFunction agg, int[] rows = null, int[] columns = null);
+
+        /// <summary>
+        /// Groupby.
+        /// </summary>
+        DataFrameViewGroupResults<Tuple<T1>> GroupBy<T1>(IEnumerable<string> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>;
+        DataFrameViewGroupResults<Tuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>;
+        DataFrameViewGroupResults<Tuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>;
     }
 }
