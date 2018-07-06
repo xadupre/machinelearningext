@@ -2,6 +2,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using Microsoft.ML.Runtime.Data;
@@ -645,6 +646,28 @@ namespace TestMachineLearningExt
             Assert.AreEqual(view.iloc[0, 0], (DvInt4)1);
             Assert.AreEqual(view.iloc[1, 1], -1.1f);
             Assert.AreEqual(view.iloc[0, 1], 1.1f);
+        }
+        [TestMethod]
+        public void TestDataFrameDict()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+            };
+            var df = new DataFrame(rows);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+            var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
+            Assert.AreEqual(text, df.ToString());
+
+            var rows2 = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", (DvInt4)0 }, {"BB", 1f }, {"CC", new DvText("text") } },
+                new Dictionary<string, object>() { {"AA", (DvInt4)1 }, {"BB", 1.1f }, {"CC", new DvText("text2") } },
+            };
+            df = new DataFrame(rows2);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+            Assert.AreEqual(text, df.ToString());
         }
 
         #endregion

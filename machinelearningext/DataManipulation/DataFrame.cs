@@ -50,6 +50,17 @@ namespace Microsoft.ML.Ext.DataManipulation
             _shuffle = shuffle;
         }
 
+        /// <summary>
+        /// Creates a dataframe from a list of dictionaries.
+        /// If *kinds* is null, the function guesses the types from
+        /// the first row.
+        /// </summary>
+        public DataFrame(IEnumerable<Dictionary<string, object>> rows,
+                         Dictionary<string, DataKind> kinds = null)
+        {
+            _data = new DataContainer(rows, kinds);
+        }
+
         #endregion
 
         #region IDataView API

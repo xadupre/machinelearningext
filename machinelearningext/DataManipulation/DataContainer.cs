@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
@@ -263,6 +262,125 @@ namespace Microsoft.ML.Ext.DataManipulation
             _schema = new DataContainerSchema(this);
         }
 
+        /// <summary>
+        /// Creates a dataframe from a list of dictionaries.
+        /// If *kinds* is null, the function guesses the types from
+        /// the first row.
+        /// </summary>
+        public DataContainer(IEnumerable<Dictionary<string, object>> rows,
+                             Dictionary<string, DataKind> kinds = null)
+        {
+            var array = rows.ToArray();
+            _init();
+            if (kinds == null)
+                kinds = GuessKinds(array);
+            foreach (var pair in kinds)
+                AddColumn(pair.Key, pair.Value, array.Length, CreateColumn(pair.Value, array.Select(c => c[pair.Key])));
+        }
+
+        Dictionary<string, DataKind> GuessKinds(Dictionary<string, object>[] rows)
+        {
+            var res = new Dictionary<string, DataKind>();
+            foreach (var row in rows.Take(10))
+            {
+                foreach (var pair in row)
+                {
+                    if (res.ContainsKey(pair.Key))
+                        continue;
+                    if (pair.Value == null)
+                        continue;
+                    if (pair.Value is DvBool || pair.Value is bool)
+                    {
+                        res[pair.Key] = DataKind.BL;
+                        continue;
+                    }
+                    if (pair.Value is DvInt4 || pair.Value is int)
+                    {
+                        res[pair.Key] = DataKind.I4;
+                        continue;
+                    }
+                    if (pair.Value is uint)
+                    {
+                        res[pair.Key] = DataKind.U4;
+                        continue;
+                    }
+                    if (pair.Value is DvInt8 || pair.Value is Int64)
+                    {
+                        res[pair.Key] = DataKind.I8;
+                        continue;
+                    }
+                    if (pair.Value is float)
+                    {
+                        res[pair.Key] = DataKind.R4;
+                        continue;
+                    }
+                    if (pair.Value is double)
+                    {
+                        res[pair.Key] = DataKind.R8;
+                        continue;
+                    }
+                    if (pair.Value is DvText || pair.Value is string)
+                    {
+                        res[pair.Key] = DataKind.TX;
+                        continue;
+                    }
+                    throw Contracts.ExceptNotImpl($"Type '{pair.Value.GetType()}' is not implemented.");
+                }
+            }
+            return res;
+        }
+
+        IDataColumn CreateColumn(DataKind kind, IEnumerable<object> values)
+        {
+            switch (kind)
+            {
+                case DataKind.BL:
+                    try
+                    {
+                        return new DataColumn<DvBool>(values.Select(c => (DvBool)c).ToArray());
+                    }
+                    catch (InvalidCastException e)
+                    {
+                        return new DataColumn<DvBool>(values.Select(c => (DvBool)(bool)c).ToArray());
+                    }
+                case DataKind.I4:
+                    try
+                    {
+                        return new DataColumn<DvInt4>(values.Select(c => (DvInt4)c).ToArray());
+                    }
+                    catch (InvalidCastException)
+                    {
+                        return new DataColumn<DvInt4>(values.Select(c => (DvInt4)(int)c).ToArray());
+                    }
+                case DataKind.U4:
+                    return new DataColumn<uint>(values.Select(c => (uint)c).ToArray());
+                case DataKind.I8:
+                    try
+                    {
+                        return new DataColumn<DvInt8>(values.Select(c => (DvInt8)c).ToArray());
+                    }
+                    catch (InvalidCastException)
+                    {
+                        return new DataColumn<DvInt8>(values.Select(c => (DvInt8)(Int64)c).ToArray());
+                    }
+                case DataKind.R4:
+                    return new DataColumn<float>(values.Select(c => (float)c).ToArray());
+                case DataKind.R8:
+                    return new DataColumn<double>(values.Select(c => (double)c).ToArray());
+                case DataKind.TX:
+                    try
+                    {
+                        return new DataColumn<DvText>(values.Select(c => (DvText)c).ToArray());
+                    }
+                    catch (InvalidCastException)
+                    {
+                        return new DataColumn<DvText>(values.Select(c => new DvText((string)c)).ToArray());
+                    }
+                default:
+                    throw Contracts.ExceptNotImpl($"Kind {kind} is not implemented.");
+            }
+        }
+
         #endregion
 
         #region column
@@ -365,9 +483,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public void FillValues(int row, string[] spl)
         {
             for (int i = 0; i < spl.Length; ++i)
-            {
                 Set(row, i, spl[i]);
-            }
         }
 
         /// <summary>
