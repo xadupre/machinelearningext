@@ -1173,7 +1173,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         public static DataFrame Concat(IEnumerable<IDataFrameView> views)
         {
             var arr = views.ToArray();
-            int length = arr.Select(c => c.Length).Sum();
             var unique = new HashSet<string>();
             var ordered = new List<string>();
             foreach (var df in arr)
