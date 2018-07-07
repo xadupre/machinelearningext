@@ -1,21 +1,20 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
-using System.Text;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Data.IO;
-using Microsoft.ML.Ext.PipelineHelper;
+
 
 namespace Microsoft.ML.Ext.DataManipulation
 {
-    public class MutableTuple<T1> : IEquatable<MutableTuple<T1>>, IComparable<MutableTuple<T1>>
+    public interface ITUple
+    {
+        int Length { get; }
+    }
+
+    public class MutableTuple<T1> : IEquatable<MutableTuple<T1>>, IComparable<MutableTuple<T1>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
     {
         public T1 Item1;
+        public int Length => 1;
 
         public MutableTuple() { }
         public bool Equals(MutableTuple<T1> value) { return Item1.Equals(value.Item1); }
@@ -24,20 +23,22 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ImmutableTuple<T1> ToImTuple() { return new ImmutableTuple<T1>(Item1); }
     }
 
-    public class ImmutableTuple<T1> : Tuple<T1>, IEquatable<ImmutableTuple<T1>>, IComparable<ImmutableTuple<T1>>
+    public class ImmutableTuple<T1> : Tuple<T1>, IEquatable<ImmutableTuple<T1>>, IComparable<ImmutableTuple<T1>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
     {
-        public ImmutableTuple(T1 t1):base(t1) { }
+        public int Length => 1;
+        public ImmutableTuple(T1 t1) : base(t1) { }
         public bool Equals(ImmutableTuple<T1> value) { return Item1.Equals(value.Item1); }
         public int CompareTo(ImmutableTuple<T1> value) { return Item1.CompareTo(value.Item1); }
     }
 
-    public class MutableTuple<T1, T2> : IEquatable<MutableTuple<T1, T2>>, IComparable<MutableTuple<T1, T2>>
+    public class MutableTuple<T1, T2> : IEquatable<MutableTuple<T1, T2>>, IComparable<MutableTuple<T1, T2>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
         where T2 : IEquatable<T2>, IComparable<T2>
     {
         public T1 Item1;
         public T2 Item2;
+        public int Length => 2;
 
         public MutableTuple() { }
         public bool Equals(MutableTuple<T1, T2> value) { return Item1.Equals(value.Item1) && Item2.Equals(value.Item2); }
@@ -50,10 +51,11 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ImmutableTuple<T1, T2> ToImTuple() { return new ImmutableTuple<T1, T2>(Item1, Item2); }
     }
 
-    public class ImmutableTuple<T1, T2> : Tuple<T1, T2>, IEquatable<ImmutableTuple<T1, T2>>, IComparable<ImmutableTuple<T1, T2>>
+    public class ImmutableTuple<T1, T2> : Tuple<T1, T2>, IEquatable<ImmutableTuple<T1, T2>>, IComparable<ImmutableTuple<T1, T2>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
         where T2 : IEquatable<T2>, IComparable<T2>
     {
+        public int Length => 2;
         public ImmutableTuple(T1 t1, T2 t2) : base(t1, t2) { }
         public bool Equals(ImmutableTuple<T1, T2> value) { return Item1.Equals(value.Item1) && Item2.Equals(value.Item2); }
         public int CompareTo(ImmutableTuple<T1, T2> value)
@@ -63,7 +65,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
     }
 
-    public class MutableTuple<T1, T2, T3> : IEquatable<MutableTuple<T1, T2, T3>>, IComparable<MutableTuple<T1, T2, T3>>
+    public class MutableTuple<T1, T2, T3> : IEquatable<MutableTuple<T1, T2, T3>>, IComparable<MutableTuple<T1, T2, T3>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
         where T2 : IEquatable<T2>, IComparable<T2>
         where T3 : IEquatable<T3>, IComparable<T3>
@@ -71,6 +73,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public T1 Item1;
         public T2 Item2;
         public T3 Item3;
+        public int Length => 3;
 
         public MutableTuple() { }
         public bool Equals(MutableTuple<T1, T2, T3> value)
@@ -91,11 +94,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ImmutableTuple<T1, T2, T3> ToImTuple() { return new ImmutableTuple<T1, T2, T3>(Item1, Item2, Item3); }
     }
 
-    public class ImmutableTuple<T1, T2, T3> : Tuple<T1, T2, T3>, IEquatable<ImmutableTuple<T1, T2, T3>>, IComparable<ImmutableTuple<T1, T2, T3>>
+    public class ImmutableTuple<T1, T2, T3> : Tuple<T1, T2, T3>, IEquatable<ImmutableTuple<T1, T2, T3>>, IComparable<ImmutableTuple<T1, T2, T3>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
         where T2 : IEquatable<T2>, IComparable<T2>
         where T3 : IEquatable<T3>, IComparable<T3>
     {
+        public int Length => 3;
         public ImmutableTuple(T1 t1, T2 t2, T3 t3) : base(t1, t2, t3) { }
         public bool Equals(ImmutableTuple<T1, T2, T3> value)
         {

@@ -747,6 +747,27 @@ namespace TestMachineLearningExt
             Assert.AreEqual(conc.iloc[3, 2], DvText.NA);
         }
 
+
+        [TestMethod]
+        public void TestDataFrameGroupBy()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1.1f }, {"CC", "text3" } },
+                new Dictionary<string, object>() { {"AA", 2 }, {"BB", 1.1f }, {"CC", "text4" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text5" } },
+            };
+            var df = new DataFrame(rows);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
+            var gr = df.GroupBy<DvInt4>(new int[] { 0 }).Count();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            var text = gr.ToString();
+            var exp = "BB,CC,AA\n2,,0\n2,,1\n1,,2";
+            Assert.AreEqual(exp, text);
+        }
+
         #endregion
     }
 }

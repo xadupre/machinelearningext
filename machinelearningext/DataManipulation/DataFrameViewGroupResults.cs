@@ -41,7 +41,7 @@ namespace Microsoft.ML.Ext.DataManipulation
                     agg.AddColumn(pair.Key, pair.Kind, 1);
                     agg.loc[0, pair.Key] = pair.Value;
                 }
-                dfs.Append(agg);
+                dfs.Add(agg);
             }
             return DataFrame.Concat(dfs);
         }

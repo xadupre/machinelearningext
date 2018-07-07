@@ -30,6 +30,8 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         public int[] ALL { get { return null; } }
 
+        public IDataFrameView Source => null;
+
         #endregion
 
         #region constructor
@@ -123,6 +125,17 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Returns the column index.
+        /// </summary>
+        public int GetColumnIndex(string name)
+        {
+            int i;
+            if (!Schema.TryGetColumnIndex(name, out i))
+                throw new DataNameError($"Unable to find column '{name}'.");
+            return i;
+        }
+
+        /// <summary>
         /// Returns a copy of a subpart.
         /// </summary>
         public DataFrame Copy(IEnumerable<int> rows, IEnumerable<int> columns)
@@ -203,6 +216,48 @@ namespace Microsoft.ML.Ext.DataManipulation
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = new DvText(values[i]);
             return AddColumn(name, new DataColumn<DvText>(buf));
+        }
+
+        public MultiGetterAt<MutableTuple<T1>> GetMultiGetterAt<T1>(int[] cols)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            if (cols.Length != 1)
+                throw new DataValueError($"Dimension mismatch expected 1 not {cols.Length}.");
+            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
+            return (int row, ref MutableTuple<T1> value) => { g1(row, ref value.Item1); };
+        }
+
+        public MultiGetterAt<MutableTuple<T1, T2>> GetMultiGetterAt<T1, T2>(int[] cols)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            if (cols.Length != 2)
+                throw new DataValueError($"Dimension mismatch expected 2 not {cols.Length}.");
+            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
+            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
+            return (int row, ref MutableTuple<T1, T2> value) =>
+            {
+                g1(row, ref value.Item1);
+                g2(row, ref value.Item2);
+            };
+        }
+
+        public MultiGetterAt<MutableTuple<T1, T2, T3>> GetMultiGetterAt<T1, T2, T3>(int[] cols)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            if (cols.Length != cols.Length)
+                throw new DataValueError($"Dimension mismatch expected 3 not {cols.Length}.");
+            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
+            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
+            var g3 = GetColumn(cols[2]).GetGetterAt<T3>();
+            return (int row, ref MutableTuple<T1, T2, T3> value) =>
+            {
+                g1(row, ref value.Item1);
+                g2(row, ref value.Item2);
+                g3(row, ref value.Item3);
+            };
         }
 
         #endregion
@@ -1020,34 +1075,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         public IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
             where T1 : IEquatable<T1>, IComparable<T1>
         {
-            var cols = columns.ToArray();
-            if (cols.Length != 1)
-                throw new DataTypeError("This function expects one column.");
-            var getter = GetColumn(cols[0]).GetGetterAt<T1>();
-            var value = new MutableTuple<T1>();
-            for (int i = 0; i < Length; ++i)
-            {
-                getter(i, ref value.Item1);
-                yield return value;
-            }
+            return EnumerateItems<T1>(columns.Select(c => GetColumnIndex(c)), ascending, rows);
         }
 
         public IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
-            var cols = columns.ToArray();
-            if (cols.Length != 2)
-                throw new DataTypeError("This function expects two columns.");
-            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
-            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
-            var value = new MutableTuple<T1, T2>();
-            for (int i = 0; i < Length; ++i)
-            {
-                g1(i, ref value.Item1);
-                g2(i, ref value.Item2);
-                yield return value;
-            }
+            return EnumerateItems<T1, T2>(columns.Select(c => GetColumnIndex(c)), ascending, rows);
         }
 
         public IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
@@ -1055,20 +1090,46 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
         {
+            return EnumerateItems<T1, T2, T3>(columns.Select(c => GetColumnIndex(c)), ascending, rows);
+        }
+
+        public IEnumerable<TValue> EnumerateItems<TValue>(int[] columns, bool ascending, IEnumerable<int> rows,
+                                                          MultiGetterAt<TValue> getter)
+            where TValue : ITUple, new()
+        {
+            var value = new TValue();
             var cols = columns.ToArray();
-            if (cols.Length != 3)
-                throw new DataTypeError("This function expects three columns.");
-            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
-            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
-            var g3 = GetColumn(cols[2]).GetGetterAt<T3>();
-            var value = new MutableTuple<T1, T2, T3>();
+            if (cols.Length != value.Length)
+                throw new DataTypeError($"Dimension mismatch between {cols.Length} and {cols.Length}.");
             for (int i = 0; i < Length; ++i)
             {
-                g1(i, ref value.Item1);
-                g2(i, ref value.Item2);
-                g3(i, ref value.Item3);
+                getter(i, ref value);
                 yield return value;
             }
+        }
+
+        public IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<int> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            var cols = columns.ToArray();
+            return EnumerateItems(cols, ascending, rows, GetMultiGetterAt<T1>(cols));
+        }
+
+        public IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<int> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            var cols = columns.ToArray();
+            return EnumerateItems(cols, ascending, rows, GetMultiGetterAt<T1, T2>(cols));
+        }
+
+        public IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            var cols = columns.ToArray();
+            return EnumerateItems(cols, ascending, rows, GetMultiGetterAt<T1, T2, T3>(cols));
         }
 
         #endregion
@@ -1093,10 +1154,6 @@ namespace Microsoft.ML.Ext.DataManipulation
             DataFrameSorting.Sort<T1>(this, ref order, columns, ascending);
             Order(order);
         }
-
-        /// <summary>
-        /// Sorts by rows.
-        /// </summary>
         public void Sort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
@@ -1105,11 +1162,31 @@ namespace Microsoft.ML.Ext.DataManipulation
             DataFrameSorting.Sort<T1, T2>(this, ref order, columns, ascending);
             Order(order);
         }
-
-        /// <summary>
-        /// Sorts by rows.
-        /// </summary>
         public void Sort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            int[] order = null;
+            DataFrameSorting.Sort<T1, T2, T3>(this, ref order, columns, ascending);
+            Order(order);
+        }
+        public void Sort<T1>(IEnumerable<int> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            int[] order = null;
+            DataFrameSorting.Sort<T1>(this, ref order, columns, ascending);
+            Order(order);
+        }
+        public void Sort<T1, T2>(IEnumerable<int> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            int[] order = null;
+            DataFrameSorting.Sort<T1, T2>(this, ref order, columns, ascending);
+            Order(order);
+        }
+        public void Sort<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
@@ -1209,20 +1286,41 @@ namespace Microsoft.ML.Ext.DataManipulation
             return res;
         }
 
-        public DataFrameViewGroupResults<Tuple<T1>> GroupBy<T1>(IEnumerable<string> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1>> GroupBy<T1>(IEnumerable<string> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
         {
             return new DataFrameView(this, null, null).GroupBy<T1>(cols, sort);
         }
 
-        public DataFrameViewGroupResults<Tuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
             return new DataFrameView(this, null, null).GroupBy<T1, T2>(cols, sort);
         }
 
-        public DataFrameViewGroupResults<Tuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            return new DataFrameView(this, null, null).GroupBy<T1, T2, T3>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1>> GroupBy<T1>(IEnumerable<int> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return new DataFrameView(this, null, null).GroupBy<T1>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<int> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            return new DataFrameView(this, null, null).GroupBy<T1, T2>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<int> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
