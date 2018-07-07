@@ -431,43 +431,56 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
-        /// Sorts by rows.
+        /// Sorts rows.
         /// </summary>
-        public void Sort<T1>(IEnumerable<string> columns, bool ascending = true)
-        where T1 : IEquatable<T1>, IComparable<T1>
+        public void Sort(IEnumerable<string> columns, bool ascending = true)
         {
-            DataFrameSorting.Sort<T1>(this, ref _rows, columns, ascending);
+            DataFrameSorting.Sort(this, columns.Select(c => GetColumnIndex(c)), ascending);
         }
-        public void Sort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
+
+        /// <summary>
+        /// Sorts rows.
+        /// </summary>
+        public void Sort(IEnumerable<int> columns, bool ascending = true)
+        {
+            DataFrameSorting.Sort(this, columns, ascending);
+        }
+
+        public void TSort<T1>(IEnumerable<string> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            DataFrameSorting.TSort<T1>(this, ref _rows, columns, ascending);
+        }
+        public void TSort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
-            DataFrameSorting.Sort<T1, T2>(this, ref _rows, columns, ascending);
+            DataFrameSorting.TSort<T1, T2>(this, ref _rows, columns, ascending);
         }
-        public void Sort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-            where T3 : IEquatable<T3>, IComparable<T3>
-        {
-            DataFrameSorting.Sort<T1, T2, T3>(this, ref _rows, columns, ascending);
-        }
-        public void Sort<T1>(IEnumerable<int> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-        {
-            DataFrameSorting.Sort<T1>(this, ref _rows, columns, ascending);
-        }
-        public void Sort<T1, T2>(IEnumerable<int> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-        {
-            DataFrameSorting.Sort<T1, T2>(this, ref _rows, columns, ascending);
-        }
-        public void Sort<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true)
+        public void TSort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
         {
-            DataFrameSorting.Sort<T1, T2, T3>(this, ref _rows, columns, ascending);
+            DataFrameSorting.TSort<T1, T2, T3>(this, ref _rows, columns, ascending);
+        }
+        public void TSort<T1>(IEnumerable<int> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            DataFrameSorting.TSort<T1>(this, ref _rows, columns, ascending);
+        }
+        public void TSort<T1, T2>(IEnumerable<int> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            DataFrameSorting.TSort<T1, T2>(this, ref _rows, columns, ascending);
+        }
+        public void TSort<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            DataFrameSorting.TSort<T1, T2, T3>(this, ref _rows, columns, ascending);
         }
 
         /// <summary>

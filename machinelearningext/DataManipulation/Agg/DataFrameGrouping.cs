@@ -51,7 +51,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             int[] order = rows == null ? rows.Select(c => c).ToArray() : Enumerable.Range(0, df.Length).ToArray();
             var keys = df.EnumerateItems(icols, true, rows, getter).Select(c => conv(c)).ToArray();
             if (sort)
-                DataFrameSorting.Sort(df, ref order, keys, true);
+                DataFrameSorting.TSort(df, ref order, keys, true);
             var iter = GroupBy(df, order, keys, columns, conv2);
             return new DataFrameViewGroupResults<TImutKey>(iter);
         }

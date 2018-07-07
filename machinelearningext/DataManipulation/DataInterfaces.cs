@@ -311,24 +311,31 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T3 : IEquatable<T3>, IComparable<T3>;
 
         /// <summary>
-        /// Sorts by rows.
+        /// Sorts rows.
         /// </summary>
-        void Sort<T1>(IEnumerable<string> columns, bool ascending = true)
+        void Sort(IEnumerable<string> columns, bool ascending = true);
+
+        /// <summary>
+        /// Sorts rows.
+        /// </summary>
+        void Sort(IEnumerable<int> columns, bool ascending = true);
+
+        void TSort<T1>(IEnumerable<string> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>;
-        void Sort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
+        void TSort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>;
-        void Sort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
+        void TSort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>;
 
-        void Sort<T1>(IEnumerable<int> columns, bool ascending = true)
+        void TSort<T1>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>;
-        void Sort<T1, T2>(IEnumerable<int> columns, bool ascending = true)
+        void TSort<T1, T2>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>;
-        void Sort<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true)
+        void TSort<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>;
