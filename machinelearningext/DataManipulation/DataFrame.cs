@@ -1306,46 +1306,63 @@ namespace Microsoft.ML.Ext.DataManipulation
             return res;
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1>> GroupBy<T1>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
+
+        /// <summary>
+        /// Groupby.
+        /// </summary>
+        public IDataFrameViewGroupResults GroupBy(IEnumerable<string> cols, bool sort = true)
         {
-            return new DataFrameView(this, null, null).GroupBy<T1>(cols, sort);
+            return new DataFrameView(this, null, null).GroupBy(cols, sort);
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
+        /// <summary>
+        /// Groupby.
+        /// </summary>
+        public IDataFrameViewGroupResults GroupBy(IEnumerable<int> cols, bool sort = true)
         {
-            return new DataFrameView(this, null, null).GroupBy<T1, T2>(cols, sort);
+            return new DataFrameView(this, null, null).GroupBy(cols, sort);
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-            where T3 : IEquatable<T3>, IComparable<T3>
-        {
-            return new DataFrameView(this, null, null).GroupBy<T1, T2, T3>(cols, sort);
-        }
-
-        public DataFrameViewGroupResults<ImmutableTuple<T1>> GroupBy<T1>(IEnumerable<int> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<string> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
         {
-            return new DataFrameView(this, null, null).GroupBy<T1>(cols, sort);
+            return new DataFrameView(this, null, null).TGroupBy<T1>(cols, sort);
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<int> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TGroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
-            return new DataFrameView(this, null, null).GroupBy<T1, T2>(cols, sort);
+            return new DataFrameView(this, null, null).TGroupBy<T1, T2>(cols, sort);
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<int> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TGroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
         {
-            return new DataFrameView(this, null, null).GroupBy<T1, T2, T3>(cols, sort);
+            return new DataFrameView(this, null, null).TGroupBy<T1, T2, T3>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<int> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return new DataFrameView(this, null, null).TGroupBy<T1>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TGroupBy<T1, T2>(IEnumerable<int> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            return new DataFrameView(this, null, null).TGroupBy<T1, T2>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TGroupBy<T1, T2, T3>(IEnumerable<int> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            return new DataFrameView(this, null, null).TGroupBy<T1, T2, T3>(cols, sort);
         }
 
         #endregion

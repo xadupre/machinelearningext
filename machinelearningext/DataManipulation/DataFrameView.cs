@@ -539,49 +539,65 @@ namespace Microsoft.ML.Ext.DataManipulation
             return Aggregate(AggregatedFunction.Count, _rows, _columns);
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1>> GroupBy<T1>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
+        /// <summary>
+        /// Groupby.
+        /// </summary>
+        public IDataFrameViewGroupResults GroupBy(IEnumerable<string> cols, bool sort = true)
         {
-            return GroupBy<T1>(cols.Select(c => GetColumnIndex(c)), sort);
+            return GroupBy(cols.Select(c=>GetColumnIndex(c)), sort);
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1>> GroupBy<T1>(IEnumerable<int> cols, bool sort = true)
+        /// <summary>
+        /// Groupby.
+        /// </summary>
+        public IDataFrameViewGroupResults GroupBy(IEnumerable<int> cols, bool sort = true)
+        {
+            return DataFrameGrouping.GroupBy(this, cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<string> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return TGroupBy<T1>(cols.Select(c => GetColumnIndex(c)), sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<int> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
         {
             int[] order = _rows.Select(c => c).ToArray();
             var icols = cols.ToArray();
             var scols = icols.Select(c => Schema.GetColumnName(c)).ToArray();
-            return DataFrameGrouping.GroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1>(icols),
-                                             ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
+            return DataFrameGrouping.TGroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1>(icols),
+                                              ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TGroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
-            return GroupBy<T1, T2>(cols.Select(c => GetColumnIndex(c)), sort);
+            return TGroupBy<T1, T2>(cols.Select(c => GetColumnIndex(c)), sort);
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> GroupBy<T1, T2>(IEnumerable<int> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TGroupBy<T1, T2>(IEnumerable<int> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
             int[] order = _rows.Select(c => c).ToArray();
             var icols = cols.ToArray();
             var scols = icols.Select(c => Schema.GetColumnName(c)).ToArray();
-            return DataFrameGrouping.GroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1, T2>(icols),
-                                             ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
+            return DataFrameGrouping.TGroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1, T2>(icols),
+                                              ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TGroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
         {
-            return GroupBy<T1, T2, T3>(cols.Select(c => GetColumnIndex(c)), sort);
+            return TGroupBy<T1, T2, T3>(cols.Select(c => GetColumnIndex(c)), sort);
         }
 
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> GroupBy<T1, T2, T3>(IEnumerable<int> cols, bool sort = true)
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TGroupBy<T1, T2, T3>(IEnumerable<int> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
@@ -589,8 +605,8 @@ namespace Microsoft.ML.Ext.DataManipulation
             int[] order = _rows.Select(c => c).ToArray();
             var icols = cols.ToArray();
             var scols = icols.Select(c => Schema.GetColumnName(c)).ToArray();
-            return DataFrameGrouping.GroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1, T2, T3>(icols),
-                                             ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
+            return DataFrameGrouping.TGroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1, T2, T3>(icols),
+                                              ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
         }
 
         #endregion

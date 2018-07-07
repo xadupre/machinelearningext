@@ -799,31 +799,31 @@ namespace TestMachineLearningExt
             var df = new DataFrame(rows);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
 
-            var gr = df.GroupBy<DvInt4>(new int[] { 0 }).Count();
+            var gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             var text = gr.ToString();
             var exp = "AA,BB,CC\n0,2,\n1,2,\n2,1,";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4>(new int[] { 0 }).Sum();
+            gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Sum();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,2.1,texttext3\n1,2.2,text2text5\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4>(new int[] { 0 }).Min();
+            gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Min();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4>(new int[] { 0 }).Max();
+            gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Max();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1.1,text3\n1,1.1,text5\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4>(new int[] { 0 }).Mean();
+            gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Mean();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1.05,\n1,1.1,\n2,1.1,";
@@ -844,31 +844,31 @@ namespace TestMachineLearningExt
             var df = new DataFrame(rows);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
 
-            var gr = df.GroupBy<DvInt4, float>(new int[] { 0, 1 }).Count();
+            var gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             var text = gr.ToString();
             var exp = "AA,BB,CC\n0,1,\n1,1.1,\n2,1.1,";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4, float>(new int[] { 0, 1 }).Sum();
+            gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Sum();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,texttext3\n1,1.1,text2text5\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4, float>(new int[] { 0, 1 }).Min();
+            gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Min();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4, float>(new int[] { 0, 1 }).Max();
+            gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Max();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text3\n1,1.1,text5\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4, float>(new int[] { 0, 1 }).Mean();
+            gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Mean();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,\n1,1.1,\n2,1.1,";
@@ -889,31 +889,166 @@ namespace TestMachineLearningExt
             var df = new DataFrame(rows);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
 
-            var gr = df.GroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Count();
+            var gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             var text = gr.ToString();
             var exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Sum();
+            gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Sum();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Min();
+            gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Min();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Max();
+            gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Max();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
             Assert.AreEqual(exp, text);
 
-            gr = df.GroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Mean();
+            gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Mean();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
+            Assert.AreEqual(exp, text);
+        }
+
+        [TestMethod]
+        public void TestDataFrameGroupByAgnostic()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1.1f }, {"CC", "text3" } },
+                new Dictionary<string, object>() { {"AA", 2 }, {"BB", 1.1f }, {"CC", "text4" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text5" } },
+            };
+            var df = new DataFrame(rows);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
+
+            var gr = df.GroupBy(new int[] { 0 }).Count();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            var text = gr.ToString();
+            var exp = "AA,BB,CC\n0,2,\n1,2,\n2,1,";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0 }).Sum();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,2.1,texttext3\n1,2.2,text2text5\n2,1.1,text4";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0 }).Min();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0 }).Max();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1.1,text3\n1,1.1,text5\n2,1.1,text4";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0 }).Mean();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1.05,\n1,1.1,\n2,1.1,";
+            Assert.AreEqual(exp, text);
+        }
+
+        [TestMethod]
+        public void TestDataFrameGroupByAgnostic2()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text3" } },
+                new Dictionary<string, object>() { {"AA", 2 }, {"BB", 1.1f }, {"CC", "text4" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text5" } },
+            };
+            var df = new DataFrame(rows);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
+
+            var gr = df.GroupBy(new int[] { 0, 1 }).Count();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            var text = gr.ToString();
+            var exp = "AA,BB,CC\n0,1,\n1,1.1,\n2,1.1,";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0, 1 }).Sum();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,texttext3\n1,1.1,text2text5\n2,1.1,text4";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0, 1 }).Min();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0, 1 }).Max();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,text3\n1,1.1,text5\n2,1.1,text4";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0, 1 }).Mean();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,\n1,1.1,\n2,1.1,";
+            Assert.AreEqual(exp, text);
+        }
+
+        [TestMethod]
+        public void TestDataFrameGroupByAgnostic3()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 2 }, {"BB", 1.1f }, {"CC", "text4" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text5" } },
+            };
+            var df = new DataFrame(rows);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
+
+            var gr = df.GroupBy(new int[] { 0, 1, 2 }).Count();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            var text = gr.ToString();
+            var exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0, 1, 2 }).Sum();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0, 1, 2 }).Min();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0, 1, 2 }).Max();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
+            text = gr.ToString();
+            exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";
+            Assert.AreEqual(exp, text);
+
+            gr = df.GroupBy(new int[] { 0, 1, 2 }).Mean();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n1,1.1,text5";

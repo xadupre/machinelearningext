@@ -8,7 +8,16 @@ using System.Collections.Generic;
 
 namespace Microsoft.ML.Ext.DataManipulation
 {
-    public class DataFrameViewGroupResults<KeyType> : IEnumerable<KeyValuePair<KeyType, DataFrameViewGroup>>
+    public interface IDataFrameViewGroupResults
+    {
+        DataFrame Count();
+        DataFrame Sum();
+        DataFrame Min();
+        DataFrame Max();
+        DataFrame Mean();
+    }
+
+    public class DataFrameViewGroupResults<KeyType> : IEnumerable<KeyValuePair<KeyType, DataFrameViewGroup>>, IDataFrameViewGroupResults
     {
         IEnumerable<KeyValuePair<KeyType, DataFrameViewGroup>> _results;
 
