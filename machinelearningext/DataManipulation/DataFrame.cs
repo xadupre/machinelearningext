@@ -84,10 +84,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             return _data.Length;
         }
 
-        public int Length { get { return _data.Length; } }
-        public int ColumnCount { get { return _data.ColumnCount; } }
-        public string[] Column { get { return _data.Columns; } }
-        public DataKind[] Kinds { get { return _data.Kinds; } }
+        public int Length => _data.Length;
+        public int ColumnCount => _data.ColumnCount;
+        public string[] Columns => _data.Columns;
+        public DataKind[] Kinds => _data.Kinds;
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
@@ -144,11 +144,6 @@ namespace Microsoft.ML.Ext.DataManipulation
             df._data = _data.Copy(rows, columns);
             return df;
         }
-
-        /// <summary>
-        /// Returns the list of columns.
-        /// </summary>
-        public string[] Columns => _data.Columns;
 
         #endregion
 
@@ -1142,6 +1137,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         public void Order(int[] order)
         {
             _data.Order(order);
+        }
+
+        /// <summary>
+        /// Reorder the columns. Every view based on it will be impacted.
+        /// </summary>
+        public void OrderColumns(string[] columns)
+        {
+            _data.OrderColumns(columns);
         }
 
         /// <summary>

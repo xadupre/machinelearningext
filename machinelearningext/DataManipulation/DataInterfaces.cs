@@ -31,6 +31,13 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Orders the rows.
         /// </summary>
         void Order(int[] order);
+
+        /// <summary>
+        /// Reorder columns.
+        /// The dataframe is internally modified which means every views
+        /// based on it will be probably broken.
+        /// </summary>
+        void OrderColumns(string[] columns);
     }
 
     public delegate void GetterAt<DType>(int i, ref DType value);
@@ -253,6 +260,13 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Orders the rows.
         /// </summary>
         void Order(int[] order);
+
+        /// <summary>
+        /// Reorder columns.
+        /// The dataframe is internally modified which means every views
+        /// based on it will be probably broken.
+        /// </summary>
+        void OrderColumns(string[] columns);
 
         MultiGetterAt<MutableTuple<T1>> GetMultiGetterAt<T1>(int[] cols)
             where T1 : IEquatable<T1>, IComparable<T1>;

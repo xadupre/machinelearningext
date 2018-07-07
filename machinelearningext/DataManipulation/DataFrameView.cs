@@ -422,10 +422,19 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Reorders the rows.
+        /// </summary>
+        public void OrderColumns(string[] columns)
+        {
+            var cols = columns.Select(c => _src.GetColumnIndex(c)).ToArray();
+            _columns = cols;
+        }
+
+        /// <summary>
         /// Sorts by rows.
         /// </summary>
         public void Sort<T1>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
+        where T1 : IEquatable<T1>, IComparable<T1>
         {
             DataFrameSorting.Sort<T1>(this, ref _rows, columns, ascending);
         }

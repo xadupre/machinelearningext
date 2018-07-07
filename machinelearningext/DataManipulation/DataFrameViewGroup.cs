@@ -49,7 +49,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T2 : IComparable<T2>, IEquatable<T2>
             where T3 : IComparable<T3>, IEquatable<T3>
         {
-            var res = new DataFrameGroupKey[1];
+            var res = new DataFrameGroupKey[3];
             res[0]._key = name[0];
             res[0]._kind = SchemaHelper.GetKind<T1>();
             res[0]._value = (object)value.Item1;

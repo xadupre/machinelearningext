@@ -32,10 +32,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         public DataFrame Aggregate(AggregatedFunction func)
         {
             var dfs = new List<DataFrame>();
+            int nbkeys = 0;
             foreach (var view in EnumerateGroups())
             {
                 var df = view.Drop(view.ColumnsKey);
                 var agg = df.Aggregate(func);
+                nbkeys = view.Keys.Length;
                 foreach (var pair in view.Keys)
                 {
                     agg.AddColumn(pair.Key, pair.Kind, 1);
@@ -43,7 +45,12 @@ namespace Microsoft.ML.Ext.DataManipulation
                 }
                 dfs.Add(agg);
             }
-            return DataFrame.Concat(dfs);
+            var res = DataFrame.Concat(dfs);
+            var columns = res.Columns;
+            int nbnotkeys = columns.Length - nbkeys;
+            columns = columns.Skip(nbnotkeys).Concat(columns.Take(nbnotkeys)).ToArray();
+            res.OrderColumns(columns);
+            return res;
         }
 
         /// <summary>

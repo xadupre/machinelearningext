@@ -951,6 +951,30 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
+        /// Order the columns.
+        /// </summary>
+        public void OrderColumns(string[] columns)
+        {
+            var colind = columns.Select(c => GetColumnIndex(c)).ToArray();
+            var new_names = columns;
+            var new_kinds = colind.Select(i => _kinds[i]).ToList();
+            var new_length = columns.Length;
+            var new_naming = new Dictionary<string, int>();
+            var new_mapping = new Dictionary<int, Tuple<DataKind, int>>();
+            for (int i = 0; i < new_length; ++i)
+            {
+                new_naming[new_names[i]] = i;
+                new_mapping[i] = _mapping[colind[i]];
+            }
+
+            _length = new_length;
+            _names = new_names.ToList();
+            _mapping = new_mapping;
+            _kinds = new_kinds;
+            _schema = new DataContainerSchema(this);
+        }
+
+        /// <summary>
         /// Checks that containers are exactly the same.
         /// </summary>
         public static bool operator ==(DataContainer c1, DataContainer c2)
