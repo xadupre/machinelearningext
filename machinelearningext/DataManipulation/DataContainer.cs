@@ -43,7 +43,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             dc._kinds = new List<DataKind>(_kinds);
             dc._length = _length;
             dc._naming = new Dictionary<string, int>(_naming);
-            dc._mapping = _mapping = new Dictionary<int, Tuple<DataKind, int>>(_mapping);
+            dc._mapping = new Dictionary<int, Tuple<DataKind, int>>(_mapping);
             dc._schema = new DataContainerSchema(dc);
             dc._colsBL = _colsBL == null ? null : new List<IDataColumn>(_colsBL.Select(c => c.Copy()));
             dc._colsI4 = _colsI4 == null ? null : new List<IDataColumn>(_colsI4.Select(c => c.Copy()));

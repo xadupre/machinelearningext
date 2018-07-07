@@ -54,7 +54,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T1 : IEquatable<T1>, IComparable<T1>
         {
             var newCols = _columns == null ? cols : cols.Select(c => _columns[c]).ToArray();
-            return _src.GetMultiGetterAt<T1>(cols);
+            return _src.GetMultiGetterAt<T1>(newCols);
         }
 
         public MultiGetterAt<MutableTuple<T1, T2>> GetMultiGetterAt<T1, T2>(int[] cols)
@@ -62,7 +62,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T2 : IEquatable<T2>, IComparable<T2>
         {
             var newCols = _columns == null ? cols : cols.Select(c => _columns[c]).ToArray();
-            return _src.GetMultiGetterAt<T1, T2>(cols);
+            return _src.GetMultiGetterAt<T1, T2>(newCols);
         }
 
         public MultiGetterAt<MutableTuple<T1, T2, T3>> GetMultiGetterAt<T1, T2, T3>(int[] cols)
@@ -71,7 +71,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T3 : IEquatable<T3>, IComparable<T3>
         {
             var newCols = _columns == null ? cols : cols.Select(c => _columns[c]).ToArray();
-            return _src.GetMultiGetterAt<T1, T2, T3>(cols);
+            return _src.GetMultiGetterAt<T1, T2, T3>(newCols);
         }
 
         /// <summary>

@@ -48,7 +48,6 @@ namespace Microsoft.ML.Ext.DataManipulation
             where TImutKey : IComparable<TImutKey>, IEquatable<TImutKey>
         {
             var icols = cols.ToArray();
-            var scols = cols.Select(c => df.Schema.GetColumnName(c)).ToArray();
             int[] order = rows == null ? rows.Select(c => c).ToArray() : Enumerable.Range(0, df.Length).ToArray();
             var keys = df.EnumerateItems(icols, true, rows, getter).Select(c => conv(c)).ToArray();
             if (sort)

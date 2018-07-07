@@ -218,7 +218,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             var c1o = c1.Column as DataColumn<T1>;
             var c2o = c2.Column as DataColumn<T2>;
-            if ((object)c1 == null || (object)c2 == null)
+            if (c1 is null || c2 is null)
                 throw new DataTypeError(string.Format("{0} not implemented for {1}, {2}.", OperationName, c1.Kind, c2.Kind));
             res = new DataColumn<T3>(c1.Length);
             a = c1o.Data;

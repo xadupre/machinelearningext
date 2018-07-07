@@ -247,7 +247,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
         {
-            if (cols.Length != cols.Length)
+            if (cols.Length != 3)
                 throw new DataValueError($"Dimension mismatch expected 3 not {cols.Length}.");
             var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
             var g2 = GetColumn(cols[1]).GetGetterAt<T2>();

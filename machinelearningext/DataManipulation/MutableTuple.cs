@@ -10,6 +10,9 @@ namespace Microsoft.ML.Ext.DataManipulation
         int Length { get; }
     }
 
+    /// <summary>
+    /// Tuple but every item can be modified.
+    /// </summary>
     public class MutableTuple<T1> : IEquatable<MutableTuple<T1>>, IComparable<MutableTuple<T1>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
     {
@@ -23,6 +26,9 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ImmutableTuple<T1> ToImTuple() { return new ImmutableTuple<T1>(Item1); }
     }
 
+    /// <summary>
+    /// Comparable tuple.
+    /// </summary>
     public class ImmutableTuple<T1> : Tuple<T1>, IEquatable<ImmutableTuple<T1>>, IComparable<ImmutableTuple<T1>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
     {
@@ -32,6 +38,9 @@ namespace Microsoft.ML.Ext.DataManipulation
         public int CompareTo(ImmutableTuple<T1> value) { return Item1.CompareTo(value.Item1); }
     }
 
+    /// <summary>
+    /// Tuple but every item can be modified.
+    /// </summary>
     public class MutableTuple<T1, T2> : IEquatable<MutableTuple<T1, T2>>, IComparable<MutableTuple<T1, T2>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
         where T2 : IEquatable<T2>, IComparable<T2>
@@ -51,6 +60,9 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ImmutableTuple<T1, T2> ToImTuple() { return new ImmutableTuple<T1, T2>(Item1, Item2); }
     }
 
+    /// <summary>
+    /// Comparable tuple.
+    /// </summary>
     public class ImmutableTuple<T1, T2> : Tuple<T1, T2>, IEquatable<ImmutableTuple<T1, T2>>, IComparable<ImmutableTuple<T1, T2>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
         where T2 : IEquatable<T2>, IComparable<T2>
@@ -65,6 +77,9 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
     }
 
+    /// <summary>
+    /// Tuple but every item can be modified.
+    /// </summary>
     public class MutableTuple<T1, T2, T3> : IEquatable<MutableTuple<T1, T2, T3>>, IComparable<MutableTuple<T1, T2, T3>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
         where T2 : IEquatable<T2>, IComparable<T2>
@@ -94,6 +109,9 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ImmutableTuple<T1, T2, T3> ToImTuple() { return new ImmutableTuple<T1, T2, T3>(Item1, Item2, Item3); }
     }
 
+    /// <summary>
+    /// Comparable tuple.
+    /// </summary>
     public class ImmutableTuple<T1, T2, T3> : Tuple<T1, T2, T3>, IEquatable<ImmutableTuple<T1, T2, T3>>, IComparable<ImmutableTuple<T1, T2, T3>>, ITUple
         where T1 : IEquatable<T1>, IComparable<T1>
         where T2 : IEquatable<T2>, IComparable<T2>
