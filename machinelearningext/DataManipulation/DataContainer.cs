@@ -820,7 +820,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             IRandom _rand;
             Func<int, bool> _needCol;
             long _inc;
-            long _first;
+            readonly long _first;
             long _position;
 
             int[] _rowsSet;

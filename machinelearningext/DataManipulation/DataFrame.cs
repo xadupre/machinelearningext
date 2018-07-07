@@ -806,7 +806,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public class Iloc
         {
-            DataFrame _parent;
+            readonly DataFrame _parent;
 
             public Iloc(DataFrame parent)
             {
