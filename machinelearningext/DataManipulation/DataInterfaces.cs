@@ -8,6 +8,9 @@ using Microsoft.ML.Runtime.Data;
 
 namespace Microsoft.ML.Ext.DataManipulation
 {
+    /// <summary>
+    /// List of implemented aggregated function available after a GroupBy.
+    /// </summary>
     public enum AggregatedFunction
     {
         Sum = 1,
@@ -15,6 +18,17 @@ namespace Microsoft.ML.Ext.DataManipulation
         Mean = 3,
         Min = 4,
         Max = 5
+    }
+
+    /// <summary>
+    /// Join strategy.
+    /// </summary>
+    public enum JoinStrategy
+    {
+        Inner=1,
+        Left=2,
+        Right=3,
+        Outer=4
     }
 
     /// <summary>
@@ -256,6 +270,10 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         DataFrameView Drop(IEnumerable<string> colNames);
 
+        #region SQL function
+
+        #region select
+
         /// <summary>
         /// Orders the rows.
         /// </summary>
@@ -310,6 +328,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>;
 
+        #endregion
+
+        #region sort
+
         /// <summary>
         /// Sorts rows.
         /// </summary>
@@ -320,16 +342,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         void Sort(IEnumerable<int> columns, bool ascending = true);
 
-        void TSort<T1>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>;
-        void TSort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>;
-        void TSort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-            where T3 : IEquatable<T3>, IComparable<T3>;
-
         void TSort<T1>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>;
         void TSort<T1, T2>(IEnumerable<int> columns, bool ascending = true)
@@ -339,6 +351,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>;
+
+        #endregion
+
+        #region groupby
 
         /// <summary>
         /// Aggregates over all rows.
@@ -355,16 +371,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         IDataFrameViewGroupResults GroupBy(IEnumerable<int> cols, bool sort = true);
 
-        DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>;
-        DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TGroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>;
-        DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TGroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-            where T3 : IEquatable<T3>, IComparable<T3>;
-
         DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<int> cols, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>;
         DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TGroupBy<T1, T2>(IEnumerable<int> cols, bool sort = true)
@@ -374,5 +380,35 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>;
+
+        #endregion
+
+        #region join
+        /*
+        /// <summary>
+        /// Join.
+        /// </summary>
+        DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<string> colsRight,
+                       JoinStrategy joinType= JoinStrategy.Inner, bool sort=true);
+        DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<string> colsRight,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true);
+        DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<int> colsRight,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true);
+        DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true);
+
+        DataFrameViewGroupResults<ImmutableTuple<T1>> TJoin<T1>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>;
+        DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TJoin<T1, T2>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>;
+        DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TJoin<T1, T2, T3>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>;
+            */
+        #endregion
+
+        #endregion
     }
 }

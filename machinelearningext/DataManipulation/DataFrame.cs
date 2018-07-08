@@ -825,7 +825,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
             DataContainer AsDataContainer()
             {
-                var dc = _parent._data as DataContainer;
+                var dc = _parent._data;
                 if (dc == null)
                     throw new DataTypeError(string.Format("Unexpected container type '{0}'.", _parent._data.GetType()));
                 return dc;
@@ -1146,6 +1146,8 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #region SQL functions
 
+        #region sort
+
         /// <summary>
         /// Order the rows.
         /// </summary>
@@ -1178,32 +1180,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             DataFrameSorting.Sort(this, columns, ascending);
         }
 
+        #endregion
+
         #region typed sort
 
-        public void TSort<T1>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-        {
-            int[] order = null;
-            DataFrameSorting.TSort<T1>(this, ref order, columns, ascending);
-            Order(order);
-        }
-        public void TSort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-        {
-            int[] order = null;
-            DataFrameSorting.TSort<T1, T2>(this, ref order, columns, ascending);
-            Order(order);
-        }
-        public void TSort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-            where T3 : IEquatable<T3>, IComparable<T3>
-        {
-            int[] order = null;
-            DataFrameSorting.TSort<T1, T2, T3>(this, ref order, columns, ascending);
-            Order(order);
-        }
         public void TSort<T1>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
         {
@@ -1211,6 +1191,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             DataFrameSorting.TSort<T1>(this, ref order, columns, ascending);
             Order(order);
         }
+
         public void TSort<T1, T2>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
@@ -1219,6 +1200,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             DataFrameSorting.TSort<T1, T2>(this, ref order, columns, ascending);
             Order(order);
         }
+
         public void TSort<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
@@ -1230,6 +1212,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         #endregion
+
+        #region aggregate
 
         /// <summary>
         /// Aggregates over all rows.
@@ -1279,6 +1263,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             return Aggregate(AggregatedFunction.Count);
         }
 
+        #endregion
+
+        #region concat
+
         /// <summary>
         /// Concatenates many dataframes.
         /// </summary>
@@ -1321,6 +1309,9 @@ namespace Microsoft.ML.Ext.DataManipulation
             return res;
         }
 
+        #endregion
+
+        #region groupby
 
         /// <summary>
         /// Groupby.
@@ -1336,27 +1327,6 @@ namespace Microsoft.ML.Ext.DataManipulation
         public IDataFrameViewGroupResults GroupBy(IEnumerable<int> cols, bool sort = true)
         {
             return new DataFrameView(this, null, null).GroupBy(cols, sort);
-        }
-
-        public DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-        {
-            return new DataFrameView(this, null, null).TGroupBy<T1>(cols, sort);
-        }
-
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TGroupBy<T1, T2>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-        {
-            return new DataFrameView(this, null, null).TGroupBy<T1, T2>(cols, sort);
-        }
-
-        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TGroupBy<T1, T2, T3>(IEnumerable<string> cols, bool sort = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
-            where T2 : IEquatable<T2>, IComparable<T2>
-            where T3 : IEquatable<T3>, IComparable<T3>
-        {
-            return new DataFrameView(this, null, null).TGroupBy<T1, T2, T3>(cols, sort);
         }
 
         public DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<int> cols, bool sort = true)
@@ -1379,6 +1349,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             return new DataFrameView(this, null, null).TGroupBy<T1, T2, T3>(cols, sort);
         }
+
+        #endregion
 
         #endregion
     }

@@ -619,7 +619,7 @@ namespace TestMachineLearningExt
             var df = DataFrame.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
 
-            df.TSort<DvInt4, float>(new[] { "AA", "BB" });
+            df.TSort<DvInt4, float>(new[] { 0, 1 });
             Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[2, 0], (DvInt4)1);
@@ -627,7 +627,7 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[1, 1], 1f);
             Assert.AreEqual(df.iloc[2, 1], 1.1f);
 
-            df.TSort<DvInt4, float>(new[] { "AA", "BB" }, false);
+            df.TSort<DvInt4, float>(new[] { 0, 1 }, false);
             Assert.AreEqual(df.iloc[2, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[0, 0], (DvInt4)1);
@@ -683,13 +683,13 @@ namespace TestMachineLearningExt
             var view = df[new int[] { 1, 2 }];
             Assert.AreEqual(view.Length, 2);
 
-            view.TSort<DvInt4, float>(new[] { "AA", "BB" });
+            view.TSort<DvInt4, float>(new[] { 0, 1 });
             Assert.AreEqual(view.iloc[0, 0], (DvInt4)0);
             Assert.AreEqual(view.iloc[1, 0], (DvInt4)1);
             Assert.AreEqual(view.iloc[0, 1], -1.1f);
             Assert.AreEqual(view.iloc[1, 1], 1.1f);
 
-            view.TSort<DvInt4, float>(new[] { "AA", "BB" }, false);
+            view.TSort<DvInt4, float>(new[] { 0, 1 }, false);
             Assert.AreEqual(view.iloc[1, 0], (DvInt4)0);
             Assert.AreEqual(view.iloc[0, 0], (DvInt4)1);
             Assert.AreEqual(view.iloc[1, 1], -1.1f);
