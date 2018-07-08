@@ -15,6 +15,10 @@ namespace Microsoft.ML.Ext.DataManipulation
 {
     /// <summary>
     /// Implements a DataFrame based on a IDataView from ML.net.
+    /// It replicates some of pandas API for DataFrame except
+    /// for the index which can be added as a column but does not
+    /// play any particular role (concatenation does not take it
+    /// into account).
     /// </summary>
     public class DataFrame : IDataFrameView
     {
@@ -28,8 +32,10 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public bool CanShuffle => _shuffle;
 
-
         public int[] ALL { get { return null; } }
+
+        public IDataFrameView Source => null;
+        public int[] ColumnsSet => null;
 
         #endregion
 
@@ -45,9 +51,30 @@ namespace Microsoft.ML.Ext.DataManipulation
             _shuffle = shuffle;
         }
 
+        /// <summary>
+        /// Initializes an empty dataframe.
+        /// </summary>
+        /// <param name="shuffle">The dataframe can be shuffled.</param>
+        DataFrame(DataContainer data, bool shuffle)
+        {
+            _data = data;
+            _shuffle = shuffle;
+        }
+
         public void SetShuffle(bool shuffle)
         {
             _shuffle = shuffle;
+        }
+
+        /// <summary>
+        /// Creates a dataframe from a list of dictionaries.
+        /// If *kinds* is null, the function guesses the types from
+        /// the first row.
+        /// </summary>
+        public DataFrame(IEnumerable<Dictionary<string, object>> rows,
+                         Dictionary<string, DataKind> kinds = null)
+        {
+            _data = new DataContainer(rows, kinds);
         }
 
         #endregion
@@ -62,8 +89,10 @@ namespace Microsoft.ML.Ext.DataManipulation
             return _data.Length;
         }
 
-        public int Length { get { return _data.Length; } }
-        public int ColumnCount { get { return _data.ColumnCount; } }
+        public int Length => _data.Length;
+        public int ColumnCount => _data.ColumnCount;
+        public string[] Columns => _data.Columns;
+        public DataKind[] Kinds => _data.Kinds;
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
@@ -98,6 +127,17 @@ namespace Microsoft.ML.Ext.DataManipulation
             var df = new DataFrame();
             df._data = _data.Copy();
             return df;
+        }
+
+        /// <summary>
+        /// Returns the column index.
+        /// </summary>
+        public int GetColumnIndex(string name)
+        {
+            int i;
+            if (!Schema.TryGetColumnIndex(name, out i))
+                throw new DataNameError($"Unable to find column '{name}'.");
+            return i;
         }
 
         /// <summary>
@@ -176,6 +216,48 @@ namespace Microsoft.ML.Ext.DataManipulation
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = new DvText(values[i]);
             return AddColumn(name, new DataColumn<DvText>(buf));
+        }
+
+        public MultiGetterAt<MutableTuple<T1>> GetMultiGetterAt<T1>(int[] cols)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            if (cols.Length != 1)
+                throw new DataValueError($"Dimension mismatch expected 1 not {cols.Length}.");
+            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
+            return (int row, ref MutableTuple<T1> value) => { g1(row, ref value.Item1); };
+        }
+
+        public MultiGetterAt<MutableTuple<T1, T2>> GetMultiGetterAt<T1, T2>(int[] cols)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            if (cols.Length != 2)
+                throw new DataValueError($"Dimension mismatch expected 2 not {cols.Length}.");
+            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
+            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
+            return (int row, ref MutableTuple<T1, T2> value) =>
+            {
+                g1(row, ref value.Item1);
+                g2(row, ref value.Item2);
+            };
+        }
+
+        public MultiGetterAt<MutableTuple<T1, T2, T3>> GetMultiGetterAt<T1, T2, T3>(int[] cols)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            if (cols.Length != 3)
+                throw new DataValueError($"Dimension mismatch expected 3 not {cols.Length}.");
+            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
+            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
+            var g3 = GetColumn(cols[2]).GetGetterAt<T3>();
+            return (int row, ref MutableTuple<T1, T2, T3> value) =>
+            {
+                g1(row, ref value.Item1);
+                g2(row, ref value.Item2);
+                g3(row, ref value.Item3);
+            };
         }
 
         #endregion
@@ -268,6 +350,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="guess_rows">number of rows used to guess types</param>
         /// <param name="encoding">text encoding</param>
         /// <param name="useThreads">specific to TextLoader</param>
+        /// <param name="host">host</param>
+        /// <param name="index">add a column to hold the index</param>
         /// <returns>TextLoader</returns>
         public static TextLoader ReadCsvToTextLoader(string filename,
                                         char sep = ',', bool header = true,
@@ -277,10 +361,11 @@ namespace Microsoft.ML.Ext.DataManipulation
                                         int guess_rows = 10,
                                         Encoding encoding = null,
                                         bool useThreads = true,
+                                        bool index = false,
                                         IHost host = null)
         {
             var df = ReadCsv(filename, sep: sep, header: header, names: names, dtypes: dtypes,
-                             nrows: guess_rows, guess_rows: guess_rows, encoding: encoding);
+                             nrows: guess_rows, guess_rows: guess_rows, encoding: encoding, index: index);
             var sch = df.Schema;
             var cols = new TextLoader.Column[sch.ColumnCount];
             for (int i = 0; i < cols.Length; ++i)
@@ -312,18 +397,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="dtypes">column types (can be empty)</param>
         /// <param name="nrows">number of rows to read</param>
         /// <param name="guess_rows">number of rows used to guess types</param>
-        /// <param name="encoding">text encoding</param>
+        /// <param name="index">add one column with the row index</param>
         /// <returns>DataFrame</returns>
         public static DataFrame ReadStr(string content,
                                     char sep = ',', bool header = true,
-                                    string[] names = null,
-                                    DataKind?[] dtypes = null,
-                                    int nrows = -1,
-                                    int guess_rows = 10)
+                                    string[] names = null, DataKind?[] dtypes = null,
+                                    int nrows = -1, int guess_rows = 10, bool index = false)
         {
             return ReadStream(() => new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(content))),
                               sep: sep, header: header, names: names, dtypes: dtypes, nrows: nrows,
-                              guess_rows: guess_rows);
+                              guess_rows: guess_rows, index: index);
         }
 
         /// <summary>
@@ -338,18 +421,17 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="nrows">number of rows to read</param>
         /// <param name="guess_rows">number of rows used to guess types</param>
         /// <param name="encoding">text encoding</param>
+        /// <param name="index">add one column with the row index</param>
         /// <returns>DataFrame</returns>
         public static DataFrame ReadCsv(string filename,
                                 char sep = ',', bool header = true,
-                                string[] names = null,
-                                DataKind?[] dtypes = null,
-                                int nrows = -1,
-                                int guess_rows = 10,
-                                Encoding encoding = null)
+                                string[] names = null, DataKind?[] dtypes = null,
+                                int nrows = -1, int guess_rows = 10,
+                                Encoding encoding = null, bool index = false)
         {
             return ReadStream(() => new StreamReader(filename, encoding ?? Encoding.ASCII),
                               sep: sep, header: header, names: names, dtypes: dtypes, nrows: nrows,
-                              guess_rows: guess_rows);
+                              guess_rows: guess_rows, index: index);
         }
 
         public delegate StreamReader FunctionCreateStreamReader();
@@ -365,14 +447,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="dtypes">column types (can be empty)</param>
         /// <param name="nrows">number of rows to read</param>
         /// <param name="guess_rows">number of rows used to guess types</param>
-        /// <param name="encoding">text encoding</param>
+        /// <param name="index">add one column with the row index</param>
         /// <returns>DataFrame</returns>
         public static DataFrame ReadStream(FunctionCreateStreamReader createStream,
                                 char sep = ',', bool header = true,
-                                string[] names = null,
-                                DataKind?[] dtypes = null,
-                                int nrows = -1,
-                                int guess_rows = 10)
+                                string[] names = null, DataKind?[] dtypes = null,
+                                int nrows = -1, int guess_rows = 10, bool index = false)
         {
             var lines = new List<string[]>();
             int rowline = 0;
@@ -435,6 +515,19 @@ namespace Microsoft.ML.Ext.DataManipulation
                     line = st.ReadLine();
                 }
             }
+
+            if (index)
+            {
+                var hashNames = new HashSet<string>(names);
+                var nameIndex = "index";
+                while (hashNames.Contains(nameIndex))
+                    nameIndex += "_";
+                var indexValues = Enumerable.Range(0, df.Length).ToArray();
+                df.AddColumn(nameIndex, indexValues);
+                var newColumns = (new[] { nameIndex }).Concat(names).ToArray();
+                df.OrderColumns(newColumns);
+            }
+
             return df;
         }
 
@@ -497,7 +590,6 @@ namespace Microsoft.ML.Ext.DataManipulation
                         continue;
                     }
                 }
-
 
                 try
                 {
@@ -724,7 +816,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public class Iloc
         {
-            DataFrame _parent;
+            readonly DataFrame _parent;
 
             public Iloc(DataFrame parent)
             {
@@ -733,7 +825,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
             DataContainer AsDataContainer()
             {
-                var dc = _parent._data as DataContainer;
+                var dc = _parent._data;
                 if (dc == null)
                     throw new DataTypeError(string.Format("Unexpected container type '{0}'.", _parent._data.GetType()));
                 return dc;
@@ -993,34 +1085,14 @@ namespace Microsoft.ML.Ext.DataManipulation
         public IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
             where T1 : IEquatable<T1>, IComparable<T1>
         {
-            var cols = columns.ToArray();
-            if (cols.Length != 1)
-                throw new DataTypeError("This function expects one column.");
-            var getter = GetColumn(cols[0]).GetGetterAt<T1>();
-            var value = new MutableTuple<T1>();
-            for (int i = 0; i < Length; ++i)
-            {
-                getter(i, ref value.Item1);
-                yield return value;
-            }
+            return EnumerateItems<T1>(columns.Select(c => GetColumnIndex(c)), ascending, rows);
         }
 
         public IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
-            var cols = columns.ToArray();
-            if (cols.Length != 2)
-                throw new DataTypeError("This function expects two columns.");
-            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
-            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
-            var value = new MutableTuple<T1, T2>();
-            for (int i = 0; i < Length; ++i)
-            {
-                g1(i, ref value.Item1);
-                g2(i, ref value.Item2);
-                yield return value;
-            }
+            return EnumerateItems<T1, T2>(columns.Select(c => GetColumnIndex(c)), ascending, rows);
         }
 
         public IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true, IEnumerable<int> rows = null)
@@ -1028,25 +1100,53 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
         {
+            return EnumerateItems<T1, T2, T3>(columns.Select(c => GetColumnIndex(c)), ascending, rows);
+        }
+
+        public IEnumerable<TValue> EnumerateItems<TValue>(int[] columns, bool ascending, IEnumerable<int> rows,
+                                                          MultiGetterAt<TValue> getter)
+            where TValue : ITUple, new()
+        {
+            var value = new TValue();
             var cols = columns.ToArray();
-            if (cols.Length != 3)
-                throw new DataTypeError("This function expects three columns.");
-            var g1 = GetColumn(cols[0]).GetGetterAt<T1>();
-            var g2 = GetColumn(cols[1]).GetGetterAt<T2>();
-            var g3 = GetColumn(cols[2]).GetGetterAt<T3>();
-            var value = new MutableTuple<T1, T2, T3>();
+            if (cols.Length != value.Length)
+                throw new DataTypeError($"Dimension mismatch between {cols.Length} and {cols.Length}.");
             for (int i = 0; i < Length; ++i)
             {
-                g1(i, ref value.Item1);
-                g2(i, ref value.Item2);
-                g3(i, ref value.Item3);
+                getter(i, ref value);
                 yield return value;
             }
+        }
+
+        public IEnumerable<MutableTuple<T1>> EnumerateItems<T1>(IEnumerable<int> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            var cols = columns.ToArray();
+            return EnumerateItems(cols, ascending, rows, GetMultiGetterAt<T1>(cols));
+        }
+
+        public IEnumerable<MutableTuple<T1, T2>> EnumerateItems<T1, T2>(IEnumerable<int> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            var cols = columns.ToArray();
+            return EnumerateItems(cols, ascending, rows, GetMultiGetterAt<T1, T2>(cols));
+        }
+
+        public IEnumerable<MutableTuple<T1, T2, T3>> EnumerateItems<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true, IEnumerable<int> rows = null)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            var cols = columns.ToArray();
+            return EnumerateItems(cols, ascending, rows, GetMultiGetterAt<T1, T2, T3>(cols));
         }
 
         #endregion
 
         #region SQL functions
+
+        #region sort
 
         /// <summary>
         /// Order the rows.
@@ -1057,40 +1157,280 @@ namespace Microsoft.ML.Ext.DataManipulation
         }
 
         /// <summary>
-        /// Sorts by rows.
+        /// Reorder the columns. Every view based on it will be impacted.
         /// </summary>
-        public void Sort<T1>(IEnumerable<string> columns, bool ascending = true)
-            where T1 : IEquatable<T1>, IComparable<T1>
+        public void OrderColumns(string[] columns)
         {
-            int[] order = null;
-            DataFrameSorting.Sort<T1>(this, ref order, columns, ascending);
-            Order(order);
+            _data.OrderColumns(columns);
+        }
+
+        public void RenameColumns(string[] columns)
+        {
+            _data.RenameColumns(columns);
         }
 
         /// <summary>
-        /// Sorts by rows.
+        /// Sorts rows.
         /// </summary>
-        public void Sort<T1, T2>(IEnumerable<string> columns, bool ascending = true)
+        public void Sort(IEnumerable<string> columns, bool ascending = true)
+        {
+            DataFrameSorting.Sort(this, columns.Select(c => GetColumnIndex(c)), ascending);
+        }
+
+        /// <summary>
+        /// Sorts rows.
+        /// </summary>
+        public void Sort(IEnumerable<int> columns, bool ascending = true)
+        {
+            DataFrameSorting.Sort(this, columns, ascending);
+        }
+
+        #endregion
+
+        #region typed sort
+
+        public void TSort<T1>(IEnumerable<int> columns, bool ascending = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            int[] order = null;
+            DataFrameSorting.TSort<T1>(this, ref order, columns, ascending);
+            Order(order);
+        }
+
+        public void TSort<T1, T2>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
             int[] order = null;
-            DataFrameSorting.Sort<T1, T2>(this, ref order, columns, ascending);
+            DataFrameSorting.TSort<T1, T2>(this, ref order, columns, ascending);
             Order(order);
         }
 
-        /// <summary>
-        /// Sorts by rows.
-        /// </summary>
-        public void Sort<T1, T2, T3>(IEnumerable<string> columns, bool ascending = true)
+        public void TSort<T1, T2, T3>(IEnumerable<int> columns, bool ascending = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>
         {
             int[] order = null;
-            DataFrameSorting.Sort<T1, T2, T3>(this, ref order, columns, ascending);
+            DataFrameSorting.TSort<T1, T2, T3>(this, ref order, columns, ascending);
             Order(order);
         }
+
+        #endregion
+
+        #region aggregate
+
+        /// <summary>
+        /// Aggregates over all rows.
+        /// </summary>
+        public DataFrame Aggregate(AggregatedFunction func, int[] rows = null, int[] columns = null)
+        {
+            return new DataFrame(_data.Aggregate(func, rows, columns), _shuffle);
+        }
+
+        /// <summary>
+        /// Sum over all rows.
+        /// </summary>
+        public DataFrame Sum()
+        {
+            return Aggregate(AggregatedFunction.Sum);
+        }
+
+        /// <summary>
+        /// Min over all rows.
+        /// </summary>
+        public DataFrame Min()
+        {
+            return Aggregate(AggregatedFunction.Min);
+        }
+
+        /// <summary>
+        /// Max over all rows.
+        /// </summary>
+        public DataFrame Max()
+        {
+            return Aggregate(AggregatedFunction.Max);
+        }
+
+        /// <summary>
+        /// Average over all rows.
+        /// </summary>
+        public DataFrame Mean()
+        {
+            return Aggregate(AggregatedFunction.Mean);
+        }
+
+        /// <summary>
+        /// Average over all rows.
+        /// </summary>
+        public DataFrame Count()
+        {
+            return Aggregate(AggregatedFunction.Count);
+        }
+
+        #endregion
+
+        #region concat
+
+        /// <summary>
+        /// Concatenates many dataframes.
+        /// </summary>
+        public static DataFrame Concat(IEnumerable<IDataFrameView> views)
+        {
+            var arr = views.ToArray();
+            var unique = new HashSet<string>();
+            var ordered = new List<string>();
+            foreach (var df in arr)
+            {
+                for (int i = 0; i < df.ColumnCount; ++i)
+                {
+                    var c = df.Schema.GetColumnName(i);
+                    if (!unique.Contains(c))
+                    {
+                        unique.Add(c);
+                        ordered.Add(c);
+                    }
+                }
+            }
+
+            var res = new DataFrame(arr.All(c => c.CanShuffle));
+            int index;
+            foreach (var col in ordered)
+            {
+                var conc = new List<IDataColumn>();
+                var first = arr.Where(df => df.Schema.TryGetColumnIndex(col, out index))
+                               .Select(df => df.GetColumn(col))
+                               .First();
+                foreach (var df in arr)
+                {
+                    if (!df.Schema.TryGetColumnIndex(col, out index))
+                        conc.Add(first.Create(df.Length, true));
+                    else
+                        conc.Add(df.GetColumn(col));
+                }
+                var concCol = first.Concat(conc);
+                res.AddColumn(col, concCol);
+            }
+            return res;
+        }
+
+        #endregion
+
+        #region groupby
+
+        /// <summary>
+        /// Groupby.
+        /// </summary>
+        public IDataFrameViewGroupResults GroupBy(IEnumerable<string> cols, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).GroupBy(cols, sort);
+        }
+
+        /// <summary>
+        /// Groupby.
+        /// </summary>
+        public IDataFrameViewGroupResults GroupBy(IEnumerable<int> cols, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).GroupBy(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1>> TGroupBy<T1>(IEnumerable<int> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return new DataFrameView(this, null, null).TGroupBy<T1>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TGroupBy<T1, T2>(IEnumerable<int> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            return new DataFrameView(this, null, null).TGroupBy<T1, T2>(cols, sort);
+        }
+
+        public DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TGroupBy<T1, T2, T3>(IEnumerable<int> cols, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            return new DataFrameView(this, null, null).TGroupBy<T1, T2, T3>(cols, sort);
+        }
+
+        #endregion
+
+        #region join
+
+        public IDataFrameView Multiply(int nb, MultiplyStrategy multType = MultiplyStrategy.Block)
+        {
+            int[] rows = new int[Length * nb];
+            switch (multType)
+            {
+                case MultiplyStrategy.Block:
+                    for (int i = 0; i < rows.Length; ++i)
+                        rows[i] = i % Length;
+                    break;
+                case MultiplyStrategy.Row:
+                    for (int i = 0; i < rows.Length; ++i)
+                        rows[i] = i / nb;
+                    break;
+                default:
+                    throw new DataValueError($"Unkown multiplication strategy '{multType}'.");
+            }
+            return new DataFrameView(this, rows, null);
+        }
+
+        /// <summary>
+        /// Join.
+        /// </summary>
+        public DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<string> colsRight,
+                        string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).Join(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<string> colsRight,
+                       string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).Join(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<int> colsRight,
+                            string leftSuffix = null, string rightSuffix = null,
+                           JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).Join(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight,
+                        string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).Join(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame TJoin<T1>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return new DataFrameView(this, null, null).TJoin<T1>(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame TJoin<T1, T2>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            return new DataFrameView(this, null, null).TJoin<T1, T2>(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame TJoin<T1, T2, T3>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            return new DataFrameView(this, null, null).TJoin<T1, T2, T3>(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        #endregion
 
         #endregion
     }

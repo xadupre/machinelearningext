@@ -168,7 +168,6 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestPolynomialTransformLearningPipeline()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
 
@@ -315,6 +314,7 @@ namespace TestMachineLearningExt
             (data as ITrainableTransform).Estimate();
             var res = DataFrame.ReadView(data);
             var txt = res.ToString();
+            Assert.IsNotNull(txt);
             var exp = "A,B,X.0,X.1\n1.0,2.0,-0.827605963,-0.827605963\n2.0,3.0,-0.5793242,-0.5793242\n10.0,11.0,1.40693,1.40693";
             var dfexp = DataFrame.ReadStr(exp);
             Assert.AreEqual(0, dfexp.AlmostEquals(res, exc: true, printDf: true));

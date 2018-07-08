@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Ext.PipelineHelper;
+using Microsoft.ML.Runtime.Data.Conversion;
 
 
 namespace Microsoft.ML.Ext.DataManipulation
@@ -43,6 +44,60 @@ namespace Microsoft.ML.Ext.DataManipulation
             for (int i = 0; i < arows.Length; ++i)
                 res._data[i] = _data[arows[i]];
             return res;
+        }
+
+        /// <summary>
+        /// Creates a new column with the same type but a new length and a constant value.
+        /// </summary>
+        public IDataColumn Create(int n, bool NA = false)
+        {
+            var res = new DataColumn<DType>(n);
+            if (NA)
+            {
+                switch (Kind)
+                {
+                    case DataKind.Bool:
+                        res.Set(DvBool.NA);
+                        break;
+                    case DataKind.I4:
+                        res.Set(DvInt4.NA);
+                        break;
+                    case DataKind.U4:
+                        res.Set(0);
+                        break;
+                    case DataKind.I8:
+                        res.Set(DvInt8.NA);
+                        break;
+                    case DataKind.R4:
+                        res.Set(float.NaN);
+                        break;
+                    case DataKind.R8:
+                        res.Set(double.NaN);
+                        break;
+                    case DataKind.TX:
+                        res.Set(DvText.NA);
+                        break;
+                    default:
+                        throw new NotImplementedException($"No missing value convention for type '{Kind}'.");
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Concatenates multiple columns for the same type.
+        /// </summary>
+        public IDataColumn Concat(IEnumerable<IDataColumn> cols)
+        {
+            var data = new List<DType>();
+            foreach (var col in cols)
+            {
+                var cast = col as DataColumn<DType>;
+                if (cast == null)
+                    throw new DataTypeError($"Unable to cast {col.GetType()} in {GetType()}.");
+                data.AddRange(cast._data);
+            }
+            return new DataColumn<DType>(data.ToArray());
         }
 
         /// <summary>
@@ -99,6 +154,15 @@ namespace Microsoft.ML.Ext.DataManipulation
         public void Set(int row, DType value)
         {
             _data[row] = value;
+        }
+
+        /// <summary>
+        /// Changes all values.
+        /// </summary>
+        public void Set(DType value)
+        {
+            for (int i = 0; i < _data.Length; ++i)
+                _data[i] = value;
         }
 
         /// <summary>
@@ -268,7 +332,13 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ValueGetter<DType2> GetGetter<DType2>(IRowCursor cursor)
         {
             var _data2 = _data as DType2[];
-            return (ref DType2 value) => { value = _data2[cursor.Position]; };
+            var missing = DataFrameMissingValue.GetMissingValue(Kind);
+            return (ref DType2 value) =>
+            {
+                value = cursor.Position < _data.LongLength
+                        ? _data2[cursor.Position]
+                        : (DType2)missing;
+            };
         }
 
         public bool Equals(IDataColumn c)
@@ -308,6 +378,70 @@ namespace Microsoft.ML.Ext.DataManipulation
             return new NumericColumn(res);
         }
 
-        #endregion
+        public TSource Aggregate<TSource>(Func<TSource, TSource, TSource> func, int[] rows = null)
+        {
+            var funcTyped = func as Func<DType, DType, DType>;
+            if (func == null)
+                throw new NotSupportedException($"Type '{typeof(TSource)}' is not compatible with '{typeof(DType)}'.");
+            var mapper = GetGenericConverter() as ValueMapper<DType, TSource>;
+            var res = AggregateTyped(funcTyped, rows);
+            var converted = default(TSource);
+            mapper(ref res, ref converted);
+            return converted;
+        }
+
+        public TSource Aggregate<TSource>(Func<TSource[], TSource> func, int[] rows = null)
+        {
+            var funcTyped = func as Func<DType[], DType>;
+            if (funcTyped == null)
+                throw new NotSupportedException($"Type '{typeof(TSource)}' is not compatible with '{typeof(DType)}'.");
+            var mapper = GetGenericConverter() as ValueMapper<DType, TSource>;
+            var res = AggregateTyped(funcTyped, rows);
+            var converted = default(TSource);
+            mapper(ref res, ref converted);
+            return converted;
+        }
+
+        static ValueMapper<DType, DType> GetGenericConverter()
+        {
+            return (ref DType src, ref DType dst) => { dst = src; };
+        }
+
+        public DType AggregateTyped(Func<DType, DType, DType> func, int[] rows = null)
+        {
+            if (rows == null)
+                return _data.Aggregate(func);
+            else
+                return rows.Select(c => _data[c]).Aggregate(func);
+        }
+
+        public DType AggregateTyped(Func<DType[], DType> func, int[] rows = null)
+        {
+            if (rows == null)
+                return func(_data);
+            else
+                return func(rows.Select(c => _data[c]).ToArray());
+        }
+
+        public IDataColumn Aggregate(AggregatedFunction func, int[] rows = null)
+        {
+            if (typeof(DType) == typeof(DvBool))
+                return new DataColumn<DvBool>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvBool)), rows) });
+            if (typeof(DType) == typeof(DvInt4))
+                return new DataColumn<DvInt4>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvInt4)), rows) });
+            if (typeof(DType) == typeof(uint))
+                return new DataColumn<uint>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(uint)), rows) });
+            if (typeof(DType) == typeof(DvInt8))
+                return new DataColumn<DvInt8>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvInt8)), rows) });
+            if (typeof(DType) == typeof(float))
+                return new DataColumn<float>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(float)), rows) });
+            if (typeof(DType) == typeof(double))
+                return new DataColumn<double>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(double)), rows) });
+            if (typeof(DType) == typeof(DvText))
+                return new DataColumn<DvText>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvText)), rows) });
+            throw new NotImplementedException($"Unkown type '{typeof(DType)}'.");
+        }
     }
+
+    #endregion
 }

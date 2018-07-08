@@ -22,7 +22,7 @@ namespace TestMachineLearningExt
                 new KeyValuePair<float, int>(20, 21)
             };
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasFixedSizePriorityQueueConstructorTest()
         {
             FixedSizePriorityQueue<float, int> q = new FixedSizePriorityQueue<float, int>(1);
@@ -46,35 +46,35 @@ namespace TestMachineLearningExt
             Assert.IsTrue(q.IsFull);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Argument 'size' must be positive")]
         public void ClasFixedSizePriorityQueueConstructorFailSizeZeroTest()
         {
             new FixedSizePriorityQueue<float, int>(0);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Argument 'size' must be positive")]
         public void ClasFixedSizePriorityQueueConstructorFailSizeNegativeTest()
         {
             new FixedSizePriorityQueue<float, int>(-2);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Argument 'size' must be positive")]
         public void ClasFixedSizePriorityQueueConstructor2FailSizeNegativeTest()
         {
             new FixedSizePriorityQueue<float, int>(Elements.Take(1), -2);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Queue size too small for the init collection")]
         public void ClasFixedSizePriorityQueueConstructorFailWhenCollectionBiggerThanSizeTest()
         {
             new FixedSizePriorityQueue<float, int>(Elements, 2);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasPeekTest()
         {
             FixedSizePriorityQueue<float, int> testQ = new FixedSizePriorityQueue<float, int>(10);
@@ -92,7 +92,7 @@ namespace TestMachineLearningExt
             Assert.AreEqual(22, testQ.Peek().Value.Value);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasEnqueueTest()
         {
             int maxSize = 3;
@@ -152,7 +152,7 @@ namespace TestMachineLearningExt
             Assert.AreEqual(value, testQ.Peek().Value.Value);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasShouldOnlyStoreNLArgestValuesTest()
         {
             foreach (int size in new List<int>() { 10, 100, 150 })

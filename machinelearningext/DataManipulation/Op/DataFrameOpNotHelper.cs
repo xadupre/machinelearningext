@@ -6,7 +6,7 @@ using Microsoft.ML.Runtime.Data;
 namespace Microsoft.ML.Ext.DataManipulation
 {
     /// <summary>
-    /// Implements addition for DataFrame for many types.
+    /// Implements operator for DataFrame for many types.
     /// </summary>
     public static class DataFrameOpNotHelper
     {
@@ -19,7 +19,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T3 : IEquatable<T3>, IComparable<T3>
         {
             var c1o = c1.Column as DataColumn<T1>;
-            if ((object)c1 == null)
+            if (c1o is null)
                 throw new DataTypeError(string.Format("{0} not implemented for type {1}.", OperationName, c1.GetType()));
             res = new DataColumn<T3>(c1.Length);
             a = c1o.Data;

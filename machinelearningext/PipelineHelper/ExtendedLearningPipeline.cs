@@ -198,7 +198,7 @@ namespace Microsoft.ML.Ext.PipelineHelper
         {
             names = null;
             ISchema schema = _predictorModel.OutputSchema;
-            int colIndex = -1;
+            int colIndex;
             if (!schema.TryGetColumnIndex(scoreColumnName, out colIndex))
                 return false;
 

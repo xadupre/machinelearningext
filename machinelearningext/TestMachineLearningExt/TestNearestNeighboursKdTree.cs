@@ -9,7 +9,7 @@ using Microsoft.ML.Ext.NearestNeighbors;
 
 namespace TestMachineLearningExt
 {
-    [TestClass()]
+    [TestClass]
     public class TestNearestNeighborsKdTree
     {
         private static Random rnd = new Random();
@@ -19,7 +19,7 @@ namespace TestMachineLearningExt
 
         #region common
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasRandomShuffleTest()
         {
             IList<IPointIdFloat> points = new List<IPointIdFloat>()
@@ -58,7 +58,7 @@ namespace TestMachineLearningExt
 
         #region points
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasPointContructorEnumerableTest()
         {
             IPointIdFloat p = new PointIdFloat(0, new List<float>() { 1.0f });
@@ -70,7 +70,7 @@ namespace TestMachineLearningExt
             Assert.IsTrue(p.coordinates.Values.SequenceEqual(new List<float>() { 1.0f, -0.000031f, (float)Math.PI, (float)-Math.E }));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasPointContructorVarArgsTest()
         {
             PointIdFloat p = new PointIdFloat(0, 1.0f);
@@ -84,7 +84,7 @@ namespace TestMachineLearningExt
             Assert.AreEqual(p, p2);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasdistanceToTest()
         {
             PointIdFloat x = new PointIdFloat(0, new List<float>() { 1.0f });
@@ -104,7 +104,7 @@ namespace TestMachineLearningExt
             Assert.IsTrue(Math.Abs(d1 - d2) < 1e-5);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasdistanceIsSimmetricToTest()
         {
             var x = new PointIdFloat(0, new List<float>() { 1.0f });
@@ -113,7 +113,7 @@ namespace TestMachineLearningExt
                             VectorDistanceHelper.L2Norm(y.coordinates, x.coordinates));
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Incompatible point dimensions: expected 1, got 2")]
         public void ClasdistanceToThrowTest()
         {
@@ -122,7 +122,7 @@ namespace TestMachineLearningExt
             VectorDistanceHelper.L2Norm(p1.coordinates, p2.coordinates);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasEqualsTest()
         {
             var p1 = new PointIdFloat(0, new List<float>() { 1.0f });
@@ -145,7 +145,7 @@ namespace TestMachineLearningExt
             Assert.IsFalse(p6.Equals(p5));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasGetHashCodeTest()
         {
             var p1 = new PointIdFloat(0, new List<float>() { 1.0f });
@@ -161,7 +161,7 @@ namespace TestMachineLearningExt
             Assert.IsFalse(p5.GetHashCode() == p6.GetHashCode());
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasToStringTest()
         {
             var p = new PointIdFloat(0, new List<float>() { 1.0f });
@@ -177,7 +177,7 @@ namespace TestMachineLearningExt
 
         #region Constructor
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ClasKdTreeConstructorNullPointsListTest()
         {
@@ -185,34 +185,34 @@ namespace TestMachineLearningExt
             new KdTree(x);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ClasKdTreeConstructorNullPointsTest()
         {
             new KdTree(null, -1);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(NullReferenceException))]
         public void ClasKdTreeConstructorNullPointTest()
         {
             new KdTree(null, point1D, null);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasKdTreeConstructorEmptyPointsListTest()
         {
             new KdTree(new List<PointIdFloat>());
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Points array must be non-empty and all points need to have the same dimension 1")]
         public void ClasKdTreeConstructorInconsistentPointsListTest()
         {
             new KdTree(new List<IPointIdFloat>() { point1D, point2D });
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Points array must be non-empty and all points need to have the same dimension 2")]
         public void ClasKdTreeConstructorInconsistentDimensionTest()
         {
@@ -222,7 +222,7 @@ namespace TestMachineLearningExt
                 new KdTree(new List<IPointIdFloat>() { point2D }, 1);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasKdTreeConstructorTest()
         {
             KdTree kdt = new KdTree(new List<IPointIdFloat>() { point1D }, 1);
@@ -239,7 +239,7 @@ namespace TestMachineLearningExt
 
         #region Count
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasCountTest()
         {
             IList<IPointIdFloat> points = new List<IPointIdFloat>() { new PointIdFloat(0, 1f, 2f),
@@ -261,7 +261,7 @@ namespace TestMachineLearningExt
 
         #region Contains
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasContainsTest()
         {
             var points = new List<IPointIdFloat>() { new PointIdFloat(0, 1f, 2f),
@@ -286,7 +286,7 @@ namespace TestMachineLearningExt
 
         #region Add
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ClasAddNullPointTest()
         {
@@ -297,7 +297,7 @@ namespace TestMachineLearningExt
             kdt.Add(null);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Wrong Point dimension: expected 2, got 3")]
         public void ClasAddWrongDimensionPointTest()
         {
@@ -308,7 +308,7 @@ namespace TestMachineLearningExt
             kdt.Add(new PointIdFloat(1, 1f, 2f, 3f));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasAddTest()
         {
             IPointIdFloat p1 = new PointIdFloat(0, 1f, 2f);
@@ -358,7 +358,7 @@ namespace TestMachineLearningExt
 
         #region PointsWithinDistance
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ClasPointsWithinDistanceNullPointTest()
         {
@@ -369,7 +369,7 @@ namespace TestMachineLearningExt
             kdt.PointsWithinDistance(null, 1);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Wrong Point dimension: expected 2, got 3")]
         public void ClasPointsWithinDistanceWrongDimensionPointTest()
         {
@@ -380,7 +380,7 @@ namespace TestMachineLearningExt
             kdt.PointsWithinDistance(new PointIdFloat(7, 1f, 2f, 3f), 1);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasPointsWithinDistanceTest()
         {
             IPointIdFloat p1 = new PointIdFloat(0, 1f, 2f);
@@ -467,7 +467,7 @@ namespace TestMachineLearningExt
 
         #region NearestNeighbour
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ClasNearestNeighbourNullPointTest()
         {
@@ -475,7 +475,7 @@ namespace TestMachineLearningExt
             kdt.NearestNeighbour(null);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Wrong Point dimension: expected 2, got 3")]
         public void ClasNearestNeighbourWrongDimensionPointTest()
         {
@@ -483,7 +483,7 @@ namespace TestMachineLearningExt
             kdt.NearestNeighbour(new PointIdFloat(0, 1f, 2f, 3f));
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasNearestNeighbourTest()
         {
             var points2D = new List<IPointIdFloat>() {
@@ -535,7 +535,7 @@ namespace TestMachineLearningExt
 
         #region NearestNNeighbors
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ClasNearestNNeighborsNullPointTest()
         {
@@ -543,7 +543,7 @@ namespace TestMachineLearningExt
             kdt.NearestNNeighbors(null, 1);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Wrong Point dimension: expected 2, got 3")]
         public void ClasNearestNNeighborsWrongDimensionPointTest()
         {
@@ -551,7 +551,7 @@ namespace TestMachineLearningExt
             kdt.NearestNNeighbors(new PointIdFloat(1, 1f, 2f, 3f), 2);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Argument 'N': passed 0 while it must be positive")]
         public void ClasNearestNNeighborsInvalidSizeZeroTest()
         {
@@ -559,7 +559,7 @@ namespace TestMachineLearningExt
             kdt.NearestNNeighbors(new PointIdFloat(1, 2f, 3f), 0);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Argument 'N': passed -3 while it must be positive")]
         public void ClasNearestNNeighborsInvalidSizeNegativeTest()
         {
@@ -567,7 +567,7 @@ namespace TestMachineLearningExt
             kdt.NearestNNeighbors(new PointIdFloat(1, -2f, -3f, -4f), -3);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasNearestNNeighborsTest()
         {
             var points2D = new List<IPointIdFloat>() {
@@ -666,7 +666,7 @@ namespace TestMachineLearningExt
 
         #region [Internal] Median
 
-        [TestMethod()]
+        [TestMethod]
         public void ClasMedianTest()
         {
             IPointIdFloat p0 = new PointIdFloat(0, 0f);

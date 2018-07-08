@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
@@ -44,7 +43,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             dc._kinds = new List<DataKind>(_kinds);
             dc._length = _length;
             dc._naming = new Dictionary<string, int>(_naming);
-            dc._mapping = _mapping = new Dictionary<int, Tuple<DataKind, int>>(_mapping);
+            dc._mapping = new Dictionary<int, Tuple<DataKind, int>>(_mapping);
             dc._schema = new DataContainerSchema(dc);
             dc._colsBL = _colsBL == null ? null : new List<IDataColumn>(_colsBL.Select(c => c.Copy()));
             dc._colsI4 = _colsI4 == null ? null : new List<IDataColumn>(_colsI4.Select(c => c.Copy()));
@@ -121,6 +120,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// Returns the number of columns.
         /// </summary>
         public int ColumnCount => _names.Count;
+
+        /// <summary>
+        /// Returns the list of columns.
+        /// </summary>
+        public string[] Columns => _names.ToArray();
+
+        /// <summary>
+        /// Returns the list of columns.
+        /// </summary>
+        public DataKind[] Kinds => _kinds.ToArray();
 
         /// <summary>
         /// Returns the name of a column.
@@ -263,6 +272,129 @@ namespace Microsoft.ML.Ext.DataManipulation
             _schema = new DataContainerSchema(this);
         }
 
+        /// <summary>
+        /// Creates a dataframe from a list of dictionaries.
+        /// If *kinds* is null, the function guesses the types from
+        /// the first row.
+        /// </summary>
+        public DataContainer(IEnumerable<Dictionary<string, object>> rows,
+                             Dictionary<string, DataKind> kinds = null)
+        {
+            var array = rows.ToArray();
+            _init();
+            if (kinds == null)
+                kinds = GuessKinds(array);
+            foreach (var pair in kinds)
+            {
+                var values = array.Select(c => c.ContainsKey(pair.Key) ? c[pair.Key] : DataFrameMissingValue.GetMissingValue(pair.Value, array.Where(d => d.ContainsKey(pair.Key)).Select(e => e[pair.Key]).First())).ToArray();
+                var data = CreateColumn(pair.Value, values);
+                AddColumn(pair.Key, pair.Value, array.Length, data);
+            }
+        }
+
+        Dictionary<string, DataKind> GuessKinds(Dictionary<string, object>[] rows)
+        {
+            var res = new Dictionary<string, DataKind>();
+            foreach (var row in rows.Take(10))
+            {
+                foreach (var pair in row)
+                {
+                    if (res.ContainsKey(pair.Key))
+                        continue;
+                    if (pair.Value == null)
+                        continue;
+                    if (pair.Value is DvBool || pair.Value is bool)
+                    {
+                        res[pair.Key] = DataKind.BL;
+                        continue;
+                    }
+                    if (pair.Value is DvInt4 || pair.Value is int)
+                    {
+                        res[pair.Key] = DataKind.I4;
+                        continue;
+                    }
+                    if (pair.Value is uint)
+                    {
+                        res[pair.Key] = DataKind.U4;
+                        continue;
+                    }
+                    if (pair.Value is DvInt8 || pair.Value is Int64)
+                    {
+                        res[pair.Key] = DataKind.I8;
+                        continue;
+                    }
+                    if (pair.Value is float)
+                    {
+                        res[pair.Key] = DataKind.R4;
+                        continue;
+                    }
+                    if (pair.Value is double)
+                    {
+                        res[pair.Key] = DataKind.R8;
+                        continue;
+                    }
+                    if (pair.Value is DvText || pair.Value is string)
+                    {
+                        res[pair.Key] = DataKind.TX;
+                        continue;
+                    }
+                    throw Contracts.ExceptNotImpl($"Type '{pair.Value.GetType()}' is not implemented.");
+                }
+            }
+            return res;
+        }
+
+        IDataColumn CreateColumn(DataKind kind, IEnumerable<object> values)
+        {
+            switch (kind)
+            {
+                case DataKind.BL:
+                    try
+                    {
+                        return new DataColumn<DvBool>(values.Select(c => (DvBool)c).ToArray());
+                    }
+                    catch (InvalidCastException)
+                    {
+                        return new DataColumn<DvBool>(values.Select(c => (DvBool)(bool)c).ToArray());
+                    }
+                case DataKind.I4:
+                    try
+                    {
+                        return new DataColumn<DvInt4>(values.Select(c => (DvInt4)c).ToArray());
+                    }
+                    catch (InvalidCastException)
+                    {
+                        return new DataColumn<DvInt4>(values.Select(c => (DvInt4)(int)c).ToArray());
+                    }
+                case DataKind.U4:
+                    return new DataColumn<uint>(values.Select(c => (uint)c).ToArray());
+                case DataKind.I8:
+                    try
+                    {
+                        return new DataColumn<DvInt8>(values.Select(c => (DvInt8)c).ToArray());
+                    }
+                    catch (InvalidCastException)
+                    {
+                        return new DataColumn<DvInt8>(values.Select(c => (DvInt8)(Int64)c).ToArray());
+                    }
+                case DataKind.R4:
+                    return new DataColumn<float>(values.Select(c => (float)c).ToArray());
+                case DataKind.R8:
+                    return new DataColumn<double>(values.Select(c => (double)c).ToArray());
+                case DataKind.TX:
+                    try
+                    {
+                        return new DataColumn<DvText>(values.Select(c => (DvText)c).ToArray());
+                    }
+                    catch (InvalidCastException)
+                    {
+                        return new DataColumn<DvText>(values.Select(c => new DvText((string)c)).ToArray());
+                    }
+                default:
+                    throw Contracts.ExceptNotImpl($"Kind {kind} is not implemented.");
+            }
+        }
+
         #endregion
 
         #region column
@@ -365,9 +497,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public void FillValues(int row, string[] spl)
         {
             for (int i = 0; i < spl.Length; ++i)
-            {
                 Set(row, i, spl[i]);
-            }
         }
 
         /// <summary>
@@ -690,7 +820,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             IRandom _rand;
             Func<int, bool> _needCol;
             long _inc;
-            long _first;
+            readonly long _first;
             long _position;
 
             int[] _rowsSet;
@@ -818,6 +948,44 @@ namespace Microsoft.ML.Ext.DataManipulation
         {
             for (int i = 0; i < ColumnCount; ++i)
                 GetColumn(i).Order(order);
+        }
+
+        /// <summary>
+        /// Order the columns.
+        /// </summary>
+        public void OrderColumns(string[] columns)
+        {
+            var colind = columns.Select(c => GetColumnIndex(c)).ToArray();
+            var new_names = columns;
+            var new_kinds = colind.Select(i => _kinds[i]).ToList();
+            var new_length = columns.Length;
+            var new_naming = new Dictionary<string, int>();
+            var new_mapping = new Dictionary<int, Tuple<DataKind, int>>();
+            for (int i = 0; i < new_length; ++i)
+            {
+                new_naming[new_names[i]] = i;
+                new_mapping[i] = _mapping[colind[i]];
+            }
+
+            _names = new_names.ToList();
+            _mapping = new_mapping;
+            _kinds = new_kinds;
+            _naming = new_naming;
+            _schema = new DataContainerSchema(this);
+        }
+
+        public void RenameColumns(string[] columns)
+        {
+            if (columns.Length != _names.Count)
+                throw new DataNameError("Unexpected number of columns.");
+            var new_names = _names.Select((c, i) => string.IsNullOrEmpty(columns[i]) ? c : columns[i]).ToArray();
+            var new_naming = new Dictionary<string, int>();
+            for (int i = 0; i < _names.Count; ++i)
+                new_naming[new_names[i]] = i;
+
+            _names = new_names.ToList();
+            _naming = new_naming;
+            _schema = new DataContainerSchema(this);
         }
 
         /// <summary>
@@ -1135,6 +1303,33 @@ namespace Microsoft.ML.Ext.DataManipulation
         public object this[IEnumerable<int> rows, string col]
         {
             set { GetColumn(col).Set(rows, value); }
+        }
+
+        #endregion
+
+        #region SQL functions
+
+        /// <summary>
+        /// Aggregates over all rows.
+        /// </summary>
+        public DataContainer Aggregate(AggregatedFunction agg, int[] rows = null, int[] columns = null)
+        {
+            var res = new DataContainer();
+            if (columns == null)
+            {
+                for (int i = 0; i < ColumnCount; ++i)
+                    res.AddColumn(_names[i], _kinds[i], 1, GetColumn(i).Aggregate(agg, rows));
+            }
+            else
+            {
+                int i;
+                for (int c = 0; c < columns.Length; ++c)
+                {
+                    i = columns[c];
+                    res.AddColumn(_names[i], _kinds[i], 1, GetColumn(i).Aggregate(agg, rows));
+                }
+            }
+            return res;
         }
 
         #endregion
