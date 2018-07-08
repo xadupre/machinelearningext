@@ -1065,6 +1065,129 @@ namespace TestMachineLearningExt
             Assert.AreEqual(exp, text);
         }
 
+        [TestMethod]
+        public void TestDataFrameGroupByOrder()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 2 }, {"BB", 1.1f }, {"CC", "text4" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+            };
+            var df = new DataFrame(rows);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
+
+            var gr = df.GroupBy(new int[] { 1 }).Count();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(2, 3));
+            var text = gr.ToString();
+            var exp = "BB,AA,CC\n1,2,\n1.1,3,";
+            Assert.AreEqual(exp, text);
+
+            var view = df[new[] { "AA", "BB" }];
+            gr = view.GroupBy(new int[] { 1 }).Count();
+            Assert.AreEqual(gr.Shape, new Tuple<int, int>(2, 2));
+            text = gr.ToString();
+            exp = "BB,AA\n1,2\n1.1,3";
+            Assert.AreEqual(exp, text);
+        }
+
+        [TestMethod]
+        public void TestDataFrameJoin()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text" } },
+                new Dictionary<string, object>() { {"AA", 2 }, {"BB", 1.1f }, {"CC", "text4" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+            };
+            var df = new DataFrame(rows);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
+            var res = df.Join(df, new[] { 0 }, new[] { 0 });
+            Assert.AreEqual(res.Shape, new Tuple<int, int>(9, 6));
+            var exp = string.Join("\n", new string[] {
+                    "AA,BB,CC,AA_y,BB_y,CC_y",
+                    "0,1,text,0,1,text",
+                    "0,1,text,0,1,text",
+                    "0,1,text,0,1,text",
+                    "0,1,text,0,1,text",
+                    "1,1.1,text2,1,1.1,text2",
+                    "1,1.1,text2,1,1.1,text2",
+                    "1,1.1,text2,1,1.1,text2",
+                    "1,1.1,text2,1,1.1,text2",
+                    "2,1.1,text4,2,1.1,text4" });
+            var tos = res.ToString();
+            Assert.AreEqual(exp, tos);
+        }
+
+        [TestMethod]
+        public void TestDataFrameJoinType()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }, {"CC", "text0" } },
+                new Dictionary<string, object>() { {"AA", 1 }, {"BB", 1.1f }, {"CC", "text2" } },
+            };
+            var df1 = new DataFrame(rows);
+            rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA2", 2 }, {"BB2", 3f }, {"CC", "TEXT2" }, { "DD", true }, },
+                new Dictionary<string, object>() { {"AA2", 1 }, {"BB2", 4.1f }, {"CC", "TEXT1" }, { "DD", false }, },
+            };
+            var df2 = new DataFrame(rows);
+
+            var res = df1.Join(df2, new[] { 0 }, new[] { 0 });
+            var tos = res.ToString();
+            Assert.AreEqual(res.Shape, new Tuple<int, int>(1, 7));
+            var exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n1,1.1,text2,1,4.1,TEXT1,0";
+            Assert.AreEqual(exp, tos);
+
+            res = df1.Join(df2, new[] { 0 }, new[] { 0 }, joinType: JoinStrategy.Left);
+            tos = res.ToString();
+            Assert.AreEqual(res.Shape, new Tuple<int, int>(2, 7));
+            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n0,1,text0,,,,\n1,1.1,text2,1,4.1,TEXT1,0";
+            Assert.AreEqual(exp, tos);
+
+            res = df1.Join(df2, new[] { 0 }, new[] { 0 }, joinType: JoinStrategy.Right);
+            tos = res.ToString();
+            Assert.AreEqual(res.Shape, new Tuple<int, int>(2, 7));
+            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n1,1.1,text2,1,4.1,TEXT1,0\n,,,2,3,TEXT2,1";
+            Assert.AreEqual(exp, tos);
+
+            res = df1.Join(df2, new[] { 0 }, new[] { 0 }, joinType: JoinStrategy.Outer);
+            tos = res.ToString();
+            Assert.AreEqual(res.Shape, new Tuple<int, int>(3, 7));
+            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n0,1,text0,,,,\n1,1.1,text2,1,4.1,TEXT1,0\n,,,2,3,TEXT2,1";
+            Assert.AreEqual(exp, tos);
+        }
+
+        [TestMethod]
+        public void TestDataFrameJoinMultiplication()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }},
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 2f }},
+            };
+            var df1 = new DataFrame(rows);
+            rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA2", 0 }, {"BB2", 3f } },
+                new Dictionary<string, object>() { {"AA2", 0 }, {"BB2", 4f } },
+                new Dictionary<string, object>() { {"AA2", 0 }, {"BB2", 5f } },
+            };
+            var df2 = new DataFrame(rows);
+
+            var res = df1.Join(df2, new[] { 0 }, new[] { 0 });
+            var tos = res.ToString();
+            Assert.AreEqual(res.Shape, new Tuple<int, int>(6, 4));
+            var exp = "AA,BB,AA2,BB2\n0,1,0,3\n0,2,0,3\n0,1,0,4\n0,2,0,4\n0,1,0,5\n0,2,0,5";
+            Assert.AreEqual(exp, tos);
+        }
+
         #endregion
     }
 }

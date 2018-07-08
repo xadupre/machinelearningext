@@ -974,6 +974,20 @@ namespace Microsoft.ML.Ext.DataManipulation
             _schema = new DataContainerSchema(this);
         }
 
+        public void RenameColumns(string[] columns)
+        {
+            if (columns.Length != _names.Count)
+                throw new DataNameError("Unexpected number of columns.");
+            var new_names = _names.Select((c, i) => string.IsNullOrEmpty(columns[i]) ? c : columns[i]).ToArray();
+            var new_naming = new Dictionary<string, int>();
+            for (int i = 0; i < _names.Count; ++i)
+                new_naming[new_names[i]] = i;
+
+            _names = new_names.ToList();
+            _naming = new_naming;
+            _schema = new DataContainerSchema(this);
+        }
+
         /// <summary>
         /// Checks that containers are exactly the same.
         /// </summary>

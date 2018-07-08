@@ -35,6 +35,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public int[] ALL { get { return null; } }
 
         public IDataFrameView Source => null;
+        public int[] ColumnsSet => null;
 
         #endregion
 
@@ -364,7 +365,7 @@ namespace Microsoft.ML.Ext.DataManipulation
                                         IHost host = null)
         {
             var df = ReadCsv(filename, sep: sep, header: header, names: names, dtypes: dtypes,
-                             nrows: guess_rows, guess_rows: guess_rows, encoding: encoding, index:index);
+                             nrows: guess_rows, guess_rows: guess_rows, encoding: encoding, index: index);
             var sch = df.Schema;
             var cols = new TextLoader.Column[sch.ColumnCount];
             for (int i = 0; i < cols.Length; ++i)
@@ -589,7 +590,6 @@ namespace Microsoft.ML.Ext.DataManipulation
                         continue;
                     }
                 }
-
 
                 try
                 {
@@ -1164,6 +1164,11 @@ namespace Microsoft.ML.Ext.DataManipulation
             _data.OrderColumns(columns);
         }
 
+        public void RenameColumns(string[] columns)
+        {
+            _data.RenameColumns(columns);
+        }
+
         /// <summary>
         /// Sorts rows.
         /// </summary>
@@ -1348,6 +1353,81 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T3 : IEquatable<T3>, IComparable<T3>
         {
             return new DataFrameView(this, null, null).TGroupBy<T1, T2, T3>(cols, sort);
+        }
+
+        #endregion
+
+        #region join
+
+        public IDataFrameView Multiply(int nb, MultiplyStrategy multType = MultiplyStrategy.Block)
+        {
+            int[] rows = new int[Length * nb];
+            switch (multType)
+            {
+                case MultiplyStrategy.Block:
+                    for (int i = 0; i < rows.Length; ++i)
+                        rows[i] = i % Length;
+                    break;
+                case MultiplyStrategy.Row:
+                    for (int i = 0; i < rows.Length; ++i)
+                        rows[i] = i / nb;
+                    break;
+                default:
+                    throw new DataValueError($"Unkown multiplication strategy '{multType}'.");
+            }
+            return new DataFrameView(this, rows, null);
+        }
+
+        /// <summary>
+        /// Join.
+        /// </summary>
+        public DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<string> colsRight,
+                        string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).Join(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<string> colsRight,
+                       string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).Join(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<int> colsRight,
+                            string leftSuffix = null, string rightSuffix = null,
+                           JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).Join(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight,
+                        string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return new DataFrameView(this, null, null).Join(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame TJoin<T1>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            return new DataFrameView(this, null, null).TJoin<T1>(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame TJoin<T1, T2>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            return new DataFrameView(this, null, null).TJoin<T1, T2>(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame TJoin<T1, T2, T3>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            return new DataFrameView(this, null, null).TJoin<T1, T2, T3>(right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
         }
 
         #endregion

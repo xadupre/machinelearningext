@@ -73,7 +73,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         public string[] ColumnsKey => _keys.Select(c => c.Key).ToArray();
         public DataFrameGroupKey[] Keys => _keys;
 
-        public DataFrameViewGroup(DataFrameGroupKey[] keys, IDataFrameView src, IEnumerable<int> rows, IEnumerable<int> columns) : base(src, rows, columns)
+        public DataFrameViewGroup(DataFrameGroupKey[] keys, IDataFrameView src, IEnumerable<int> rows, IEnumerable<int> columns) : 
+            base(src, rows, columns)
         {
             _keys = keys;
         }

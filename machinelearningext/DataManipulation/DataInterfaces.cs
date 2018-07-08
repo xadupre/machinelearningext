@@ -25,10 +25,16 @@ namespace Microsoft.ML.Ext.DataManipulation
     /// </summary>
     public enum JoinStrategy
     {
-        Inner=1,
-        Left=2,
-        Right=3,
-        Outer=4
+        Inner = 1,
+        Left = 2,
+        Right = 3,
+        Outer = 4
+    }
+
+    public enum MultiplyStrategy
+    {
+        Block=1,
+        Row=2
     }
 
     /// <summary>
@@ -210,6 +216,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         IDataFrameView Source { get; }
 
         /// <summary>
+        /// In case of a DataView, returns the set of selected columns,
+        /// null otherwise.
+        /// </summary>
+        int[] ColumnsSet { get; }
+
+        /// <summary>
         /// Returns the list of columns.
         /// </summary>
         string[] Columns { get; }
@@ -384,29 +396,38 @@ namespace Microsoft.ML.Ext.DataManipulation
         #endregion
 
         #region join
-        /*
+
+        /// <summary>
+        /// Multiplies rows.
+        /// </summary>
+        IDataFrameView Multiply(int nb, MultiplyStrategy multType = MultiplyStrategy.Block);
+
         /// <summary>
         /// Join.
         /// </summary>
         DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<string> colsRight,
-                       JoinStrategy joinType= JoinStrategy.Inner, bool sort=true);
+                       string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true);
         DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<string> colsRight,
+                       string leftSuffix = null, string rightSuffix = null,
                        JoinStrategy joinType = JoinStrategy.Inner, bool sort = true);
         DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<int> colsRight,
+                       string leftSuffix = null, string rightSuffix = null,
                        JoinStrategy joinType = JoinStrategy.Inner, bool sort = true);
         DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight,
+                       string leftSuffix = null, string rightSuffix = null,
                        JoinStrategy joinType = JoinStrategy.Inner, bool sort = true);
 
-        DataFrameViewGroupResults<ImmutableTuple<T1>> TJoin<T1>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        DataFrame TJoin<T1>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>;
-        DataFrameViewGroupResults<ImmutableTuple<T1, T2>> TJoin<T1, T2>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        DataFrame TJoin<T1, T2>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>;
-        DataFrameViewGroupResults<ImmutableTuple<T1, T2, T3>> TJoin<T1, T2, T3>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        DataFrame TJoin<T1, T2, T3>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
             where T3 : IEquatable<T3>, IComparable<T3>;
-            */
+
         #endregion
 
         #endregion

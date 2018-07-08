@@ -8,29 +8,29 @@ using Microsoft.ML.Runtime.Data;
 
 namespace Microsoft.ML.Ext.DataManipulation
 {
-    #region type version
-
     /// <summary>
     /// Implements grouping functions for dataframe.
     /// </summary>
     public static class DataFrameGrouping
     {
+        #region type version
+
         public static IEnumerable<KeyValuePair<TKey, DataFrameViewGroup>> TGroupBy<TKey>(
                                 IDataFrameView df, int[] order, TKey[] keys, int[] columns,
                                 Func<TKey, DataFrameGroupKey[]> func)
             where TKey : IEquatable<TKey>
         {
-            TKey last = default(TKey);
+            TKey last = keys.Any() ? keys[order[0]] : default(TKey);
             List<int> subrows = new List<int>();
             foreach (var pos in order)
             {
                 var cur = keys[pos];
-                if (last == null || cur.Equals(last))
+                if (cur.Equals(last))
                     subrows.Add(pos);
                 else if (subrows.Any())
                 {
                     yield return new KeyValuePair<TKey, DataFrameViewGroup>(last,
-                                    new DataFrameViewGroup(func(last), df.Source, subrows.ToArray(), columns));
+                                    new DataFrameViewGroup(func(last), df.Source ?? df, subrows.ToArray(), df.ColumnsSet));
                     subrows.Clear();
                     subrows.Add(pos);
                 }
@@ -38,7 +38,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             }
             if (subrows.Any())
                 yield return new KeyValuePair<TKey, DataFrameViewGroup>(last,
-                            new DataFrameViewGroup(func(last), df.Source, subrows.ToArray(), columns));
+                            new DataFrameViewGroup(func(last), df.Source ?? df, subrows.ToArray(), df.ColumnsSet));
         }
 
         public static DataFrameViewGroupResults<TImutKey> TGroupBy<TMutKey, TImutKey>(
@@ -64,7 +64,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         static IDataFrameViewGroupResults RecGroupBy(IDataFrameView df, int[] icols, bool sort)
         {
-            var kind = df.Kinds[0];
+            var kind = df.Kinds[icols[0]];
             if (icols.Length == 1)
             {
                 switch (kind)
@@ -100,7 +100,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         static IDataFrameViewGroupResults RecGroupBy<T1>(IDataFrameView df, int[] icols, bool sort)
             where T1 : IEquatable<T1>, IComparable<T1>
         {
-            var kind = df.Kinds[1];
+            var kind = df.Kinds[icols[1]];
             if (icols.Length == 2)
             {
                 switch (kind)
@@ -137,7 +137,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
-            var kind = df.Kinds[2];
+            var kind = df.Kinds[icols[2]];
             if (icols.Length == 3)
             {
                 switch (kind)

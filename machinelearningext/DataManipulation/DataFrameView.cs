@@ -20,6 +20,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         public int[] ALL { get { return null; } }
         public int Length { get { return _rows == null ? _src.Length : _rows.Length; } }
         public IDataFrameView Source => _src;
+        public int[] ColumnsSet => _columns;
 
         /// <summary>
         /// Initializes a view on a dataframe.
@@ -534,7 +535,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public IDataFrameViewGroupResults GroupBy(IEnumerable<string> cols, bool sort = true)
         {
-            return GroupBy(cols.Select(c=>GetColumnIndex(c)), sort);
+            return GroupBy(cols.Select(c => GetColumnIndex(c)), sort);
         }
 
         /// <summary>
@@ -578,6 +579,134 @@ namespace Microsoft.ML.Ext.DataManipulation
                                               ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
         }
 
+        #endregion
+
+        #region join
+
+        public IDataFrameView Multiply(int nb, MultiplyStrategy multType = MultiplyStrategy.Block)
+        {
+            int[] rows = new int[Length * nb];
+            switch (multType)
+            {
+                case MultiplyStrategy.Block:
+                    for (int i = 0; i < rows.Length; ++i)
+                        rows[i] = _rows[i % Length];
+                    break;
+                case MultiplyStrategy.Row:
+                    for (int i = 0; i < rows.Length; ++i)
+                        rows[i] = _rows[i / Length];
+                    break;
+                default:
+                    throw new DataValueError($"Unkown multiplication strategy '{multType}'.");
+            }
+            return new DataFrameView(_src, rows, _columns);
+        }
+
+        /// <summary>
+        /// Join.
+        /// </summary>
+        public DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<string> colsRight,
+                       string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return Join(right, colsLeft.Select(c => GetColumnIndex(c)), colsRight.Select(c => GetColumnIndex(c)), leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<string> colsRight,
+                       string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return Join(right, colsLeft, colsRight.Select(c => GetColumnIndex(c)), leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<string> colsLeft, IEnumerable<int> colsRight,
+                           string leftSuffix = null, string rightSuffix = null,
+                           JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return Join(right, colsLeft.Select(c => GetColumnIndex(c)), colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame Join(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight,
+                        string leftSuffix = null, string rightSuffix = null,
+                       JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+        {
+            return DataFrameJoining.Join(this, right, colsLeft, colsRight, leftSuffix, rightSuffix, joinType, sort);
+        }
+
+        public DataFrame TJoin<T1>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+        {
+            int[] orderLeft = _rows.Select(c => c).ToArray();
+            int[] orderRight = (right as DataFrame) is null ? (right as DataFrameView)._rows.Select(c => c).ToArray() : null;
+            int[] columnsRight = right.ColumnsSet;
+            var icolsLeft = colsLeft.ToArray();
+            var icolsRight = colsRight.ToArray();
+            var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+
+            return DataFrameJoining.TJoin(this, right,
+                                          orderLeft, orderRight,
+                                          _columns, columnsRight,
+                                          icolsLeft, icolsRight, sort,
+                                          leftSuffix, rightSuffix,
+                                          joinType,
+                                          GetMultiGetterAt<T1>(icolsLeft),
+                                          right.GetMultiGetterAt<T1>(icolsRight),
+                                          ke => ke.ToImTuple(),
+                                          ke => DataFrameGroupKey.Create(scolsLeft, ke),
+                                          ke => DataFrameGroupKey.Create(scolsRight, ke));
+        }
+
+        public DataFrame TJoin<T1, T2>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+        {
+            int[] orderLeft = _rows.Select(c => c).ToArray();
+            int[] orderRight = (right as DataFrame) is null ? (right as DataFrameView)._rows.Select(c => c).ToArray() : null;
+            int[] columnsRight = (right as DataFrame) is null ? (right as DataFrameView)._columns : null;
+            var icolsLeft = colsLeft.ToArray();
+            var icolsRight = colsRight.ToArray();
+            var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+
+            return DataFrameJoining.TJoin(this, right,
+                                          orderLeft, orderRight,
+                                          _columns, columnsRight,
+                                          icolsLeft, icolsRight, sort,
+                                          leftSuffix, rightSuffix,
+                                          joinType,
+                                          GetMultiGetterAt<T1, T2>(icolsLeft),
+                                          right.GetMultiGetterAt<T1, T2>(icolsRight),
+                                          ke => ke.ToImTuple(),
+                                          ke => DataFrameGroupKey.Create(scolsLeft, ke),
+                                          ke => DataFrameGroupKey.Create(scolsRight, ke));
+        }
+
+        public DataFrame TJoin<T1, T2, T3>(IDataFrameView right, IEnumerable<int> colsLeft, IEnumerable<int> colsRight, string leftSuffix = null, string rightSuffix = null, JoinStrategy joinType = JoinStrategy.Inner, bool sort = true)
+            where T1 : IEquatable<T1>, IComparable<T1>
+            where T2 : IEquatable<T2>, IComparable<T2>
+            where T3 : IEquatable<T3>, IComparable<T3>
+        {
+            int[] orderLeft = _rows.Select(c => c).ToArray();
+            int[] orderRight = (right as DataFrame) is null ? (right as DataFrameView)._rows.Select(c => c).ToArray() : null;
+            int[] columnsRight = (right as DataFrame) is null ? (right as DataFrameView)._columns : null;
+            var icolsLeft = colsLeft.ToArray();
+            var icolsRight = colsRight.ToArray();
+            var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+
+            return DataFrameJoining.TJoin(this, right,
+                                          orderLeft, orderRight,
+                                          _columns, columnsRight,
+                                          icolsLeft, icolsRight, sort,
+                                          leftSuffix, rightSuffix,
+                                          joinType,
+                                          GetMultiGetterAt<T1, T2, T3>(icolsLeft),
+                                          right.GetMultiGetterAt<T1, T2, T3>(icolsRight),
+                                          ke => ke.ToImTuple(),
+                                          ke => DataFrameGroupKey.Create(scolsLeft, ke),
+                                          ke => DataFrameGroupKey.Create(scolsRight, ke));
+        }
 
         #endregion
 

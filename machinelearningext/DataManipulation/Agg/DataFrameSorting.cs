@@ -90,7 +90,7 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         static void RecSort(IDataFrameView df, int[] icols, bool ascending)
         {
-            var kind = df.Kinds[0];
+            var kind = df.Kinds[icols[0]];
             if (icols.Length == 1)
             {
                 switch (kind)
@@ -126,7 +126,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         static void RecSort<T1>(IDataFrameView df, int[] icols, bool ascending)
             where T1: IEquatable<T1>, IComparable<T1>
         {
-            var kind = df.Kinds[1];
+            var kind = df.Kinds[icols[1]];
             if (icols.Length == 2)
             {
                 switch (kind)
@@ -163,7 +163,7 @@ namespace Microsoft.ML.Ext.DataManipulation
             where T1 : IEquatable<T1>, IComparable<T1>
             where T2 : IEquatable<T2>, IComparable<T2>
         {
-            var kind = df.Kinds[2];
+            var kind = df.Kinds[icols[2]];
             if (icols.Length == 3)
             {
                 switch (kind)
