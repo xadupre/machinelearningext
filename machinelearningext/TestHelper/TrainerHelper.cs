@@ -151,7 +151,6 @@ namespace Microsoft.ML.Ext.TestHelper
                             float ratio = 0.8f, float ratioReadSave = 0.06f)
         {
             string labelColumn = kind != PredictionKind.Clustering ? roles.Schema.Label.Name : null;
-            string featuresColumn = roles.Schema.Feature.Name;
 
             #region save, reading, running
 

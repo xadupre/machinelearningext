@@ -186,7 +186,6 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 var r = _schemaInput.TryGetColumnIndex(name, out res);
                 if (r)
                     return true;
-                nb = _schemaInput.ColumnCount;
             }
 
             res = -1;
