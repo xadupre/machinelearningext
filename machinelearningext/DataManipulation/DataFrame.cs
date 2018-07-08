@@ -15,6 +15,10 @@ namespace Microsoft.ML.Ext.DataManipulation
 {
     /// <summary>
     /// Implements a DataFrame based on a IDataView from ML.net.
+    /// It replicates some of pandas API for DataFrame except
+    /// for the index which can be added as a column but does not
+    /// play any particular role (concatenation does not take it
+    /// into account).
     /// </summary>
     public class DataFrame : IDataFrameView
     {
@@ -345,6 +349,8 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="guess_rows">number of rows used to guess types</param>
         /// <param name="encoding">text encoding</param>
         /// <param name="useThreads">specific to TextLoader</param>
+        /// <param name="host">host</param>
+        /// <param name="index">add a column to hold the index</param>
         /// <returns>TextLoader</returns>
         public static TextLoader ReadCsvToTextLoader(string filename,
                                         char sep = ',', bool header = true,
@@ -354,10 +360,11 @@ namespace Microsoft.ML.Ext.DataManipulation
                                         int guess_rows = 10,
                                         Encoding encoding = null,
                                         bool useThreads = true,
+                                        bool index = false,
                                         IHost host = null)
         {
             var df = ReadCsv(filename, sep: sep, header: header, names: names, dtypes: dtypes,
-                             nrows: guess_rows, guess_rows: guess_rows, encoding: encoding);
+                             nrows: guess_rows, guess_rows: guess_rows, encoding: encoding, index:index);
             var sch = df.Schema;
             var cols = new TextLoader.Column[sch.ColumnCount];
             for (int i = 0; i < cols.Length; ++i)
@@ -389,18 +396,16 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="dtypes">column types (can be empty)</param>
         /// <param name="nrows">number of rows to read</param>
         /// <param name="guess_rows">number of rows used to guess types</param>
-        /// <param name="encoding">text encoding</param>
+        /// <param name="index">add one column with the row index</param>
         /// <returns>DataFrame</returns>
         public static DataFrame ReadStr(string content,
                                     char sep = ',', bool header = true,
-                                    string[] names = null,
-                                    DataKind?[] dtypes = null,
-                                    int nrows = -1,
-                                    int guess_rows = 10)
+                                    string[] names = null, DataKind?[] dtypes = null,
+                                    int nrows = -1, int guess_rows = 10, bool index = false)
         {
             return ReadStream(() => new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(content))),
                               sep: sep, header: header, names: names, dtypes: dtypes, nrows: nrows,
-                              guess_rows: guess_rows);
+                              guess_rows: guess_rows, index: index);
         }
 
         /// <summary>
@@ -415,18 +420,17 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="nrows">number of rows to read</param>
         /// <param name="guess_rows">number of rows used to guess types</param>
         /// <param name="encoding">text encoding</param>
+        /// <param name="index">add one column with the row index</param>
         /// <returns>DataFrame</returns>
         public static DataFrame ReadCsv(string filename,
                                 char sep = ',', bool header = true,
-                                string[] names = null,
-                                DataKind?[] dtypes = null,
-                                int nrows = -1,
-                                int guess_rows = 10,
-                                Encoding encoding = null)
+                                string[] names = null, DataKind?[] dtypes = null,
+                                int nrows = -1, int guess_rows = 10,
+                                Encoding encoding = null, bool index = false)
         {
             return ReadStream(() => new StreamReader(filename, encoding ?? Encoding.ASCII),
                               sep: sep, header: header, names: names, dtypes: dtypes, nrows: nrows,
-                              guess_rows: guess_rows);
+                              guess_rows: guess_rows, index: index);
         }
 
         public delegate StreamReader FunctionCreateStreamReader();
@@ -442,14 +446,12 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// <param name="dtypes">column types (can be empty)</param>
         /// <param name="nrows">number of rows to read</param>
         /// <param name="guess_rows">number of rows used to guess types</param>
-        /// <param name="encoding">text encoding</param>
+        /// <param name="index">add one column with the row index</param>
         /// <returns>DataFrame</returns>
         public static DataFrame ReadStream(FunctionCreateStreamReader createStream,
                                 char sep = ',', bool header = true,
-                                string[] names = null,
-                                DataKind?[] dtypes = null,
-                                int nrows = -1,
-                                int guess_rows = 10)
+                                string[] names = null, DataKind?[] dtypes = null,
+                                int nrows = -1, int guess_rows = 10, bool index = false)
         {
             var lines = new List<string[]>();
             int rowline = 0;
@@ -512,6 +514,19 @@ namespace Microsoft.ML.Ext.DataManipulation
                     line = st.ReadLine();
                 }
             }
+
+            if (index)
+            {
+                var hashNames = new HashSet<string>(names);
+                var nameIndex = "index";
+                while (hashNames.Contains(nameIndex))
+                    nameIndex += "_";
+                var indexValues = Enumerable.Range(0, df.Length).ToArray();
+                df.AddColumn(nameIndex, indexValues);
+                var newColumns = (new[] { nameIndex }).Concat(names).ToArray();
+                df.OrderColumns(newColumns);
+            }
+
             return df;
         }
 
@@ -1152,7 +1167,7 @@ namespace Microsoft.ML.Ext.DataManipulation
         /// </summary>
         public void Sort(IEnumerable<string> columns, bool ascending = true)
         {
-            DataFrameSorting.Sort(this, columns.Select(c=>GetColumnIndex(c)), ascending);
+            DataFrameSorting.Sort(this, columns.Select(c => GetColumnIndex(c)), ascending);
         }
 
         /// <summary>

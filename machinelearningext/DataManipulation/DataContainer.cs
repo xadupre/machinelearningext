@@ -967,10 +967,10 @@ namespace Microsoft.ML.Ext.DataManipulation
                 new_mapping[i] = _mapping[colind[i]];
             }
 
-            _length = new_length;
             _names = new_names.ToList();
             _mapping = new_mapping;
             _kinds = new_kinds;
+            _naming = new_naming;
             _schema = new DataContainerSchema(this);
         }
 

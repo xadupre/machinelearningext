@@ -332,7 +332,13 @@ namespace Microsoft.ML.Ext.DataManipulation
         public ValueGetter<DType2> GetGetter<DType2>(IRowCursor cursor)
         {
             var _data2 = _data as DType2[];
-            return (ref DType2 value) => { value = _data2[cursor.Position]; };
+            var missing = DataFrameMissingValue.GetMissingValue(Kind);
+            return (ref DType2 value) =>
+            {
+                value = cursor.Position < _data.LongLength
+                        ? _data2[cursor.Position]
+                        : (DType2)missing;
+            };
         }
 
         public bool Equals(IDataColumn c)
