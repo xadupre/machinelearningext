@@ -2,10 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Data.IO;
 using Microsoft.ML.Runtime.Internal.Calibration;
-using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.EntryPoints;
 
 
@@ -21,7 +22,7 @@ namespace Microsoft.ML.Ext.PipelineHelper
 
     public static class EntryPointsHelper
     {
-        public static TOut Train<TArg, TOut>(IHost host, TArg input,
+        public static TOut Train<TArg, TOut>(IHostEnvironment host, TArg input,
             Func<ITrainer> createTrainer,
             Func<string> getLabel = null,
             Func<string> getWeight = null,
@@ -40,7 +41,6 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 var label = getLabel?.Invoke();
                 var weight = getWeight?.Invoke();
                 var group = getGroup?.Invoke();
-                var name = getName?.Invoke();
                 var custom = getCustom?.Invoke();
 
                 var trainer = createTrainer();
@@ -49,7 +49,7 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 TrainUtils.AddNormalizerIfNeeded(host, ch, trainer, ref view, feature, input.INormalizeFeatures);
 
                 ch.Trace("Binding columns");
-                var roleMappedData = TrainUtils.CreateExamples(view, label, feature, group, weight, name, custom);
+                var roleMappedData = host.CreateExamples(view, feature, label, group, weight, custom);
 
                 RoleMappedData cachedRoleMappedData = roleMappedData;
                 Cache.CachingType? cachingType = null;
@@ -87,7 +87,7 @@ namespace Microsoft.ML.Ext.PipelineHelper
                         Data = roleMappedData.Data,
                         Caching = cachingType.Value
                     }).OutputData;
-                    cachedRoleMappedData = RoleMappedData.Create(cacheView, roleMappedData.Schema.GetColumnRoleNames());
+                    cachedRoleMappedData = new RoleMappedData(cacheView, roleMappedData.Schema.GetColumnRoleNames());
                 }
 
                 var predictor = TrainUtils.Train(host, ch, cachedRoleMappedData, trainer, "Train", calibrator, maxCalibrationExamples);
