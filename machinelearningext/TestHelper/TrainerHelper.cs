@@ -97,7 +97,7 @@ namespace Microsoft.ML.Ext.TestHelper
             roles.Add(new KeyValuePair<RoleMappedSchema.ColumnRole, string>(RoleMappedSchema.ColumnRole.Feature, featureColumn));
             if (!string.IsNullOrEmpty(groupColumn))
                 roles.Add(new KeyValuePair<RoleMappedSchema.ColumnRole, string>(RoleMappedSchema.ColumnRole.Group, groupColumn));
-            var data = RoleMappedData.Create(view, roles);
+            var data = new RoleMappedData(view, roles);
             return CreateDefaultScorer(env, data, ipredictor);
         }
 

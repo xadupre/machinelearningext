@@ -473,7 +473,7 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 var value = ctx.Reader.ReadString();
                 array[i] = new KeyValuePair<RoleMappedSchema.ColumnRole, string>(new RoleMappedSchema.ColumnRole(key), value);
             }
-            return RoleMappedSchema.Create(schema, array);
+            return new RoleMappedSchema(schema, array);
         }
     }
 }
