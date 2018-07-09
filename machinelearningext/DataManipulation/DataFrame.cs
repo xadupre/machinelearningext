@@ -1146,6 +1146,37 @@ namespace Microsoft.ML.Ext.DataManipulation
 
         #region SQL functions
 
+        #region head, tail, sample
+
+        /// <summary>
+        /// Returns a view on the first rows.
+        /// </summary>
+        public IDataFrameView Head(int nrows = 5)
+        {
+            nrows = Math.Min(Length, nrows);
+            return new DataFrameView(this, Enumerable.Range(0, nrows).ToArray(), null);
+        }
+
+        /// <summary>
+        /// Returns a view on the last rows.
+        /// </summary>
+        public IDataFrameView Tail(int nrows = 5)
+        {
+            nrows = Math.Min(Length, nrows);
+            return new DataFrameView(this, Enumerable.Range(0, nrows).Select(c => c + Length - nrows).ToArray(), null);
+        }
+
+        /// <summary>
+        /// Returns a sample.
+        /// </summary>
+        public IDataFrameView Sample(int nrows = 5, bool distinct = false, IRandom rand = null)
+        {
+            nrows = Math.Min(Length, nrows);
+            return new DataFrameView(this, DataFrameRandom.RandomIntegers(nrows, Length, distinct, rand), null);
+        }
+
+        #endregion
+
         #region sort
 
         /// <summary>
