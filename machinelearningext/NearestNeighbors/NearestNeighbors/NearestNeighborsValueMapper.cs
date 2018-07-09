@@ -7,10 +7,10 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
 using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbors
+namespace Scikit.ML.NearestNeighbors
 {
     public interface INearestNeighborsValueMapper
     {

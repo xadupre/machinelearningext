@@ -7,8 +7,8 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 
-using NearestNeighborsBinaryClassifierPredictor = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsBinaryClassifierPredictor;
-using NearestNeighborsMultiClassClassifierPredictor = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsMultiClassClassifierPredictor;
+using NearestNeighborsBinaryClassifierPredictor = Scikit.ML.NearestNeighbors.NearestNeighborsBinaryClassifierPredictor;
+using NearestNeighborsMultiClassClassifierPredictor = Scikit.ML.NearestNeighbors.NearestNeighborsMultiClassClassifierPredictor;
 
 
 [assembly: LoadableClass(typeof(NearestNeighborsBinaryClassifierPredictor), null, typeof(SignatureLoadModel),
@@ -18,7 +18,7 @@ using NearestNeighborsMultiClassClassifierPredictor = Microsoft.ML.Ext.NearestNe
     NearestNeighborsMultiClassClassifierPredictor.LongName, NearestNeighborsMultiClassClassifierPredictor.LoaderSignature)]
 
 
-namespace Microsoft.ML.Ext.NearestNeighbors
+namespace Scikit.ML.NearestNeighbors
 {
     public class NearestNeighborsBinaryClassifierPredictor :
         NearestNeighborsPredictor, INearestNeighborsPredictor, IValueMapper, ICanSaveModel

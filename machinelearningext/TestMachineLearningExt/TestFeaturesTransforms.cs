@@ -5,13 +5,13 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Ext.TestHelper;
+using Scikit.ML.TestHelper;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms;
-using Microsoft.ML.Ext.PipelineHelper;
-using Microsoft.ML.Ext.FeaturesTransforms;
-using Microsoft.ML.Ext.DataManipulation;
+using Scikit.ML.PipelineHelper;
+using Scikit.ML.FeaturesTransforms;
+using Scikit.ML.DataManipulation;
 
 
 namespace TestMachineLearningExt
@@ -175,7 +175,7 @@ namespace TestMachineLearningExt
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
             learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Microsoft.ML.Ext.EntryPoints.Polynomial("Features"));
+            learningPipeline.Add(new Scikit.ML.EntryPoints.Polynomial("Features"));
             learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
@@ -346,7 +346,7 @@ namespace TestMachineLearningExt
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
             learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Microsoft.ML.Ext.EntryPoints.Scaler("Features"));
+            learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
             learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);

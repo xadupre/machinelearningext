@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Ext.DataManipulation;
-using Microsoft.ML.Ext.TestHelper;
+using Scikit.ML.DataManipulation;
+using Scikit.ML.TestHelper;
 using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms;
 

@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Microsoft.ML.Ext.PipelineHelper</AssemblyName>
-    <RootNamespace>Microsoft.ML.Ext.PipelineHelper</RootNamespace>
+    <AssemblyName>Scikit.ML.PipelineHelper</AssemblyName>
+    <RootNamespace>Scikit.ML.PipelineHelper</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

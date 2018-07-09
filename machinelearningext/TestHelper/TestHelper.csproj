@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Microsoft.ML.Ext.TestHelper</AssemblyName>
-    <RootNamespace>Microsoft.ML.Ext.TestHelper</RootNamespace>
+    <AssemblyName>Scikit.ML.TestHelper</AssemblyName>
+    <RootNamespace>Scikit.ML.TestHelper</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

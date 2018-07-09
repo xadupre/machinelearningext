@@ -1,18 +1,19 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 #pragma warning disable
+using System;
+using System.Linq;
+using Newtonsoft.Json;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
-using Newtonsoft.Json;
-using System;
-using System.Linq;
 using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Ext.NearestNeighbors;
+using Scikit.ML.NearestNeighbors;
 
 
-namespace Microsoft.ML.Ext.EntryPoints
+namespace Scikit.ML.EntryPoints
 {
     public static class EntryPointsNearestNeighbors
     {

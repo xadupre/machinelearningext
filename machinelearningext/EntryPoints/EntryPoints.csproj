@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Microsoft.ML.Ext.EntryPoints</AssemblyName>
-    <RootNamespace>Microsoft.ML.Ext.EntryPoints</RootNamespace>
+    <AssemblyName>Scikit.ML.EntryPoints</AssemblyName>
+    <RootNamespace>Scikit.ML.EntryPoints</RootNamespace>
+    <Version>0.4.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

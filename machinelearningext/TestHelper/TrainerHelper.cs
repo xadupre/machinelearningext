@@ -8,10 +8,10 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 
 
-namespace Microsoft.ML.Ext.TestHelper
+namespace Scikit.ML.TestHelper
 {
     public static class TestTrainerHelper
     {

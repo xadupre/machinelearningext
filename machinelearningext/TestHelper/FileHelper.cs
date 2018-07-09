@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.ML.Runtime.Tools;
 
 
-namespace Microsoft.ML.Ext.TestHelper
+namespace Scikit.ML.TestHelper
 {
     public static class FileHelper
     {

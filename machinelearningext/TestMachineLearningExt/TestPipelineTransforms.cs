@@ -5,8 +5,8 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Ext.PipelineTransforms;
-using Microsoft.ML.Ext.TestHelper;
+using Scikit.ML.PipelineTransforms;
+using Scikit.ML.TestHelper;
 
 
 namespace TestMachineLearningExt

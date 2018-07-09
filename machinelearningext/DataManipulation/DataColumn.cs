@@ -5,11 +5,11 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 using Microsoft.ML.Runtime.Data.Conversion;
 
 
-namespace Microsoft.ML.Ext.DataManipulation
+namespace Scikit.ML.DataManipulation
 {
     /// <summary>
     /// Implements a dense column container.

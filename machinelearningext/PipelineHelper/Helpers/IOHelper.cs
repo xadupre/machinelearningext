@@ -7,7 +7,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 
 
-namespace Microsoft.ML.Ext.PipelineHelper
+namespace Scikit.ML.PipelineHelper
 {
     public static class IOHelper
     {

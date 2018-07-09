@@ -8,7 +8,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbors
+namespace Scikit.ML.NearestNeighbors
 {
     public static class NearestNeighborsBuilder
     {

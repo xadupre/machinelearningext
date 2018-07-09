@@ -7,14 +7,14 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 
 // The following files makes the object visible to maml.
 // This way, it can be added to any pipeline.
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
-using DescribeTransform = Microsoft.ML.Ext.PipelineTransforms.DescribeTransform;
+using DescribeTransform = Scikit.ML.PipelineTransforms.DescribeTransform;
 
 [assembly: LoadableClass(DescribeTransform.Summary, typeof(DescribeTransform),
     typeof(DescribeTransform.Arguments), typeof(SignatureDataTransform),
@@ -25,7 +25,7 @@ using DescribeTransform = Microsoft.ML.Ext.PipelineTransforms.DescribeTransform;
     "Describe Transform", DescribeTransform.LoaderSignature, "Describe")]
 
 
-namespace Microsoft.ML.Ext.PipelineTransforms
+namespace Scikit.ML.PipelineTransforms
 {
     /// <summary>
     /// Compute various statistics on a list of columns.

@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Microsoft.ML.Ext.DataManipulation</AssemblyName>
-    <RootNamespace>Microsoft.ML.Ext.DataManipulation</RootNamespace>
+    <AssemblyName>Scikit.ML.DataManipulation</AssemblyName>
+    <RootNamespace>Scikit.ML.DataManipulation</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

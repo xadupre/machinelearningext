@@ -7,7 +7,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace Microsoft.ML.Ext.PipelineHelper
+namespace Scikit.ML.PipelineHelper
 {
     /// <summary>
     /// Extends an existing Schema.

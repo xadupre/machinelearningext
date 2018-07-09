@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.ML.Runtime;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbors
+namespace Scikit.ML.NearestNeighbors
 {
     public enum NearestNeighborsWeights
     {

@@ -7,7 +7,7 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace Microsoft.ML.Ext.PipelineHelper
+namespace Scikit.ML.PipelineHelper
 {
     /// <summary>
     /// Helpers about DataView.
