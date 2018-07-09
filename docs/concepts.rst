@@ -5,7 +5,6 @@ Some concepts
 .. contents::
     :local:
 
-
 Elements of code
 ================
 
@@ -18,13 +17,12 @@ Definitions
   from the others but not necessarily,
   not independant if there is a group column.
 * **cursor**: row iterator on a dataset
-* **getter**: each cursor does not give a pointer on a row (the type of row is 
+* **getter**: each cursor does not give a pointer on a row (the type of row is
   unknown from `ML.net <https://github.com/dotnet/machinelearning>`_ 's point of view),
   but a cursor defines a way to access a specific column through a getter.
   A getter is a function which
   retrieve the value for a column for the current row.
 * **schema**: a list of typed columns
-
 
 IDataView
 +++++++++
@@ -33,7 +31,7 @@ A data view must define a schema
 and an access to them through the same API. By default, you should assume rows
 of the data are not order and can be accessed through multiple threads at the same time.
 `IDataView <https://docs.microsoft.com/en-us/dotnet/api/microsoft.ml.runtime.data.idataview?view=ml-dotnet>`_ API.
-        
+
 Other interfaces
 ++++++++++++++++
 
@@ -64,4 +62,3 @@ may create several cursors working in parallel, the training
 must be protected against multithreading.
 
 .. image:: cursor.png
-
