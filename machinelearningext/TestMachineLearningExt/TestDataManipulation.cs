@@ -1179,12 +1179,61 @@ namespace TestMachineLearningExt
                 new Dictionary<string, object>() { {"AA2", 0 }, {"BB2", 4f } },
                 new Dictionary<string, object>() { {"AA2", 0 }, {"BB2", 5f } },
             };
+
             var df2 = new DataFrame(rows);
 
             var res = df1.Join(df2, new[] { 0 }, new[] { 0 });
             var tos = res.ToString();
             Assert.AreEqual(res.Shape, new Tuple<int, int>(6, 4));
             var exp = "AA,BB,AA2,BB2\n0,1,0,3\n0,2,0,3\n0,1,0,4\n0,2,0,4\n0,1,0,5\n0,2,0,5";
+            Assert.AreEqual(exp, tos);
+        }
+
+        [TestMethod]
+        public void TestDataFrameJoinHeadTail()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }},
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 2f }},
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 3f }},
+            };
+            var df = new DataFrame(rows);
+            var head = df.Head(1);
+            var tos = head.ToString();
+            var exp = "AA,BB\n0,1";
+            Assert.AreEqual(exp, tos);
+            head = df.Head(2).Head(1);
+            tos = head.ToString();
+            Assert.AreEqual(exp, tos);
+
+            var tail = df.Tail(1);
+            tos = tail.ToString();
+            exp = "AA,BB\n0,3";
+            Assert.AreEqual(exp, tos);
+            tail = df.Tail(2).Tail(1);
+            tos = tail.ToString();
+            Assert.AreEqual(exp, tos);
+        }
+
+
+        [TestMethod]
+        public void TestDataFrameJoinSample()
+        {
+            var rows = new Dictionary<string, object>[]
+            {
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 1f }},
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 2f }},
+                new Dictionary<string, object>() { {"AA", 0 }, {"BB", 3f }},
+            };
+            var df = new DataFrame(rows);
+            var sample = df.Sample(1);
+            Assert.AreEqual(sample.Shape, new Tuple<int, int>(1, 2));
+            sample = df.Sample(3, true);
+            Assert.AreEqual(sample.Shape, new Tuple<int, int>(3, 2));
+            sample.Sort(new[] { "BB" });
+            var exp = "AA,BB\n0,1\n0,2\n0,3";
+            var tos = sample.ToString();
             Assert.AreEqual(exp, tos);
         }
 

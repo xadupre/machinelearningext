@@ -406,6 +406,37 @@ namespace Scikit.ML.DataManipulation
 
         #region SQL function
 
+        #region head, tail, sample
+
+        /// <summary>
+        /// Returns a view on the first rows.
+        /// </summary>
+        public IDataFrameView Head(int nrows = 5)
+        {
+            nrows = Math.Min(Length, nrows);
+            return new DataFrameView(_src, Enumerable.Range(0, nrows).Select(c => _rows[c]).ToArray(), _columns);
+        }
+
+        /// <summary>
+        /// Returns a view on the last rows.
+        /// </summary>
+        public IDataFrameView Tail(int nrows = 5)
+        {
+            nrows = Math.Min(Length, nrows);
+            return new DataFrameView(_src, Enumerable.Range(0, nrows).Select(c => c + Length - nrows).Select(c => _rows[c]).ToArray(), _columns);
+        }
+
+        /// <summary>
+        /// Returns a sample.
+        /// </summary>
+        public IDataFrameView Sample(int nrows = 5, bool distinct = false, IRandom rand = null)
+        {
+            nrows = Math.Min(Length, nrows);
+            return new DataFrameView(_src, DataFrameRandom.RandomIntegers(nrows, Length, distinct, rand).Select(c => _rows[c]).ToArray(), _columns);
+        }
+
+        #endregion  
+
         #region sort
 
         /// <summary>

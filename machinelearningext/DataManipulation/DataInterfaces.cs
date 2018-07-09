@@ -33,8 +33,8 @@ namespace Scikit.ML.DataManipulation
 
     public enum MultiplyStrategy
     {
-        Block=1,
-        Row=2
+        Block = 1,
+        Row = 2
     }
 
     /// <summary>
@@ -283,6 +283,25 @@ namespace Scikit.ML.DataManipulation
         DataFrameView Drop(IEnumerable<string> colNames);
 
         #region SQL function
+
+        #region head, tail
+
+        /// <summary>
+        /// Returns a view on the first rows.
+        /// </summary>
+        IDataFrameView Head(int nrows = 5);
+
+        /// <summary>
+        /// Returns a view on the last rows.
+        /// </summary>
+        IDataFrameView Tail(int nrows = 5);
+
+        /// <summary>
+        /// Returns a sample.
+        /// </summary>
+        IDataFrameView Sample(int nrows = 5, bool distinct = false, IRandom rand = null);
+
+        #endregion
 
         #region select
 
