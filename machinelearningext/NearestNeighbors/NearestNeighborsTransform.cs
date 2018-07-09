@@ -9,7 +9,7 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.EntryPoints;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 
 
 // The following files makes the object visible to maml.
@@ -17,8 +17,8 @@ using Microsoft.ML.Ext.PipelineHelper;
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
-using NearestNeighborsTransform = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsTransform;
-using EntryPointNearestNeighbors = Microsoft.ML.Ext.NearestNeighbors.EntryPointNearestNeighbors;
+using NearestNeighborsTransform = Scikit.ML.NearestNeighbors.NearestNeighborsTransform;
+using EntryPointNearestNeighbors = Scikit.ML.NearestNeighbors.EntryPointNearestNeighbors;
 [assembly: LoadableClass(NearestNeighborsTransform.Summary, typeof(NearestNeighborsTransform),
     typeof(NearestNeighborsTransform.Arguments), typeof(SignatureDataTransform),
     NearestNeighborsTransform.LongName, NearestNeighborsTransform.LoaderSignature,
@@ -32,7 +32,7 @@ using EntryPointNearestNeighbors = Microsoft.ML.Ext.NearestNeighbors.EntryPointN
     typeof(SignatureEntryPointModule), NearestNeighborsTransform.EntryPointName)]
 
 
-namespace Microsoft.ML.Ext.NearestNeighbors
+namespace Scikit.ML.NearestNeighbors
 {
     public class NearestNeighborsTransform : IDataTransform
     {

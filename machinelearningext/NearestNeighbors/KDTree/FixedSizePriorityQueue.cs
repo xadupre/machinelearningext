@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbors
+namespace Scikit.ML.NearestNeighbors
 {
     /// <summary>
     /// Stores at most #size elements in a priority queue.

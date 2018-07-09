@@ -7,7 +7,7 @@ using System.Text;
 using Microsoft.ML.Runtime.Command;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Tools;
-using Microsoft.ML.Ext.TestHelper;
+using Scikit.ML.TestHelper;
 
 namespace TestMachineLearningExt
 {

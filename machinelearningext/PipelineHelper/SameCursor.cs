@@ -4,7 +4,7 @@ using System;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace Microsoft.ML.Ext.PipelineHelper
+namespace Scikit.ML.PipelineHelper
 {
     /// <summary>
     /// Combines an existing cursor with a schema not necessarily related.

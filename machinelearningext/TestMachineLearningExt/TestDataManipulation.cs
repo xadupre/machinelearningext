@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Ext.DataManipulation;
-using Microsoft.ML.Ext.TestHelper;
+using Scikit.ML.DataManipulation;
+using Scikit.ML.TestHelper;
 using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms;
 
@@ -1179,6 +1179,7 @@ namespace TestMachineLearningExt
                 new Dictionary<string, object>() { {"AA2", 0 }, {"BB2", 4f } },
                 new Dictionary<string, object>() { {"AA2", 0 }, {"BB2", 5f } },
             };
+
             var df2 = new DataFrame(rows);
 
             var res = df1.Join(df2, new[] { 0 }, new[] { 0 });

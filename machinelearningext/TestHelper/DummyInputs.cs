@@ -5,7 +5,7 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace Microsoft.ML.Ext.TestHelper
+namespace Scikit.ML.TestHelper
 {
     public class InputOutput
     {

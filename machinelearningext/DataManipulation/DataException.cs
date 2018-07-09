@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.ML.Ext.DataManipulation
+namespace Scikit.ML.DataManipulation
 {
     /// <summary>
     /// Raised when there is a type mismatch.

@@ -10,7 +10,7 @@ using Microsoft.ML.Runtime.Internal.Calibration;
 using Microsoft.ML.Runtime.EntryPoints;
 
 
-namespace Microsoft.ML.Ext.PipelineHelper
+namespace Scikit.ML.PipelineHelper
 {
     public interface ILearnerInputBaseArguments
     {

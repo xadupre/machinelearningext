@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Microsoft.ML.Ext.FeaturesTransforms</AssemblyName>
-    <RootNamespace>Microsoft.ML.Ext.FeaturesTransforms</RootNamespace>
+    <AssemblyName>Scikit.ML.FeaturesTransforms</AssemblyName>
+    <RootNamespace>Scikit.ML.FeaturesTransforms</RootNamespace>
+    <Version>0.4.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,16 +6,16 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Training;
 using Microsoft.ML.Runtime.EntryPoints;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 
 // The following files makes the object visible to maml.
 // This way, it can be added to any pipeline.
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using NearestNeighborsTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsTrainer;
-using NearestNeighborsBinaryClassificationTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsBinaryClassificationTrainer;
-using NearestNeighborsMultiClassClassificationTrainer = Microsoft.ML.Ext.NearestNeighbors.NearestNeighborsMultiClassClassificationTrainer;
-using EntryPointNearestNeighborsBc = Microsoft.ML.Ext.NearestNeighbors.EntryPointNearestNeighborsBc;
-using EntryPointNearestNeighborsMc = Microsoft.ML.Ext.NearestNeighbors.EntryPointNearestNeighborsMc;
+using NearestNeighborsTrainer = Scikit.ML.NearestNeighbors.NearestNeighborsTrainer;
+using NearestNeighborsBinaryClassificationTrainer = Scikit.ML.NearestNeighbors.NearestNeighborsBinaryClassificationTrainer;
+using NearestNeighborsMultiClassClassificationTrainer = Scikit.ML.NearestNeighbors.NearestNeighborsMultiClassClassificationTrainer;
+using EntryPointNearestNeighborsBc = Scikit.ML.NearestNeighbors.EntryPointNearestNeighborsBc;
+using EntryPointNearestNeighborsMc = Scikit.ML.NearestNeighbors.EntryPointNearestNeighborsMc;
 
 [assembly: LoadableClass(NearestNeighborsBinaryClassificationTrainer.Summary,
     typeof(NearestNeighborsBinaryClassificationTrainer),
@@ -40,7 +40,7 @@ using EntryPointNearestNeighborsMc = Microsoft.ML.Ext.NearestNeighbors.EntryPoin
     typeof(SignatureEntryPointModule), NearestNeighborsMultiClassClassificationTrainer.EntryPointName)]
 
 
-namespace Microsoft.ML.Ext.NearestNeighbors
+namespace Scikit.ML.NearestNeighbors
 {
     public class NearestNeighborsBinaryClassificationTrainer : NearestNeighborsTrainer
     {

@@ -5,7 +5,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace Microsoft.ML.Ext.TestHelper
+namespace Scikit.ML.TestHelper
 {
     public static class EnvHelper
     {

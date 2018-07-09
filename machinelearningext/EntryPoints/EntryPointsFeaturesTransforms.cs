@@ -1,17 +1,18 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 #pragma warning disable
+using System;
+using System.Linq;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Microsoft.ML;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
-using Newtonsoft.Json;
-using System;
-using System.Linq;
 using Microsoft.ML.Runtime.CommandLine;
 
 
-namespace Microsoft.ML.Ext.EntryPoints
+namespace Scikit.ML.EntryPoints
 {
     public static class EntryPointsFeaturesTransforms
     {

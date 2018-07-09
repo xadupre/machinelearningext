@@ -8,10 +8,11 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Data.IO;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
+using Data = Microsoft.ML.Data;
 
 
-namespace Microsoft.ML.Ext.DataManipulation
+namespace Scikit.ML.DataManipulation
 {
     /// <summary>
     /// Implements a DataFrame based on a IDataView from ML.net.

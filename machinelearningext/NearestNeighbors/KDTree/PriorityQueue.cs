@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 
-namespace Microsoft.ML.Ext.NearestNeighbors
+namespace Scikit.ML.NearestNeighbors
 {
     /// <summary>Provides a priority queue data structure (not thread safe).</summary>
     /// <typeparam name="TKey">Specifies the type of keys used to prioritize values.</typeparam>

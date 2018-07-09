@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 
 
-namespace Microsoft.ML.Ext.TestHelper
+namespace Scikit.ML.TestHelper
 {
     /// <summary>
     /// Capture standard output and error.

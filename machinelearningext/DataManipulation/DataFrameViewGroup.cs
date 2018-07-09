@@ -5,10 +5,10 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 
 
-namespace Microsoft.ML.Ext.DataManipulation
+namespace Scikit.ML.DataManipulation
 {
     public struct DataFrameGroupKey
     {

@@ -9,13 +9,13 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.EntryPoints;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
-using PolynomialTransform = Microsoft.ML.Ext.FeaturesTransforms.PolynomialTransform;
-using EntryPointPolynomial = Microsoft.ML.Ext.FeaturesTransforms.EntryPointPolynomial;
+using PolynomialTransform = Scikit.ML.FeaturesTransforms.PolynomialTransform;
+using EntryPointPolynomial = Scikit.ML.FeaturesTransforms.EntryPointPolynomial;
 
 [assembly: LoadableClass(PolynomialTransform.Summary, typeof(PolynomialTransform),
     typeof(PolynomialTransform.Arguments), typeof(SignatureDataTransform),
@@ -29,7 +29,7 @@ using EntryPointPolynomial = Microsoft.ML.Ext.FeaturesTransforms.EntryPointPolyn
                          typeof(SignatureEntryPointModule), PolynomialTransform.EntryPointName)]
 
 
-namespace Microsoft.ML.Ext.FeaturesTransforms
+namespace Scikit.ML.FeaturesTransforms
 {
     /// <summary>
     /// Multiplies features, build polynomial features x1, x1^2, x1x2, x2, x2^2...

@@ -10,7 +10,7 @@ using System;
 using System.Linq;
 using Microsoft.ML.Runtime.CommandLine;
 
-namespace Microsoft.ML.Ext.EntryPoints
+namespace Scikit.ML.EntryPoints
 {
     public sealed partial class Column1x1 : OneToOneColumn<Column1x1>, IOneToOneColumn
     {

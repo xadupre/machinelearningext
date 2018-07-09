@@ -7,9 +7,10 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data.Conversion;
+using Data = Microsoft.ML.Data;
 
 
-namespace Microsoft.ML.Ext.PipelineHelper
+namespace Scikit.ML.PipelineHelper
 {
     /// <summary>
     /// Helpers about ISchema.
@@ -384,7 +385,7 @@ namespace Microsoft.ML.Ext.PipelineHelper
                 {
                     Name = schema.GetColumnName(i),
                     Type = DataKind2DataDataKind(schema.GetColumnType(i).RawKind),
-                    Source = new[] { new ML.Data.TextLoaderRange(i) }
+                    Source = new[] { new Data.TextLoaderRange(i) }
                 };
             }
             return res;

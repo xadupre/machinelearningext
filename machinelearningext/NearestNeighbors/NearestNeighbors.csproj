@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Microsoft.ML.Ext.NearestNeighbors</AssemblyName>
-    <RootNamespace>Microsoft.ML.Ext.NearestNeighbors</RootNamespace>
+    <AssemblyName>Scikit.ML.NearestNeighbors</AssemblyName>
+    <RootNamespace>Scikit.ML.NearestNeighbors</RootNamespace>
+    <Version>0.4.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

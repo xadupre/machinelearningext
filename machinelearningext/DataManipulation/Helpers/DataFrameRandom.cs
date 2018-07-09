@@ -1,13 +1,10 @@
 ﻿// See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 
 
-namespace Microsoft.ML.Ext.DataManipulation
+namespace Scikit.ML.DataManipulation
 {
     /// <summary>
     /// Implements grouping functions for dataframe.

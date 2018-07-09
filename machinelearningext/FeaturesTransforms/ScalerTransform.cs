@@ -9,13 +9,13 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.EntryPoints;
-using Microsoft.ML.Ext.PipelineHelper;
+using Scikit.ML.PipelineHelper;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
-using ScalerTransform = Microsoft.ML.Ext.FeaturesTransforms.ScalerTransform;
-using EntryPointScaler = Microsoft.ML.Ext.FeaturesTransforms.EntryPointScaler;
+using ScalerTransform = Scikit.ML.FeaturesTransforms.ScalerTransform;
+using EntryPointScaler = Scikit.ML.FeaturesTransforms.EntryPointScaler;
 
 [assembly: LoadableClass(ScalerTransform.Summary, typeof(ScalerTransform),
     typeof(ScalerTransform.Arguments), typeof(SignatureDataTransform),
@@ -29,7 +29,7 @@ using EntryPointScaler = Microsoft.ML.Ext.FeaturesTransforms.EntryPointScaler;
     typeof(SignatureEntryPointModule), ScalerTransform.EntryPointName)]
 
 
-namespace Microsoft.ML.Ext.FeaturesTransforms
+namespace Scikit.ML.FeaturesTransforms
 {
     /// <summary>
     /// Normalizes columns with various stategies.
