@@ -16,23 +16,6 @@ namespace TestMachineLearningExt
     [TestClass]
     public class TestQuestion
     {
-        [TestMethod]
-        public void TestQ_KMeamsDataFrame()
-        {
-            var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
-            var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new Microsoft.ML.Runtime.Data.DataKind?[] { Microsoft.ML.Runtime.Data.DataKind.R4 });
-
-            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-            var learningPipeline = new Scikit.ML.PipelineHelper.GenericLearningPipeline(conc: 1);
-            learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Microsoft.ML.Trainers.KMeansPlusPlusClusterer());
-            var predictor = learningPipeline.Train();
-            var predictions = predictor.Predict(df);
-            var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
-        }
-
         public class IrisObservation
         {
             [Column("0")]
@@ -61,7 +44,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMeamsAPI()
+        public void TestQ_KMmeansEntryPointAPI()
         {
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
 
@@ -89,7 +72,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMeamInnerAPI()
+        public void TestQ_KMmeasInnerAPI()
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
@@ -129,6 +112,23 @@ namespace TestMachineLearningExt
                 var predictions = engine.Predict(obs);
                 Assert.IsTrue(predictions.PredictedLabel != 0);
             }
+        }
+
+        [TestMethod]
+        public void TestQ_KMeamsEntryPointAPIWithDataFrame()
+        {
+            var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
+            var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new Microsoft.ML.Runtime.Data.DataKind?[] { Microsoft.ML.Runtime.Data.DataKind.R4 });
+
+            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+            var learningPipeline = new Scikit.ML.PipelineHelper.GenericLearningPipeline(conc: 1);
+            learningPipeline.Add(importData);
+            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Microsoft.ML.Trainers.KMeansPlusPlusClusterer());
+            var predictor = learningPipeline.Train();
+            var predictions = predictor.Predict(df);
+            var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(predictions);
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
         }
     }
 }
