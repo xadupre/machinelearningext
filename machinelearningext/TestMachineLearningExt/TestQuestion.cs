@@ -44,7 +44,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMmeansEntryPointAPI()
+        public void TestQ_KMeansEntryPointAPI()
         {
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
 
@@ -72,13 +72,13 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMmeasInnerAPI()
+        public void TestQ_KMeansInnerAPI()
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
             var outModelFilePath = Scikit.ML.TestHelper.FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
-
+            var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
             var env = new TlcEnvironment(conc: 1);
+
             var data = env.CreateLoader("Text{col=Label:R4:0 col=Sepal_length:R4:1 col=Sepal_width:R4:2 col=Petal_length:R4:3 col=Petal_width:R4:4}",
                                         new MultiFileSource(iris));
             var conc = env.CreateTransform("Concat{col=Features:Sepal_length,Sepal_width}", data);
@@ -115,7 +115,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMeamsEntryPointAPIWithDataFrame()
+        public void TestQ_KMeansEntryPointAPIWithDataFrame()
         {
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
             var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new Microsoft.ML.Runtime.Data.DataKind?[] { Microsoft.ML.Runtime.Data.DataKind.R4 });
@@ -128,6 +128,43 @@ namespace TestMachineLearningExt
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(predictions);
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
+        }
+
+        [TestMethod]
+        public void TestQ_KMeansInnerAPIWithDataFrame()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var outModelFilePath = Scikit.ML.TestHelper.FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
+            var env = new TlcEnvironment(conc: 1);
+
+            var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new Microsoft.ML.Runtime.Data.DataKind?[] { Microsoft.ML.Runtime.Data.DataKind.R4 });
+            var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
+            var roleMap = env.CreateExamples(conc, "Feature", label: "Label");
+            var trainer = CreateTrainer(env, "km");
+            IPredictor model;
+            using (var ch = env.Start("test"))
+            {
+                model = TrainUtils.Train(env, ch, roleMap, trainer, "KM", null, 0);
+                ch.Done();
+            }
+
+            using (var ch = env.Start("Save"))
+            {
+                using (var fs = File.Create(outModelFilePath))
+                    TrainUtils.SaveModel(env, ch, fs, model, roleMap);
+                ch.Done();
+            }
+
+            Predictor pred;
+            using (var fs = File.OpenRead(outModelFilePath))
+                pred = env.LoadPredictorOrNull(fs);
+
+#pragma warning disable CS0618
+            var scorer = ScoreUtils.GetScorer(pred.GetPredictorObject() as IPredictor, roleMap, env, null);
+#pragma warning restor CS0618
+            var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(scorer);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
         }
     }
