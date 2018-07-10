@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
@@ -15,7 +14,6 @@ using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
 using ScalerTransform = Scikit.ML.FeaturesTransforms.ScalerTransform;
-using EntryPointScaler = Scikit.ML.FeaturesTransforms.EntryPointScaler;
 
 [assembly: LoadableClass(ScalerTransform.Summary, typeof(ScalerTransform),
     typeof(ScalerTransform.Arguments), typeof(SignatureDataTransform),
@@ -24,9 +22,6 @@ using EntryPointScaler = Scikit.ML.FeaturesTransforms.EntryPointScaler;
 [assembly: LoadableClass(ScalerTransform.Summary, typeof(ScalerTransform),
     null, typeof(SignatureLoadDataTransform),
     ScalerTransform.LongName, ScalerTransform.LoaderSignature, ScalerTransform.ShortName)]
-
-[assembly: LoadableClass(typeof(void), typeof(EntryPointScaler), null,
-    typeof(SignatureEntryPointModule), ScalerTransform.EntryPointName)]
 
 
 namespace Scikit.ML.FeaturesTransforms
@@ -41,7 +36,6 @@ namespace Scikit.ML.FeaturesTransforms
         public const string RegistrationName = LoaderSignature;
         public const string ShortName = "Scaler";
         public const string LongName = "Scaler Transform";
-        public const string EntryPointName = ShortName;
 
         /// <summary>
         /// Identify the object for dynamic instantiation.
@@ -605,26 +599,6 @@ namespace Scikit.ML.FeaturesTransforms
         }
 
         #endregion
-    }
-
-    public static class EntryPointScaler
-    {
-        [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms." + ScalerTransform.EntryPointName,
-                              Desc = ScalerTransform.Summary,
-                              UserName = ScalerTransform.EntryPointName)]
-        public static CommonOutputs.TransformOutput Scaler(IHostEnvironment env, ScalerTransform.ArgumentsEntryPoint input)
-        {
-            Contracts.CheckValue(env, nameof(env));
-            env.CheckValue(input, nameof(input));
-
-            var h = EntryPointUtils.CheckArgsAndCreateHost(env, ScalerTransform.EntryPointName, input);
-            var view = new ScalerTransform(h, input, input.Data);
-            return new CommonOutputs.TransformOutput()
-            {
-                Model = new TransformModel(h, view, input.Data),
-                OutputData = view
-            };
-        }
     }
 }
 

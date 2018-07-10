@@ -234,7 +234,7 @@ namespace TestMachineLearningExt
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
             learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsTr("Features"));
+            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighbors("Features"));
             learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
@@ -253,7 +253,7 @@ namespace TestMachineLearningExt
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
             learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsBc());
+            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsBinary());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
@@ -270,7 +270,7 @@ namespace TestMachineLearningExt
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
             learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsMc());
+            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsMultiClass());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
