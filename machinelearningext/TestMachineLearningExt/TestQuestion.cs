@@ -163,7 +163,7 @@ namespace TestMachineLearningExt
 
 #pragma warning disable CS0618
             var scorer = ScoreUtils.GetScorer(pred.GetPredictorObject() as IPredictor, roleMap, env, null);
-#pragma warning restor CS0618
+#pragma warning restore CS0618
             var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(scorer);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
         }
