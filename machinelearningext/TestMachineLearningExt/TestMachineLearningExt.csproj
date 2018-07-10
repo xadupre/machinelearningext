@@ -39,6 +39,9 @@
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.StandardLearners">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.KMeansClustering.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.StandardLearners">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.StandardLearners.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.CpuMath">
