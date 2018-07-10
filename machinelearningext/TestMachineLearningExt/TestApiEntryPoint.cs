@@ -2,10 +2,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.ML.Runtime.Command;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Tools;
 using Scikit.ML.TestHelper;
 
@@ -38,6 +34,8 @@ namespace TestMachineLearningExt
                 Assert.IsTrue(std.StdErr.Length == 0);
                 Assert.IsFalse(std.StdOut.ToLower().Contains("usage"));
             }
+            var text = File.ReadAllText(basePath);
+            Assert.IsTrue(text.ToLower().Contains("nearest"));
         }
     }
 }
