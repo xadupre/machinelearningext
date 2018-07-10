@@ -9,6 +9,10 @@ Work in progress.
 [![Build status](https://ci.appveyor.com/api/projects/status/cb0xos4p3xe1bqmg?svg=true)](https://ci.appveyor.com/project/xadupre/machinelearningext)
 [![CircleCI](https://circleci.com/gh/xadupre/machinelearningext.svg?style=svg)](https://circleci.com/gh/xadupre/machinelearningext)
 
+[![TravisCI](https://travis-ci.org/sdpython/machinelearningext.svg?branch=master)](https://travis-ci.org/sdpython/machinelearningext)
+[![Build status](https://ci.appveyor.com/api/projects/status/uwanivg3b5qibncs?svg=true)](https://ci.appveyor.com/project/sdpython/machinelearningext)
+[![CircleCI](https://circleci.com/gh/sdpython/machinelearningext.svg?style=svg)](https://circleci.com/gh/sdpython/machinelearningext)
+
 ## Build
 
 On windows: ``build.cmd``.
