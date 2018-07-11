@@ -81,7 +81,7 @@ namespace Scikit.ML.EntryPoints
         {
         }
 
-        public NearestNeighborsBinary(string featureColumn = null, string labelColumn = null, string weightColumn=null)
+        public NearestNeighborsBinary(string featureColumn = null, string labelColumn = null, string weightColumn = null)
         {
             if (featureColumn != null)
                 FeatureColumn = featureColumn;

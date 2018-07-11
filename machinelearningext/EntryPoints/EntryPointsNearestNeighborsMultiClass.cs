@@ -21,7 +21,6 @@ using NearestNeighborsMultiClass = Scikit.ML.EntryPoints.NearestNeighborsMultiCl
     typeof(SignatureEntryPointModule), NearestNeighborsMultiClass.Name)]
 
 
-
 namespace Scikit.ML.EntryPoints
 {
     #region Definition
