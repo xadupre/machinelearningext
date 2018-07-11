@@ -42,7 +42,8 @@ namespace Scikit.ML.EntryPoints
             return EntryPointsHelper.Train<NearestNeighborsBinaryClassificationTrainer.ArgumentsEntryPoint,
                                            CommonOutputs.BinaryClassificationOutput>(host, input,
                 () => new NearestNeighborsBinaryClassificationTrainer(host, input),
-                getLabel: () => LearnerEntryPointsUtils.FindColumn(host, input.TrainingData.Schema, input.LabelColumn));
+                getLabel: () => LearnerEntryPointsUtils.FindColumn(host, input.TrainingData.Schema, input.LabelColumn),
+                getWeight: () => LearnerEntryPointsUtils.FindColumn(host, input.TrainingData.Schema, input.WeightColumn));
         }
     }
 
@@ -80,12 +81,14 @@ namespace Scikit.ML.EntryPoints
         {
         }
 
-        public NearestNeighborsBinary(string featureColumn = null, string labelColumn = null)
+        public NearestNeighborsBinary(string featureColumn = null, string labelColumn = null, string weightColumn=null)
         {
             if (featureColumn != null)
                 FeatureColumn = featureColumn;
             if (labelColumn != null)
                 LabelColumn = labelColumn;
+            if (weightColumn != null)
+                WeightColumn = weightColumn;
         }
 
         /// <summary>
@@ -114,6 +117,11 @@ namespace Scikit.ML.EntryPoints
         public string LabelColumn { get; set; } = "Label";
 
         /// <summary>
+        /// Column to use for weights
+        /// </summary>
+        public string WeightColumn { get; set; }
+
+        /// <summary>
         /// Number of neighbors to consider.
         /// </summary>
         [JsonProperty("k")]
@@ -128,8 +136,8 @@ namespace Scikit.ML.EntryPoints
         /// <summary>
         /// Weighting strategy for neighbors
         /// </summary>
-        [JsonProperty("weight")]
-        public NearestNeighborsWeights Weight { get; set; } = NearestNeighborsWeights.uniform;
+        [JsonProperty("weighting")]
+        public NearestNeighborsWeights Weighting { get; set; } = NearestNeighborsWeights.uniform;
 
         /// <summary>
         /// Distnace to use

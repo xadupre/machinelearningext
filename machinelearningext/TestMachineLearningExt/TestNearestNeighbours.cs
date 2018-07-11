@@ -252,8 +252,9 @@ namespace TestMachineLearningExt
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsBinary());
+            learningPipeline.Add(new ColumnConcatenator("Feat", "Sepal_length", "Sepal_width"));
+            var node = new Scikit.ML.EntryPoints.NearestNeighborsBinary("Feat", "Label", null);
+            learningPipeline.Add(node);
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);

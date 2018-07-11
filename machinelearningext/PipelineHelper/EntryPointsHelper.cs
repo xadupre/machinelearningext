@@ -16,6 +16,8 @@ namespace Scikit.ML.PipelineHelper
     {
         IDataView ITrainingData { get; }
         Optional<string> IFeatureColumn { get; }
+        Optional<string> IWeightColumn { get; }
+        Optional<string> ILabelColumn { get; }
         NormalizeOption INormalizeFeatures { get; }
         CachingOptions ICaching { get; }
     }

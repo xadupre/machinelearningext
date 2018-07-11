@@ -53,7 +53,7 @@ namespace Scikit.ML.NearestNeighbors
             Dictionary<long, Tuple<TLabel, float>> labelsWeights)
         {
             return NearestNeighborsBinaryClassifierPredictor.Create<TLabel>(Host, kdtrees, labelsWeights,
-                                _args.k, _args.algo, _args.weight);
+                                _args.k, _args.algo, _args.weighting);
         }
     }
 
@@ -80,7 +80,7 @@ namespace Scikit.ML.NearestNeighbors
             Dictionary<long, Tuple<TLabel, float>> labelsWeights)
         {
             return NearestNeighborsMultiClassClassifierPredictor.Create<TLabel>(Host, kdtrees, labelsWeights,
-                                _args.k, _args.algo, _args.weight);
+                                _args.k, _args.algo, _args.weighting);
         }
     }
 }
