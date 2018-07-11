@@ -36,7 +36,7 @@ namespace TestMachineLearningExt
                 concat = env.CreateTransform("Scaler{col=Features}", concat);
             var roles = env.CreateExamples(concat, "Features", "Label");
             string modelDef;
-            modelDef = string.Format("knn{{k={0} weight={1} nt={2} distance={3} seed=1}}", k,
+            modelDef = string.Format("knn{{k={0} weighting={1} nt={2} distance={3} seed=1}}", k,
                                      weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
             var trainer = env.CreateTrainer(modelDef);
             using (var ch = env.Start("test"))
@@ -66,7 +66,7 @@ namespace TestMachineLearningExt
                 concat = env.CreateTransform("Scaler{col=Features}", concat);
             var roles = env.CreateExamples(concat, "Features", "Label");
             string modelDef;
-            modelDef = string.Format("knn{{k={0} weight={1} nt={2} distance={3} id=Uid}}", k,
+            modelDef = string.Format("knn{{k={0} weighting={1} nt={2} distance={3} id=Uid}}", k,
                                      weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
             var trainer = env.CreateTrainer(modelDef);
             using (var ch = env.Start("test"))
@@ -94,7 +94,7 @@ namespace TestMachineLearningExt
             var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
             var roles = env.CreateExamples(concat, "Features", "Label");
             string modelDef;
-            modelDef = string.Format("knnmc{{k={0} weight={1} nt={2} distance={3}}}", k,
+            modelDef = string.Format("knnmc{{k={0} weighting={1} nt={2} distance={3}}}", k,
                                      weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
             var trainer = env.CreateTrainer(modelDef);
             using (var ch = env.Start("test"))

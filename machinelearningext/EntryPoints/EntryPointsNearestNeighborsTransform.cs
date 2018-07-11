@@ -151,8 +151,8 @@ namespace Scikit.ML.EntryPoints
         /// <summary>
         /// Weighting strategy for neighbors
         /// </summary>
-        [JsonProperty("weight")]
-        public NearestNeighborsWeights Weight { get; set; } = NearestNeighborsWeights.uniform;
+        [JsonProperty("weighting")]
+        public NearestNeighborsWeights Weighting { get; set; } = NearestNeighborsWeights.uniform;
 
         /// <summary>
         /// Distnace to use
