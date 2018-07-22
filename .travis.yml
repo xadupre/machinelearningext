@@ -6,7 +6,7 @@ git:
   
 matrix:
   include:
-    - python: 3.7
+    - python: 3.6.5
       env: &xplat-env
         - BUILD_OPTS=--xplat
         - NUNIT_PATH=~/.nuget/packages/nunit.consolerunner/3.*/tools/nunit3-console.exe
