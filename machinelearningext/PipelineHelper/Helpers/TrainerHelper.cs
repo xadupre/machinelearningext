@@ -64,7 +64,7 @@ namespace Scikit.ML.PipelineHelper
         public string LoadName => _loadName;
         public ITrainer Trainer => _trainer;
         public PredictionKind PredictionKind => _trainer.PredictionKind;
-        public IPredictor CreatePredictor() { return _trainer.CreatePredictor(); }
+        public TrainerInfo Info => _trainer.Info;
 
         #endregion
 
@@ -85,6 +85,11 @@ namespace Scikit.ML.PipelineHelper
             var sc = SubComponent.Parse<ITrainer, SignatureTrainer>(settings);
             var inst = sc.CreateInstance(env, extraArgs);
             return new ExtendedTrainer(inst, sc.Kind);
+        }
+
+        public IPredictor Train(TrainContext context)
+        {
+            return _trainer.Train(context);
         }
 
         /// <summary>

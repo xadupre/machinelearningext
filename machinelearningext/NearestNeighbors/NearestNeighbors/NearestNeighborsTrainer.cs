@@ -20,7 +20,7 @@ namespace Scikit.ML.NearestNeighbors
     /// Train a MultiToBinary predictor. It multiplies the rows by the number of classes to predict.
     /// (multi class problem).
     /// </summary>
-    public abstract class NearestNeighborsTrainer : TrainerBase<RoleMappedData, INearestNeighborsPredictor>
+    public abstract class NearestNeighborsTrainer : TrainerBase<INearestNeighborsPredictor>
     {
         #region parameters / command line
 
@@ -73,9 +73,14 @@ namespace Scikit.ML.NearestNeighbors
 
         public override PredictionKind PredictionKind { get { return _predictor.PredictionKind; } }
 
-        public override bool NeedNormalization { get { return false; } }
-        public override bool NeedCalibration { get { return false; } }
-        public override bool WantCaching { get { return false; } }
+        public override TrainerInfo Info
+        {
+            get
+            {
+                return new TrainerInfo(normalization:false, calibration:false, caching:false, 
+                                       supportValid:false, supportIncrementalTrain:false);
+            }
+        }
 
         #endregion
 
@@ -92,13 +97,12 @@ namespace Scikit.ML.NearestNeighbors
             _args = args;
         }
 
-        public override INearestNeighborsPredictor CreatePredictor()
+        public override INearestNeighborsPredictor Train(TrainContext context)
         {
-            Host.Assert(_predictor != null);
-            return _predictor;
+            return Train(context.TrainingSet);
         }
 
-        public override void Train(RoleMappedData data)
+        protected virtual INearestNeighborsPredictor Train(RoleMappedData data)
         {
             Contracts.CheckValue(data, "data");
             data.CheckFeatureFloatVector();
@@ -109,6 +113,8 @@ namespace Scikit.ML.NearestNeighbors
                 _predictor = TrainPredictor(ch, data);
                 ch.Done();
             }
+
+            return _predictor;
         }
 
         /// <summary>
