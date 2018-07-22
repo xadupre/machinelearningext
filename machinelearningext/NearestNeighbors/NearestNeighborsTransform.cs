@@ -18,7 +18,7 @@ using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
 using NearestNeighborsTransform = Scikit.ML.NearestNeighbors.NearestNeighborsTransform;
-using EntryPointNearestNeighbors = Scikit.ML.NearestNeighbors.EntryPointNearestNeighbors;
+
 [assembly: LoadableClass(NearestNeighborsTransform.Summary, typeof(NearestNeighborsTransform),
     typeof(NearestNeighborsTransform.Arguments), typeof(SignatureDataTransform),
     NearestNeighborsTransform.LongName, NearestNeighborsTransform.LoaderSignature,
@@ -27,9 +27,6 @@ using EntryPointNearestNeighbors = Scikit.ML.NearestNeighbors.EntryPointNearestN
 [assembly: LoadableClass(NearestNeighborsTransform.Summary, typeof(NearestNeighborsTransform),
     null, typeof(SignatureLoadDataTransform), NearestNeighborsTransform.LongName,
     NearestNeighborsTransform.LoaderSignature, NearestNeighborsTransform.ShortName)]
-
-[assembly: LoadableClass(typeof(void), typeof(EntryPointNearestNeighbors), null,
-    typeof(SignatureEntryPointModule), NearestNeighborsTransform.EntryPointName)]
 
 
 namespace Scikit.ML.NearestNeighbors
@@ -44,7 +41,6 @@ namespace Scikit.ML.NearestNeighbors
         public const string RegistrationName = LoaderSignature;
         public const string LongName = "Nearest Neighbors Transform";
         public const string ShortName = "knntr";
-        public const string EntryPointName = "NearestNeighborsTr";
 
         /// <summary>
         /// Identify the object for dynamic instantiation.
@@ -441,26 +437,6 @@ namespace Scikit.ML.NearestNeighbors
         }
 
         #endregion
-    }
-
-    public static class EntryPointNearestNeighbors
-    {
-        [TlcModule.EntryPoint(Name = "ExtNearestNeighbors." + NearestNeighborsTransform.EntryPointName,
-                              Desc = NearestNeighborsTransform.Summary,
-                              UserName = NearestNeighborsTransform.EntryPointName)]
-        public static CommonOutputs.TransformOutput NearestNeighborsTr(IHostEnvironment env, NearestNeighborsTransform.ArgumentsEntryPoint input)
-        {
-            Contracts.CheckValue(env, nameof(env));
-            env.CheckValue(input, nameof(input));
-
-            var h = EntryPointUtils.CheckArgsAndCreateHost(env, NearestNeighborsTransform.EntryPointName, input);
-            var view = new NearestNeighborsTransform(h, input, input.Data);
-            return new CommonOutputs.TransformOutput()
-            {
-                Model = new TransformModel(h, view, input.Data),
-                OutputData = view
-            };
-        }
     }
 }
 

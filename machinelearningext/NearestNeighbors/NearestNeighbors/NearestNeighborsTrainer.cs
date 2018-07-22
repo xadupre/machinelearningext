@@ -31,11 +31,13 @@ namespace Scikit.ML.NearestNeighbors
         {
         }
 
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITrainerInput))]
+        [TlcModule.EntryPointKind(typeof(CommonInputs.ITrainerInputWithWeight))]
         public class ArgumentsEntryPoint : Arguments, ILearnerInputBaseArguments
         {
             public IDataView ITrainingData => TrainingData;
             public Optional<string> IFeatureColumn => FeatureColumn;
+            public Optional<string> IWeightColumn => WeightColumn;
+            public Optional<string> ILabelColumn => LabelColumn;
             public NormalizeOption INormalizeFeatures => NormalizeFeatures;
             public CachingOptions ICaching => Caching;
 
@@ -46,6 +48,13 @@ namespace Scikit.ML.NearestNeighbors
                       Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
             public string FeatureColumn = DefaultColumnNames.Features;
 
+            [Argument(ArgumentType.AtMostOnce, HelpText = "Column to use for labels", ShortName = "lab",
+                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public string LabelColumn = DefaultColumnNames.Label;
+
+            [Argument(ArgumentType.AtMostOnce, HelpText = "Column to use for example weight", ShortName = "weight", SortOrder = 4, Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+            public Optional<string> WeightColumn = Optional<string>.Implicit(DefaultColumnNames.Weight);
+
             [Argument(ArgumentType.AtMostOnce, HelpText = "Normalize option for the feature column", ShortName = "norm",
                       Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
             public NormalizeOption NormalizeFeatures = NormalizeOption.Auto;
@@ -53,10 +62,6 @@ namespace Scikit.ML.NearestNeighbors
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Whether learner should cache input training data", ShortName = "cache",
                       Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
             public CachingOptions Caching = CachingOptions.Auto;
-
-            [Argument(ArgumentType.AtMostOnce, HelpText = "Column to use for labels", ShortName = "lab",
-                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public string LabelColumn = DefaultColumnNames.Label;
         }
 
         #endregion

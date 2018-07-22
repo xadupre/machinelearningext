@@ -16,7 +16,7 @@ namespace Scikit.ML.NearestNeighbors
         public NearestNeighborsAlgorithm algo = NearestNeighborsAlgorithm.kdtree;
 
         [Argument(ArgumentType.AtMostOnce, HelpText = "Weighting strategy for neighbors", ShortName = "w")]
-        public NearestNeighborsWeights weight = NearestNeighborsWeights.uniform;
+        public NearestNeighborsWeights weighting = NearestNeighborsWeights.uniform;
 
         [Argument(ArgumentType.AtMostOnce, HelpText = "Distnace to use", ShortName = "d")]
         public NearestNeighborsDistance distance = NearestNeighborsDistance.L2;
@@ -35,7 +35,7 @@ namespace Scikit.ML.NearestNeighbors
         {
             ctx.Writer.Write(k);
             ctx.Writer.Write((int)algo);
-            ctx.Writer.Write((int)weight);
+            ctx.Writer.Write((int)weighting);
             ctx.Writer.Write((int)distance);
             ctx.Writer.Write(numThreads ?? -1);
             ctx.Writer.Write(seed ?? -1);
@@ -46,7 +46,7 @@ namespace Scikit.ML.NearestNeighbors
         {
             k = ctx.Reader.ReadInt32();
             algo = (NearestNeighborsAlgorithm)ctx.Reader.ReadInt32();
-            weight = (NearestNeighborsWeights)ctx.Reader.ReadInt32();
+            weighting = (NearestNeighborsWeights)ctx.Reader.ReadInt32();
             distance = (NearestNeighborsDistance)ctx.Reader.ReadInt32();
             numThreads = ctx.Reader.ReadInt32();
             if (numThreads == -1)

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
@@ -15,7 +14,6 @@ using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
 using PolynomialTransform = Scikit.ML.FeaturesTransforms.PolynomialTransform;
-using EntryPointPolynomial = Scikit.ML.FeaturesTransforms.EntryPointPolynomial;
 
 [assembly: LoadableClass(PolynomialTransform.Summary, typeof(PolynomialTransform),
     typeof(PolynomialTransform.Arguments), typeof(SignatureDataTransform),
@@ -24,9 +22,6 @@ using EntryPointPolynomial = Scikit.ML.FeaturesTransforms.EntryPointPolynomial;
 [assembly: LoadableClass(PolynomialTransform.Summary, typeof(PolynomialTransform),
     null, typeof(SignatureLoadDataTransform),
     PolynomialTransform.LongName, PolynomialTransform.LoaderSignature, PolynomialTransform.ShortName)]
-
-[assembly: LoadableClass(typeof(void), typeof(EntryPointPolynomial), null,
-                         typeof(SignatureEntryPointModule), PolynomialTransform.EntryPointName)]
 
 
 namespace Scikit.ML.FeaturesTransforms
@@ -45,7 +40,6 @@ namespace Scikit.ML.FeaturesTransforms
         public const string RegistrationName = LoaderSignature;
         public const string ShortName = "Poly";
         public const string LongName = "Polynomial Transform";
-        public const string EntryPointName = "Polynomial";
 
         /// <summary>
         /// Identify the object for dynamic instantiation.
@@ -591,25 +585,5 @@ namespace Scikit.ML.FeaturesTransforms
         }
 
         #endregion
-    }
-
-    public static class EntryPointPolynomial
-    {
-        [TlcModule.EntryPoint(Name = "ExtFeaturesTransforms." + PolynomialTransform.EntryPointName,
-                              Desc = PolynomialTransform.Summary,
-                              UserName = PolynomialTransform.EntryPointName)]
-        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform.ArgumentsEntryPoint input)
-        {
-            Contracts.CheckValue(env, nameof(env));
-            env.CheckValue(input, nameof(input));
-
-            var h = EntryPointUtils.CheckArgsAndCreateHost(env, PolynomialTransform.EntryPointName, input);
-            var view = new PolynomialTransform(h, input, input.Data);
-            return new CommonOutputs.TransformOutput()
-            {
-                Model = new TransformModel(h, view, input.Data),
-                OutputData = view
-            };
-        }
     }
 }

@@ -36,7 +36,7 @@ namespace TestMachineLearningExt
                 concat = env.CreateTransform("Scaler{col=Features}", concat);
             var roles = env.CreateExamples(concat, "Features", "Label");
             string modelDef;
-            modelDef = string.Format("knn{{k={0} weight={1} nt={2} distance={3} seed=1}}", k,
+            modelDef = string.Format("knn{{k={0} weighting={1} nt={2} distance={3} seed=1}}", k,
                                      weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
             var trainer = env.CreateTrainer(modelDef);
             using (var ch = env.Start("test"))
@@ -66,7 +66,7 @@ namespace TestMachineLearningExt
                 concat = env.CreateTransform("Scaler{col=Features}", concat);
             var roles = env.CreateExamples(concat, "Features", "Label");
             string modelDef;
-            modelDef = string.Format("knn{{k={0} weight={1} nt={2} distance={3} id=Uid}}", k,
+            modelDef = string.Format("knn{{k={0} weighting={1} nt={2} distance={3} id=Uid}}", k,
                                      weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
             var trainer = env.CreateTrainer(modelDef);
             using (var ch = env.Start("test"))
@@ -94,7 +94,7 @@ namespace TestMachineLearningExt
             var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
             var roles = env.CreateExamples(concat, "Features", "Label");
             string modelDef;
-            modelDef = string.Format("knnmc{{k={0} weight={1} nt={2} distance={3}}}", k,
+            modelDef = string.Format("knnmc{{k={0} weighting={1} nt={2} distance={3}}}", k,
                                      weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
             var trainer = env.CreateTrainer(modelDef);
             using (var ch = env.Start("test"))
@@ -234,7 +234,7 @@ namespace TestMachineLearningExt
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
             learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsTr("Features"));
+            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighbors("Features"));
             learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
@@ -252,8 +252,9 @@ namespace TestMachineLearningExt
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsBc());
+            learningPipeline.Add(new ColumnConcatenator("Feat", "Sepal_length", "Sepal_width"));
+            var node = new Scikit.ML.EntryPoints.NearestNeighborsBinary("Feat", "Label", null);
+            learningPipeline.Add(node);
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
@@ -270,7 +271,7 @@ namespace TestMachineLearningExt
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
             learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsMc());
+            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsMultiClass());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);

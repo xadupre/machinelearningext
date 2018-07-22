@@ -11,13 +11,43 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.CommandLine;
 
+using PolynomialTransform = Scikit.ML.FeaturesTransforms.PolynomialTransform;
+using EntryPointPolynomial = Scikit.ML.EntryPoints.EntryPointPolynomial;
+using EP_Polynomial = Scikit.ML.EntryPoints.Polynomial;
+
+[assembly: LoadableClass(typeof(void), typeof(EntryPointPolynomial), null,
+    typeof(SignatureEntryPointModule), EP_Polynomial.Name)]
+
 
 namespace Scikit.ML.EntryPoints
 {
+    #region Definition
+
+    public static class EntryPointPolynomial
+    {
+        [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_Polynomial.Name,
+                              Desc = PolynomialTransform.Summary,
+                              UserName = EP_Polynomial.Name)]
+        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform.ArgumentsEntryPoint input)
+        {
+            Contracts.CheckValue(env, nameof(env));
+            env.CheckValue(input, nameof(input));
+
+            var h = EntryPointUtils.CheckArgsAndCreateHost(env, EP_Polynomial.Name, input);
+            var view = new PolynomialTransform(h, input, input.Data);
+            return new CommonOutputs.TransformOutput()
+            {
+                Model = new TransformModel(h, view, input.Data),
+                OutputData = view
+            };
+        }
+    }
+    #endregion
+
+    #region Polynomial
+
     public static class EntryPointsFeaturesTransforms
     {
-        #region Polynomial
-
         public static Polynomial.Output Add(this Microsoft.ML.Runtime.Experiment exp, Polynomial input)
         {
             var output = new Polynomial.Output();
@@ -27,35 +57,21 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, Polynomial input, Polynomial.Output output)
         {
-            exp.AddSerialize("ExtFeaturesTransforms.Polynomial", input, output);
+            exp.AddSerialize(EntryPointsConstants.EntryPointPrefix + EP_Polynomial.Name, input, output);
         }
-
-        #endregion
-
-        #region Scaler
-
-        public static Scaler.Output Add(this Microsoft.ML.Runtime.Experiment exp, Scaler input)
-        {
-            var output = new Scaler.Output();
-            exp.Add(input, output);
-            return output;
-        }
-
-        public static void Add(this Microsoft.ML.Runtime.Experiment exp, Scaler input, Scaler.Output output)
-        {
-            exp.AddSerialize("ExtFeaturesTransforms.Scaler", input, output);
-        }
-
-        #endregion
     }
 
-    #region Polynomial
+    #endregion
+
+    #region Entry Point
 
     /// <summary>
     /// Multiplies features, build polynomial features x1, x1^2, x1x2, x2, x2^2... The output should be cached otherwise the transform will recompute the features each time it is needed. Use CacheTransform.
     /// </summary>
     public sealed partial class Polynomial : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
     {
+        public const string Name = nameof(Polynomial);
+
         public Polynomial()
         {
         }
@@ -153,123 +169,6 @@ namespace Scikit.ML.EntryPoints
         private class PolynomialPipelineStep : ILearningPipelineDataStep
         {
             public PolynomialPipelineStep(Output output)
-            {
-                Data = output.OutputData;
-                Model = output.Model;
-            }
-
-            public Var<IDataView> Data { get; }
-            public Var<ITransformModel> Model { get; }
-        }
-    }
-
-    #endregion
-
-    #region Scaler
-
-    public enum ScalerTransformScalerStrategy
-    {
-        meanVar = 0,
-        minMax = 1
-    }
-
-    /// <summary>
-    /// Rescales a column (only float).
-    /// </summary>
-    public sealed partial class Scaler : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
-    {
-
-        public Scaler()
-        {
-        }
-
-        public Scaler(params string[] inputColumnss)
-        {
-            if (inputColumnss != null)
-            {
-                foreach (string input in inputColumnss)
-                {
-                    AddColumns(input);
-                }
-            }
-        }
-
-        public Scaler(params (string inputColumn, string outputColumn)[] inputOutputColumnss)
-        {
-            if (inputOutputColumnss != null)
-            {
-                foreach (var inputOutput in inputOutputColumnss)
-                {
-                    AddColumns(inputOutput.outputColumn, inputOutput.inputColumn);
-                }
-            }
-        }
-
-        public void AddColumns(string inputColumn)
-        {
-            var list = Columns == null ? new List<Column1x1>() : new List<Column1x1>(Columns);
-            list.Add(OneToOneColumn<Column1x1>.Create(inputColumn));
-            Columns = list.ToArray();
-        }
-
-        public void AddColumns(string outputColumn, string inputColumn)
-        {
-            var list = Columns == null ? new List<Column1x1>() : new List<Column1x1>(Columns);
-            list.Add(OneToOneColumn<Column1x1>.Create(outputColumn, inputColumn));
-            Columns = list.ToArray();
-        }
-
-        /// <summary>
-        /// Columns to normalize.
-        /// </summary>
-        [JsonProperty("columns")]
-        public Column1x1[] Columns { get; set; }
-
-        /// <summary>
-        /// Scaling strategy.
-        /// </summary>
-        [JsonProperty("scaling")]
-        public ScalerTransformScalerStrategy Scaling { get; set; } = ScalerTransformScalerStrategy.meanVar;
-
-        /// <summary>
-        /// Input dataset
-        /// </summary>
-        public Var<Microsoft.ML.Runtime.Data.IDataView> Data { get; set; } = new Var<Microsoft.ML.Runtime.Data.IDataView>();
-
-
-        public sealed class Output : Microsoft.ML.Runtime.EntryPoints.CommonOutputs.ITransformOutput
-        {
-            /// <summary>
-            /// Transformed dataset
-            /// </summary>
-            public Var<Microsoft.ML.Runtime.Data.IDataView> OutputData { get; set; } = new Var<Microsoft.ML.Runtime.Data.IDataView>();
-
-            /// <summary>
-            /// Transform model
-            /// </summary>
-            public Var<Microsoft.ML.Runtime.EntryPoints.ITransformModel> Model { get; set; } = new Var<Microsoft.ML.Runtime.EntryPoints.ITransformModel>();
-
-        }
-        public Var<IDataView> GetInputData() => Data;
-
-        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
-        {
-            if (previousStep != null)
-            {
-                if (!(previousStep is ILearningPipelineDataStep dataStep))
-                {
-                    throw new InvalidOperationException($"{ nameof(Scaler)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
-                }
-
-                Data = dataStep.Data;
-            }
-            Output output = EntryPointsFeaturesTransforms.Add(experiment, this);
-            return new ScalerPipelineStep(output);
-        }
-
-        private class ScalerPipelineStep : ILearningPipelineDataStep
-        {
-            public ScalerPipelineStep(Output output)
             {
                 Data = output.OutputData;
                 Model = output.Model;
