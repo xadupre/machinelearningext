@@ -22,9 +22,20 @@ namespace Scikit.ML.PipelineHelper
         CachingOptions ICaching { get; }
     }
 
+    public class LearnerInputBaseArguments : LearnerInputBase
+    {
+        public LearnerInputBaseArguments(ILearnerInputBaseArguments obj)
+        {
+            TrainingData = obj.ITrainingData;
+            FeatureColumn = obj.IFeatureColumn;
+            NormalizeFeatures = obj.INormalizeFeatures;
+            Caching = obj.ICaching;
+        }
+    }
+
     public static class EntryPointsHelper
     {
-        public static TOut Train<TArg, TOut>(IHostEnvironment host, TArg input,
+        public static TOut Train<TArg, TOut>(IHost host, TArg input,
             Func<ITrainer> createTrainer,
             Func<string> getLabel = null,
             Func<string> getWeight = null,
@@ -36,68 +47,11 @@ namespace Scikit.ML.PipelineHelper
             where TArg : ILearnerInputBaseArguments
             where TOut : CommonOutputs.TrainerOutput, new()
         {
-            using (var ch = host.Start("Training"))
-            {
-                ISchema schema = input.ITrainingData.Schema;
-                var feature = LearnerEntryPointsUtils.FindColumn(ch, schema, input.IFeatureColumn);
-                var label = getLabel?.Invoke();
-                var weight = getWeight?.Invoke();
-                var group = getGroup?.Invoke();
-                var custom = getCustom?.Invoke();
-
-                var trainer = createTrainer();
-
-                IDataView view = input.ITrainingData;
-                TrainUtils.AddNormalizerIfNeeded(host, ch, trainer, ref view, feature, input.INormalizeFeatures);
-
-                ch.Trace("Binding columns");
-                var roleMappedData = host.CreateExamples(view, feature, label, group, weight, custom);
-
-                RoleMappedData cachedRoleMappedData = roleMappedData;
-                Cache.CachingType? cachingType = null;
-                switch (input.ICaching)
-                {
-                    case CachingOptions.Memory:
-                        {
-                            cachingType = Cache.CachingType.Memory;
-                            break;
-                        }
-                    case CachingOptions.Disk:
-                        {
-                            cachingType = Cache.CachingType.Disk;
-                            break;
-                        }
-                    case CachingOptions.Auto:
-                        {
-                            ITrainerEx trainerEx = trainer as ITrainerEx;
-                            // REVIEW: we should switch to hybrid caching in future.
-                            if (!(input.ITrainingData is BinaryLoader) && (trainerEx == null || trainerEx.WantCaching))
-                                // default to Memory so mml is on par with maml
-                                cachingType = Cache.CachingType.Memory;
-                            break;
-                        }
-                    case CachingOptions.None:
-                        break;
-                    default:
-                        throw ch.ExceptParam(nameof(input.ICaching), "Unknown option for caching: '{0}'", input.ICaching);
-                }
-
-                if (cachingType.HasValue)
-                {
-                    var cacheView = Cache.CacheData(host, new Cache.CacheInput()
-                    {
-                        Data = roleMappedData.Data,
-                        Caching = cachingType.Value
-                    }).OutputData;
-                    cachedRoleMappedData = new RoleMappedData(cacheView, roleMappedData.Schema.GetColumnRoleNames());
-                }
-
-                var predictor = TrainUtils.Train(host, ch, cachedRoleMappedData, trainer, "Train", calibrator, maxCalibrationExamples);
-                var output = new TOut() { PredictorModel = new PredictorModel(host, roleMappedData, input.ITrainingData, predictor) };
-
-                ch.Done();
-                return output;
-            }
+            var parInputs = new LearnerInputBaseArguments(input);
+            return LearnerEntryPointsUtils.Train<LearnerInputBaseArguments, TOut>(host, parInputs,
+                            createTrainer, getLabel: getLabel, getWeight: getWeight,
+                            getGroup: getGroup, getName: getName, getCustom: getCustom,
+                            calibrator: calibrator, maxCalibrationExamples: maxCalibrationExamples);
         }
     }
 }

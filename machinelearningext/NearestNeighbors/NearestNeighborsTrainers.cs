@@ -43,10 +43,10 @@ namespace Scikit.ML.NearestNeighbors
         {
         }
 
-        public override void Train(RoleMappedData data)
+        protected override INearestNeighborsPredictor Train(RoleMappedData data)
         {
             data.CheckBinaryLabel();
-            base.Train(data);
+            return base.Train(data);
         }
 
         protected override INearestNeighborsPredictor CreateTrainedPredictor<TLabel>(KdTree[] kdtrees,
@@ -69,11 +69,11 @@ namespace Scikit.ML.NearestNeighbors
         {
         }
 
-        public override void Train(RoleMappedData data)
+        protected override INearestNeighborsPredictor Train(RoleMappedData data)
         {
             int count;
             data.CheckMultiClassLabel(out count);
-            base.Train(data);
+            return base.Train(data);
         }
 
         protected override INearestNeighborsPredictor CreateTrainedPredictor<TLabel>(KdTree[] kdtrees,
