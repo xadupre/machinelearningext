@@ -6,7 +6,7 @@ git:
   
 matrix:
   include:
-    - python: 3.6.5
+    - python: 3.6
       env: &xplat-env
         - BUILD_OPTS=--xplat
         - NUNIT_PATH=~/.nuget/packages/nunit.consolerunner/3.*/tools/nunit3-console.exe
@@ -16,7 +16,7 @@ matrix:
           - sourceline: deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main
             key_url: https://packages.microsoft.com/keys/microsoft.asc
           packages:
-            - dotnet-sdk-2.1.302
+            - dotnet-sdk-2.1.200
 
 env:
   global:

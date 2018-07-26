@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6.5
+      - image: circleci/python:3.6.4
     
     working_directory: ~/repo
     
@@ -36,8 +36,7 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install libunwind8 curl
-            sudo apt-get install libunwind8 liblttng-ust0 libcurl3 libuuid1 libkrb5-3 zlib1g
-            sudo apt-get install libssl1.0.0
+            sudo apt-get install libunwind8 liblttng-ust0 libcurl3 libuuid1 libkrb5-3 zlib1g libssl1.0.0
 
       - run:
           name: install cmake
@@ -52,7 +51,7 @@ jobs:
             echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" | sudo tee -a /etc/apt/sources.list > /dev/null
             sudo apt-get update
             sudo -E apt-get -yq update &>> ~/apt-get-update.log
-            sudo -E apt-get -yqf --no-install-suggests --no-install-recommends --force-yes install dotnet-sdk-2.1.302
+            sudo -E apt-get -yqf --no-install-suggests --no-install-recommends --force-yes install dotnet-sdk-2.1.200
 
       - run:
           name: remove clang
