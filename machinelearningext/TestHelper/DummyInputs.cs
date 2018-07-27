@@ -40,7 +40,7 @@ namespace Scikit.ML.TestHelper
 
     public class ExampleASparse
     {
-        [VectorType()]
+        [VectorType(5)]
         public VBuffer<float> X;
     }
 

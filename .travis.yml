@@ -1,5 +1,5 @@
-dist: xenial
-sudo: true
+dist: trusty
+sudo: false
 language: python
 git:
   submodules: true
