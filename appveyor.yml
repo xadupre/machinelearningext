@@ -1,9 +1,6 @@
 environment:
 
   global:
-    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
-    # /E:ON and /V:ON options are not enabled in the batch script intepreter
-    # See: http://stackoverflow.com/a/13751649/163740
     WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
 
   matrix:
@@ -31,11 +28,11 @@ before_test:
   - cd ..
   - mkdir machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Release
-  - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Release
-  - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Ensemble\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.FastTree\netstandard2.0\*.dll machinelearning\dist\Release
+  # - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.InternalStreams\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.KMeansClustering\netstandard2.0\*.dll machinelearning\dist\Release
+  - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.LightGBM\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Onnx\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.PCA\netstandard2.0\*.dll machinelearning\dist\Release
@@ -43,11 +40,11 @@ before_test:
   - copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
   - mkdir machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Debug
-  - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Debug
-  - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Ensemble\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.FastTree\netstandard2.0\*.dll machinelearning\dist\Debug
+  # - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.InternalStreams\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.KMeansClustering\netstandard2.0\*.dll machinelearning\dist\Debug
+  - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.LightGBM\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Onnx\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.PCA\netstandard2.0\*.dll machinelearning\dist\Debug

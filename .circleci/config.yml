@@ -11,8 +11,8 @@ jobs:
 
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum ".gitmodules" }}
-          - v1-dependencies-
+          - v2-dependencies-{{ checksum ".gitmodules" }}
+          - v2-dependencies-
       
       - run:
           name: local-gen
@@ -36,8 +36,7 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install libunwind8 curl
-            sudo apt-get install libunwind8 liblttng-ust0 libcurl3 libuuid1 libkrb5-3 zlib1g
-            sudo apt-get install libssl1.0.0
+            sudo apt-get install libunwind8 liblttng-ust0 libcurl3 libuuid1 libkrb5-3 zlib1g libssl1.0.0
 
       - run:
           name: install cmake
@@ -71,7 +70,7 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum ".gitmodules" }}
+          key: v2-dependencies-{{ checksum ".gitmodules" }}
         
       - run:
           name: build machinelearning release
