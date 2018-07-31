@@ -46,7 +46,7 @@ namespace Scikit.ML.EntryPoints
 
     #region Experiment
 
-    public static class EntryPointsFeaturesTransformsScalerHelper
+    public static class EntryPointsScalerHelper
     {
         public static Scaler.Output Add(this Microsoft.ML.Runtime.Experiment exp, Scaler input)
         {
@@ -162,7 +162,7 @@ namespace Scikit.ML.EntryPoints
 
                 Data = dataStep.Data;
             }
-            Output output = EntryPointsFeaturesTransformsScalerHelper.Add(experiment, this);
+            Output output = EntryPointsScalerHelper.Add(experiment, this);
             return new ScalerPipelineStep(output);
         }
 

@@ -44,7 +44,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMeansEntryPointAPI()
+        public void TestEP_Q_KMeansEntryPointAPI()
         {
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
 
@@ -72,7 +72,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMeansInnerAPI()
+        public void TestI_Q_KMeansInnerAPI()
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var outModelFilePath = Scikit.ML.TestHelper.FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
@@ -115,7 +115,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMeansEntryPointAPIWithDataFrame()
+        public void TestEP_Q_KMeansEntryPointAPIWithDataFrame()
         {
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
             var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new Microsoft.ML.Runtime.Data.DataKind?[] { Microsoft.ML.Runtime.Data.DataKind.R4 });
@@ -132,7 +132,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestQ_KMeansInnerAPIWithDataFrame()
+        public void TestI_Q_KMeansInnerAPIWithDataFrame()
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var outModelFilePath = Scikit.ML.TestHelper.FileHelper.GetOutputFile("outModelFilePath.zip", methodName);

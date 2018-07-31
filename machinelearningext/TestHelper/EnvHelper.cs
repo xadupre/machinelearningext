@@ -9,6 +9,10 @@ namespace Scikit.ML.TestHelper
 {
     public static class EnvHelper
     {
+        /// <summary>
+        /// Creates a new environment. It should be done
+        /// with <tt>using</tt>.
+        /// </summary>
         public static TlcEnvironment NewTestEnvironment(int? seed = null, bool verbose = false,
                             MessageSensitivity sensitivity = (MessageSensitivity)(-1),
                             int conc = 0, TextWriter outWriter = null, TextWriter errWriter = null)

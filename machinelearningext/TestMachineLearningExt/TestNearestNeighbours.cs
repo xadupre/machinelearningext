@@ -28,23 +28,26 @@ namespace TestMachineLearningExt
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
             var env = k == 1 ? EnvHelper.NewTestEnvironment(conc: 1) : EnvHelper.NewTestEnvironment(conc: conc);
-            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
-                new MultiFileSource(dataFilePath));
-
-            var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
-            if (distance == "cosine")
-                concat = env.CreateTransform("Scaler{col=Features}", concat);
-            var roles = env.CreateExamples(concat, "Features", "Label");
-            string modelDef;
-            modelDef = string.Format("knn{{k={0} weighting={1} nt={2} distance={3} seed=1}}", k,
-                                     weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
-            var trainer = env.CreateTrainer(modelDef);
-            using (var ch = env.Start("test"))
+            using (env)
             {
-                var pred = trainer.Train(env, ch, roles);
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
-                                                            PredictionKind.BinaryClassification, true, ratio: ratio);
-                ch.Done();
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                    new MultiFileSource(dataFilePath));
+
+                var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
+                if (distance == "cosine")
+                    concat = env.CreateTransform("Scaler{col=Features}", concat);
+                var roles = env.CreateExamples(concat, "Features", "Label");
+                string modelDef;
+                modelDef = string.Format("knn{{k={0} weighting={1} nt={2} distance={3} seed=1}}", k,
+                                         weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
+                var trainer = env.CreateTrainer(modelDef);
+                using (var ch = env.Start("test"))
+                {
+                    var pred = trainer.Train(env, ch, roles);
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
+                                                                PredictionKind.BinaryClassification, true, ratio: ratio);
+                    ch.Done();
+                }
             }
         }
 
@@ -58,23 +61,26 @@ namespace TestMachineLearningExt
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
             var env = k == 1 ? EnvHelper.NewTestEnvironment(conc: 1) : EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 col=Uid:I8:5 header=+}",
-                new MultiFileSource(dataFilePath));
-
-            var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
-            if (distance == "cosine")
-                concat = env.CreateTransform("Scaler{col=Features}", concat);
-            var roles = env.CreateExamples(concat, "Features", "Label");
-            string modelDef;
-            modelDef = string.Format("knn{{k={0} weighting={1} nt={2} distance={3} id=Uid}}", k,
-                                     weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
-            var trainer = env.CreateTrainer(modelDef);
-            using (var ch = env.Start("test"))
+            using (env)
             {
-                var pred = trainer.Train(env, ch, roles);
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
-                                                        PredictionKind.BinaryClassification, true, ratio: ratio);
-                ch.Done();
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 col=Uid:I8:5 header=+}",
+                    new MultiFileSource(dataFilePath));
+
+                var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
+                if (distance == "cosine")
+                    concat = env.CreateTransform("Scaler{col=Features}", concat);
+                var roles = env.CreateExamples(concat, "Features", "Label");
+                string modelDef;
+                modelDef = string.Format("knn{{k={0} weighting={1} nt={2} distance={3} id=Uid}}", k,
+                                         weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
+                var trainer = env.CreateTrainer(modelDef);
+                using (var ch = env.Start("test"))
+                {
+                    var pred = trainer.Train(env, ch, roles);
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
+                                                            PredictionKind.BinaryClassification, true, ratio: ratio);
+                    ch.Done();
+                }
             }
         }
 
@@ -88,21 +94,24 @@ namespace TestMachineLearningExt
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
             var env = k == 1 ? EnvHelper.NewTestEnvironment(conc: 1) : EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
-                new MultiFileSource(dataFilePath));
-
-            var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
-            var roles = env.CreateExamples(concat, "Features", "Label");
-            string modelDef;
-            modelDef = string.Format("knnmc{{k={0} weighting={1} nt={2} distance={3}}}", k,
-                                     weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
-            var trainer = env.CreateTrainer(modelDef);
-            using (var ch = env.Start("test"))
+            using (env)
             {
-                var pred = trainer.Train(env, ch, roles);
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
-                                                            PredictionKind.MultiClassClassification, true, ratio: ratio);
-                ch.Done();
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                    new MultiFileSource(dataFilePath));
+
+                var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
+                var roles = env.CreateExamples(concat, "Features", "Label");
+                string modelDef;
+                modelDef = string.Format("knnmc{{k={0} weighting={1} nt={2} distance={3}}}", k,
+                                         weight == NearestNeighborsWeights.distance ? "distance" : "uniform", threads, distance);
+                var trainer = env.CreateTrainer(modelDef);
+                using (var ch = env.Start("test"))
+                {
+                    var pred = trainer.Train(env, ch, roles);
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
+                                                                PredictionKind.MultiClassClassification, true, ratio: ratio);
+                    ch.Done();
+                }
             }
         }
 
@@ -115,77 +124,80 @@ namespace TestMachineLearningExt
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
             var env = k == 1 ? EnvHelper.NewTestEnvironment(conc: 1) : EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 col=Uid:I8:5 header=+}",
-                new MultiFileSource(dataFilePath));
-
-            var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
-            if (distance == "cosine")
-                concat = env.CreateTransform("Scaler{col=Features}", concat);
-            concat = env.CreateTransform("knntr{k=5 id=Uid}", concat);
-            long nb = DataViewUtils.ComputeRowCount(concat);
-            if (nb == 0)
-                throw new System.Exception("Empty pipeline.");
-
-            using (var cursor = concat.GetRowCursor(i => true))
+            using (env)
             {
-                var getdist = cursor.GetGetter<VBuffer<float>>(7);
-                var getid = cursor.GetGetter<VBuffer<DvInt8>>(8);
-                var ddist = new VBuffer<float>();
-                var did = new VBuffer<DvInt8>();
-                while (cursor.MoveNext())
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 col=Uid:I8:5 header=+}",
+                    new MultiFileSource(dataFilePath));
+
+                var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
+                if (distance == "cosine")
+                    concat = env.CreateTransform("Scaler{col=Features}", concat);
+                concat = env.CreateTransform("knntr{k=5 id=Uid}", concat);
+                long nb = DataViewUtils.ComputeRowCount(concat);
+                if (nb == 0)
+                    throw new System.Exception("Empty pipeline.");
+
+                using (var cursor = concat.GetRowCursor(i => true))
                 {
-                    getdist(ref ddist);
-                    getid(ref did);
-                    if (!ddist.IsDense || !did.IsDense)
-                        throw new System.Exception("not dense");
-                    if (ddist.Count != did.Count)
-                        throw new System.Exception("not the same dimension");
-                    for (int i = 1; i < ddist.Count; ++i)
+                    var getdist = cursor.GetGetter<VBuffer<float>>(7);
+                    var getid = cursor.GetGetter<VBuffer<DvInt8>>(8);
+                    var ddist = new VBuffer<float>();
+                    var did = new VBuffer<DvInt8>();
+                    while (cursor.MoveNext())
                     {
-                        if (ddist.Values[i - 1] > ddist.Values[i])
-                            throw new System.Exception("not sorted");
-                        if (did.Values[i].RawValue % 2 != 1)
-                            throw new System.Exception("wrong id");
+                        getdist(ref ddist);
+                        getid(ref did);
+                        if (!ddist.IsDense || !did.IsDense)
+                            throw new System.Exception("not dense");
+                        if (ddist.Count != did.Count)
+                            throw new System.Exception("not the same dimension");
+                        for (int i = 1; i < ddist.Count; ++i)
+                        {
+                            if (ddist.Values[i - 1] > ddist.Values[i])
+                                throw new System.Exception("not sorted");
+                            if (did.Values[i].RawValue % 2 != 1)
+                                throw new System.Exception("wrong id");
+                        }
                     }
                 }
-            }
 
-            TestTransformHelper.SerializationTestTransform(env, outModelFilePath, concat, loader, outData, outData2, false);
+                TestTransformHelper.SerializationTestTransform(env, outModelFilePath, concat, loader, outData, outData2, false);
+            }
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassification1()
+        public void TestI_TrainkNNBinaryClassification1()
         {
             TrainkNNBinaryClassification(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassification2()
+        public void TestI_TrainkNNBinaryClassification2()
         {
             TrainkNNBinaryClassification(2, NearestNeighborsWeights.uniform, 1);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassification5()
+        public void TestI_TrainkNNBinaryClassification5()
         {
             TrainkNNBinaryClassification(5, NearestNeighborsWeights.uniform, 1);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassificationId()
+        public void TestI_TrainkNNBinaryClassificationId()
         {
             TrainkNNBinaryClassificationId(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassificationCosine()
+        public void TestI_TrainkNNBinaryClassificationCosine()
         {
             TrainkNNBinaryClassification(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f, distance: "cosine", conc: 1);
             TrainkNNBinaryClassification(2, NearestNeighborsWeights.uniform, 1, distance: "cosine", conc: 1);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassificationL1()
+        public void TestI_TrainkNNBinaryClassificationL1()
         {
             TrainkNNBinaryClassification(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f, distance: "L1");
             TrainkNNBinaryClassification(2, NearestNeighborsWeights.uniform, 1, distance: "L1");
@@ -193,7 +205,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassificationMultiThread()
+        public void TestI_TrainkNNBinaryClassificationMultiThread()
         {
             TrainkNNBinaryClassification(1, NearestNeighborsWeights.uniform, 2, ratio: 0.05f);
             TrainkNNBinaryClassification(2, NearestNeighborsWeights.uniform, 2);
@@ -201,7 +213,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNMultiClassification()
+        public void TestI_TrainkNNMultiClassification()
         {
             TrainkNNMultiClassification(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f);
             TrainkNNMultiClassification(2, NearestNeighborsWeights.uniform, 1);
@@ -209,7 +221,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNMultiClassificationMultiThread()
+        public void TestI_TrainkNNMultiClassificationMultiThread()
         {
             TrainkNNMultiClassification(1, NearestNeighborsWeights.uniform, 2, ratio: 0.05f);
             TrainkNNMultiClassification(2, NearestNeighborsWeights.uniform, 2);
@@ -217,7 +229,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNTransformId()
+        public void TestI_TrainkNNTransformId()
         {
             TrainkNNTransformId(1, NearestNeighborsWeights.uniform, 2);
             TrainkNNTransformId(2, NearestNeighborsWeights.uniform, 2);
@@ -225,7 +237,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestNearestNeighborsLPTr()
+        public void TestEP_TestNearestNeighborsLPTr()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
@@ -243,39 +255,43 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestNearestNeighborsLPBc()
+        public void TestEP_NearestNeighborsLPBc()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
-            var iris = FileHelper.GetTestFile("iris_binary.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                var iris = FileHelper.GetTestFile("iris_binary.txt");
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
 
-            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-            var learningPipeline = new GenericLearningPipeline(conc: 1);
-            learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Feat", "Sepal_length", "Sepal_width"));
-            var node = new Scikit.ML.EntryPoints.NearestNeighborsBinary("Feat", "Label", null);
-            learningPipeline.Add(node);
-            var predictor = learningPipeline.Train();
-            var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 9));
+                var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+                var learningPipeline = new GenericLearningPipeline(conc: 1);
+                learningPipeline.Add(importData);
+                learningPipeline.Add(new ColumnConcatenator("Feat", "Sepal_length", "Sepal_width"));
+                var node = new Scikit.ML.EntryPoints.NearestNeighborsBinary("Feat", "Label", null);
+                learningPipeline.Add(node);
+                var predictor = learningPipeline.Train();
+                var predictions = predictor.Predict(df);
+                var dfout = DataFrame.ReadView(predictions);
+                Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 9));
+            }
         }
 
         [TestMethod]
-        public void TestNearestNeighborsLPMc()
+        public void TestEP_NearestNeighborsLPMc()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
-            var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
-            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-            var learningPipeline = new GenericLearningPipeline(conc: 1);
-            learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsMultiClass());
-            var predictor = learningPipeline.Train();
-            var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 11));
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                var iris = FileHelper.GetTestFile("iris.txt");
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+                var learningPipeline = new GenericLearningPipeline(conc: 1);
+                learningPipeline.Add(importData);
+                learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+                learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsMultiClass());
+                var predictor = learningPipeline.Train();
+                var predictions = predictor.Predict(df);
+                var dfout = DataFrame.ReadView(predictions);
+                Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 11));
+            }
         }
     }
 }

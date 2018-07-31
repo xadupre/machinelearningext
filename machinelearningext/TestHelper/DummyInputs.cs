@@ -32,6 +32,11 @@ namespace Scikit.ML.TestHelper
         public uint Y;
     }
 
+    public class ExampleA0
+    {
+        public float X;
+    }
+
     public class ExampleA
     {
         [VectorType(2)]

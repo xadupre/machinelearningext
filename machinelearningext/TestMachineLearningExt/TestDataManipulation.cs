@@ -60,19 +60,21 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestReadView()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
-            var iris = FileHelper.GetTestFile("iris.txt");
-            var loader = DataFrame.ReadCsvToTextLoader(iris, sep: '\t', host: env.Register("TextLoader"));
-            var df = DataFrame.ReadView(loader);
-            Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
-            var sch = df.Schema;
-            Assert.AreEqual(sch.GetColumnName(0), "Label");
-            Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
-            Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
-            Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
-            Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[140, 0], (DvInt4)2);
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                var iris = FileHelper.GetTestFile("iris.txt");
+                var loader = DataFrame.ReadCsvToTextLoader(iris, sep: '\t', host: env.Register("TextLoader"));
+                var df = DataFrame.ReadView(loader);
+                Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
+                var sch = df.Schema;
+                Assert.AreEqual(sch.GetColumnName(0), "Label");
+                Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
+                Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
+                Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
+                Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
+                Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
+                Assert.AreEqual(df.iloc[140, 0], (DvInt4)2);
+            }
         }
 
         [TestMethod]
@@ -136,48 +138,78 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestDataFrameScoringMulti()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
-            var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
-            var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
-            var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
-            var trainer = env.CreateTrainer("ova{p=lr}");
-            using (var ch = env.Start("test"))
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
-                var pred = trainer.Train(env, ch, trainingData);
-                var scorer = trainer.GetScorer(pred, trainingData, env, null);
-                var predictions = DataFrame.ReadView(scorer);
-                var v = predictions.iloc[0, 7];
-                Assert.AreEqual(v, (uint)1);
-                Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
-                Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
-                Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
-                Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 11));
-                ch.Done();
+                var iris = FileHelper.GetTestFile("iris.txt");
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
+                var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
+                var trainer = env.CreateTrainer("ova{p=lr}");
+                using (var ch = env.Start("test"))
+                {
+                    var pred = trainer.Train(env, ch, trainingData);
+                    var scorer = ScoreUtils.GetScorer(pred, trainingData, env, null);
+                    var predictions = DataFrame.ReadView(scorer);
+                    var v = predictions.iloc[0, 7];
+                    Assert.AreEqual(v, (uint)1);
+                    Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
+                    Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
+                    Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
+                    Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 11));
+                    ch.Done();
+                }
             }
         }
 
         [TestMethod]
         public void TestDataFrameScoringBinary()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
-            var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
-            var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
-            var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
-            var trainer = env.CreateTrainer("lr");
-            using (var ch = env.Start("test"))
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
-                var pred = trainer.Train(env, ch, trainingData);
-                var scorer = trainer.GetScorer(pred, trainingData, env, null);
-                var predictions = DataFrame.ReadView(scorer);
-                var v = predictions.iloc[0, 7];
-                Assert.AreEqual(v, DvBool.False);
-                Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
-                Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
-                Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
-                Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
-                ch.Done();
+                var iris = FileHelper.GetTestFile("iris.txt");
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
+                var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
+                var trainer = env.CreateTrainer("lr");
+                using (var ch = env.Start("test"))
+                {
+                    var pred = trainer.Train(env, ch, trainingData);
+                    var scorer = PredictorHelper.Predict(env, pred, trainingData);
+                    var predictions = DataFrame.ReadView(scorer);
+                    var v = predictions.iloc[0, 7];
+                    Assert.AreEqual(v, DvBool.False);
+                    Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
+                    Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
+                    Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
+                    Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
+                    ch.Done();
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestDataFrameExtendedAPI()
+        {
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                var iris = FileHelper.GetTestFile("iris.txt");
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
+                var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
+                ITrainerExtended trainer = env.CreateTrainer("lr");
+                using (var ch = env.Start("test"))
+                {
+                    var pred = trainer.Train(env, ch, trainingData);
+                    var viewpred = PredictorHelper.Predict(env, pred, trainingData);
+                    var predictions = DataFrame.ReadView(viewpred);
+                    var v = predictions.iloc[0, 7];
+                    Assert.AreEqual(v, DvBool.False);
+                    Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
+                    Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
+                    Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
+                    Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
+                    ch.Done();
+                }
             }
         }
 

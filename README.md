@@ -64,7 +64,7 @@ using (var ch = env.Start("test"))
     var pred = trainer.Train(env, ch, trainingData);
 
     // We compute the prediction (here with the same training data but it should not be the same).
-    var scorer = trainer.GetScorer(pred, trainingData, env, null);
+    var scorer = ScoreUtils.GetScorer(pred, trainingData, env, null);
 
     // We store the predictions on a file.
     DataFrame.ViewToCsv(env, scorer, "iris_predictions.txt");
