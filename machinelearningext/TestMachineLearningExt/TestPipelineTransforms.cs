@@ -122,5 +122,56 @@ namespace TestMachineLearningExt
         }
 
         #endregion
+
+        #region ULabel2Float
+
+        [TestMethod]
+        public void TestI_ULabelToR4LabelTransform()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var dataFilePath = FileHelper.GetTestFile("iris_binary.txt");
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+
+            var env = EnvHelper.NewTestEnvironment();
+            var loader = env.CreateLoader("Text{col=LabelText:TX:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                new MultiFileSource(dataFilePath));
+
+            var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
+            var labelTx = env.CreateTransform("TermTransform{col=LabelU4:LabelText}", concat);
+            var labelR4 = env.CreateTransform("U2R4{col=Label:LabelU4}", labelTx);
+            var roles = env.CreateExamples(labelR4, "Features", "Label");
+            var trainer = env.CreateTrainer("lr");
+            using (var ch = env.Start("test"))
+            {
+                var pred = trainer.Train(env, ch, roles);
+                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
+                                                            trainer.Trainer.PredictionKind, true, ratio: 0.8f);
+                ch.Done();
+            }
+        }
+
+        [TestMethod]
+        public void TestEP_ULabelToR4LabelTransform()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+
+            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+            var learningPipeline = new GenericLearningPipeline(conc: 1);
+            learningPipeline.Add(importData);
+            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
+            learningPipeline.Add(new Scikit.ML.EntryPoints.ULabelToR4Label("Label"));
+            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            var predictor = learningPipeline.Train();
+            var predictions = predictor.Predict(df);
+            var dfout = DataFrame.ReadView(predictions);
+            Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
+        }
+
+        #endregion
     }
 }
