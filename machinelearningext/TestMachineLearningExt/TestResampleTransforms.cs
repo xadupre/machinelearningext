@@ -68,7 +68,7 @@ namespace TestMachineLearningExt
             var dataFilePath = FileHelper.GetTestFile("iris.txt");
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
 
-            using (var env = EnvHelper.NewTestEnvironment())
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=- sep=,}",
                     new MultiFileSource(dataFilePath));
