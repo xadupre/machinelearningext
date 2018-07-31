@@ -2,21 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Scikit.ML.EntryPoints</AssemblyName>
-    <RootNamespace>Scikit.ML.EntryPoints</RootNamespace>
-    <Version>0.4.0</Version>
+    <AssemblyName>Scikit.ML.RandomTransforms</AssemblyName>
+    <RootNamespace>Scikit.ML.RandomTransforms</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
-    <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
-    <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
-    <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
+    <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,5 +29,5 @@
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
   </ItemGroup>
-  
+
 </Project>

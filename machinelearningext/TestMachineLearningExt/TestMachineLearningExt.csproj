@@ -19,6 +19,7 @@
     <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
     <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
+    <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
     <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
   </ItemGroup>
 

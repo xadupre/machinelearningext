@@ -46,7 +46,7 @@ namespace Scikit.ML.EntryPoints
 
     #region Polynomial
 
-    public static class EntryPointsFeaturesTransforms
+    public static class EntryPointsPolynomialTransformHelper
     {
         public static Polynomial.Output Add(this Microsoft.ML.Runtime.Experiment exp, Polynomial input)
         {
@@ -162,7 +162,7 @@ namespace Scikit.ML.EntryPoints
 
                 Data = dataStep.Data;
             }
-            Output output = EntryPointsFeaturesTransforms.Add(experiment, this);
+            Output output = EntryPointsPolynomialTransformHelper.Add(experiment, this);
             return new PolynomialPipelineStep(output);
         }
 

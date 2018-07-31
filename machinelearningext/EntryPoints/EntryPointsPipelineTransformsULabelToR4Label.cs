@@ -46,7 +46,7 @@ namespace Scikit.ML.EntryPoints
 
     #region Experiment
 
-    public static class EntryPointsFeaturesTransformsULabelToR4LabelHelper
+    public static class EntryPointsULabelToR4LabelHelper
     {
         public static ULabelToR4Label.Output Add(this Microsoft.ML.Runtime.Experiment exp, ULabelToR4Label input)
         {
@@ -66,7 +66,7 @@ namespace Scikit.ML.EntryPoints
     #region Entry Point
 
     /// <summary>
-    /// Rescales a column (only float).
+    /// Converts a Key label into a Float label (does nothing if the input is a float).
     /// </summary>
     public sealed partial class ULabelToR4Label : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
     {
@@ -100,28 +100,29 @@ namespace Scikit.ML.EntryPoints
 
         public void AddColumns(string inputColumn)
         {
-            var list = Columns == null ? new List<Column1x1>() : new List<Column1x1>(Columns);
-            list.Add(OneToOneColumn<Column1x1>.Create(inputColumn));
+            var list = Columns == null ? new List<Scikit.ML.EntryPoints.Column1x1>() : new List<Scikit.ML.EntryPoints.Column1x1>(Columns);
+            list.Add(OneToOneColumn<Scikit.ML.EntryPoints.Column1x1>.Create(inputColumn));
             Columns = list.ToArray();
         }
 
         public void AddColumns(string outputColumn, string inputColumn)
         {
-            var list = Columns == null ? new List<Column1x1>() : new List<Column1x1>(Columns);
-            list.Add(OneToOneColumn<Column1x1>.Create(outputColumn, inputColumn));
+            var list = Columns == null ? new List<Scikit.ML.EntryPoints.Column1x1>() : new List<Scikit.ML.EntryPoints.Column1x1>(Columns);
+            list.Add(OneToOneColumn<Scikit.ML.EntryPoints.Column1x1>.Create(outputColumn, inputColumn));
             Columns = list.ToArray();
         }
 
-        /// <summary>
-        /// Columns to normalize.
-        /// </summary>
-        [JsonProperty("columns")]
-        public Column1x1[] Columns { get; set; }
 
         /// <summary>
         /// Input dataset
         /// </summary>
         public Var<Microsoft.ML.Runtime.Data.IDataView> Data { get; set; } = new Var<Microsoft.ML.Runtime.Data.IDataView>();
+
+        /// <summary>
+        /// Columns to convert.
+        /// </summary>
+        [JsonProperty("columns")]
+        public Column1x1[] Columns { get; set; }
 
 
         public sealed class Output : Microsoft.ML.Runtime.EntryPoints.CommonOutputs.ITransformOutput
@@ -150,7 +151,7 @@ namespace Scikit.ML.EntryPoints
 
                 Data = dataStep.Data;
             }
-            Output output = EntryPointsFeaturesTransformsULabelToR4LabelHelper.Add(experiment, this);
+            Output output = EntryPointsULabelToR4LabelHelper.Add(experiment, this);
             return new ULabelToR4LabelPipelineStep(output);
         }
 

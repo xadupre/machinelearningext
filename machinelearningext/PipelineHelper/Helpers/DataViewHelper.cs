@@ -42,7 +42,7 @@ namespace Scikit.ML.PipelineHelper
         /// <param name="filename">output filename</param>
         /// <param name="sep">column separator</param>
         /// <param name="schema">include the schema</param>
-        public static void ToCsv(IHost host, IDataView view, string filename, string sep = "\t", bool schema = true)
+        public static void ToCsv(IHostEnvironment host, IDataView view, string filename, string sep = "\t", bool schema = true)
         {
             var settings = string.Format("Text{{sep={0} header=+ schema={1}}}",
                 sep == "\t" ? "tab" : sep, schema ? "+" : "-");
@@ -63,7 +63,7 @@ namespace Scikit.ML.PipelineHelper
         /// <param name="host">IHost</param>
         /// <param name="view">view to dump</param>
         /// <param name="filename">output filename</param>
-        public static void ToIdv(IHost host, IDataView view, string filename)
+        public static void ToIdv(IHostEnvironment host, IDataView view, string filename)
         {
             var settings = "Binary";
             var saver = ComponentCreation.CreateSaver(host, settings);

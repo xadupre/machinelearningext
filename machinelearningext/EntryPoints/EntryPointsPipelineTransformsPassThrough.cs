@@ -46,7 +46,7 @@ namespace Scikit.ML.EntryPoints
 
     #region Experiment
 
-    public static class EntryPointsFeaturesTransformsPassThroughHelper
+    public static class EntryPointsPassThroughHelper
     {
         public static PassThrough.Output Add(this Microsoft.ML.Runtime.Experiment exp, PassThrough input)
         {
@@ -122,7 +122,7 @@ namespace Scikit.ML.EntryPoints
 
                 Data = dataStep.Data;
             }
-            Output output = EntryPointsFeaturesTransformsPassThroughHelper.Add(experiment, this);
+            Output output = EntryPointsPassThroughHelper.Add(experiment, this);
             return new PassThroughPipelineStep(output);
         }
 
