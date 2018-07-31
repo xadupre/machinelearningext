@@ -1,10 +1,15 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Trainers;
+using Microsoft.ML.Transforms;
+using Scikit.ML.DataManipulation;
+using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
 
@@ -14,8 +19,10 @@ namespace TestMachineLearningExt
     [TestClass]
     public class TestPipelineTransforms
     {
+        #region DescribeTransform
+
         [TestMethod]
-        public void TestDescribeTransformCode()
+        public void TestI_DescribeTransformCode()
         {
             var env = EnvHelper.NewTestEnvironment();
             var inputs = InputOutput.CreateInputs();
@@ -38,7 +45,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestDescribeTransformSaveDataAndZip()
+        public void TestI_DescribeTransformSaveDataAndZip()
         {
             var env = EnvHelper.NewTestEnvironment();
             var inputs = InputOutput.CreateInputs();
@@ -65,5 +72,55 @@ namespace TestMachineLearningExt
             var d2 = File.ReadAllText(outputDataFilePath2);
             Assert.AreEqual(d1, d2);
         }
+
+        #endregion
+
+        #region PassThroughTransform
+
+        [TestMethod]
+        public void TestI_PassThroughTransform()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var dataFilePath = FileHelper.GetTestFile("iris.txt");
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+            var tempFile = FileHelper.GetOutputFile("dump.idv", methodName);
+
+            var env = EnvHelper.NewTestEnvironment();
+            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 col=Uid:TX:5 header=+}",
+                new MultiFileSource(dataFilePath));
+
+            var xf1 = env.CreateTransform("Concat{col=Feat:Slength,Swidth}", loader);
+            var xf2 = env.CreateTransform("Scaler{col=Feat}", xf1);
+            var xf3 = env.CreateTransform(string.Format("DumpView{{s=+ f={0}}}", tempFile), xf2);
+            TestTransformHelper.SerializationTestTransform(env, outModelFilePath, xf3, loader, outData, outData2, false);
+            if (!File.Exists(tempFile))
+                throw new FileNotFoundException(tempFile);
+        }
+
+        [TestMethod]
+        public void TestEP_PassThroughTransform()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var outPass = FileHelper.GetOutputFile("data.idv", methodName);
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+
+            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
+            var learningPipeline = new GenericLearningPipeline(conc: 1);
+            learningPipeline.Add(importData);
+            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
+            learningPipeline.Add(new Scikit.ML.EntryPoints.PassThrough() { Filename = outPass, SaveOnDisk = true });
+            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            var predictor = learningPipeline.Train();
+            var predictions = predictor.Predict(df);
+            var dfout = DataFrame.ReadView(predictions);
+            Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
+            Assert.IsTrue(File.Exists(outPass));
+        }
+
+        #endregion
     }
 }

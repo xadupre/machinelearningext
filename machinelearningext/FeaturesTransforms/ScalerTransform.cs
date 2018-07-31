@@ -576,13 +576,33 @@ namespace Scikit.ML.FeaturesTransforms
             {
                 if (_scalingFactors.ContainsKey(col))
                 {
-                    // What do we do with sparse values?
-                    return GetGetterVector(_scalingFactors[col]) as ValueGetter<TValue>;
+                    var type = _inputCursor.Schema.GetColumnType(_scalingFactors[col].columnId);
+                    if (type.IsVector)
+                        return GetGetterVector(_scalingFactors[col]) as ValueGetter<TValue>;
+                    else
+                        return GetGetter(_scalingFactors[col]) as ValueGetter<TValue>;
                 }
                 else if (col < _inputCursor.Schema.ColumnCount)
                     return _inputCursor.GetGetter<TValue>(col);
                 else
                     throw Contracts.Except("Unexpected columns {0}.", col);
+            }
+
+            ValueGetter<VBuffer<float>> GetGetter(ScalingFactor scales)
+            {
+                var getter = _inputCursor.GetGetter<float>(scales.columnId);
+                float value = 0f;
+                return (ref VBuffer<float> dst) =>
+                {
+                    getter(ref value);
+                    if (1 != scales.mean.Length)
+                        throw _parent._host.Except("Mismatch dimension {0} for destination != {1} for scaling vectors.", dst.Length, scales.mean.Length);
+                    if (dst.Length != 1)
+                        dst = new VBuffer<float>(1, new[] { value });
+                    else
+                        dst.Values[0] = value;
+                    scales.Update(ref dst);
+                };
             }
 
             ValueGetter<VBuffer<float>> GetGetterVector(ScalingFactor scales)

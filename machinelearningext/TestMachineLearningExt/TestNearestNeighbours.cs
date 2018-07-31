@@ -154,38 +154,38 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassification1()
+        public void TestI_TrainkNNBinaryClassification1()
         {
             TrainkNNBinaryClassification(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassification2()
+        public void TestI_TrainkNNBinaryClassification2()
         {
             TrainkNNBinaryClassification(2, NearestNeighborsWeights.uniform, 1);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassification5()
+        public void TestI_TrainkNNBinaryClassification5()
         {
             TrainkNNBinaryClassification(5, NearestNeighborsWeights.uniform, 1);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassificationId()
+        public void TestI_TrainkNNBinaryClassificationId()
         {
             TrainkNNBinaryClassificationId(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassificationCosine()
+        public void TestI_TrainkNNBinaryClassificationCosine()
         {
             TrainkNNBinaryClassification(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f, distance: "cosine", conc: 1);
             TrainkNNBinaryClassification(2, NearestNeighborsWeights.uniform, 1, distance: "cosine", conc: 1);
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassificationL1()
+        public void TestI_TrainkNNBinaryClassificationL1()
         {
             TrainkNNBinaryClassification(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f, distance: "L1");
             TrainkNNBinaryClassification(2, NearestNeighborsWeights.uniform, 1, distance: "L1");
@@ -193,7 +193,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNBinaryClassificationMultiThread()
+        public void TestI_TrainkNNBinaryClassificationMultiThread()
         {
             TrainkNNBinaryClassification(1, NearestNeighborsWeights.uniform, 2, ratio: 0.05f);
             TrainkNNBinaryClassification(2, NearestNeighborsWeights.uniform, 2);
@@ -201,7 +201,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNMultiClassification()
+        public void TestI_TrainkNNMultiClassification()
         {
             TrainkNNMultiClassification(1, NearestNeighborsWeights.uniform, 1, ratio: 0.05f);
             TrainkNNMultiClassification(2, NearestNeighborsWeights.uniform, 1);
@@ -209,7 +209,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNMultiClassificationMultiThread()
+        public void TestI_TrainkNNMultiClassificationMultiThread()
         {
             TrainkNNMultiClassification(1, NearestNeighborsWeights.uniform, 2, ratio: 0.05f);
             TrainkNNMultiClassification(2, NearestNeighborsWeights.uniform, 2);
@@ -217,7 +217,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainkNNTransformId()
+        public void TestI_TrainkNNTransformId()
         {
             TrainkNNTransformId(1, NearestNeighborsWeights.uniform, 2);
             TrainkNNTransformId(2, NearestNeighborsWeights.uniform, 2);
@@ -225,7 +225,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestNearestNeighborsLPTr()
+        public void TestEP_TestNearestNeighborsLPTr()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
@@ -243,7 +243,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestNearestNeighborsLPBc()
+        public void TestEP_NearestNeighborsLPBc()
         {
             var env = EnvHelper.NewTestEnvironment(conc: 1);
             var iris = FileHelper.GetTestFile("iris_binary.txt");
@@ -262,7 +262,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestNearestNeighborsLPMc()
+        public void TestEP_NearestNeighborsLPMc()
         {
             var env = EnvHelper.NewTestEnvironment(conc: 1);
             var iris = FileHelper.GetTestFile("iris.txt");

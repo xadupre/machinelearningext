@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
     <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
+    <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
   </ItemGroup>
 
   <ItemGroup>

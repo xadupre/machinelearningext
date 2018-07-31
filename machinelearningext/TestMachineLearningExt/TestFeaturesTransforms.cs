@@ -25,7 +25,7 @@ namespace TestMachineLearningExt
         // The test is passing. But we need to check that the transform can be serialized.
         // We create a small pipeline, we save, we load, we save, we store data...
         [TestMethod]
-        public void TestPolynomialTransformDense()
+        public void TestI_PolynomialTransformDense()
         {
             var inputs = new[] {
                 new ExampleA() { X = new float[] { 1, 10, 100 } },
@@ -38,7 +38,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestPolynomialTransformSparse()
+        public void TestI_PolynomialTransformSparse()
         {
             var inputs = new[] {
                 new ExampleASparse() { X = new VBuffer<float> (5, 3, new float[] { 1, 10, 100 }, new int[] { 0, 2, 4 }) },
@@ -126,7 +126,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestPolynomialTransformSerialize()
+        public void TestI_PolynomialTransformSerialize()
         {
             var host = EnvHelper.NewTestEnvironment();
 
@@ -150,7 +150,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestPolynomialTransformNumericValues()
+        public void TestI_PolynomialTransformNumericValues()
         {
             var host = EnvHelper.NewTestEnvironment(conc: 1);
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
@@ -166,7 +166,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestPolynomialTransformLearningPipeline()
+        public void TestEP_PolynomialTransform()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
@@ -188,7 +188,7 @@ namespace TestMachineLearningExt
         #region ScalerTransform
 
         [TestMethod]
-        public void TestScalerTransformDenseMeanVar()
+        public void TestI_ScalerTransformDenseMeanVar()
         {
             var inputs = new[] {
                 new ExampleA() { X = new float[] { 1, 10, 100 } },
@@ -201,7 +201,20 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestScalerTransformDenseMinMax()
+        public void TestI_ScalerTransformDenseMeanVarNoVector()
+        {
+            var inputs = new[] {
+                new ExampleA0() { X = 1f },
+                new ExampleA0() { X = 2f }
+            };
+            var host = EnvHelper.NewTestEnvironment();
+            var data = host.CreateStreamingDataView(inputs);
+            List<float[]> values;
+            CommonTestScalerTransform(host, data, 3, ScalerTransform.ScalerStrategy.meanVar, out values);
+        }
+
+        [TestMethod]
+        public void TestI_ScalerTransformDenseMinMax()
         {
             var inputs = new[] {
                 new ExampleA() { X = new float[] { 1, 10, 100 } },
@@ -229,9 +242,9 @@ namespace TestMachineLearningExt
             {
                 var outValues = new List<float[]>();
                 var colGetter = cursor.GetGetter<VBuffer<float>>(0);
+                VBuffer<float> got = new VBuffer<float>();
                 while (cursor.MoveNext())
                 {
-                    VBuffer<float> got = new VBuffer<float>();
                     colGetter(ref got);
                     outValues.Add(got.DenseValues().ToArray());
                 }
@@ -248,7 +261,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestScalerTransformSparse()
+        public void TestI_ScalerTransformSparse()
         {
             var inputs = new[] {
                 new ExampleASparse() { X = new VBuffer<float> (5, 3, new float[] { 1, 10, 100 }, new int[] { 0, 2, 4 }) },
@@ -276,7 +289,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestScalerTransformSerialize()
+        public void TestI_ScalerTransformSerialize()
         {
             var host = EnvHelper.NewTestEnvironment();
 
@@ -304,7 +317,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestScalerTransformNumericValuesMeanVar()
+        public void TestI_ScalerTransformNumericValuesMeanVar()
         {
             var host = EnvHelper.NewTestEnvironment(conc: 1);
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
@@ -321,7 +334,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestScalerTransformNumericValuesMinMax()
+        public void TestI_ScalerTransformNumericValuesMinMax()
         {
             var host = EnvHelper.NewTestEnvironment(conc: 1);
             var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
@@ -337,7 +350,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestScalerTransformLearningPipeline()
+        public void TestEP_ScalerTransform()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
             var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
