@@ -39,7 +39,7 @@ namespace Scikit.ML.TestHelper
 
     public class ExampleA
     {
-        [VectorType(2)]
+        [VectorType(3)]
         public float[] X;
     }
 

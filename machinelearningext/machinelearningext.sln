@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NearestNeighbors", "Nearest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntryPoints", "EntryPoints\EntryPoints.csproj", "{83B71022-5D12-43AD-9E9A-05956A30BC86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RandomTransforms", "RandomTransforms\RandomTransforms.csproj", "{424CF939-096C-4EF1-8A19-379C27304DB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RandomTransforms", "RandomTransforms\RandomTransforms.csproj", "{424CF939-096C-4EF1-8A19-379C27304DB0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScikitAPI", "ScikitAPI\ScikitAPI.csproj", "{157ED2E5-F163-447D-A214-F5A05FF5C2D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{424CF939-096C-4EF1-8A19-379C27304DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{424CF939-096C-4EF1-8A19-379C27304DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{424CF939-096C-4EF1-8A19-379C27304DB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{157ED2E5-F163-447D-A214-F5A05FF5C2D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{157ED2E5-F163-447D-A214-F5A05FF5C2D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{157ED2E5-F163-447D-A214-F5A05FF5C2D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{157ED2E5-F163-447D-A214-F5A05FF5C2D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

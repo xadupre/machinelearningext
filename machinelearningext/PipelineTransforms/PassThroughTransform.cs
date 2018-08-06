@@ -10,6 +10,7 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.Model;
+using Scikit.ML.PipelineHelper;
 
 
 // The following files makes the object visible to maml.
@@ -117,6 +118,20 @@ namespace Scikit.ML.PipelineTransforms
         bool _saved;
 
         public IDataView Source { get { return _input; } }
+
+        /// <summary>
+        /// This method changes the sources. It does check the source
+        /// has the exact same schema than the previous one.
+        /// </summary>
+        /// <param name="source"></param>
+        public void SetSource(IDataView source)
+        {
+            var sch = SchemaHelper.ToString(Source.Schema);
+            var sch2 = SchemaHelper.ToString(source.Schema);
+            if (sch != sch2)
+                throw _host.Except("Schema mismatch. Expected:\n{0}\nGot:\n{1}", sch, sch2);
+            _input = source;
+        }
 
         public PassThroughTransform(IHostEnvironment env, Arguments args, IDataView input)
         {

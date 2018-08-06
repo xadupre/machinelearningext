@@ -322,9 +322,11 @@ namespace Scikit.ML.DataManipulation
         /// <param name="header">add header</param>
         /// <param name="silent">Suppress any info output (not warnings or errors)</param>
         public static void ViewToCsv(IDataView view, Stream st, string sep = ",", bool header = true,
-                                     bool silent = false)
+                                     bool silent = false, IHost host = null)
         {
-            var env = new TlcEnvironment();
+            IHostEnvironment env = host;
+            if (env == null)
+                env = new TlcEnvironment();
             var saver = new TextSaver(env, new TextSaver.Arguments()
             {
                 Separator = sep,
