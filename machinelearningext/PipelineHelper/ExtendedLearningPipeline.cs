@@ -130,14 +130,16 @@ namespace Scikit.ML.PipelineHelper
             experiment.Run();
 
             ITransformModel model = experiment.GetOutput(lastTransformModel);
+            ExtendedPredictionModel extModel;
             using (var memoryStream = new MemoryStream())
             {
                 model.Save(environment, memoryStream);
                 memoryStream.Position = 0;
-                return new ExtendedPredictionModel(memoryStream);
+                extModel = new ExtendedPredictionModel(memoryStream);
             }
             if (tlcenv != null)
                 tlcenv.Dispose();
+            return extModel;
         }
 
         /// <summary>

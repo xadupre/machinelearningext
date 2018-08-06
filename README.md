@@ -36,7 +36,7 @@ The documentation can be build with: ``doxygen conf.dox``.
 * [IDV File Format](https://github.com/dotnet/machinelearning/blob/master/docs/code/IdvFileFormat.md)
 * [machinelearningext](docs/README.rst)
 
-### Example 1: inner API
+### Example 1: Inner API
 
 This example relies on the inner API, mostly used
 inside components of ML.net.
@@ -67,7 +67,7 @@ using (var ch = env.Start("test"))
     var scorer = ScoreUtils.GetScorer(pred, trainingData, env, null);
 
     // We store the predictions on a file.
-    DataFrame.ViewToCsv(env, scorer, "iris_predictions.txt");
+    DataFrame.ViewToCsv(scorer, "iris_predictions.txt", host: env);
 
     // Or we could put the predictions into a dataframe.
     var dfout = DataFrame.ReadView(scorer);
@@ -82,7 +82,33 @@ The current interface of
 [DataFrame](https://github.com/xadupre/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs)
 is not rich. It will improve in the future.
 
-### Example 2: EntryPoints API
+### Example 2: Inner API like Scikit-Learn
+
+This is the same example but with a *ScikitPipeline* which
+looks like *scikit-learn*.
+
+```CSharp
+var env = new TlcEnvironment();
+var iris = "iris.txt";
+
+// We read the text data and create a dataframe / dataview.
+var df = DataFrame.ReadCsv(iris, sep: '\t',
+                           dtypes: new DataKind?[] { DataKind.R4 });
+
+var pipe = new ScikitPipeline(new[] { "Concat{col=Feature:Sepal_length,Sepal_width}" }, 
+                              "ova{p=lr}", host: host);
+pipe.Train(df, feature: "Feature", label: "Label");
+
+var scorer = pipe.Predict(df);
+
+var dfout = DataFrame.ReadView(scorer);
+
+// And access one value...
+var v = dfout.iloc[0, 7];
+Console.WriteLine("PredictedLabel: {0}", v);
+```
+
+### Example 3: EntryPoints API
 
 This is the same example based on
 [Iris Classification](https://github.com/dotnet/machinelearning-samples/tree/master/samples/getting-started/MulticlassClassification_Iris)
