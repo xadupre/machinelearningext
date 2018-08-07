@@ -164,12 +164,28 @@ namespace Scikit.ML.ScikitAPI
             return this;
         }
 
+        /// <summary>
+        /// There is no difference between predict or transform.
+        /// </summary>
+        public IDataView Transform(string filename)
+        {
+            return Predict(filename);
+        }
+
         public IDataView Predict(string filename)
         {
             if (string.IsNullOrEmpty(_loaderSettings))
                 throw _env.Except("A dataframe was used for training, another one must be used for prediction.");
             var loader = _env.CreateLoader(_loaderSettings, new MultiFileSource(filename));
             return Predict(loader);
+        }
+
+        /// <summary>
+        /// There is no difference between predict or transform.
+        /// </summary>
+        public IDataView Transform(IDataView data)
+        {
+            return Predict(data);
         }
 
         public IDataView Predict(IDataView data)

@@ -4,11 +4,8 @@
 
 using System;
 using System.Text;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
@@ -49,7 +46,7 @@ namespace Scikit.ML.ScikitAPI
         /// <summary>
         /// Creates an environment
         /// </summary>
-        public static DelegateEnvironment Create(int? seed = null, bool verbose = false,
+        public static DelegateEnvironment Create(int? seed = null, int verbose = 0,
                                     MessageSensitivity sensitivity = (MessageSensitivity)(-1),
                                     int conc = 0, ILogWriter outWriter = null, ILogWriter errWriter = null)
         {
@@ -68,13 +65,14 @@ namespace Scikit.ML.ScikitAPI
             private readonly DelegateEnvironment _parent;
             private ILogWriter _out;
             private ILogWriter _err;
+            private int _verbose;
 
             // Progress reporting. Print up to 50 dots, if there's no meaningful (checkpoint) events.
             // At the end of 50 dots, print current metrics.
             private const int _maxDots = 50;
             private int _dots;
 
-            public OutErrLogWriter(DelegateEnvironment parent, ILogWriter outWriter, ILogWriter errWriter)
+            public OutErrLogWriter(DelegateEnvironment parent, ILogWriter outWriter, ILogWriter errWriter, int verbose)
             {
                 Contracts.AssertValue(parent);
                 Contracts.AssertValue(outWriter);
@@ -87,16 +85,24 @@ namespace Scikit.ML.ScikitAPI
 
             public void PrintMessage(IMessageSource sender, ChannelMessage msg)
             {
+                if (_verbose == 0)
+                    return;
                 bool isError = false;
                 switch (msg.Kind)
                 {
                     case ChannelMessageKind.Trace:
                         if (!sender.Verbose)
                             return;
+                        if (_verbose < 4)
+                            return;
                         break;
                     case ChannelMessageKind.Info:
+                        if (_verbose < 2)
+                            return;
                         break;
                     case ChannelMessageKind.Warning:
+                        if (_verbose < 2)
+                            return;
                         isError = true;
                         break;
                     default:
@@ -383,8 +389,9 @@ namespace Scikit.ML.ScikitAPI
 
         private volatile OutErrLogWriter _outErrWriter;
         private readonly MessageSensitivity _sensitivityFlags;
+        private readonly int _verbose;
 
-        public DelegateEnvironment(int? seed = null, bool verbose = false,
+        public DelegateEnvironment(int? seed = null, int verbose = 0,
             MessageSensitivity sensitivity = MessageSensitivity.All, int conc = 0,
             ILogWriter outWriter = null, ILogWriter errWriter = null)
             : this(RandomUtils.Create(seed), verbose, sensitivity, conc, outWriter, errWriter)
@@ -394,30 +401,34 @@ namespace Scikit.ML.ScikitAPI
         /// <summary>
         /// This takes ownership of the random number generator.
         /// </summary>
-        public DelegateEnvironment(IRandom rand, bool verbose = false,
+        public DelegateEnvironment(IRandom rand, int verbose = 0,
             MessageSensitivity sensitivity = MessageSensitivity.All, int conc = 0,
             ILogWriter outWriter = null, ILogWriter errWriter = null)
-            : base(rand, verbose, conc, nameof(DelegateEnvironment))
+            : base(rand, verbose > 0, conc, nameof(DelegateEnvironment))
         {
             Contracts.CheckValue(outWriter, nameof(outWriter));
             Contracts.CheckValue(errWriter, nameof(errWriter));
-            _outErrWriter = new OutErrLogWriter(this, outWriter, errWriter);
+            Contracts.CheckParam(verbose >= 0 && verbose <= 4, nameof(verbose), "verbose must be in [[0, 4]]");
+            _outErrWriter = new OutErrLogWriter(this, outWriter, errWriter, verbose);
             _sensitivityFlags = sensitivity;
+            _verbose = verbose;
             AddListener<ChannelMessage>(PrintMessage);
         }
 
         /// <summary>
         /// This takes ownership of the random number generator.
         /// </summary>
-        public DelegateEnvironment(IRandom rand, bool verbose = false,
+        public DelegateEnvironment(IRandom rand, int verbose = 0,
             MessageSensitivity sensitivity = MessageSensitivity.All, int conc = 0,
             WriteType outWriter = null, WriteType errWriter = null)
-            : base(rand, verbose, conc, nameof(DelegateEnvironment))
+            : base(rand, verbose > 0, conc, nameof(DelegateEnvironment))
         {
             Contracts.CheckValueOrNull(outWriter);
             Contracts.CheckValueOrNull(errWriter);
-            _outErrWriter = new OutErrLogWriter(this, new LogWriter(outWriter), new LogWriter(errWriter));
+            Contracts.CheckParam(verbose >= 0 && verbose <= 4, nameof(verbose), "verbose must be in [[0, 4]]");
+            _outErrWriter = new OutErrLogWriter(this, new LogWriter(outWriter), new LogWriter(errWriter), verbose);
             _sensitivityFlags = sensitivity;
+            _verbose = verbose;
             AddListener<ChannelMessage>(PrintMessage);
         }
 
