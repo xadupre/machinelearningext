@@ -34,7 +34,7 @@ namespace TestMachineLearningExt
                 var predictor = pipe.Train(data);
                 Assert.IsTrue(predictor != null);
                 var data2 = host.CreateStreamingDataView(inputs2);
-                var predictions = pipe.Predict(data2);
+                var predictions = pipe.Transform(data2);
                 var df = DataFrame.ReadView(predictions);
                 Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
                 var dfs = df.ToString();
@@ -66,7 +66,7 @@ namespace TestMachineLearningExt
                 var predictor = pipe.Train(data);
                 Assert.IsTrue(predictor != null);
                 var data2 = host.CreateStreamingDataView(inputs2);
-                var predictions = pipe.Predict(data2);
+                var predictions = pipe.Transform(data2);
                 var df = DataFrame.ReadView(predictions);
                 Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
                 var dfs = df.ToString();
@@ -79,7 +79,7 @@ namespace TestMachineLearningExt
             {
                 var data2 = host.CreateStreamingDataView(inputs2);
                 var pipe2 = new ScikitPipeline(output, host);
-                var predictions = pipe2.Predict(data2);
+                var predictions = pipe2.Transform(data2);
                 var df = DataFrame.ReadView(predictions);
                 Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
                 var dfs = df.ToString();
