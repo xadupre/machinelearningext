@@ -359,7 +359,7 @@ namespace Scikit.ML.FeaturesTransforms
                 if (predicate(_input.Schema.ColumnCount))
                 {
                     var cursors = _input.GetRowCursorSet(out consolidator, i => PredicatePropagation(i, predicate), n, rand);
-                    return cursors.Select(c => new PolynomialCursor<TInput>(this, c, predicate, _args, _inputCol, _multiplication)).ToArray();
+                    return cursors.Select(c => new PolynomialCursor<TInput>(this, c, i => PredicatePropagation(i, predicate), _args, _inputCol, _multiplication)).ToArray();
                 }
                 else
                     // The new column is not required. We do not need to compute it. But we need to keep the same schema.

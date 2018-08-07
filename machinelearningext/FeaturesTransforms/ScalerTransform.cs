@@ -89,6 +89,7 @@ namespace Scikit.ML.FeaturesTransforms
         Arguments _args;
         Dictionary<string, List<ColumnStatObs>> _scalingStat;
         Dictionary<int, ScalingFactor> _scalingFactors;
+        Dictionary<int, int> _revIndex;
         IHost _host;
         ISchema _extendedSchema;
         object _lock;
@@ -108,6 +109,7 @@ namespace Scikit.ML.FeaturesTransforms
             _lock = new object();
             _scalingStat = null;
             _scalingFactors = null;
+            _revIndex = null;
             _extendedSchema = ComputeExtendedSchema();
         }
 
@@ -157,6 +159,7 @@ namespace Scikit.ML.FeaturesTransforms
             {
                 _scalingFactors = null;
                 _scalingStat = null;
+                _revIndex = null;
             }
             else
             {
@@ -171,6 +174,7 @@ namespace Scikit.ML.FeaturesTransforms
                     _scalingStat[key] = li;
                 }
                 _scalingFactors = GetScalingParameters();
+                _revIndex = ComputeRevIndex();
             }
         }
 
@@ -204,18 +208,33 @@ namespace Scikit.ML.FeaturesTransforms
             return Source.GetRowCount(lazy);
         }
 
+        /// <summary>
+        /// When the last column is requested, we also need the column used to compute it.
+        /// This function ensures that this column is requested when the last one is.
+        /// </summary>
+        bool PredicatePropagation(int col, Func<int, bool> predicate)
+        {
+            if (predicate(col))
+                return true;
+            if (_revIndex.ContainsKey(col))
+                return predicate(_revIndex[col]);
+            return predicate(col);
+        }
+
         public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
         {
             ComputeStatistics();
             _host.AssertValue(_input, "_input");
-            return new ScalerCursor(_input.GetRowCursor(predicate, rand), this, predicate);
+            var cursor = _input.GetRowCursor(i => PredicatePropagation(i, predicate), rand);
+            return new ScalerCursor(cursor, this, i => PredicatePropagation(i, predicate));
         }
 
         public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
         {
             ComputeStatistics();
             _host.AssertValue(_input, "_input");
-            var res = _input.GetRowCursorSet(out consolidator, predicate, n, rand).Select(c => new ScalerCursor(c, this, predicate)).ToArray();
+            var cursors = _input.GetRowCursorSet(out consolidator, i => PredicatePropagation(i, predicate), n, rand);
+            var res = cursors.Select(c => new ScalerCursor(c, this, i => PredicatePropagation(i, predicate))).ToArray();
             consolidator = new Consolidator();
             return res;
         }
@@ -347,10 +366,19 @@ namespace Scikit.ML.FeaturesTransforms
                         }
 
                         _scalingFactors = GetScalingParameters();
+                        _revIndex = ComputeRevIndex();
                         ch.Done();
                     }
                 }
             }
+        }
+
+        Dictionary<int, int> ComputeRevIndex()
+        {
+            var revIndex = new Dictionary<int, int>();
+            foreach (var pair in _scalingFactors)
+                revIndex[pair.Value.columnId] = pair.Key;
+            return revIndex;
         }
 
         public enum ScalingMethod

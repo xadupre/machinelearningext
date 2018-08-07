@@ -18,6 +18,7 @@
     <ProjectReference Include="..\EntryPoints\EntryPoints.csproj" />
     <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
     <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
+    <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
     <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
     <ProjectReference Include="..\ScikitAPI\ScikitAPI.csproj" />
