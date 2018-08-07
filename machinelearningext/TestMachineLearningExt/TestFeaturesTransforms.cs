@@ -5,10 +5,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
-using Scikit.ML.TestHelper;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms;
+using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.FeaturesTransforms;
 using Scikit.ML.DataManipulation;
@@ -69,7 +70,7 @@ namespace TestMachineLearningExt
             }
         }
 
-        static void CommonTestPolynomialTransform(TlcEnvironment host, IDataView data, int dimension, out List<float[]> values)
+        static void CommonTestPolynomialTransform(IHostEnvironment host, IDataView data, int dimension, out List<float[]> values)
         {
             values = null;
             for (int degree = 1; degree <= 3; ++degree)
@@ -239,7 +240,7 @@ namespace TestMachineLearningExt
             }
         }
 
-        static void CommonTestScalerTransform(TlcEnvironment host, IDataView data,
+        static void CommonTestScalerTransform(IHostEnvironment host, IDataView data,
                                               int dimension, ScalerTransform.ScalerStrategy strategy,
                                               out List<float[]> values)
         {

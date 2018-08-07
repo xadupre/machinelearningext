@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
 using Scikit.ML.PipelineHelper;
 
 
@@ -15,61 +14,6 @@ namespace Scikit.ML.TestHelper
 {
     public static class TestTrainerHelper
     {
-        public class WrappedPredictorWithNoDistInterface : IPredictor, IValueMapper, ICanSaveModel
-        {
-            #region identification
-
-            public const string LoaderSignature = "WrappedPWithNoDistI";
-            public const string RegistrationName = "WrappedPWithNoDistI";
-
-            private static VersionInfo GetVersionInfo()
-            {
-                return new VersionInfo(
-                    modelSignature: "WRAPNODI",
-                    verWrittenCur: 0x00010001,
-                    verReadableCur: 0x00010001,
-                    verWeCanReadBack: 0x00010001,
-                    loaderSignature: LoaderSignature);
-            }
-
-            #endregion
-
-            IPredictor _predictor;
-
-            public WrappedPredictorWithNoDistInterface(IPredictor pred)
-            {
-                _predictor = pred;
-            }
-            public PredictionKind PredictionKind { get { return PredictionKind.MultiClassClassification; } }
-            public IPredictor Predictor { get { return _predictor; } }
-            public ColumnType InputType { get { return (_predictor as IValueMapper).InputType; } }
-            public ColumnType OutputType { get { return (_predictor as IValueMapper).OutputType; } }
-            public ValueMapper<TSrc, TDst> GetMapper<TSrc, TDst>() { return (_predictor as IValueMapper).GetMapper<TSrc, TDst>(); }
-
-            public void Save(ModelSaveContext ctx)
-            {
-                Contracts.CheckValue(ctx, "ctx");
-                ctx.CheckAtModel();
-                ctx.SetVersionInfo(GetVersionInfo());
-                Contracts.CheckValue(_predictor, "_predictor");
-                ctx.SaveModel(_predictor, "predictor");
-            }
-
-            private WrappedPredictorWithNoDistInterface(IHostEnvironment env, ModelLoadContext ctx)
-            {
-                ctx.LoadModel<IPredictor, SignatureLoadModel>(env, out _predictor, "predictor");
-                Contracts.CheckValue(_predictor, "_predictor");
-            }
-
-            public static WrappedPredictorWithNoDistInterface Create(IHostEnvironment env, ModelLoadContext ctx)
-            {
-                Contracts.CheckValue(env, "env");
-                env.CheckValue(ctx, "ctx");
-                ctx.CheckAtModel(GetVersionInfo());
-                return new WrappedPredictorWithNoDistInterface(env, ctx);
-            }
-        }
-
         /// <summary>
         /// Convert a Predictor into a IPredictor with method GetPredictorObject.
         /// As it generates a warning, all functions needing this conversion should call this
@@ -82,51 +26,6 @@ namespace Scikit.ML.TestHelper
 #pragma warning restore CS0618
             Contracts.Assert(res != null);
             return res;
-        }
-
-        /// <summary>
-        /// Changes the default scorer for ExePythonPredictor.
-        /// </summary>
-        public static IDataScorerTransform CreateDefaultScorer(IHostEnvironment env,
-                                                IDataView view, string featureColumn, string groupColumn,
-                                                IPredictor ipredictor)
-        {
-            var roles = new List<KeyValuePair<RoleMappedSchema.ColumnRole, string>>();
-            if (string.IsNullOrEmpty(featureColumn))
-                throw env.Except("featureColumn cannot be null");
-            roles.Add(new KeyValuePair<RoleMappedSchema.ColumnRole, string>(RoleMappedSchema.ColumnRole.Feature, featureColumn));
-            if (!string.IsNullOrEmpty(groupColumn))
-                roles.Add(new KeyValuePair<RoleMappedSchema.ColumnRole, string>(RoleMappedSchema.ColumnRole.Group, groupColumn));
-            var data = new RoleMappedData(view, roles);
-            return CreateDefaultScorer(env, data, ipredictor);
-        }
-
-        /// <summary>
-        /// Implements a different behaviour when the predictor inherits from 
-        /// IPredictorScorer (the predictor knows the scorer to use).
-        /// </summary>
-        public static IDataScorerTransform CreateDefaultScorer(IHostEnvironment env,
-                                                RoleMappedData roles, IPredictor ipredictor)
-        {
-            IDataScorerTransform scorer;
-            env.CheckValue(ipredictor, "IPredictor");
-            var iter = roles.Schema.GetColumnRoleNames().Where(c =>
-                                        c.Key.Value != RoleMappedSchema.ColumnRole.Feature.Value &&
-                                        c.Key.Value != RoleMappedSchema.ColumnRole.Group.Value);
-            if (ipredictor.PredictionKind == PredictionKind.MultiClassClassification && ipredictor is IValueMapperDist)
-            {
-                // There is an issue with the code creating the default scorer. It expects to find a Float
-                // as the output of DistType (from by IValueMapperDist)
-                var newPred = new WrappedPredictorWithNoDistInterface(ipredictor);
-                scorer = ScoreUtils.GetScorer(null, newPred, roles.Data, roles.Schema.Feature.Name,
-                                                roles.Schema.Group == null ? null : roles.Schema.Group.Name,
-                                                iter, env, null);
-            }
-            else
-                scorer = ScoreUtils.GetScorer(null, ipredictor, roles.Data, roles.Schema.Feature.Name,
-                                                    roles.Schema.Group == null ? null : roles.Schema.Group.Name,
-                                                    iter, env, null);
-            return scorer;
         }
 
         /// <summary>
@@ -144,7 +43,7 @@ namespace Scikit.ML.TestHelper
         /// <param name="checkError">checks errors</param>
         /// <param name="ratio">check the error is below that threshold (if checkError is true)</param>
         /// <param name="ratioReadSave">check the predictions difference after reloading the model are below this threshold</param>
-        public static void FinalizeSerializationTest(TlcEnvironment env,
+        public static void FinalizeSerializationTest(IHostEnvironment env,
                             string outModelFilePath, IPredictor predictor,
                             RoleMappedData roles, string outData, string outData2,
                             PredictionKind kind, bool checkError = true,
@@ -176,7 +75,7 @@ namespace Scikit.ML.TestHelper
 
             // Checks the outputs.
             var sch1 = SchemaHelper.ToString(roles.Schema.Schema);
-            var scorer = CreateDefaultScorer(env, roles, predictor);
+            var scorer = PredictorHelper.CreateDefaultScorer(env, roles, predictor);
 
             var sch2 = SchemaHelper.ToString(scorer.Schema);
             if (string.IsNullOrEmpty(sch1) || string.IsNullOrEmpty(sch2))
@@ -197,7 +96,7 @@ namespace Scikit.ML.TestHelper
             using (var fs = File.OpenRead(outModelFilePath))
             {
                 var model = env.LoadPredictorOrNull(fs);
-                scorer = CreateDefaultScorer(env, roles, IPredictorFromPredictor(model));
+                scorer = PredictorHelper.CreateDefaultScorer(env, roles, IPredictorFromPredictor(model));
                 saver = env.CreateSaver("Text");
                 using (var fs2 = File.Create(outData2))
                     saver.SaveData(fs2, scorer, columns);
