@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.Model;
 using Scikit.ML.PipelineHelper;
 
@@ -77,14 +76,6 @@ namespace Scikit.ML.PipelineTransforms
                 string sr = ctx.Reader.ReadString();
                 columns = Column1x1.ParseMulti(sr);
             }
-        }
-
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoint : Arguments
-        {
-            [Argument(ArgumentType.Required, HelpText = "Input dataset",
-                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public IDataView Data;
         }
 
         #endregion

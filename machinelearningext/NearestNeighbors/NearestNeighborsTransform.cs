@@ -8,7 +8,6 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.EntryPoints;
 using Scikit.ML.PipelineHelper;
 
 
@@ -104,14 +103,6 @@ namespace Scikit.ML.NearestNeighbors
             {
                 base.PostProcess();
             }
-        }
-
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoint : Arguments
-        {
-            [Argument(ArgumentType.Required, HelpText = "Input dataset",
-                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public IDataView Data;
         }
 
         IDataView _input;

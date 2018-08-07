@@ -22,12 +22,20 @@ namespace Scikit.ML.EntryPoints
 {
     #region Definition
 
+    [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
+    public class PassThroughTransform_ArgumentsEntryPoint : PassThroughTransform.Arguments
+    {
+        [Argument(ArgumentType.Required, HelpText = "Input dataset",
+                  Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+        public IDataView Data;
+    }
+
     public static class EntryPointPassThrough
     {
         [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_PassThrough.Name,
                               Desc = PassThroughTransform.Summary,
                               UserName = EP_PassThrough.Name)]
-        public static CommonOutputs.TransformOutput PassThrough(IHostEnvironment env, PassThroughTransform.ArgumentsEntryPoint input)
+        public static CommonOutputs.TransformOutput PassThrough(IHostEnvironment env, PassThroughTransform_ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));

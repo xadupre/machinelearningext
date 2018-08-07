@@ -23,12 +23,20 @@ namespace Scikit.ML.EntryPoints
 {
     #region Definition
 
+    [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
+    public class PolynomialTransform_ArgumentsEntryPoint : PolynomialTransform.Arguments
+    {
+        [Argument(ArgumentType.Required, HelpText = "Input dataset",
+                  Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+        public IDataView Data;
+    }
+
     public static class EntryPointPolynomial
     {
         [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_Polynomial.Name,
                               Desc = PolynomialTransform.Summary,
                               UserName = EP_Polynomial.Name)]
-        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform.ArgumentsEntryPoint input)
+        public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform_ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));

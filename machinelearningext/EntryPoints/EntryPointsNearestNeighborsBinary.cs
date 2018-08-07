@@ -25,6 +25,18 @@ namespace Scikit.ML.EntryPoints
 {
     #region Definition
 
+    [TlcModule.EntryPointKind(typeof(CommonInputs.ITrainerInputWithWeight))]
+    public class NearestNeighborsBinaryClassificationTrainer_ArgumentsEntryPoint :
+        NearestNeighborsBinaryClassificationTrainer.Arguments, ILearnerInputBaseArguments
+    {
+        public IDataView ITrainingData => TrainingData;
+        public Optional<string> IFeatureColumn => FeatureColumn;
+        public Optional<string> IWeightColumn => WeightColumn;
+        public Optional<string> ILabelColumn => LabelColumn;
+        public NormalizeOption INormalizeFeatures => NormalizeFeatures;
+        public CachingOptions ICaching => Caching;
+    }
+
     public static partial class EntryPointNearestNeighborsBinary
     {
         [TlcModule.EntryPoint(
@@ -32,14 +44,14 @@ namespace Scikit.ML.EntryPoints
             Desc = NearestNeighborsBinaryClassificationTrainer.Summary,
             UserName = NearestNeighborsBinary.Name,
             ShortName = NearestNeighborsBinaryClassificationTrainer.ShortName)]
-        public static CommonOutputs.BinaryClassificationOutput TrainBinary(IHostEnvironment env, NearestNeighborsBinaryClassificationTrainer.ArgumentsEntryPoint input)
+        public static CommonOutputs.BinaryClassificationOutput TrainBinary(IHostEnvironment env, NearestNeighborsBinaryClassificationTrainer_ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             var host = env.Register("Train" + NearestNeighborsBinary.Name);
             host.CheckValue(input, nameof(input));
             EntryPointUtils.CheckInputArgs(host, input);
 
-            return EntryPointsHelper.Train<NearestNeighborsBinaryClassificationTrainer.ArgumentsEntryPoint,
+            return EntryPointsHelper.Train<NearestNeighborsBinaryClassificationTrainer_ArgumentsEntryPoint,
                                            CommonOutputs.BinaryClassificationOutput>(host, input,
                 () => new NearestNeighborsBinaryClassificationTrainer(host, input),
                 getLabel: () => LearnerEntryPointsUtils.FindColumn(host, input.TrainingData.Schema, input.LabelColumn),

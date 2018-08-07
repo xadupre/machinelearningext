@@ -25,6 +25,18 @@ namespace Scikit.ML.EntryPoints
 {
     #region Definition
 
+    [TlcModule.EntryPointKind(typeof(CommonInputs.ITrainerInputWithWeight))]
+    public class NearestNeighborsMultiClassClassificationTrainer_ArgumentsEntryPoint :
+        NearestNeighborsMultiClassClassificationTrainer.Arguments, ILearnerInputBaseArguments
+    {
+        public IDataView ITrainingData => TrainingData;
+        public Optional<string> IFeatureColumn => FeatureColumn;
+        public Optional<string> IWeightColumn => WeightColumn;
+        public Optional<string> ILabelColumn => LabelColumn;
+        public NormalizeOption INormalizeFeatures => NormalizeFeatures;
+        public CachingOptions ICaching => Caching;
+    }
+
     public static partial class EntryPointNearestNeighborsMultiClass
     {
         [TlcModule.EntryPoint(
@@ -32,14 +44,14 @@ namespace Scikit.ML.EntryPoints
             Desc = NearestNeighborsMultiClassClassificationTrainer.Summary,
             UserName = NearestNeighborsMultiClass.Name,
             ShortName = NearestNeighborsMultiClassClassificationTrainer.ShortName)]
-        public static CommonOutputs.MulticlassClassificationOutput TrainMultiClass(IHostEnvironment env, NearestNeighborsMultiClassClassificationTrainer.ArgumentsEntryPoint input)
+        public static CommonOutputs.MulticlassClassificationOutput TrainMultiClass(IHostEnvironment env, NearestNeighborsMultiClassClassificationTrainer_ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             var host = env.Register("Train" + NearestNeighborsMultiClass.Name);
             host.CheckValue(input, nameof(input));
             EntryPointUtils.CheckInputArgs(host, input);
 
-            return EntryPointsHelper.Train<NearestNeighborsMultiClassClassificationTrainer.ArgumentsEntryPoint,
+            return EntryPointsHelper.Train<NearestNeighborsMultiClassClassificationTrainer_ArgumentsEntryPoint,
                                            CommonOutputs.MulticlassClassificationOutput>(host, input,
                 () => new NearestNeighborsMultiClassClassificationTrainer(host, input),
                 getLabel: () => LearnerEntryPointsUtils.FindColumn(host, input.TrainingData.Schema, input.LabelColumn),
@@ -81,7 +93,7 @@ namespace Scikit.ML.EntryPoints
         {
         }
 
-        public NearestNeighborsMultiClass(string featureColumn = null, string labelColumn = null, string weightColumn=null)
+        public NearestNeighborsMultiClass(string featureColumn = null, string labelColumn = null, string weightColumn = null)
         {
             if (featureColumn != null)
                 FeatureColumn = featureColumn;

@@ -6,10 +6,8 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.Model;
 using Scikit.ML.PipelineHelper;
-
 
 // The following files makes the object visible to maml.
 // This way, it can be added to any pipeline.
@@ -101,14 +99,6 @@ namespace Scikit.ML.RandomTransforms
                 column = ctx.Reader.ReadString();
                 classValue = ctx.Reader.ReadString();
             }
-        }
-
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoint : Arguments
-        {
-            [Argument(ArgumentType.Required, HelpText = "Input dataset",
-                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public IDataView Data;
         }
 
         #endregion
