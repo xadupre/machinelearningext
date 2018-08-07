@@ -81,6 +81,7 @@ namespace Scikit.ML.ScikitAPI
                 _parent = parent;
                 _out = outWriter;
                 _err = errWriter;
+                _verbose = verbose;
             }
 
             public void PrintMessage(IMessageSource sender, ChannelMessage msg)
