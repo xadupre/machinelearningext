@@ -188,7 +188,7 @@ namespace TestMachineLearningExt
             ILogWriter logout = new LogWriter(s => stdout.Add(s));
             ILogWriter logerr = new LogWriter(s => stderr.Add(s));
 
-            using (var host = new DelegateEnvironment(conc: 1, outWriter: logout, errWriter: logerr, verbose: true))
+            using (var host = new DelegateEnvironment(conc: 1, outWriter: logout, errWriter: logerr, verbose: 1))
             {
                 var data = host.CreateStreamingDataView(inputs);
                 var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host);
@@ -196,6 +196,35 @@ namespace TestMachineLearningExt
                 Assert.IsTrue(predictor != null);
             }
             Assert.IsTrue(stdout.Count > 0);
+            Assert.AreEqual(stderr.Count, 0);
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_DelegateEnvironmentVerbose0()
+        {
+            var inputs = new[] {
+                new ExampleA() { X = new float[] { 1, 10, 100 } },
+                new ExampleA() { X = new float[] { 2, 3, 5 } }
+            };
+
+            var inputs2 = new[] {
+                new ExampleA() { X = new float[] { -1, -10, -100 } },
+                new ExampleA() { X = new float[] { -2, -3, -5 } }
+            };
+
+            var stdout = new List<string>();
+            var stderr = new List<string>();
+            ILogWriter logout = new LogWriter(s => stdout.Add(s));
+            ILogWriter logerr = new LogWriter(s => stderr.Add(s));
+
+            using (var host = new DelegateEnvironment(conc: 1, outWriter: logout, errWriter: logerr, verbose: 0))
+            {
+                var data = host.CreateStreamingDataView(inputs);
+                var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host: host);
+                var predictor = pipe.Train(data, feature: "X");
+                Assert.IsTrue(predictor != null);
+            }
+            Assert.AreEqual(stdout.Count, 0);
             Assert.AreEqual(stderr.Count, 0);
         }
     }
