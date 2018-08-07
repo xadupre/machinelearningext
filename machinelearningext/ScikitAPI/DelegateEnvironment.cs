@@ -408,6 +408,7 @@ namespace Scikit.ML.ScikitAPI
         {
             Contracts.CheckValue(outWriter, nameof(outWriter));
             Contracts.CheckValue(errWriter, nameof(errWriter));
+            Contracts.CheckParam(verbose >= 0 && verbose <= 4, nameof(verbose), "verbose must be in [[0, 4]]");
             _outErrWriter = new OutErrLogWriter(this, outWriter, errWriter, verbose);
             _sensitivityFlags = sensitivity;
             _verbose = verbose;
@@ -424,6 +425,7 @@ namespace Scikit.ML.ScikitAPI
         {
             Contracts.CheckValueOrNull(outWriter);
             Contracts.CheckValueOrNull(errWriter);
+            Contracts.CheckParam(verbose >= 0 && verbose <= 4, nameof(verbose), "verbose must be in [[0, 4]]");
             _outErrWriter = new OutErrLogWriter(this, new LogWriter(outWriter), new LogWriter(errWriter), verbose);
             _sensitivityFlags = sensitivity;
             _verbose = verbose;

@@ -95,7 +95,7 @@ var iris = "iris.txt";
 var df = DataFrame.ReadCsv(iris, sep: '\t',
                            dtypes: new DataKind?[] { DataKind.R4 });
 
-var pipe = new ScikitPipeline(new[] { "Concat{col=Feature:Sepal_length,Sepal_width}" }, 
+var pipe = new ScikitPipeline(new[] { "Concat{col=Feature:Sepal_length,Sepal_width}" },
                               "ova{p=lr}", host: host);
 pipe.Train(df, feature: "Feature", label: "Label");
 
