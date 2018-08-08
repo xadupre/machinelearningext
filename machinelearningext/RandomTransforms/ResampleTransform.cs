@@ -33,17 +33,10 @@ namespace Scikit.ML.RandomTransforms
     {
         #region identification
 
-        /// <summary>
-        /// A unique signature.
-        /// </summary>
         public const string LoaderSignature = "ResampleTransform";  // Not more than 24 letters.
         public const string Summary = "Randomly multiplies rows, the number of multiplication per rows is draws from a Poisson Law.";
         public const string RegistrationName = LoaderSignature;
 
-        /// <summary>
-        /// Identify the object for dynamic instantiation.
-        /// This is also used to track versionning when serializing and deserializing.
-        /// </summary>
         static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
@@ -58,9 +51,6 @@ namespace Scikit.ML.RandomTransforms
 
         #region parameters / command line
 
-        /// <summary>
-        /// Parameters which defines the transform.
-        /// </summary>
         public class Arguments
         {
             [Argument(ArgumentType.AtMostOnce, HelpText = "Parameter lambda of the Poison Law.", ShortName = "l")]
@@ -117,9 +107,6 @@ namespace Scikit.ML.RandomTransforms
 
         #region public constructor / serialization / load / save
 
-        /// <summary>
-        /// Create a ResampleTransform transform.
-        /// </summary>
         public ResampleTransform(IHostEnvironment env, Arguments args, IDataView input)
         {
             Contracts.CheckValue(env, "env");

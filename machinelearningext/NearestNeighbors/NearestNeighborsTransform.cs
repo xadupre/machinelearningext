@@ -32,19 +32,12 @@ namespace Scikit.ML.NearestNeighbors
 {
     public class NearestNeighborsTransform : IDataTransform
     {
-        /// <summary>
-        /// A unique signature.
-        /// </summary>
         public const string LoaderSignature = "NearNeighborsTransform";  // Not more than 24 letters.
         public const string Summary = "Retrieve the closest neighbors among a set of points.";
         public const string RegistrationName = LoaderSignature;
         public const string LongName = "Nearest Neighbors Transform";
         public const string ShortName = "knntr";
 
-        /// <summary>
-        /// Identify the object for dynamic instantiation.
-        /// This is also used to track versionning when serializing and deserializing.
-        /// </summary>
         static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
@@ -55,9 +48,6 @@ namespace Scikit.ML.NearestNeighbors
                 loaderSignature: LoaderSignature);
         }
 
-        /// <summary>
-        /// Parameters which defines the transform.
-        /// </summary>
         public class Arguments : NearestNeighborsArguments
         {
             [Argument(ArgumentType.AtMostOnce, HelpText = "Feature column", ShortName = "col")]

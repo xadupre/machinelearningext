@@ -34,17 +34,10 @@ namespace Scikit.ML.PipelineTransforms
     /// </summary>
     public class PassThroughTransform : IDataTransform
     {
-        /// <summary>
-        /// A unique signature.
-        /// </summary>
         public const string LoaderSignature = "PassThroughTransform";  // Not more than 24 letters.
         public const string Summary = "Insert a transform which does nothing just to get a transform pointer. It can be used to dump a view on disk.";
         public const string RegistrationName = LoaderSignature;
 
-        /// <summary>
-        /// Identify the object for dynamic instantiation.
-        /// This is also used to track versionning when serializing and deserializing.
-        /// </summary>
         static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
@@ -55,9 +48,6 @@ namespace Scikit.ML.PipelineTransforms
                 loaderSignature: LoaderSignature);
         }
 
-        /// <summary>
-        /// Parameters which defines the transform.
-        /// </summary>
         public class Arguments
         {
             [Argument(ArgumentType.AtMostOnce, HelpText = "Save on disk?", ShortName = "s")]
@@ -113,7 +103,7 @@ namespace Scikit.ML.PipelineTransforms
         /// This method changes the sources. It does check the source
         /// has the exact same schema than the previous one.
         /// </summary>
-        /// <param name="source"></param>
+        /// <param name="source">A new data source</param>
         public void SetSource(IDataView source)
         {
             var sch = SchemaHelper.ToString(Source.Schema);
@@ -171,9 +161,6 @@ namespace Scikit.ML.PipelineTransforms
         public ISchema Schema { get { return _input.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
-        /// <summary>
-        /// Same as the input data view.
-        /// </summary>
         public long? GetRowCount(bool lazy = true)
         {
             _host.AssertValue(Source, "_input");

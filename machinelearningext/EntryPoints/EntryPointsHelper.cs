@@ -3,14 +3,12 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Data.IO;
 using Microsoft.ML.Runtime.Internal.Calibration;
 using Microsoft.ML.Runtime.EntryPoints;
 
 
-namespace Scikit.ML.PipelineHelper
+namespace Scikit.ML.EntryPoints
 {
     public interface ILearnerInputBaseArguments
     {

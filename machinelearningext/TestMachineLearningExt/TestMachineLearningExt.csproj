@@ -17,6 +17,7 @@
     <ProjectReference Include="..\DataManipulation\DataManipulation.csproj" />
     <ProjectReference Include="..\EntryPoints\EntryPoints.csproj" />
     <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
+    <ProjectReference Include="..\MultiClass\MultiClass.csproj" />
     <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
     <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />

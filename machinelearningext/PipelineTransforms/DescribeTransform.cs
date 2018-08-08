@@ -32,17 +32,10 @@ namespace Scikit.ML.PipelineTransforms
     /// </summary>
     public class DescribeTransform : IDataTransform
     {
-        /// <summary>
-        /// A unique signature.
-        /// </summary>
         public const string LoaderSignature = "DescribeTransform";  // Not more than 24 letters.
         public const string Summary = "Compute various statistics on a list of columns.";
         public const string RegistrationName = LoaderSignature;
 
-        /// <summary>
-        /// Identify the object for dynamic instantiation.
-        /// This is also used to track versionning when serializing and deserializing.
-        /// </summary>
         static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
@@ -53,9 +46,6 @@ namespace Scikit.ML.PipelineTransforms
                 loaderSignature: LoaderSignature);
         }
 
-        /// <summary>
-        /// Parameters which defines the transform.
-        /// </summary>
         public class Arguments
         {
             [Argument(ArgumentType.MultipleUnique, HelpText = "Columns to describe (min, max, mean, ...).", ShortName = "col")]
@@ -194,9 +184,6 @@ namespace Scikit.ML.PipelineTransforms
 
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
-        /// <summary>
-        /// Same as the input data view.
-        /// </summary>
         public long? GetRowCount(bool lazy = true)
         {
             _host.AssertValue(Source, "_input");
