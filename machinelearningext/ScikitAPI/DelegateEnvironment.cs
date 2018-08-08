@@ -450,8 +450,7 @@ namespace Scikit.ML.ScikitAPI
 
         protected override IFileHandle CreateTempFileCore(IHostEnvironment env, string suffix = null, string prefix = null)
         {
-            // Prefix with "TLC_".
-            return base.CreateTempFileCore(env, suffix, "TLC_" + prefix);
+            return base.CreateTempFileCore(env, suffix, "MML_" + prefix);
         }
 
         protected override IHost RegisterCore(HostEnvironmentBase<DelegateEnvironment> source, string shortName, string parentFullName, IRandom rand, bool verbose, int? conc)

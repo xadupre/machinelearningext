@@ -113,7 +113,7 @@ namespace Scikit.ML.PipelineGraphTransforms
             // This method is needed when the transform cannot return its schema without
             // being run. However, we still delay that execution.
             Contracts.CheckValue(_host, "_host");
-            throw _host.Except("This method was not overridden. Contact tlccontrib@microsoft.com.");
+            throw _host.Except("This method was not overridden. Internal error.");
         }
 
         /// <summary>

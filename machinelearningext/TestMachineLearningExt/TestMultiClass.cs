@@ -244,8 +244,8 @@ namespace TestMachineLearningExt
         {
             var methodName = string.Format("{0}-{1}-V{2}", System.Reflection.MethodBase.GetCurrentMethod().Name,
                                     "lr", singleColumn ? "C" : "Vec");
-            var trainFile = FileHelper.GetTestFile("samples\\MNIST\\Train-28x28_small.txt");
-            var testFile = FileHelper.GetTestFile("samples\\MNIST\\Test-28x28_small.txt");
+            var trainFile = FileHelper.GetTestFile("Train-28x28_small.txt");
+            var testFile = FileHelper.GetTestFile("Test-28x28_small.txt");
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
             var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
@@ -269,8 +269,8 @@ namespace TestMachineLearningExt
         {
             var methodName = string.Format("{0}-{1}-V{2}", System.Reflection.MethodBase.GetCurrentMethod().Name,
                                     "lr", singleColumn ? "C" : "Vec");
-            var trainFile = FileHelper.GetTestFile("samples\\MNIST\\Train-28x28_small.txt");
-            var testFile = FileHelper.GetTestFile("samples\\MNIST\\Test-28x28_small.txt");
+            var trainFile = FileHelper.GetTestFile("Train-28x28_small.txt");
+            var testFile = FileHelper.GetTestFile("Test-28x28_small.txt");
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
             var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
