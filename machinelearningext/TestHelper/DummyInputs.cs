@@ -43,6 +43,12 @@ namespace Scikit.ML.TestHelper
         public float[] X;
     }
 
+    public class ExampleXY
+    {
+        public float X;
+        public float Y;
+    }
+
     public class ExampleASparse
     {
         [VectorType(5)]

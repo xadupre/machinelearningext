@@ -102,6 +102,7 @@ namespace Scikit.ML.DataManipulation
         public DType[] Data => _data;
 
         public object Get(int row) { return _data[row]; }
+
         public void Set(int row, object value)
         {
             DType dt;
@@ -329,6 +330,40 @@ namespace Scikit.ML.DataManipulation
                 value = cursor.Position < _data.LongLength
                         ? _data2[cursor.Position]
                         : (DType2)missing;
+            };
+        }
+
+        /// <summary>
+        /// Creates a getter on the column. The getter returns the element at
+        /// cursor.Position.
+        /// </summary>
+        public ValueGetter<VBuffer<DType2>> GetGetterVector<DType2>(IRowCursor cursor)
+        {
+            var kind = SchemaHelper.GetKind<DType2>();
+            switch (kind)
+            {
+                case DataKind.BL: return GetGetterVectorEqSort<DvBool>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.I4: return GetGetterVectorEqSort<DvInt4>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.U4: return GetGetterVectorEqSort<uint>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.I8: return GetGetterVectorEqSort<DvInt8>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.R4: return GetGetterVectorEqSort<float>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.R8: return GetGetterVectorEqSort<double>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.TX: return GetGetterVectorEqSort<DvText>(cursor) as ValueGetter<VBuffer<DType2>>;
+                default:
+                    throw new DataValueError($"Unable to handle kind {kind}.");
+            }
+        }
+
+        public ValueGetter<VBuffer<DType2>> GetGetterVectorEqSort<DType2>(IRowCursor cursor)
+            where DType2 : IEquatable<DType2>, IComparable<DType2>
+        {
+            var _data2 = _data as VBufferEqSort<DType2>[];
+            var missing = new VBuffer<DType2>();
+            return (ref VBuffer<DType2> value) =>
+            {
+                value = cursor.Position < _data.LongLength
+                        ? _data2[cursor.Position].data
+                        : missing;
             };
         }
 

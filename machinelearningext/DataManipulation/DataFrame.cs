@@ -490,10 +490,10 @@ namespace Scikit.ML.DataManipulation
             for (int i = 0; i < numCol; ++i)
             {
                 var kind = GuessKind(i, lines);
-                df.AddColumn(names[i], 
-                            dtypes != null && i < dtypes.Length && dtypes[i] != null 
+                df.AddColumn(names[i],
+                            dtypes != null && i < dtypes.Length && dtypes[i] != null
                                         ? dtypes[i]
-                                        : kind, 
+                                        : kind,
                             rowline);
             }
 
@@ -543,16 +543,16 @@ namespace Scikit.ML.DataManipulation
         /// <param name="sep">column separator</param>
         /// <param name="nrows">number of rows to read</param>
         /// <returns>DataFrame</returns>
-        public static DataFrame ReadView(IDataView view, int nrows = -1)
+        public static DataFrame ReadView(IDataView view, int nrows = -1, bool keepVectors = false)
         {
             var df = new DataFrame();
-            df.FillValues(view, nrows: nrows);
+            df.FillValues(view, nrows: nrows, keepVectors: keepVectors);
             return df;
         }
 
-        public void FillValues(IDataView view, int nrows = -1)
+        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false)
         {
-            _data.FillValues(view, nrows: nrows);
+            _data.FillValues(view, nrows: nrows, keepVectors: keepVectors);
         }
 
         static ColumnType GuessKind(int col, List<string[]> read)
@@ -658,7 +658,7 @@ namespace Scikit.ML.DataManipulation
                 res = DetermineDataKind(nbline == 0, DataKind.TX, res);
                 ++nbline;
             }
-            switch(res)
+            switch (res)
             {
                 case DataKind.BL: return BoolType.Instance;
                 case DataKind.I4: return NumberType.I4;

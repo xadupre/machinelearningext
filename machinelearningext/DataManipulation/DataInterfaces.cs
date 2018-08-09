@@ -145,6 +145,12 @@ namespace Scikit.ML.DataManipulation
         ValueGetter<DType> GetGetter<DType>(IRowCursor cursor);
 
         /// <summary>
+        /// The returned getter returns the element
+        /// at position <pre>cursor.Position</pre>
+        /// </summary>
+        ValueGetter<VBuffer<DType>> GetGetterVector<DType>(IRowCursor cursor);
+
+        /// <summary>
         /// exact comparison
         /// </summary>
         bool Equals(IDataColumn col);

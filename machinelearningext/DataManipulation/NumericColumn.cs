@@ -42,8 +42,10 @@ namespace Scikit.ML.DataManipulation
         public ColumnType Kind => _column.Kind;
         public object Get(int row) => _column.Get(row);
         public void Set(int row, object value) { _column.Set(row, value); }
+        public void Set<T>(int row, T value) { _column.Set(row, value); }
         public void Set(object value) { _column.Set(value); }
         public ValueGetter<DType> GetGetter<DType>(IRowCursor cursor) => _column.GetGetter<DType>(cursor);
+        public ValueGetter<VBuffer<DType>> GetGetterVector<DType>(IRowCursor cursor) => _column.GetGetterVector<DType>(cursor);
         public bool Equals(IDataColumn col) => _column.Equals(col);
 
         public NumericColumn Apply<TSrc, TDst>(ValueMapper<TSrc, TDst> mapper) where TDst : IEquatable<TDst>, IComparable<TDst>

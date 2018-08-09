@@ -454,7 +454,55 @@ namespace Scikit.ML.DataManipulation
             int nb = length ?? Length;
             _length = nb;
             if (kind.IsVector)
-                throw new NotImplementedException();
+            {
+                switch (kind.ItemType.RawKind)
+                {
+                    case DataKind.BL:
+                        if (_colsABL == null)
+                            _colsABL = new List<IDataColumn>();
+                        pos = _colsABL.Count;
+                        _colsABL.Add(values ?? new DataColumn<VBufferEqSort<DvBool>>(nb));
+                        break;
+                    case DataKind.I4:
+                        if (_colsAI4 == null)
+                            _colsAI4 = new List<IDataColumn>();
+                        pos = _colsAI4.Count;
+                        _colsAI4.Add(values ?? new DataColumn<VBufferEqSort<DvInt4>>(nb));
+                        break;
+                    case DataKind.U4:
+                        if (_colsAU4 == null)
+                            _colsAU4 = new List<IDataColumn>();
+                        pos = _colsAU4.Count;
+                        _colsAU4.Add(values ?? new DataColumn<VBufferEqSort<uint>>(nb));
+                        break;
+                    case DataKind.I8:
+                        if (_colsAI8 == null)
+                            _colsAI8 = new List<IDataColumn>();
+                        pos = _colsAI8.Count;
+                        _colsAI8.Add(values ?? new DataColumn<VBufferEqSort<DvInt8>>(nb));
+                        break;
+                    case DataKind.R4:
+                        if (_colsAR4 == null)
+                            _colsAR4 = new List<IDataColumn>();
+                        pos = _colsAR4.Count;
+                        _colsAR4.Add(values ?? new DataColumn<VBufferEqSort<float>>(nb));
+                        break;
+                    case DataKind.R8:
+                        if (_colsAR8 == null)
+                            _colsAR8 = new List<IDataColumn>();
+                        pos = _colsAR8.Count;
+                        _colsAR8.Add(values ?? new DataColumn<VBufferEqSort<double>>(nb));
+                        break;
+                    case DataKind.TX:
+                        if (_colsATX == null)
+                            _colsATX = new List<IDataColumn>();
+                        pos = _colsATX.Count;
+                        _colsATX.Add(values ?? new DataColumn<VBufferEqSort<DvText>>(nb));
+                        break;
+                    default:
+                        throw new DataTypeError(string.Format("Type {0} is not handled.", kind.ItemType));
+                }
+            }
             else
             {
                 switch (kind.RawKind)
@@ -644,7 +692,7 @@ namespace Scikit.ML.DataManipulation
         /// nrow must be specified for the first column.
         /// The method checks that all column have the same number of elements.
         /// </summary>
-        public void FillValues(IDataView view, int nrows = -1)
+        public void FillValues(IDataView view, int nrows = -1, bool keepVectors=false)
         {
             long? numRows = view.GetRowCount(false);
             if (!numRows.HasValue)
@@ -658,7 +706,7 @@ namespace Scikit.ML.DataManipulation
                 if (sch.IsHidden(i))
                     continue;
                 var ty = sch.GetColumnType(i);
-                if (ty.IsVector)
+                if (!keepVectors && ty.IsVector)
                 {
                     var tyv = ty.AsVector;
                     if (tyv.DimCount != 1)
@@ -695,40 +743,79 @@ namespace Scikit.ML.DataManipulation
             var getterR4 = new ValueGetter<float>[_colsR4 == null ? 0 : _colsR4.Count];
             var getterR8 = new ValueGetter<double>[_colsR8 == null ? 0 : _colsR8.Count];
             var getterTX = new ValueGetter<DvText>[_colsTX == null ? 0 : _colsTX.Count];
+
+            var getterABL = new ValueGetter<VBuffer<DvBool>>[_colsABL == null ? 0 : _colsABL.Count];
+            var getterAI4 = new ValueGetter<VBuffer<DvInt4>>[_colsAI4 == null ? 0 : _colsAI4.Count];
+            var getterAU4 = new ValueGetter<VBuffer<uint>>[_colsAU4 == null ? 0 : _colsAU4.Count];
+            var getterAI8 = new ValueGetter<VBuffer<DvInt8>>[_colsAI8 == null ? 0 : _colsAI8.Count];
+            var getterAR4 = new ValueGetter<VBuffer<float>>[_colsAR4 == null ? 0 : _colsAR4.Count];
+            var getterAR8 = new ValueGetter<VBuffer<double>>[_colsAR8 == null ? 0 : _colsAR8.Count];
+            var getterATX = new ValueGetter<VBuffer<DvText>>[_colsATX == null ? 0 : _colsATX.Count];
+
             for (int i = 0; i < _names.Count; ++i)
             {
                 var coor = _mapping[i];
                 if (coor.Item1.IsVector)
-                    throw new NotImplementedException();
-                switch (coor.Item1.RawKind)
                 {
-                    case DataKind.BL:
-                        getterBL[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvBool.NA);
-                        break;
-                    case DataKind.I4:
-                        getterI4[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvInt4.NA);
-                        break;
-                    case DataKind.U4:
-                        getterU4[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, (uint)0);
-                        break;
-                    case DataKind.I8:
-                        getterI8[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvInt8.NA);
-                        break;
-                    case DataKind.R4:
-                        getterR4[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, float.NaN);
-                        break;
-                    case DataKind.R8:
-                        getterR8[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, double.NaN);
-                        break;
-                    case DataKind.TX:
-                        getterTX[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvText.NA);
-                        break;
-                    default:
-                        throw new NotImplementedException(string.Format("Not implemented for kind {0}", coor.Item1));
+                    switch (coor.Item1.ItemType.RawKind)
+                    {
+                        case DataKind.BL:
+                            getterABL[coor.Item2] = GetGetterCursorVector(cursor, memory[i].Item1, memory[i].Item2, DvBool.NA);
+                            break;
+                        case DataKind.I4:
+                            getterAI4[coor.Item2] = GetGetterCursorVector(cursor, memory[i].Item1, memory[i].Item2, DvInt4.NA);
+                            break;
+                        case DataKind.U4:
+                            getterAU4[coor.Item2] = GetGetterCursorVector(cursor, memory[i].Item1, memory[i].Item2, (uint)0);
+                            break;
+                        case DataKind.I8:
+                            getterAI8[coor.Item2] = GetGetterCursorVector(cursor, memory[i].Item1, memory[i].Item2, DvInt8.NA);
+                            break;
+                        case DataKind.R4:
+                            getterAR4[coor.Item2] = GetGetterCursorVector(cursor, memory[i].Item1, memory[i].Item2, float.NaN);
+                            break;
+                        case DataKind.R8:
+                            getterAR8[coor.Item2] = GetGetterCursorVector(cursor, memory[i].Item1, memory[i].Item2, double.NaN);
+                            break;
+                        case DataKind.TX:
+                            getterATX[coor.Item2] = GetGetterCursorVector(cursor, memory[i].Item1, memory[i].Item2, DvText.NA);
+                            break;
+                        default:
+                            throw new NotImplementedException(string.Format("Not implemented for kind {0}", coor.Item1));
+                    }
+                }
+                else
+                {
+                    switch (coor.Item1.RawKind)
+                    {
+                        case DataKind.BL:
+                            getterBL[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvBool.NA);
+                            break;
+                        case DataKind.I4:
+                            getterI4[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvInt4.NA);
+                            break;
+                        case DataKind.U4:
+                            getterU4[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, (uint)0);
+                            break;
+                        case DataKind.I8:
+                            getterI8[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvInt8.NA);
+                            break;
+                        case DataKind.R4:
+                            getterR4[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, float.NaN);
+                            break;
+                        case DataKind.R8:
+                            getterR8[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, double.NaN);
+                            break;
+                        case DataKind.TX:
+                            getterTX[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, DvText.NA);
+                            break;
+                        default:
+                            throw new NotImplementedException(string.Format("Not implemented for kind {0}", coor.Item1));
+                    }
                 }
             }
 
-            int row = 0;
+
             var valueBL = new DvBool();
             var valueI4 = new DvInt4();
             uint valueU4 = 0;
@@ -736,45 +823,107 @@ namespace Scikit.ML.DataManipulation
             float valueR4 = 0;
             double valueR8 = 0;
             var valueTX = new DvText();
+
+            var avalueBL = new VBuffer<DvBool>();
+            var avalueI4 = new VBuffer<DvInt4>();
+            var avalueU4 = new VBuffer<uint>();
+            var avalueI8 = new VBuffer<DvInt8>();
+            var avalueR4 = new VBuffer<float>();
+            var avalueR8 = new VBuffer<double>();
+            var avalueTX = new VBuffer<DvText>();
+
+            var aqvalueBL = new VBufferEqSort<DvBool>();
+            var aqvalueI4 = new VBufferEqSort<DvInt4>();
+            var aqvalueU4 = new VBufferEqSort<uint>();
+            var aqvalueI8 = new VBufferEqSort<DvInt8>();
+            var aqvalueR4 = new VBufferEqSort<float>();
+            var aqvalueR8 = new VBufferEqSort<double>();
+            var aqvalueTX = new VBufferEqSort<DvText>();
+
+            int row = 0;
             while (cursor.MoveNext())
             {
                 for (int i = 0; i < _names.Count; ++i)
                 {
                     var coor = _mapping[i];
                     if (coor.Item1.IsVector)
-                        throw new NotImplementedException();
-                    switch (coor.Item1.RawKind)
                     {
-                        case DataKind.BL:
-                            getterBL[coor.Item2](ref valueBL);
-                            _colsBL[coor.Item2].Set(row, valueBL);
-                            break;
-                        case DataKind.I4:
-                            getterI4[coor.Item2](ref valueI4);
-                            _colsI4[coor.Item2].Set(row, valueI4);
-                            break;
-                        case DataKind.U4:
-                            getterU4[coor.Item2](ref valueU4);
-                            _colsU4[coor.Item2].Set(row, valueU4);
-                            break;
-                        case DataKind.I8:
-                            getterI8[coor.Item2](ref valueI8);
-                            _colsI8[coor.Item2].Set(row, valueI8);
-                            break;
-                        case DataKind.R4:
-                            getterR4[coor.Item2](ref valueR4);
-                            _colsR4[coor.Item2].Set(row, valueR4);
-                            break;
-                        case DataKind.R8:
-                            getterR8[coor.Item2](ref valueR8);
-                            _colsR8[coor.Item2].Set(row, valueR8);
-                            break;
-                        case DataKind.TX:
-                            getterTX[coor.Item2](ref valueTX);
-                            _colsTX[coor.Item2].Set(row, valueTX);
-                            break;
-                        default:
-                            throw new NotImplementedException(string.Format("Not implemented for kind {0}", coor.Item1));
+                        switch (coor.Item1.ItemType.RawKind)
+                        {
+                            case DataKind.BL:
+                                getterABL[coor.Item2](ref avalueBL);
+                                aqvalueBL = new VBufferEqSort<DvBool>(avalueBL);
+                                _colsABL[coor.Item2].Set(row, aqvalueBL);
+                                break;
+                            case DataKind.I4:
+                                getterAI4[coor.Item2](ref avalueI4);
+                                aqvalueI4 = new VBufferEqSort<DvInt4>(avalueI4);
+                                _colsAI4[coor.Item2].Set(row, aqvalueI4);
+                                break;
+                            case DataKind.U4:
+                                getterAU4[coor.Item2](ref avalueU4);
+                                aqvalueU4 = new VBufferEqSort<uint>(avalueU4);
+                                _colsAU4[coor.Item2].Set(row, aqvalueU4);
+                                break;
+                            case DataKind.I8:
+                                getterAI8[coor.Item2](ref avalueI8);
+                                aqvalueI8 = new VBufferEqSort<DvInt8>(avalueI8);
+                                _colsAI8[coor.Item2].Set(row, aqvalueI8);
+                                break;
+                            case DataKind.R4:
+                                getterAR4[coor.Item2](ref avalueR4);
+                                aqvalueR4 = new VBufferEqSort<float>(avalueR4);
+                                _colsAR4[coor.Item2].Set(row, aqvalueR4);
+                                break;
+                            case DataKind.R8:
+                                getterAR8[coor.Item2](ref avalueR8);
+                                aqvalueR8 = new VBufferEqSort<double>(avalueR8);
+                                _colsAR8[coor.Item2].Set(row, aqvalueR8);
+                                break;
+                            case DataKind.TX:
+                                getterATX[coor.Item2](ref avalueTX);
+                                aqvalueTX = new VBufferEqSort<DvText>(avalueTX);
+                                _colsATX[coor.Item2].Set(row, aqvalueTX);
+                                break;
+                            default:
+                                throw new NotImplementedException(string.Format("Not implemented for kind {0}", coor.Item1));
+                        }
+                    }
+                    else
+                    {
+                        switch (coor.Item1.RawKind)
+                        {
+                            case DataKind.BL:
+                                getterBL[coor.Item2](ref valueBL);
+                                _colsBL[coor.Item2].Set(row, valueBL);
+                                break;
+                            case DataKind.I4:
+                                getterI4[coor.Item2](ref valueI4);
+                                _colsI4[coor.Item2].Set(row, valueI4);
+                                break;
+                            case DataKind.U4:
+                                getterU4[coor.Item2](ref valueU4);
+                                _colsU4[coor.Item2].Set(row, valueU4);
+                                break;
+                            case DataKind.I8:
+                                getterI8[coor.Item2](ref valueI8);
+                                _colsI8[coor.Item2].Set(row, valueI8);
+                                break;
+                            case DataKind.R4:
+                                getterR4[coor.Item2](ref valueR4);
+                                _colsR4[coor.Item2].Set(row, valueR4);
+                                break;
+                            case DataKind.R8:
+                                getterR8[coor.Item2](ref valueR8);
+                                _colsR8[coor.Item2].Set(row, valueR8);
+                                break;
+                            case DataKind.TX:
+                                getterTX[coor.Item2](ref valueTX);
+                                _colsTX[coor.Item2].Set(row, valueTX);
+                                break;
+                            default:
+                                throw new NotImplementedException(string.Format("Not implemented for kind {0}", coor.Item1));
+                        }
                     }
                 }
                 ++row;
@@ -812,6 +961,29 @@ namespace Scikit.ML.DataManipulation
             }
             else
                 return cursor.GetGetter<DType>(col);
+        }
+
+        /// <summary>
+        /// Returns a getter of a certain type.
+        /// </summary>
+        ValueGetter<VBuffer<DType>> GetGetterCursorVector<DType>(IRowCursor cursor, int col, int index, DType defaultValue)
+        {
+            var dt = cursor.Schema.GetColumnType(col);
+            if (dt.IsVector)            
+                return cursor.GetGetter<VBuffer<DType>>(col);
+            else
+            { 
+                var getter = cursor.GetGetter<DType>(col);
+                var temp = defaultValue;
+                return (ref VBuffer<DType> value) =>
+                {
+                    getter(ref temp);
+                    if (value.Length != 1 && value.Count != 1)
+                        value = new VBuffer<DType>(1, new[] { temp });
+                    else
+                        value.Values[0] = temp;
+                };
+            }
         }
 
         #endregion
@@ -983,18 +1155,34 @@ namespace Scikit.ML.DataManipulation
                 col = _colsSet == null ? col : _colsSet[col];
                 var coor = _cont._mapping[col];
                 if (coor.Item1.IsVector)
-                    throw new NotImplementedException();
-                switch (coor.Item1.RawKind)
                 {
-                    case DataKind.BL: return _cont._colsBL[coor.Item2].GetGetter<TValue>(this);
-                    case DataKind.I4: return _cont._colsI4[coor.Item2].GetGetter<TValue>(this);
-                    case DataKind.U4: return _cont._colsU4[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
-                    case DataKind.I8: return _cont._colsI8[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
-                    case DataKind.R4: return _cont._colsR4[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
-                    case DataKind.R8: return _cont._colsR8[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
-                    case DataKind.TX: return _cont._colsTX[coor.Item2].GetGetter<TValue>(this) as ValueGetter<TValue>;
-                    default:
-                        throw new NotImplementedException();
+                    switch (coor.Item1.ItemType.RawKind)
+                    {
+                        case DataKind.BL: return _cont._colsABL[coor.Item2].GetGetterVector<DvBool>(this) as ValueGetter<TValue>;
+                        case DataKind.I4: return _cont._colsAI4[coor.Item2].GetGetterVector<DvInt4>(this) as ValueGetter<TValue>;
+                        case DataKind.U4: return _cont._colsAU4[coor.Item2].GetGetterVector<uint>(this) as ValueGetter<TValue>;
+                        case DataKind.I8: return _cont._colsAI8[coor.Item2].GetGetterVector<DvInt8>(this) as ValueGetter<TValue>;
+                        case DataKind.R4: return _cont._colsAR4[coor.Item2].GetGetterVector<float>(this) as ValueGetter<TValue>;
+                        case DataKind.R8: return _cont._colsAR8[coor.Item2].GetGetterVector<double>(this) as ValueGetter<TValue>;
+                        case DataKind.TX: return _cont._colsATX[coor.Item2].GetGetterVector<DvText>(this) as ValueGetter<TValue>;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                }
+                else
+                {
+                    switch (coor.Item1.RawKind)
+                    {
+                        case DataKind.BL: return _cont._colsBL[coor.Item2].GetGetter<TValue>(this);
+                        case DataKind.I4: return _cont._colsI4[coor.Item2].GetGetter<TValue>(this);
+                        case DataKind.U4: return _cont._colsU4[coor.Item2].GetGetter<TValue>(this);
+                        case DataKind.I8: return _cont._colsI8[coor.Item2].GetGetter<TValue>(this);
+                        case DataKind.R4: return _cont._colsR4[coor.Item2].GetGetter<TValue>(this);
+                        case DataKind.R8: return _cont._colsR8[coor.Item2].GetGetter<TValue>(this);
+                        case DataKind.TX: return _cont._colsTX[coor.Item2].GetGetter<TValue>(this);
+                        default:
+                            throw new NotImplementedException();
+                    }
                 }
             }
         }
