@@ -333,12 +333,6 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TrainMultiToRankerPredictorDenseFT_T1_SingleColumn_XGBoost()
-        {
-            TrainMultiToRankerPredictorDense("xgbrk", -1, true, true, false, false);
-        }
-
-        [TestMethod]
         public void TrainMultiToBinaryPredictorDenseFT_T1_SingleColumnUint()
         {
             TrainMultiToBinaryPredictorDense("ft", 1, true, true, false, true);
