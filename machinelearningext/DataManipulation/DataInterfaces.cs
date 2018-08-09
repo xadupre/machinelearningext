@@ -75,7 +75,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// type of the column 
         /// </summary>
-        DataKind Kind { get; }
+        ColumnType Kind { get; }
 
         /// <summary>
         /// Returns a copy.
@@ -229,7 +229,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the list of types.
         /// </summary>
-        DataKind[] Kinds { get; }
+        ColumnType[] Kinds { get; }
 
         /// <summary>
         /// Returns the number of columns.

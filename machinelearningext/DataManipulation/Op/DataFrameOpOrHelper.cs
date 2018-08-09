@@ -32,19 +32,24 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, DvBool value)
         {
-            switch (c1.Kind)
+            if (c1.Kind.IsVector)
+                throw new NotImplementedException();
+            else
             {
-                case DataKind.BL:
-                    {
-                        DvBool[] a;
-                        DataColumn<DvBool> res;
-                        Operation(c1, out a, out res);
-                        for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, a[i] /**/ | value);
-                        return new NumericColumn(res);
-                    }
-                default:
-                    throw new DataTypeError(string.Format("{0} not implemented for column {1}.", OperationName, c1.Kind));
+                switch (c1.Kind.RawKind)
+                {
+                    case DataKind.BL:
+                        {
+                            DvBool[] a;
+                            DataColumn<DvBool> res;
+                            Operation(c1, out a, out res);
+                            for (int i = 0; i < res.Length; ++i)
+                                res.Set(i, a[i] /**/ | value);
+                            return new NumericColumn(res);
+                        }
+                    default:
+                        throw new DataTypeError(string.Format("{0} not implemented for column {1}.", OperationName, c1.Kind));
+                }
             }
         }
 
@@ -69,26 +74,36 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, NumericColumn c2)
         {
-            switch (c1.Kind)
+            if (c1.Kind.IsVector)
+                throw new NotImplementedException();
+            else
             {
-                case DataKind.BL:
-                    switch (c2.Kind)
-                    {
-                        case DataKind.BL:
+                switch (c1.Kind.RawKind)
+                {
+                    case DataKind.BL:
+                        if (c2.Kind.IsVector)
+                            throw new NotImplementedException();
+                        else
+                        {
+                            switch (c2.Kind.RawKind)
                             {
-                                DvBool[] a;
-                                DvBool[] b;
-                                DataColumn<DvBool> res;
-                                Operation(c1, c2, out a, out b, out res);
-                                for (int i = 0; i < res.Length; ++i)
-                                    res.Set(i, a[i] /**/ | b[i]);
-                                return new NumericColumn(res);
+                                case DataKind.BL:
+                                    {
+                                        DvBool[] a;
+                                        DvBool[] b;
+                                        DataColumn<DvBool> res;
+                                        Operation(c1, c2, out a, out b, out res);
+                                        for (int i = 0; i < res.Length; ++i)
+                                            res.Set(i, a[i] /**/ | b[i]);
+                                        return new NumericColumn(res);
+                                    }
+                                default:
+                                    throw new DataTypeError(string.Format("{0} not implemented for {1}, {2}.", OperationName, c1.Kind, c2.Kind));
                             }
-                        default:
-                            throw new DataTypeError(string.Format("{0} not implemented for {1}, {2}.", OperationName, c1.Kind, c2.Kind));
-                    }
-                default:
-                    throw new DataTypeError(string.Format("{0} not implemented for {1} for left element.", OperationName, c1.Kind));
+                        }
+                    default:
+                        throw new DataTypeError(string.Format("{0} not implemented for {1} for left element.", OperationName, c1.Kind));
+                }
             }
         }
 

@@ -240,7 +240,7 @@ namespace TestMachineLearningExt
         public void TestEP_TestNearestNeighborsLPTr()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -260,7 +260,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris_binary.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
                 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
                 var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -281,7 +281,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
                 var learningPipeline = new GenericLearningPipeline(conc: 1);
                 learningPipeline.Add(importData);

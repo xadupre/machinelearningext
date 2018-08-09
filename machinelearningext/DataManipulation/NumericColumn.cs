@@ -39,7 +39,7 @@ namespace Scikit.ML.DataManipulation
 
         public IDataColumn Column { get { return _column; } }
         public int Length => _column.Length;
-        public DataKind Kind => _column.Kind;
+        public ColumnType Kind => _column.Kind;
         public object Get(int row) => _column.Get(row);
         public void Set(int row, object value) { _column.Set(row, value); }
         public void Set(object value) { _column.Set(value); }

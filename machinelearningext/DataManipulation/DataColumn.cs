@@ -54,31 +54,22 @@ namespace Scikit.ML.DataManipulation
             var res = new DataColumn<DType>(n);
             if (NA)
             {
-                switch (Kind)
+                if (Kind.IsVector)
+                    res.Set(null);
+                else
                 {
-                    case DataKind.Bool:
-                        res.Set(DvBool.NA);
-                        break;
-                    case DataKind.I4:
-                        res.Set(DvInt4.NA);
-                        break;
-                    case DataKind.U4:
-                        res.Set(0);
-                        break;
-                    case DataKind.I8:
-                        res.Set(DvInt8.NA);
-                        break;
-                    case DataKind.R4:
-                        res.Set(float.NaN);
-                        break;
-                    case DataKind.R8:
-                        res.Set(double.NaN);
-                        break;
-                    case DataKind.TX:
-                        res.Set(DvText.NA);
-                        break;
-                    default:
-                        throw new NotImplementedException($"No missing value convention for type '{Kind}'.");
+                    switch (Kind.RawKind)
+                    {
+                        case DataKind.Bool: res.Set(DvBool.NA); break;
+                        case DataKind.I4: res.Set(DvInt4.NA); break;
+                        case DataKind.U4: res.Set(0); break;
+                        case DataKind.I8: res.Set(DvInt8.NA); break;
+                        case DataKind.R4: res.Set(float.NaN); break;
+                        case DataKind.R8: res.Set(double.NaN); break;
+                        case DataKind.TX: res.Set(DvText.NA); break;
+                        default:
+                            throw new NotImplementedException($"No missing value convention for type '{Kind}'.");
+                    }
                 }
             }
             return res;
@@ -121,7 +112,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns type data kind.
         /// </summary>
-        public DataKind Kind => SchemaHelper.GetKind<DType>();
+        public ColumnType Kind => SchemaHelper.GetColumnType<DType>();
 
         public IEnumerator<DType> GetEnumerator() { foreach (var v in _data) yield return v; }
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }

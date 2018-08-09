@@ -111,7 +111,7 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = FileHelper.GetTestFile("iris.txt");
             var outPass = FileHelper.GetOutputFile("data.idv", methodName);
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -165,7 +165,7 @@ namespace TestMachineLearningExt
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);

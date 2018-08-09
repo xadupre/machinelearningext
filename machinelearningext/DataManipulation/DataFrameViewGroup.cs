@@ -13,11 +13,11 @@ namespace Scikit.ML.DataManipulation
     public struct DataFrameGroupKey
     {
         string _key;
-        DataKind _kind;
+        ColumnType _kind;
         object _value;
 
         public string Key => _key;
-        public DataKind Kind => _kind;
+        public ColumnType Kind => _kind;
         public object Value => _value;
 
         public static DataFrameGroupKey[] Create<T1>(string[] name, ImmutableTuple<T1> value)
@@ -25,7 +25,7 @@ namespace Scikit.ML.DataManipulation
         {
             var res = new DataFrameGroupKey[1];
             res[0]._key = name[0];
-            res[0]._kind = SchemaHelper.GetKind<T1>();
+            res[0]._kind = SchemaHelper.GetColumnType<T1>();
             res[0]._value = (object)value.Item1;
             return res;
         }
@@ -36,10 +36,10 @@ namespace Scikit.ML.DataManipulation
         {
             var res = new DataFrameGroupKey[2];
             res[0]._key = name[0];
-            res[0]._kind = SchemaHelper.GetKind<T1>();
+            res[0]._kind = SchemaHelper.GetColumnType<T1>();
             res[0]._value = (object)value.Item1;
             res[1]._key = name[1];
-            res[1]._kind = SchemaHelper.GetKind<T2>();
+            res[1]._kind = SchemaHelper.GetColumnType<T2>();
             res[1]._value = (object)value.Item2;
             return res;
         }
@@ -51,13 +51,13 @@ namespace Scikit.ML.DataManipulation
         {
             var res = new DataFrameGroupKey[3];
             res[0]._key = name[0];
-            res[0]._kind = SchemaHelper.GetKind<T1>();
+            res[0]._kind = SchemaHelper.GetColumnType<T1>();
             res[0]._value = (object)value.Item1;
             res[1]._key = name[1];
-            res[1]._kind = SchemaHelper.GetKind<T2>();
+            res[1]._kind = SchemaHelper.GetColumnType<T2>();
             res[1]._value = (object)value.Item2;
             res[2]._key = name[2];
-            res[2]._kind = SchemaHelper.GetKind<T3>();
+            res[2]._kind = SchemaHelper.GetColumnType<T3>();
             res[2]._value = (object)value.Item3;
             return res;
         }

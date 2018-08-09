@@ -156,7 +156,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the list of types.
         /// </summary>
-        public DataKind[] Kinds => _columns == null ? _src.Kinds : _columns.Select(c => _src.Kinds[c]).ToArray();
+        public ColumnType[] Kinds => _columns == null ? _src.Kinds : _columns.Select(c => _src.Kinds[c]).ToArray();
 
         /// <summary>
         /// A view cannot be modified by adding a column.

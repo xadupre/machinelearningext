@@ -27,19 +27,24 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1)
         {
-            switch (c1.Kind)
+            if (c1.Kind.IsVector)
+                throw new NotImplementedException();
+            else
             {
-                case DataKind.BL:
-                    {
-                        DvBool[] a;
-                        DataColumn<DvBool> res;
-                        Operation(c1, out a, out res);
-                        for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, !(a[i]));
-                        return new NumericColumn(res);
-                    }
-                default:
-                    throw new DataTypeError(string.Format("{0} not implemented for column {1}.", OperationName, c1.Kind));
+                switch (c1.Kind.RawKind)
+                {
+                    case DataKind.BL:
+                        {
+                            DvBool[] a;
+                            DataColumn<DvBool> res;
+                            Operation(c1, out a, out res);
+                            for (int i = 0; i < res.Length; ++i)
+                                res.Set(i, !(a[i]));
+                            return new NumericColumn(res);
+                        }
+                    default:
+                        throw new DataTypeError(string.Format("{0} not implemented for column {1}.", OperationName, c1.Kind));
+                }
             }
         }
 
