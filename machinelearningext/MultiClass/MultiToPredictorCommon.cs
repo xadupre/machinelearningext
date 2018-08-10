@@ -613,7 +613,7 @@ namespace Scikit.ML.MultiClass
             #endregion
 
             #region IValueMapperDist
-#if (IValueMapperDistTLC39 && TLC39)  // IValueMapperDist
+#if IMPLIValueMapperDist
 
             public virtual ValueMapper<VBuffer<float>, VBuffer<float>, VBuffer<float>> GetMapperDist()
             {

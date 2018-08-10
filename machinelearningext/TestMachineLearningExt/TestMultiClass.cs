@@ -168,7 +168,7 @@ namespace TestMachineLearningExt
 
         #region MultiToBinary Predictors
 
-        public static void TrainMultiToBinaryPredictorDense(string modelName, int threads, bool checkError,
+        static void TrainMultiToBinaryPredictorDense(string modelName, int threads, bool checkError,
                                                             bool singleColumn, bool shift, bool useUint,
                                                             string reclassPredictor = null)
         {
@@ -206,7 +206,7 @@ namespace TestMachineLearningExt
             }
         }
 
-        public static void TrainMultiToRankerPredictorDense(string modelName, int threads, bool checkError,
+        static void TrainMultiToRankerPredictorDense(string modelName, int threads, bool checkError,
                                                             bool singleColumn, bool shift, bool useUint)
         {
             var methodName = string.Format("{0}-{1}-V{2}-T{3}-S{4}", System.Reflection.MethodBase.GetCurrentMethod().Name,
@@ -240,7 +240,7 @@ namespace TestMachineLearningExt
             }
         }
 
-        public static void TrainMultiToBinaryPredictorSparse(bool singleColumn, bool checkError)
+        static void TrainMultiToBinaryPredictorSparse(bool singleColumn, bool checkError)
         {
             var methodName = string.Format("{0}-{1}-V{2}", System.Reflection.MethodBase.GetCurrentMethod().Name,
                                     "lr", singleColumn ? "C" : "Vec");
@@ -414,6 +414,199 @@ namespace TestMachineLearningExt
         public void TrainMultiToBinaryPredictorSparseVector()
         {
             TrainMultiToBinaryPredictorSparse(false, false);
+        }
+
+        #endregion
+
+        #region OptimizedOVA
+
+        [TestMethod]
+        public void TestTrainMultiToBinaryPredictorIrisTypesR4_SC()
+        {
+            TrainMultiToBinaryPredictorIris(1, true, "ova", "R4");
+            TrainMultiToBinaryPredictorIris(1, true, "iova", "R4");
+        }
+
+        [TestMethod]
+        public void TestTrainMultiToBinaryPredictorIrisTypesU4_SC()
+        {
+            TrainMultiToBinaryPredictorIris(1, true, "iova", "U4");
+            TrainMultiToBinaryPredictorIris(1, true, "ova", "U4");
+        }
+
+        [TestMethod]
+        public void TestTrainMultiToBinaryPredictorIrisTypesU43_SC()
+        {
+            TrainMultiToBinaryPredictorIris(1, true, "iova", "U43");
+            TrainMultiToBinaryPredictorIris(1, true, "ova", "U43");
+        }
+
+        [TestMethod]
+        public void TestTrainMultiToBinaryPredictorIrisTypesR4_MC()
+        {
+            TrainMultiToBinaryPredictorIris(1, false, "iova", "R4");
+        }
+
+        [TestMethod]
+        public void TestTrainMultiToBinaryPredictorIrisTypesU4_MC()
+        {
+            TrainMultiToBinaryPredictorIris(1, false, "iova", "U4");
+        }
+
+        [TestMethod]
+        public void TestTrainMultiToBinaryPredictorIrisTypesU43_MC()
+        {
+            TrainMultiToBinaryPredictorIris(1, false, "iova", "U43");
+        }
+
+        static void TrainMultiToBinaryPredictorIris(int th, bool singleColumn, string model, string type)
+        {
+            var methodName = string.Format("{0}-T{1}-{2}-{3}-{4}", System.Reflection.MethodBase.GetCurrentMethod().Name, th, singleColumn ? "asvec" : "asR4", model, type);
+            string trainFile, testFile;
+            if (type == "R4")
+            {
+                trainFile = FileHelper.GetTestFile("types\\iris_train.idv");
+                testFile = FileHelper.GetTestFile("types\\iris_test.idv");
+            }
+            else if (type == "U4")
+            {
+                trainFile = FileHelper.GetTestFile("types\\iris_train_u4.idv");
+                testFile = FileHelper.GetTestFile("types\\iris_test_u4.idv");
+            }
+            else if (type == "U43")
+            {
+                trainFile = FileHelper.GetTestFile("types\\iris_train_u43.idv");
+                testFile = FileHelper.GetTestFile("types\\iris_test_u43.idv");
+            }
+            else
+                throw new NotSupportedException();
+
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+
+            var env = EnvHelper.NewTestEnvironment(conc: th == 1 ? 1 : 0);
+            var loaderSettings = "Binary";
+            var loader = env.CreateLoader(loaderSettings, new MultiFileSource(trainFile));
+            var xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", loader);
+            var roles = env.CreateExamples(xf, "Features", "Label");
+            ITrainerExtended trainer;
+            if (model.ToLower() == "ova" || model.ToLower() == "oova")
+            {
+                if (th > 0)
+                    trainer = env.CreateTrainer(string.Format("oova{{ p=ft{{t={0}}} }}", th, singleColumn ? "+" : "-"));
+                else
+                    trainer = env.CreateTrainer(string.Format("oova{{p=ft{t=1} }}", singleColumn ? "+" : "-"));
+            }
+            else
+            {
+                if (th > 0)
+                    trainer = env.CreateTrainer(string.Format("iova{{ p=ft{{t={0}}} sc={1} }}", th, singleColumn ? "+" : "-"));
+                else
+                    trainer = env.CreateTrainer(string.Format("iova{{p=ft{t=1} sc={0} }}", singleColumn ? "+" : "-"));
+            }
+
+            using (var ch = env.Start("Train"))
+            {
+                var pred = trainer.Train(env, ch, roles);
+                loader = env.CreateLoader(loaderSettings, new MultiFileSource(testFile));
+                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
+                                                     PredictionKind.MultiClassClassification, true,
+                                                     ratio: type.StartsWith("U4") && model.ToLower() == "iova" ? 1f : 0.1f);
+            }
+        }
+
+        [TestMethod]
+        public void TestOptimizedOVA()
+        {
+            OptimizedOVA(0f, "R4", "lr");
+            OptimizedOVA(0f, "U4", "lr");
+        }
+
+        [TestMethod]
+        public void TestOptimizedOVA02()
+        {
+            OptimizedOVA(0.2f, "R4", "lr");
+            OptimizedOVA(0.2f, "U4", "lr");
+        }
+
+        static void OptimizedOVA(float downsampling, string type, string model)
+        {
+            var methodName = string.Format("{0}-D{1}-{2}-{3}", System.Reflection.MethodBase.GetCurrentMethod().Name, downsampling, type, model);
+            string trainFile, testFile;
+            if (type == "R4")
+            {
+                trainFile = FileHelper.GetTestFile("types\\iris_train.idv");
+                testFile = FileHelper.GetTestFile("types\\iris_test.idv");
+            }
+            else if (type == "U4")
+            {
+                trainFile = FileHelper.GetTestFile("types\\iris_train_u4.idv");
+                testFile = FileHelper.GetTestFile("types\\iris_test_u4.idv");
+            }
+            else if (type == "U43")
+            {
+                trainFile = FileHelper.GetTestFile("types\\iris_train_u43.idv");
+                testFile = FileHelper.GetTestFile("types\\iris_test_u43.idv");
+            }
+            else
+                throw new NotSupportedException();
+
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+
+            StringWriter sout, serr;
+            var env = EnvHelper.NewTestEnvironment(out sout, out serr, verbose: false);
+            var loaderSettings = "Binary";
+            var loader = env.CreateLoader(loaderSettings, new MultiFileSource(trainFile));
+            var xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", loader);
+            var roles = env.CreateExamples(xf, "Features", "Label");
+            var trainer = env.CreateTrainer(string.Format("oova{{p={1} ds={0}}}", downsampling, model));
+            using (var ch = env.Start("Train"))
+            {
+                var pred = trainer.Train(env, ch, roles);
+                var sbout = sout.GetStringBuilder().ToString();
+                var sbrr = serr.GetStringBuilder().ToString();
+                loader = env.CreateLoader(loaderSettings, new MultiFileSource(testFile));
+                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
+                                                            PredictionKind.MultiClassClassification, true, ratio: 0.8f);
+            }
+        }
+
+        #endregion
+
+        #region none
+
+
+        [TestMethod]
+        [Ignore]
+        public void TrainPrePostProcessTrainer(string modelName, bool checkError, int threads, bool addpre)
+        {
+            var methodName = string.Format("{0}-{1}-T{2}", System.Reflection.MethodBase.GetCurrentMethod().Name, modelName, threads);
+            var dataFilePath = FileHelper.GetTestFile("mc_iris.txt");
+            var trainFile = FileHelper.GetOutputFile("iris_train.idv", methodName);
+            var testFile = FileHelper.GetOutputFile("iris_test.idv", methodName);
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+
+            var env = EnvHelper.NewTestEnvironment(conc: threads == 1 ? 1 : 0);
+            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                new MultiFileSource(dataFilePath));
+            var xf = env.CreateTransform("shuffle{force=+}", loader); // We shuffle because Iris is order by label.
+            xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", xf);
+            var roles = env.CreateExamples(xf, "Features", "Label");
+
+            string pred = addpre ? "PrePost{pre=poly{in=Features} p=___ pret=Take{n=80}}" : "PrePost{p=___ pret=Take{n=80}}";
+            pred = pred.Replace("___", modelName);
+            var trainer = env.CreateTrainer(pred);
+            using (var ch = env.Start("Train"))
+            {
+                var predictor = trainer.Train(env, ch, roles);
+                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
+                                                            PredictionKind.MultiClassClassification, checkError, ratio: 0.15f);
+            }
         }
 
         #endregion

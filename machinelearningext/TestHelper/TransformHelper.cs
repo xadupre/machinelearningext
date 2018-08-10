@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
@@ -22,7 +23,7 @@ namespace Scikit.ML.TestHelper
         /// <param name="outData"></param>
         /// <param name="outData2"></param>
         /// <param name="startsWith">Check that outputs is the same on disk after outputting the transformed data after the model was serialized</param>
-        public static void SerializationTestTransform(TlcEnvironment env,
+        public static void SerializationTestTransform(IHostEnvironment env,
                             string outModelFilePath, IDataTransform transform,
                             IDataView source, string outData, string outData2,
                             bool startsWith = false, bool skipDoubleQuote = false,

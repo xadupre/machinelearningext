@@ -1,18 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Scikit.ML.MultiClass</AssemblyName>
-    <RootNamespace>Scikit.ML.MultiClass</RootNamespace>
-    <Version>0.4.0</Version>
+    <AssemblyName>Scikit.ML.ProductionPrediction</AssemblyName>
+    <RootNamespace>Scikit.ML.ProductionPrediction</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
-    <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
-    <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
   </ItemGroup>
 
   <ItemGroup>

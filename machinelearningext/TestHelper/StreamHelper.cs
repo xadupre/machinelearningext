@@ -3,6 +3,7 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
@@ -24,7 +25,7 @@ namespace Scikit.ML.TestHelper
         /// Computes the prediction given a model as a zip file
         /// and some data in a view.
         /// </summary>
-        public static void SavePredictions(TlcEnvironment env, string modelPath,
+        public static void SavePredictions(IHostEnvironment env, string modelPath,
                                            string outFilePath, IDataView data,
                                            IEnumerable<string> subsetColumns = null)
         {
@@ -42,7 +43,7 @@ namespace Scikit.ML.TestHelper
         /// Computes the prediction given a model as a zip file
         /// and some data in a view.
         /// </summary>
-        public static void SavePredictions(TlcEnvironment env, IDataView tr, string outFilePath,
+        public static void SavePredictions(IHostEnvironment env, IDataView tr, string outFilePath,
                                            IEnumerable<string> subsetColumns = null)
         {
             var saver2 = env.CreateSaver("Text");
@@ -54,7 +55,7 @@ namespace Scikit.ML.TestHelper
         /// <summary>
         /// Saves a model in a zip file.
         /// </summary>
-        public static void SaveModel(TlcEnvironment env, IDataTransform tr, string outModelFilePath)
+        public static void SaveModel(IHostEnvironment env, IDataTransform tr, string outModelFilePath)
         {
             using (var ch = env.Start("SaveModel"))
             using (var fs = File.Create(outModelFilePath))

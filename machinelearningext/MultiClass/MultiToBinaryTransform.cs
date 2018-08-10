@@ -633,7 +633,7 @@ namespace Scikit.ML.MultiClass
                         _averageMultiplication = _maxReplica;
                         break;
                     case MultiplicationAlgorithm.Reweight:
-                        // REVIEW xadupre: to be improved or propopose another and better strategy.
+                        // REVIEW: to be improved or propopose another and better strategy.
                         _averageMultiplication = _maxReplica;
                         break;
                     case MultiplicationAlgorithm.Ranking:
@@ -882,7 +882,7 @@ namespace Scikit.ML.MultiClass
                         throw Contracts.ExceptNotSupp("Unexpected '{0}'", _algo);
                 }
 
-                // REVIEW xadupre: think about sampling around difficult borders...
+                // REVIEW: think about sampling around difficult borders...
                 if (nb <= 0)
                     return new Tuple<TLabel, DvBool>[0];
                 else if (nb <= 1)

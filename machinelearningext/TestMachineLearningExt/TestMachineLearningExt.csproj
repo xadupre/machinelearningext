@@ -21,6 +21,7 @@
     <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
     <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
+    <ProjectReference Include="..\ProductionPrediction\ProductionPrediction.csproj" />
     <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
     <ProjectReference Include="..\ScikitAPI\ScikitAPI.csproj" />
     <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
