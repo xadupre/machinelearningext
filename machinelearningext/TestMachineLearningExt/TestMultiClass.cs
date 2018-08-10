@@ -465,18 +465,18 @@ namespace TestMachineLearningExt
             string trainFile, testFile;
             if (type == "R4")
             {
-                trainFile = FileHelper.GetTestFile("types\\iris_train.idv");
-                testFile = FileHelper.GetTestFile("types\\iris_test.idv");
+                trainFile = FileHelper.GetTestFile("types/iris_train.idv");
+                testFile = FileHelper.GetTestFile("types/iris_test.idv");
             }
             else if (type == "U4")
             {
-                trainFile = FileHelper.GetTestFile("types\\iris_train_u4.idv");
-                testFile = FileHelper.GetTestFile("types\\iris_test_u4.idv");
+                trainFile = FileHelper.GetTestFile("types/iris_train_u4.idv");
+                testFile = FileHelper.GetTestFile("types/iris_test_u4.idv");
             }
             else if (type == "U43")
             {
-                trainFile = FileHelper.GetTestFile("types\\iris_train_u43.idv");
-                testFile = FileHelper.GetTestFile("types\\iris_test_u43.idv");
+                trainFile = FileHelper.GetTestFile("types/iris_train_u43.idv");
+                testFile = FileHelper.GetTestFile("types/iris_test_u43.idv");
             }
             else
                 throw new NotSupportedException();
@@ -536,18 +536,18 @@ namespace TestMachineLearningExt
             string trainFile, testFile;
             if (type == "R4")
             {
-                trainFile = FileHelper.GetTestFile("types\\iris_train.idv");
-                testFile = FileHelper.GetTestFile("types\\iris_test.idv");
+                trainFile = FileHelper.GetTestFile("types/iris_train.idv");
+                testFile = FileHelper.GetTestFile("types/iris_test.idv");
             }
             else if (type == "U4")
             {
-                trainFile = FileHelper.GetTestFile("types\\iris_train_u4.idv");
-                testFile = FileHelper.GetTestFile("types\\iris_test_u4.idv");
+                trainFile = FileHelper.GetTestFile("types/iris_train_u4.idv");
+                testFile = FileHelper.GetTestFile("types/iris_test_u4.idv");
             }
             else if (type == "U43")
             {
-                trainFile = FileHelper.GetTestFile("types\\iris_train_u43.idv");
-                testFile = FileHelper.GetTestFile("types\\iris_test_u43.idv");
+                trainFile = FileHelper.GetTestFile("types/iris_train_u43.idv");
+                testFile = FileHelper.GetTestFile("types/iris_test_u43.idv");
             }
             else
                 throw new NotSupportedException();

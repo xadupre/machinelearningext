@@ -186,7 +186,7 @@ namespace TestMachineLearningExt
         #region SortInDataFrameTransform, ExtendCacheTransform
 
         [TestMethod]
-        public static void TestSortInMemoryTransformSimple()
+        public void TestSortInDataFrameTransformSimple()
         {
             var host = EnvHelper.NewTestEnvironment();
 
@@ -244,7 +244,7 @@ namespace TestMachineLearningExt
             }
         }
 
-         static void TestCacheTransformSimple(int nt, bool async)
+        static void TestCacheTransformSimple(int nt, bool async)
         {
             var host = EnvHelper.NewTestEnvironment(conc: nt == 1 ? 1 : 0);
 
