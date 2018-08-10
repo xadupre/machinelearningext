@@ -3,6 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
@@ -178,6 +179,228 @@ namespace TestMachineLearningExt
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
             Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
+        }
+
+        #endregion
+
+        #region SortInDataFrameTransform, ExtendCacheTransform
+
+        [TestMethod]
+        public static void TestSortInMemoryTransformSimple()
+        {
+            var host = EnvHelper.NewTestEnvironment();
+
+            var inputs = new InputOutput[] {
+                new InputOutput() { X = new float[] { 0, 1 }, Y = 1 },
+                new InputOutput() { X = new float[] { 0, 1 }, Y = 0 }
+            };
+
+            var data = host.CreateStreamingDataView(inputs);
+
+            using (var cursor = data.GetRowCursor(i => true))
+            {
+                var sortedValues = new List<int>();
+                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
+                while (cursor.MoveNext())
+                {
+                    DvInt4 got = 0;
+                    sortColumnGetter(ref got);
+                    sortedValues.Add((int)got);
+                }
+                if (sortedValues.Count != 2)
+                    throw new Exception();
+                if (sortedValues[0] != 1)
+                    throw new Exception();
+                if (sortedValues[1] != 0)
+                    throw new Exception();
+            }
+
+            var args = new SortInDataFrameTransform.Arguments { sortColumn = "Y" };
+            var transformedData = new SortInDataFrameTransform(host, args, data);
+            var sorted = transformedData;
+            LambdaTransform.CreateMap<InputOutput, InputOutput>(host, data,
+                (input, output) =>
+                {
+                    output.X = input.X;
+                    output.Y = input.Y;
+                });
+
+            using (var cursor = sorted.GetRowCursor(i => true))
+            {
+                var sortedValues = new List<int>();
+                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
+                while (cursor.MoveNext())
+                {
+                    DvInt4 got = 0;
+                    sortColumnGetter(ref got);
+                    sortedValues.Add((int)got);
+                }
+                if (sortedValues.Count != 2)
+                    throw new Exception();
+                if (sortedValues[0] != 0)
+                    throw new Exception();
+                if (sortedValues[1] != 1)
+                    throw new Exception();
+            }
+        }
+
+         static void TestCacheTransformSimple(int nt, bool async)
+        {
+            var host = EnvHelper.NewTestEnvironment(conc: nt == 1 ? 1 : 0);
+
+            var inputs = new InputOutput[] {
+                new InputOutput() { X = new float[] { 0, 1 }, Y = 1 },
+                new InputOutput() { X = new float[] { 0, 1 }, Y = 0 }
+            };
+
+            var data = host.CreateStreamingDataView(inputs);
+
+            using (var cursor = data.GetRowCursor(i => true))
+            {
+                var sortedValues = new List<int>();
+                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
+                while (cursor.MoveNext())
+                {
+                    DvInt4 got = 0;
+                    sortColumnGetter(ref got);
+                    sortedValues.Add((int)got);
+                }
+                if (sortedValues.Count != 2)
+                    throw new Exception();
+                if (sortedValues[0] != 1)
+                    throw new Exception();
+                if (sortedValues[1] != 0)
+                    throw new Exception();
+            }
+
+            var args = new ExtendedCacheTransform.Arguments { numTheads = nt, async = async };
+            var transformedData = new ExtendedCacheTransform(host, args, data);
+            var lastTransform = transformedData;
+            LambdaTransform.CreateMap<InputOutput, InputOutput>(host, data,
+                (input, output) =>
+                {
+                    output.X = input.X;
+                    output.Y = input.Y;
+                });
+
+            using (var cursor = lastTransform.GetRowCursor(i => true))
+            {
+                var sortedValues = new List<int>();
+                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
+                while (cursor.MoveNext())
+                {
+                    DvInt4 got = 0;
+                    sortColumnGetter(ref got);
+                    sortedValues.Add((int)got);
+                }
+                if (sortedValues.Count != 2)
+                    throw new Exception();
+            }
+        }
+
+        [TestMethod]
+        public void Testl_TransCacheTransformSimple()
+        {
+            TestCacheTransformSimple(1, false);
+        }
+
+        [TestMethod]
+        public void Testl_TransCacheTransformSimpleAsync()
+        {
+            TestCacheTransformSimple(1, true);
+            TestCacheTransformSimple(2, true);
+        }
+
+        [TestMethod]
+        [Ignore()]  // Dataframe cannot yet be filled with multiple threads.
+        public void Testl_TransCacheTransformSimpleNT()
+        {
+            TestCacheTransformSimple(2, false);
+        }
+
+        [TestMethod]
+        public void TestDataViewCacheDataFrameSerialization()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var dataFilePath = FileHelper.GetTestFile("mc_iris.txt");
+            var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+
+            var env = EnvHelper.NewTestEnvironment();
+            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                new MultiFileSource(dataFilePath));
+            var sorted = env.CreateTransform("cachedf", loader);
+            StreamHelper.SaveModel(env, sorted, outModelFilePath);
+
+            using (var fs = File.OpenRead(outModelFilePath))
+            {
+                var deserializedData = env.LoadTransforms(fs, loader);
+                var saver = env.CreateSaver("Text");
+                using (var fs2 = File.Create(outputDataFilePath))
+                    saver.SaveData(fs2, deserializedData,
+                                   StreamHelper.GetColumnsIndex(deserializedData.Schema,
+                                                                new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
+            }
+        }
+
+        [TestMethod]
+        public void Testl_SortInMemoryShuffle()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var dataFilePath = FileHelper.GetTestFile("shuffled_iris.txt");
+            var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
+
+            var env = EnvHelper.NewTestEnvironment();
+            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=- sep=,}",
+                new MultiFileSource(dataFilePath));
+            var sorted = env.CreateTransform("sortmem{col=Label}", loader);
+
+            var saver = env.CreateSaver("Text");
+            using (var fs2 = File.Create(outputDataFilePath))
+                saver.SaveData(fs2, sorted, StreamHelper.GetColumnsIndex(sorted.Schema, new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
+
+            var lines = File.ReadAllLines(outputDataFilePath);
+            int begin = 0;
+            for (; begin < lines.Length; ++begin)
+            {
+                if (lines[begin].StartsWith("Label"))
+                    break;
+            }
+            lines = lines.Skip(begin).ToArray();
+            var linesSorted = lines.OrderBy(c => c).ToArray();
+            for (int i = 1; i < linesSorted.Length; ++i)
+            {
+                if (linesSorted[i - 1][0] > linesSorted[i][0])
+                    throw new Exception("The output is not sorted.");
+            }
+        }
+
+        [TestMethod]
+        public void TestDataViewCacheDataFrameSerializationCacheFile()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var dataFilePath = FileHelper.GetTestFile("mc_iris.txt");
+            var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var cacheFile = FileHelper.GetOutputFile("cacheFile.idv", methodName);
+
+            var env = EnvHelper.NewTestEnvironment();
+            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                new MultiFileSource(dataFilePath));
+            var sorted = env.CreateTransform(string.Format("cachedf{{r=+ df=- f={0}}}", cacheFile), loader);
+            StreamHelper.SaveModel(env, sorted, outModelFilePath);
+
+            using (var fs = File.OpenRead(outModelFilePath))
+            {
+                var deserializedData = env.LoadTransforms(fs, loader);
+                var saver = env.CreateSaver("Text");
+                using (var fs2 = File.Create(outputDataFilePath))
+                    saver.SaveData(fs2, deserializedData,
+                                   StreamHelper.GetColumnsIndex(deserializedData.Schema, new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
+            }
+
+            if (!File.Exists(cacheFile))
+                throw new FileNotFoundException(cacheFile);
         }
 
         #endregion

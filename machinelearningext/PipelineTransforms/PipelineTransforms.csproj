@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DataManipulation\DataManipulation.csproj" />
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
   </ItemGroup>
 

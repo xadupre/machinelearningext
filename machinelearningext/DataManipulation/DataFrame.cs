@@ -542,17 +542,19 @@ namespace Scikit.ML.DataManipulation
         /// <param name="view">IDataView</param>
         /// <param name="sep">column separator</param>
         /// <param name="nrows">number of rows to read</param>
+        /// <param name="keepVectors">keep vectors as they are</param>
+        /// <param name="numThreads">number of threads to use to fill the dataframe</param>
         /// <returns>DataFrame</returns>
-        public static DataFrame ReadView(IDataView view, int nrows = -1, bool keepVectors = false)
+        public static DataFrame ReadView(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1)
         {
             var df = new DataFrame();
-            df.FillValues(view, nrows: nrows, keepVectors: keepVectors);
+            df.FillValues(view, nrows: nrows, keepVectors: keepVectors, numThreads: numThreads);
             return df;
         }
 
-        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false)
+        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1)
         {
-            _data.FillValues(view, nrows: nrows, keepVectors: keepVectors);
+            _data.FillValues(view, nrows: nrows, keepVectors: keepVectors, numThreads: numThreads);
         }
 
         static ColumnType GuessKind(int col, List<string[]> read)

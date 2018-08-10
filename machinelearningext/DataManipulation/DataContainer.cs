@@ -692,7 +692,7 @@ namespace Scikit.ML.DataManipulation
         /// nrow must be specified for the first column.
         /// The method checks that all column have the same number of elements.
         /// </summary>
-        public void FillValues(IDataView view, int nrows = -1, bool keepVectors=false)
+        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1)
         {
             long? numRows = view.GetRowCount(false);
             if (!numRows.HasValue)
@@ -725,9 +725,22 @@ namespace Scikit.ML.DataManipulation
                 }
             }
 
+            var host = new TlcEnvironment().Register("Estimate n threads");
+            var nth = numThreads.HasValue ? numThreads.Value : DataViewUtils.GetThreadCount(host, 0, true);
+
             // Fills values.
-            using (var cursor = view.GetRowCursor(i => true))
-                FillValues(cursor, memory);
+            if (nth == 1)
+            {
+                using (var cursor = view.GetRowCursor(i => true))
+                    FillValues(cursor, memory);
+            }
+            else
+            {
+                IRowCursorConsolidator cursor;
+                var cursors = view.GetRowCursorSet(out cursor, i => true, nth);
+                // FillValues(cursors, memory);
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>
@@ -969,10 +982,10 @@ namespace Scikit.ML.DataManipulation
         ValueGetter<VBuffer<DType>> GetGetterCursorVector<DType>(IRowCursor cursor, int col, int index, DType defaultValue)
         {
             var dt = cursor.Schema.GetColumnType(col);
-            if (dt.IsVector)            
+            if (dt.IsVector)
                 return cursor.GetGetter<VBuffer<DType>>(col);
             else
-            { 
+            {
                 var getter = cursor.GetGetter<DType>(col);
                 var temp = defaultValue;
                 return (ref VBuffer<DType> value) =>
