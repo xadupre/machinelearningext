@@ -144,7 +144,7 @@ jobs:
           command: |
             export DOTNET_CLI_TELEMETRY_OPTOUT=1
             cd machinelearningext
-            dotnet test -c Debug TestMachineLearningExt
+            dotnet test -v -c Debug TestMachineLearningExt
             cd ..
 
       - run:
@@ -164,7 +164,7 @@ jobs:
           command: |
             export DOTNET_CLI_TELEMETRY_OPTOUT=1
             cd machinelearningext
-            dotnet test -c Release TestMachineLearningExt
+            dotnet test -v -c Release TestMachineLearningExt
             cd ..
             
       - run:

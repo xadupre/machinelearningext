@@ -175,7 +175,7 @@ namespace Scikit.ML.DataManipulation
             DataColumn<DType> found = null;
             if (coor.Item1.IsVector)
             {
-                switch (coor.Item1.RawKind)
+                switch (coor.Item1.ItemType.RawKind)
                 {
                     case DataKind.BL: found = _colsABL[coor.Item2] as DataColumn<DType>; break;
                     case DataKind.I4: found = _colsAI4[coor.Item2] as DataColumn<DType>; break;
@@ -185,7 +185,7 @@ namespace Scikit.ML.DataManipulation
                     case DataKind.R8: found = _colsAR8[coor.Item2] as DataColumn<DType>; break;
                     case DataKind.TX: found = _colsATX[coor.Item2] as DataColumn<DType>; break;
                     default:
-                        throw new DataTypeError(string.Format("Type {0} is not handled.", coor.Item1));
+                        throw new DataTypeError(string.Format("Type '{0}' is not handled.", coor.Item1));
                 }
             }
             else
@@ -229,7 +229,20 @@ namespace Scikit.ML.DataManipulation
         {
             var coor = _mapping[col];
             if (coor.Item1.IsVector)
-                throw new NotImplementedException();
+            {
+                switch (coor.Item1.ItemType.RawKind)
+                {
+                    case DataKind.BL: DataColumn<VBufferEqSort<DvBool>> objbl; GetTypedColumn(col, out objbl, rows); return objbl;
+                    case DataKind.I4: DataColumn<VBufferEqSort<DvInt4>> obji4; GetTypedColumn(col, out obji4, rows); return obji4;
+                    case DataKind.U4: DataColumn<VBufferEqSort<uint>> obju4; GetTypedColumn(col, out obju4, rows); return obju4;
+                    case DataKind.I8: DataColumn<VBufferEqSort<DvInt8>> obji8; GetTypedColumn(col, out obji8, rows); return obji8;
+                    case DataKind.R4: DataColumn<VBufferEqSort<float>> objf; GetTypedColumn(col, out objf, rows); return objf;
+                    case DataKind.R8: DataColumn<VBufferEqSort<double>> objd; GetTypedColumn(col, out objd, rows); return objd;
+                    case DataKind.TX: DataColumn<VBufferEqSort<DvText>> objs; GetTypedColumn(col, out objs, rows); return objs;
+                    default:
+                        throw new DataTypeError(string.Format("Type '{0}' is not handled.", coor.Item1));
+                }
+            }
             else
             {
                 switch (coor.Item1.RawKind)
@@ -242,7 +255,7 @@ namespace Scikit.ML.DataManipulation
                     case DataKind.R8: DataColumn<double> objd; GetTypedColumn(col, out objd, rows); return objd;
                     case DataKind.TX: DataColumn<DvText> objs; GetTypedColumn(col, out objs, rows); return objs;
                     default:
-                        throw new DataTypeError(string.Format("Type {0} is not handled.", coor.Item1));
+                        throw new DataTypeError(string.Format("Type '{0}' is not handled.", coor.Item1));
                 }
             }
         }
