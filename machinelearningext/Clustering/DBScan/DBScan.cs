@@ -69,7 +69,7 @@ namespace Scikit.ML.Clustering
                 pts = points.ToList();
 
             int nbtotal = points.Count;
-            
+
             foreach (var p in points)
             {
                 onPointProcessing(C);
