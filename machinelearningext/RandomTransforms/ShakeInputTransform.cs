@@ -10,17 +10,6 @@ using Microsoft.ML.Runtime.Data.Conversion;
 using Microsoft.ML.Runtime.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using ShakeInputTransform = Scikit.ML.RandomTransforms.ShakeInputTransform;
-
-[assembly: LoadableClass(ShakeInputTransform.Summary, typeof(ShakeInputTransform),
-    typeof(ShakeInputTransform.Arguments), typeof(SignatureDataTransform),
-    "Shake Input Transform", ShakeInputTransform.LoaderSignature, "Shake")]
-
-[assembly: LoadableClass(ShakeInputTransform.Summary, typeof(ShakeInputTransform),
-    null, typeof(SignatureLoadDataTransform),
-    "Shake Input Transform", ShakeInputTransform.LoaderSignature, "Shake")]
-
 
 namespace Scikit.ML.RandomTransforms
 {
@@ -154,9 +143,6 @@ namespace Scikit.ML.RandomTransforms
 
         #region public constructor / serialization / load / save
 
-        /// <summary>
-        /// Create a ShakeInputTransform transform.
-        /// </summary>
         public ShakeInputTransform(IHostEnvironment env, Arguments args, IDataView input, IValueMapper[] toShake)
         {
             Contracts.CheckValue(env, "env");
@@ -207,6 +193,33 @@ namespace Scikit.ML.RandomTransforms
             ctx.SetVersionInfo(GetVersionInfo());
             _args.Write(ctx, _host);
         }
+
+#if false
+
+        private ShakeInputTransform(IHost host, ModelLoadContext ctx, IDataView input)
+        {
+            Contracts.CheckValue(host, "host");
+            Contracts.CheckValue(input, "input");
+            _host = host;
+            _input = input;
+            _host.CheckValue(input, "input");
+            _host.CheckValue(ctx, "ctx");
+            _args = new Arguments();
+            _args.Read(ctx, _host);
+            _transform = CreateTemplatedTransform();
+        }
+
+        public static ShakeInputTransform Create(IHostEnvironment env, ModelLoadContext ctx, IDataView input)
+        {
+            Contracts.CheckValue(env, "env");
+            var h = env.Register(RegistrationName);
+            h.CheckValue(ctx, "ctx");
+            h.CheckValue(input, "input");
+            ctx.CheckAtModel(GetVersionInfo());
+            return h.Apply("Loading Model", ch => new ShakeInputTransform(h, ctx, input));
+        }
+
+#endif
 
         #endregion
 
