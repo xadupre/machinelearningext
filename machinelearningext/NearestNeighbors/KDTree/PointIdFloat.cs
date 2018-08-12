@@ -22,6 +22,7 @@ namespace Scikit.ML.NearestNeighbors
         long id { get; }
         void ChangeId(long newId);
         void Save(ModelSaveContext ctx);
+        float DistanceTo(IPointIdFloat other);
     }
 
     /// <summary>
@@ -116,19 +117,20 @@ namespace Scikit.ML.NearestNeighbors
         #region Properties
 
         public long id { get; private set; }
-        public int dimension { get { return _coordinates.Length; } }
+        public int dimension => _coordinates.Length;
         private VBuffer<float> _coordinates;
-        public VBuffer<float> coordinates
-        {
-            get
-            {
-                return _coordinates;
-            }
-        }
+        public VBuffer<float> coordinates => _coordinates;
 
         public void ChangeId(long newId)
         {
             id = newId;
+        }
+
+        public static void SetIds(IEnumerable<IPointIdFloat> points)
+        {
+            long id = 0;
+            foreach (var p in points)
+                p.ChangeId(id++);
         }
 
         public void Save(ModelSaveContext ctx)
@@ -177,6 +179,16 @@ namespace Scikit.ML.NearestNeighbors
                 this._coordinates = coordinates;
         }
 
+        /// <summary>
+        /// Package internal version for the constructor: allows to set an id directly.
+        /// </summary>
+        public PointIdFloat(IEnumerable<float> coordinates)
+        {
+            this.id = 0;
+            var arr = coordinates.ToArray();
+            _coordinates = new VBuffer<float>(arr.Length, arr);
+        }
+
         public PointIdFloat(long id, IEnumerable<float> denseValues)
         {
             this.id = id;
@@ -207,6 +219,11 @@ namespace Scikit.ML.NearestNeighbors
                     return _coordinates.Values[j];
                 return 0f;
             }
+        }
+
+        public float DistanceTo(IPointIdFloat other)
+        {
+            return VectorDistanceHelper.L2Norm(coordinates, other.coordinates);
         }
 
         #endregion

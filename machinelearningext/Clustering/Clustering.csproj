@@ -2,20 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Scikit.ML.TestHelper</AssemblyName>
-    <RootNamespace>Scikit.ML.TestHelper</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AssemblyName>Scikit.ML.Clustering</AssemblyName>
+    <RootNamespace>Scikit.ML.Clustering</RootNamespace>
     <Version>0.4.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
-    <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
-    <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,18 +29,6 @@
     <Reference Include="Microsoft.ML.Api">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.ML.StandardLearners">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.StandardLearners.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML.CpuMath">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.CpuMath.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-    
-  <ItemGroup>
-    <Compile Update="EnvHelper.cs">
-      <SubType>Component</SubType>
-    </Compile>
   </ItemGroup>
 
 </Project>

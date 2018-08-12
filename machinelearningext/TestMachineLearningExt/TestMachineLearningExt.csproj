@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Clustering\Clustering.csproj" />
     <ProjectReference Include="..\DataManipulation\DataManipulation.csproj" />
     <ProjectReference Include="..\EntryPoints\EntryPoints.csproj" />
     <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
