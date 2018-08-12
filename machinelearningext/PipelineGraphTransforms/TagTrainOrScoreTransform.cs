@@ -1,24 +1,21 @@
-﻿#if false
-//------------------------------------------------------------------------------
-// <copyright company="Microsoft Corporation">
-//     Copyright (c) Microsoft Corporation. All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
+﻿// See the LICENSE file in the project root for more information.
 
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.MachineLearning.CommandLine;
-using Microsoft.MachineLearning.Data;
-using Microsoft.MachineLearning.Model;
-using Microsoft.TMSN.TMSNlearn;
-
-using Microsoft.MachineLearning.TlcContribPipelineTransforms;
-using Microsoft.MachineLearning.TlcContribHelper;
+using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Runtime.Internal.Calibration;
+using Scikit.ML.PipelineHelper;
+using Scikit.ML.PipelineTransforms;
 
 // The following files makes the object visible to maml.
 // This way, it can be added to any pipeline.
-using LoadableClassAttribute = Microsoft.MachineLearning.LoadableClassAttribute;
-using TagTrainOrScoreTransform = Microsoft.MachineLearning.TlcContribWrappingPredictors.TagTrainOrScoreTransform;
+using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
+using TagTrainOrScoreTransform = Scikit.ML.PipelineGraphTransforms.TagTrainOrScoreTransform;
 
 
 [assembly: LoadableClass(TagTrainOrScoreTransform.Summary, typeof(TagTrainOrScoreTransform),
@@ -30,7 +27,7 @@ using TagTrainOrScoreTransform = Microsoft.MachineLearning.TlcContribWrappingPre
     "Train and Tag and Score a Predictor", TagTrainOrScoreTransform.LoaderSignature, "TagTrainScore")]
 
 
-namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
+namespace Scikit.ML.PipelineGraphTransforms
 {
     /// <summary>
     /// Train or / and score a predictor hosted by a tagged view.
@@ -70,58 +67,32 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
 
             public void Write(ModelSaveContext ctx, IHost host)
             {
-#if (TLC36 || TLC37 || TLC38)
-                IOHelper.Write(ctx, customColumn);
-                IOHelper.Write(ctx, featureColumn);
-                IOHelper.Write(ctx, groupColumn);
-                IOHelper.Write(ctx, labelColumn);
-                IOHelper.Write(ctx, nameColumn);
-                IOHelper.Write(ctx, weightColumn);
-#else
                 IOHelper.Write(ctx, CustomColumn);
                 IOHelper.Write(ctx, FeatureColumn);
                 IOHelper.Write(ctx, GroupColumn);
                 IOHelper.Write(ctx, LabelColumn);
                 IOHelper.Write(ctx, NameColumn);
                 IOHelper.Write(ctx, WeightColumn);
-#endif
 
                 ctx.Writer.Write(maxCalibrationExamples);
                 ctx.Writer.Write(tag);
                 ctx.Writer.Write(string.IsNullOrEmpty(outputModel) ? string.Empty : outputModel);
-
-                //ctx.Writer.Write(trainer.ToString());
-                //ctx.Writer.Write(calibrator.ToString());
-                //ctx.Writer.Write(scorer.ToString());
             }
 
             public void Read(ModelLoadContext ctx, IHost host)
             {
-#if (TLC36 || TLC37 || TLC38)
-                customColumn = IOHelper.ReadArrayKeyValuePairStringString(ctx);
-                featureColumn = IOHelper.ReadString(ctx);
-                groupColumn = IOHelper.ReadString(ctx);
-                labelColumn = IOHelper.ReadString(ctx);
-                nameColumn = IOHelper.ReadString(ctx);
-                weightColumn = IOHelper.ReadString(ctx);
-#else
                 CustomColumn = IOHelper.ReadArrayKeyValuePairStringString(ctx);
                 FeatureColumn = IOHelper.ReadString(ctx);
                 GroupColumn = IOHelper.ReadString(ctx);
                 LabelColumn = IOHelper.ReadString(ctx);
                 NameColumn = IOHelper.ReadString(ctx);
                 WeightColumn = IOHelper.ReadString(ctx);
-#endif
 
                 maxCalibrationExamples = ctx.Reader.ReadInt32();
                 tag = ctx.Reader.ReadString();
                 outputModel = ctx.Reader.ReadString();
                 if (string.IsNullOrEmpty(outputModel))
                     outputModel = null;
-
-                // trainer = ctx.Reader.ReadString();
-                // calibrator = ctx.Reader.ReadString();
-                // scorer = ctx.Reader.ReadString();
             }
         }
 
@@ -130,11 +101,7 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
         ICalibratorTrainer _cali;
         IPredictor _predictor;
 
-#if (!TLC36)
         public TagTrainOrScoreTransform(IHostEnvironment env, Arguments args, IDataView input) :
-#else
-        public TagTrainOrScoreTransform(Arguments args, IHostEnvironment env, IDataView input) :
-#endif
             base(env, input, LoaderSignature)
         {
             _host.CheckValue(args, "args");
@@ -142,11 +109,7 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
             _cali = null;
             _scorer = null;
             _predictor = null;
-#if (!TLC36)
             _sourcePipe = Create(_host, args, input, out _sourceCtx);
-#else
-            _sourcePipe = Create(args, _host, input, out _sourceCtx);
-#endif
         }
 
         public override void Save(ModelSaveContext ctx)
@@ -166,31 +129,18 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
                 ctx.SaveModel(_scorer, "scorer");
         }
 
-#if (!TLC36)
         public static TagTrainOrScoreTransform Create(IHostEnvironment env, ModelLoadContext ctx, IDataView input)
-#else
-        public static TagTrainOrScoreTransform Create(ModelLoadContext ctx, IHostEnvironment env, IDataView input)
-#endif
         {
             Contracts.CheckValue(env, "env");
             var h = env.Register(LoaderSignature);
             h.CheckValue(ctx, "ctx");
             h.CheckValue(input, "input");
             ctx.CheckAtModel(GetVersionInfo());
-#if (!TLC36)
             return h.Apply("Loading Model", ch => new TagTrainOrScoreTransform(h, ctx, input));
-#else
-            return h.Apply("Loading Model", ch => new TagTrainOrScoreTransform(ctx, h, input));
-#endif
         }
 
-#if (!TLC36)
         public TagTrainOrScoreTransform(IHost host, ModelLoadContext ctx, IDataView input) :
             base(host, ctx, input, LoaderSignature)
-#else
-        public TagTrainOrScoreTransform(ModelLoadContext ctx, IHost host, IDataView input) :
-            base(ctx, host, input, LoaderSignature)
-#endif
         {
             _args = new Arguments();
             _args.Read(ctx, _host);
@@ -200,13 +150,7 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
             bool hasScorer = ctx.Reader.ReadByte() == 1;
 
             if (hasPredictor)
-            {
-#if (!TLC36)
                 ctx.LoadModel<IPredictor, SignatureLoadModel>(host, out _predictor, "predictor");
-#else
-                ctx.LoadModel<IPredictor, SignatureLoadModel>(out _predictor, "predictor", host);
-#endif
-            }
             else _predictor = null;
 
             using (var ch = _host.Start("TagTrainOrScoreTransform loading"))
@@ -215,25 +159,13 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
                 if (views.Any())
                     throw _host.Except("Tag '{0}' is already used.", _args.tag);
 
-                var customCols = TrainUtils.CheckAndGenerateCustomColumns(_host,
-#if (TLC36 || TLC37 || TLC38)
-                    _args.customColumn
-#else
-                    _args.CustomColumn
-#endif
-                    );
+                var customCols = TrainUtils.CheckAndGenerateCustomColumns(_host, _args.CustomColumn);
                 string feat;
                 string group;
-                var data = CreateDataFromArgs(ch, new OpaqueDataView(input), _args, out feat, out group);
+                var data = CreateDataFromArgs(_host, ch, new OpaqueDataView(input), _args, out feat, out group);
 
                 if (hasCali)
-                {
-#if (!TLC36)
                     ctx.LoadModel<ICalibratorTrainer, SignatureLoadModel>(host, out _cali, "calibrator", _predictor);
-#else
-                    ctx.LoadModel<ICalibratorTrainer, SignatureLoadModel>(out _cali, "calibrator", _predictor, host);
-#endif
-                }
                 else
                     _cali = null;
 
@@ -241,48 +173,29 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
                     throw ch.ExceptNotImpl("Calibrator is not implemented yet.");
 
                 if (hasScorer)
-                {
-#if (!TLC36)
                     ctx.LoadModel<IDataScorerTransform, SignatureLoadDataTransform>(host, out _scorer, "scorer", data.Data);
-#else
-                    ctx.LoadModel<IDataScorerTransform, SignatureLoadDataTransform>(out _scorer, "scorer", host, data.Data);
-#endif
-                }
                 else
                     _scorer = null;
 
                 ch.Info("Tagging with tag '{0}'.", _args.tag);
                 var ar = new TagViewTransform.Arguments { tag = _args.tag };
-#if (!TLC36)
                 var res = new TagViewTransform(_host, ar, _scorer, _predictor);
-#else
-                var res = new TagViewTransform(ar, _host, _scorer, _predictor);
-#endif
                 _sourcePipe = res;
                 ch.Done();
             }
         }
 
-#region training (not delayed)
+        #region training (not delayed)
 
-#if (!TLC36)
         IDataTransform Create(IHostEnvironment env, Arguments args, IDataView input, out IDataView sourceCtx)
-#else
-        IDataTransform Create(Arguments args, IHostEnvironment env, IDataView input, out IDataView sourceCtx)
-#endif
         {
             sourceCtx = input;
             Contracts.CheckValue(env, "env");
             env.CheckValue(args, "args");
             env.CheckValue(input, "input");
             env.CheckValue(args.tag, "tag is empty");
-#if (TLC36 || TLC37 || TLC38)
-            env.CheckUserArg(args.trainer.IsGood(), "trainer",
-                "Trainer cannot be null. If your model is already trained, please use ScoreTransform instead.");
-#else
             env.CheckUserArg(args.Trainer.IsGood(), "trainer",
                 "Trainer cannot be null. If your model is already trained, please use ScoreTransform instead.");
-#endif
 
             var views = TagHelper.EnumerateTaggedView(true, input).Where(c => c.Item1 == args.tag);
             if (views.Any())
@@ -293,23 +206,14 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
             using (var ch = host.Start("Train"))
             {
                 ch.Trace("Constructing trainer");
-#if (TLC36 || TLC37 || TLC38)
-                ITrainer trainer = args.trainer.CreateInstance(host);
-                var customCols = TrainUtils.CheckAndGenerateCustomColumns(env, args.customColumn);
-#else
                 ITrainer trainer = args.Trainer.CreateInstance(host);
                 var customCols = TrainUtils.CheckAndGenerateCustomColumns(env, args.CustomColumn);
-#endif
+
                 string feat;
                 string group;
-                var data = CreateDataFromArgs(ch, new OpaqueDataView(input), args, out feat, out group);
-#if (TLC36 || TLC37 || TLC38)
-                _predictor = TrainUtils.Train(host, ch, data, trainer, args.trainer.Kind, null,
-                    args.calibrator, args.maxCalibrationExamples, null);
-#else
+                var data = CreateDataFromArgs(_host, ch, new OpaqueDataView(input), args, out feat, out group);
                 _predictor = TrainUtils.Train(host, ch, data, trainer, args.Trainer.Kind, null,
                     args.calibrator, args.maxCalibrationExamples, null);
-#endif
 
                 if (!string.IsNullOrEmpty(args.outputModel))
                 {
@@ -323,45 +227,42 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
                     throw ch.ExceptNotImpl("Calibrator is not implemented yet.");
 
                 ch.Trace("Scoring");
-                _scorer = PredictorHelper.CreateDefaultScorer(_host, input, feat, group, _predictor);
+                if (_args.scorer != null)
+                {
+                    var mapper = new SchemaBindablePredictorWrapper(_predictor);
+                    var roles = new RoleMappedSchema(input.Schema, null, feat, group: group);
+                    var bound = mapper.Bind(_host, roles);
+                    _scorer = _args.scorer.CreateInstance(_host, input, bound, roles);
+                }
+                else
+                    _scorer = PredictorHelper.CreateDefaultScorer(_host, input, feat, group, _predictor);
 
                 ch.Info("Tagging with tag '{0}'.", args.tag);
 
                 var ar = new TagViewTransform.Arguments { tag = args.tag };
-#if (!TLC36)
                 var res = new TagViewTransform(env, ar, _scorer, _predictor);
-#else
-                var res = new TagViewTransform(ar, env, _scorer, _predictor);
-#endif
                 ch.Done();
                 return res;
             }
         }
 
-        private static RoleMappedData CreateDataFromArgs<TSigTrainer>(IExceptionContext ectx, IDataView input,
+        private static RoleMappedData CreateDataFromArgs<TSigTrainer>(IHostEnvironment env, IExceptionContext ectx, IDataView input,
             TrainAndScoreTransform.ArgumentsBase<TSigTrainer> args, out string feat, out string group)
         {
             var schema = input.Schema;
-#if (TLC36 || TLC37 || TLC38)
-            feat = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "featureColumn", args.featureColumn, DefaultColumnNames.Features);
-            var label = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "labelColumn", args.labelColumn, DefaultColumnNames.Label);
-            group = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "groupColumn", args.groupColumn, DefaultColumnNames.GroupId);
-            var weight = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "weightColumn", args.weightColumn, DefaultColumnNames.Weight);
-            var name = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "nameColumn", args.nameColumn, DefaultColumnNames.Name);
-            var customCols = TrainUtils.CheckAndGenerateCustomColumns(ectx, args.customColumn);
-#else
             feat = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "FeatureColumn", args.FeatureColumn, DefaultColumnNames.Features);
             var label = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "LabelColumn", args.LabelColumn, DefaultColumnNames.Label);
             group = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "GroupColumn", args.GroupColumn, DefaultColumnNames.GroupId);
             var weight = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "WeightColumn", args.WeightColumn, DefaultColumnNames.Weight);
             var name = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "NameColumn", args.NameColumn, DefaultColumnNames.Name);
-            var customCols = TrainUtils.CheckAndGenerateCustomColumns(ectx, args.CustomColumn);
-#endif
-            return TrainUtils.CreateExamples(input, label, feat, group, weight, name, customCols);
+            var customCols_ = TrainUtils.CheckAndGenerateCustomColumns(ectx, args.CustomColumn);
+            var customCols = customCols_ == null ? new List<KeyValuePair<RoleMappedSchema.ColumnRole, string>>() : customCols_.ToList();
+            if (!string.IsNullOrEmpty(name))
+                customCols.Add(new KeyValuePair<RoleMappedSchema.ColumnRole, string>(RoleMappedSchema.ColumnRole.Name, name));
+            return env.CreateExamples(input, feat, label: label, group: group, weight: weight, custom: customCols);
         }
 
-#endregion
+        #endregion
     }
 }
 
-#endif

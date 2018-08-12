@@ -10,6 +10,8 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;
+using Scikit.ML.ScikitAPI;
+using Scikit.ML.DataManipulation;
 
 
 namespace TestMachineLearningExt
@@ -187,6 +189,56 @@ namespace TestMachineLearningExt
                 TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
                                                      PredictionKind.Clustering, false);
             }
+        }
+
+        #endregion
+
+        #region TagTrainOrScoreTransform
+
+        [TestMethod]
+        public void TestTagTrainOrScoreTransform()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var dataFilePath = FileHelper.GetTestFile("mc_iris.txt");
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+
+            var env = EnvHelper.NewTestEnvironment();
+            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=-}",
+                new MultiFileSource(dataFilePath));
+
+            var pipe = new ScikitPipeline(new[] {
+                        "Concat{col=Feature:Slength,Swidth}",
+                        "TagTrainScore{tr=iova{p=ft{nl=10 iter=1}} lab=Label feat=Feature tag=model}" }, host: env);
+            pipe.Train(loader);
+            var pred = pipe.Predict(loader);
+            var df = DataFrame.ReadView(pred);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 11));
+            var dfs = df.Head().ToString();
+            Assert.IsTrue(dfs.StartsWith("Label,Slength,Swidth,Plength,Pwidth,Feature.0,Feature.1,PredictedLabel,Score.0,Score.1,Score.2"));
+        }
+
+        [TestMethod]
+        public void TestTagTrainOrScoreTransformCustomScorer()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var dataFilePath = FileHelper.GetTestFile("mc_iris.txt");
+            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+
+            var env = EnvHelper.NewTestEnvironment();
+            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=-}",
+                new MultiFileSource(dataFilePath));
+
+            var pipe = new ScikitPipeline(new[] {
+                        "Concat{col=Feature:Slength,Swidth}",
+                        "TagTrainScore{tr=iova{p=ft{nl=10 iter=1}} lab=Label feat=Feature tag=model scorer=MultiClassClassifierScorer{ex=AA}}" }, host: env);
+            pipe.Train(loader);
+            var pred = pipe.Predict(loader);
+            var df = DataFrame.ReadView(pred);
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 11));
+            var dfs = df.Head().ToString();
+            Assert.IsTrue(dfs.StartsWith("Label,Slength,Swidth,Plength,Pwidth,Feature.0,Feature.1,PredictedLabelAA,ScoreAA.0,ScoreAA.1,ScoreAA.2"));
         }
 
         #endregion

@@ -22,6 +22,19 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
+        public void TestHelpScorer()
+        {
+            var cmd = "? MultiClassClassifierScorer";
+            using (var std = new StdCapture())
+            {
+                Maml.MainAll(cmd);
+                var sout = std.StdOut.ToString();
+                Assert.IsTrue(sout.Length > 0);
+                Assert.IsTrue(!sout.Contains("Unknown"));
+            }
+        }
+
+        [TestMethod]
         public void TestCSGenerator()
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
