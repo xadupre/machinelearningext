@@ -27,8 +27,6 @@ using VersionInfo = Microsoft.ML.Runtime.Model.VersionInfo;
 
 using SchemaHelper = Scikit.ML.PipelineHelper.SchemaHelper;
 
-// The following files makes the object visible to maml.
-// This way, it can be added to any pipeline.
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;

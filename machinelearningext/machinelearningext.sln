@@ -35,6 +35,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineLambdaTransforms", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineTraining", "PipelineTraining\PipelineTraining.csproj", "{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModelSelection", "ModelSelection\ModelSelection.csproj", "{B3BD7A20-2B82-4076-8A49-01E81D20517A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,10 @@ Global
 		{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3BD7A20-2B82-4076-8A49-01E81D20517A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3BD7A20-2B82-4076-8A49-01E81D20517A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3BD7A20-2B82-4076-8A49-01E81D20517A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3BD7A20-2B82-4076-8A49-01E81D20517A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
