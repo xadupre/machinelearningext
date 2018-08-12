@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
-using Microsoft.ML.Runtime.Data.Conversion;
 
 
 namespace Scikit.ML.DataManipulation
@@ -54,31 +53,22 @@ namespace Scikit.ML.DataManipulation
             var res = new DataColumn<DType>(n);
             if (NA)
             {
-                switch (Kind)
+                if (Kind.IsVector)
+                    res.Set(null);
+                else
                 {
-                    case DataKind.Bool:
-                        res.Set(DvBool.NA);
-                        break;
-                    case DataKind.I4:
-                        res.Set(DvInt4.NA);
-                        break;
-                    case DataKind.U4:
-                        res.Set(0);
-                        break;
-                    case DataKind.I8:
-                        res.Set(DvInt8.NA);
-                        break;
-                    case DataKind.R4:
-                        res.Set(float.NaN);
-                        break;
-                    case DataKind.R8:
-                        res.Set(double.NaN);
-                        break;
-                    case DataKind.TX:
-                        res.Set(DvText.NA);
-                        break;
-                    default:
-                        throw new NotImplementedException($"No missing value convention for type '{Kind}'.");
+                    switch (Kind.RawKind)
+                    {
+                        case DataKind.Bool: res.Set(DvBool.NA); break;
+                        case DataKind.I4: res.Set(DvInt4.NA); break;
+                        case DataKind.U4: res.Set(0); break;
+                        case DataKind.I8: res.Set(DvInt8.NA); break;
+                        case DataKind.R4: res.Set(float.NaN); break;
+                        case DataKind.R8: res.Set(double.NaN); break;
+                        case DataKind.TX: res.Set(DvText.NA); break;
+                        default:
+                            throw new NotImplementedException($"No missing value convention for type '{Kind}'.");
+                    }
                 }
             }
             return res;
@@ -111,6 +101,7 @@ namespace Scikit.ML.DataManipulation
         public DType[] Data => _data;
 
         public object Get(int row) { return _data[row]; }
+
         public void Set(int row, object value)
         {
             DType dt;
@@ -121,7 +112,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns type data kind.
         /// </summary>
-        public DataKind Kind => SchemaHelper.GetKind<DType>();
+        public ColumnType Kind => SchemaHelper.GetColumnType<DType>();
 
         public IEnumerator<DType> GetEnumerator() { foreach (var v in _data) yield return v; }
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
@@ -258,6 +249,78 @@ namespace Scikit.ML.DataManipulation
             }
         }
 
+        /// <summary>
+        /// Raises an exception if two columns do not have the same
+        /// shape or are two much different.
+        /// </summary>
+        /// <param name="col">columns</param>
+        /// <param name="precision">precision</param>
+        /// <param name="exc">raises an exception if too different</param>
+        /// <returns>max difference</returns>
+        public double AssertAlmostEqual(IDataColumn col, double precision = 1e-5, bool exc = true)
+        {
+            var colt = col as DataColumn<DType>;
+            if (colt is null)
+                throw new DataValueError(string.Format("Column types are different {0} != {1}",
+                                                       GetType(), col.GetType()));
+            if(Length != colt.Length)
+                throw new DataValueError(string.Format("Column have different length {0} != {1}",
+                                                       Length, colt.Length));
+            if (Kind.IsVector)
+                throw new NotImplementedException();
+            else
+            {
+                switch(Kind.RawKind)
+                {
+                    case DataKind.BL:
+                        return NumericHelper.AssertAlmostEqual(_data as DvBool[], colt._data as DvBool[], precision, exc);
+                    case DataKind.I4:
+                        return NumericHelper.AssertAlmostEqual(_data as DvInt4[], colt._data as DvInt4[], precision, exc);
+                    case DataKind.U4:
+                        return NumericHelper.AssertAlmostEqual(_data as uint[], colt._data as uint[], precision, exc);
+                    case DataKind.I8:
+                        return NumericHelper.AssertAlmostEqual(_data as DvInt8[], colt._data as DvInt8[], precision, exc);
+                    case DataKind.R4:
+                        return NumericHelper.AssertAlmostEqual(_data as float[], colt._data as float[], precision, exc);
+                    case DataKind.R8:
+                        return NumericHelper.AssertAlmostEqual(_data as double[], colt._data as double[], precision, exc);
+                    case DataKind.TX:
+                        return NumericHelper.AssertAlmostEqual(_data as DvText[], colt._data as DvText[], precision, exc);
+                    default:
+                        throw new DataTypeError($"Unable to handle kind '{Kind}'");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Converts a column into another type.
+        /// </summary>
+        /// <param name="colType"></param>
+        /// <returns>new column</returns>
+        public IDataColumn AsType(ColumnType colType)
+        {
+            if (Kind == colType)
+                return this;
+            if (Kind.IsVector || colType.IsVector)
+                throw new NotImplementedException();
+            else
+            {
+                switch(Kind.RawKind)
+                {
+                    case DataKind.I4:
+                            switch(colType.RawKind)
+                            {
+                                case DataKind.R4:
+                                return new DataColumn<float>(NumericHelper.Convert(_data as DvInt4[], float.NaN));
+                                default:
+                                    throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
+                            }
+                    default:
+                        throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
+                }
+            }
+        }
+
         #endregion
 
         #region linq
@@ -338,6 +401,40 @@ namespace Scikit.ML.DataManipulation
                 value = cursor.Position < _data.LongLength
                         ? _data2[cursor.Position]
                         : (DType2)missing;
+            };
+        }
+
+        /// <summary>
+        /// Creates a getter on the column. The getter returns the element at
+        /// cursor.Position.
+        /// </summary>
+        public ValueGetter<VBuffer<DType2>> GetGetterVector<DType2>(IRowCursor cursor)
+        {
+            var kind = SchemaHelper.GetKind<DType2>();
+            switch (kind)
+            {
+                case DataKind.BL: return GetGetterVectorEqSort<DvBool>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.I4: return GetGetterVectorEqSort<DvInt4>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.U4: return GetGetterVectorEqSort<uint>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.I8: return GetGetterVectorEqSort<DvInt8>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.R4: return GetGetterVectorEqSort<float>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.R8: return GetGetterVectorEqSort<double>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.TX: return GetGetterVectorEqSort<DvText>(cursor) as ValueGetter<VBuffer<DType2>>;
+                default:
+                    throw new DataValueError($"Unable to handle kind {kind}.");
+            }
+        }
+
+        public ValueGetter<VBuffer<DType2>> GetGetterVectorEqSort<DType2>(IRowCursor cursor)
+            where DType2 : IEquatable<DType2>, IComparable<DType2>
+        {
+            var _data2 = _data as VBufferEqSort<DType2>[];
+            var missing = new VBuffer<DType2>();
+            return (ref VBuffer<DType2> value) =>
+            {
+                value = cursor.Position < _data.LongLength
+                        ? _data2[cursor.Position].data
+                        : missing;
             };
         }
 

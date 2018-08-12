@@ -41,11 +41,12 @@ namespace Scikit.ML.ScikitAPI
                               IHostEnvironment host = null)
         {
             _env = host ?? new TlcEnvironment();
-            _transforms = new StepTransform[transforms.Length + 1];
+            _transforms = new StepTransform[transforms == null ? 1 : transforms.Length + 1];
             // We add a PassThroughTransform to be able to change the source.
             _transforms[0] = new StepTransform() { transformSettings = "pass", transform = null };
-            for (int i = 0; i < transforms.Length; ++i)
-                _transforms[i + 1] = new StepTransform() { transformSettings = transforms[i], transform = null };
+            if (transforms != null)
+                for (int i = 0; i < transforms.Length; ++i)
+                    _transforms[i + 1] = new StepTransform() { transformSettings = transforms[i], transform = null };
             _predictor = predictor == null ? null : new StepPredictor()
             {
                 trainerSettings = predictor,
@@ -155,7 +156,7 @@ namespace Scikit.ML.ScikitAPI
                 // We predict one to make sure everything works fine.
                 using (var ch = _env.Start("Compute one prediction."))
                 {
-                    var df = DataFrame.ReadView(trans, 1);
+                    var df = DataFrame.ReadView(trans, 1, keepVectors: true);
                     if (df.Length == 0)
                         throw _env.ExceptEmpty("Something went wrong. The pipeline does not produce any output.");
                     ch.Done();

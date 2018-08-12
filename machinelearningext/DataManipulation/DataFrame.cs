@@ -73,7 +73,7 @@ namespace Scikit.ML.DataManipulation
         /// the first row.
         /// </summary>
         public DataFrame(IEnumerable<Dictionary<string, object>> rows,
-                         Dictionary<string, DataKind> kinds = null)
+                         Dictionary<string, ColumnType> kinds = null)
         {
             _data = new DataContainer(rows, kinds);
         }
@@ -93,7 +93,7 @@ namespace Scikit.ML.DataManipulation
         public int Length => _data.Length;
         public int ColumnCount => _data.ColumnCount;
         public string[] Columns => _data.Columns;
-        public DataKind[] Kinds => _data.Kinds;
+        public ColumnType[] Kinds => _data.Kinds;
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
@@ -167,7 +167,7 @@ namespace Scikit.ML.DataManipulation
         /// <param name="name">column name</param>
         /// <param name="kind">column type</param>
         /// <param name="length">length is needed for the first column to allocated space</param>
-        public int AddColumn(string name, DataKind kind, int? length)
+        public int AddColumn(string name, ColumnType kind, int? length)
         {
             return _data.AddColumn(name, kind, length);
         }
@@ -261,6 +261,30 @@ namespace Scikit.ML.DataManipulation
             };
         }
 
+        /// <summary>
+        /// Raises an exception if two dataframes do not have the same
+        /// shape or are two much different.
+        /// </summary>
+        /// <param name="df">dataframe</param>
+        /// <param name="precision">precision</param>
+        /// <param name="exc">raises an exception if too different</param>
+        /// <returns>max difference</returns>
+        public double AssertAlmostEqual(IDataFrameView df, double precision = 1e-5, bool exc = true)
+        {
+            if (Shape != df.Shape)
+                throw new DataValueError(string.Format("Shapes are different ({0}, {1}) != ({2}, {3})", 
+                            Shape.Item1, Shape.Item2, df.Shape.Item1, df.Shape.Item2));
+            double max = 0;
+            for (int i = 0; i < df.Shape.Item2; ++i)
+            {
+                var c1 = GetColumn(i);
+                var c2 = GetColumn(i);
+                var d = c1.AssertAlmostEqual(c2, precision, exc);
+                max = Math.Max(max, d);
+            }
+            return max;
+        }
+
         #endregion
 
         #region IO
@@ -294,7 +318,8 @@ namespace Scikit.ML.DataManipulation
         /// <param name="header">add header</param>
         /// <param name="encoding">encoding</param>
         /// <param name="silent">Suppress any info output (not warnings or errors)</param>
-        public void ToCsv(string filename, string sep = ",", bool header = true, Encoding encoding = null, bool silent = false)
+        public void ToCsv(string filename, string sep = ",", bool header = true,
+                          Encoding encoding = null, bool silent = false)
         {
             ViewToCsv(this, filename, sep: sep, header: header, encoding: encoding, silent: silent);
         }
@@ -358,14 +383,10 @@ namespace Scikit.ML.DataManipulation
         /// <returns>TextLoader</returns>
         public static TextLoader ReadCsvToTextLoader(string filename,
                                         char sep = ',', bool header = true,
-                                        string[] names = null,
-                                        DataKind?[] dtypes = null,
-                                        int nrows = -1,
-                                        int guess_rows = 10,
-                                        Encoding encoding = null,
-                                        bool useThreads = true,
-                                        bool index = false,
-                                        IHost host = null)
+                                        string[] names = null, ColumnType[] dtypes = null,
+                                        int nrows = -1, int guess_rows = 10,
+                                        Encoding encoding = null, bool useThreads = true,
+                                        bool index = false, IHost host = null)
         {
             var df = ReadCsv(filename, sep: sep, header: header, names: names, dtypes: dtypes,
                              nrows: guess_rows, guess_rows: guess_rows, encoding: encoding, index: index);
@@ -404,7 +425,7 @@ namespace Scikit.ML.DataManipulation
         /// <returns>DataFrame</returns>
         public static DataFrame ReadStr(string content,
                                     char sep = ',', bool header = true,
-                                    string[] names = null, DataKind?[] dtypes = null,
+                                    string[] names = null, ColumnType[] dtypes = null,
                                     int nrows = -1, int guess_rows = 10, bool index = false)
         {
             return ReadStream(() => new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(content))),
@@ -428,7 +449,7 @@ namespace Scikit.ML.DataManipulation
         /// <returns>DataFrame</returns>
         public static DataFrame ReadCsv(string filename,
                                 char sep = ',', bool header = true,
-                                string[] names = null, DataKind?[] dtypes = null,
+                                string[] names = null, ColumnType[] dtypes = null,
                                 int nrows = -1, int guess_rows = 10,
                                 Encoding encoding = null, bool index = false)
         {
@@ -454,7 +475,7 @@ namespace Scikit.ML.DataManipulation
         /// <returns>DataFrame</returns>
         public static DataFrame ReadStream(FunctionCreateStreamReader createStream,
                                 char sep = ',', bool header = true,
-                                string[] names = null, DataKind?[] dtypes = null,
+                                string[] names = null, ColumnType[] dtypes = null,
                                 int nrows = -1, int guess_rows = 10, bool index = false)
         {
             var lines = new List<string[]>();
@@ -493,7 +514,11 @@ namespace Scikit.ML.DataManipulation
             for (int i = 0; i < numCol; ++i)
             {
                 var kind = GuessKind(i, lines);
-                df.AddColumn(names[i], dtypes != null && i < dtypes.Length && dtypes[i].HasValue ? dtypes[i].Value : kind, rowline);
+                df.AddColumn(names[i],
+                            dtypes != null && i < dtypes.Length && dtypes[i] != null
+                                        ? dtypes[i]
+                                        : kind,
+                            rowline);
             }
 
             // Fills values.
@@ -541,20 +566,22 @@ namespace Scikit.ML.DataManipulation
         /// <param name="view">IDataView</param>
         /// <param name="sep">column separator</param>
         /// <param name="nrows">number of rows to read</param>
+        /// <param name="keepVectors">keep vectors as they are</param>
+        /// <param name="numThreads">number of threads to use to fill the dataframe</param>
         /// <returns>DataFrame</returns>
-        public static DataFrame ReadView(IDataView view, int nrows = -1)
+        public static DataFrame ReadView(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1)
         {
             var df = new DataFrame();
-            df.FillValues(view, nrows: nrows);
+            df.FillValues(view, nrows: nrows, keepVectors: keepVectors, numThreads: numThreads);
             return df;
         }
 
-        public void FillValues(IDataView view, int nrows = -1)
+        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1)
         {
-            _data.FillValues(view, nrows: nrows);
+            _data.FillValues(view, nrows: nrows, keepVectors: keepVectors, numThreads: numThreads);
         }
 
-        static DataKind GuessKind(int col, List<string[]> read)
+        static ColumnType GuessKind(int col, List<string[]> read)
         {
             DataKind res = DataKind.TX;
             int nbline = 0;
@@ -657,7 +684,19 @@ namespace Scikit.ML.DataManipulation
                 res = DetermineDataKind(nbline == 0, DataKind.TX, res);
                 ++nbline;
             }
-            return res;
+            switch (res)
+            {
+                case DataKind.BL: return BoolType.Instance;
+                case DataKind.I4: return NumberType.I4;
+                case DataKind.I8: return NumberType.I8;
+                case DataKind.U4: return NumberType.U4;
+                case DataKind.U8: return NumberType.U8;
+                case DataKind.R4: return NumberType.R4;
+                case DataKind.R8: return NumberType.R8;
+                case DataKind.TX: return TextType.Instance;
+                default:
+                    throw Contracts.Except($"Unable to guess ColumnType from '{res}'.");
+            }
         }
 
         /// <summary>

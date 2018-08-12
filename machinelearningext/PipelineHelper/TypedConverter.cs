@@ -1,15 +1,9 @@
 ﻿// See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Internal.Utilities;
-using Microsoft.ML.Runtime.Data.Conversion;
 
 
 namespace Scikit.ML.PipelineHelper

@@ -145,7 +145,6 @@ namespace Scikit.ML.ScikitAPI
             private void WriteHeader(ILogWriter wr, PipeBase<ChannelMessage> commChannel)
             {
                 Contracts.Assert(commChannel.Verbose);
-                // REVIEW: Change this to use IndentingTextWriter.
                 wr.Write(new string(' ', commChannel.Depth * 2));
                 WriteName(wr, commChannel);
             }
@@ -323,7 +322,6 @@ namespace Scikit.ML.ScikitAPI
                 {
                     if (ev.ProgressEntry.Metrics[i] == null)
                         continue;
-                    // REVIEW: print metrics prettier.
                     writer.Write(string.Format("\t{0}: {1}", ev.ProgressEntry.Header.MetricNames[i], ev.ProgressEntry.Metrics[i].Value));
                 }
 
@@ -450,8 +448,7 @@ namespace Scikit.ML.ScikitAPI
 
         protected override IFileHandle CreateTempFileCore(IHostEnvironment env, string suffix = null, string prefix = null)
         {
-            // Prefix with "TLC_".
-            return base.CreateTempFileCore(env, suffix, "TLC_" + prefix);
+            return base.CreateTempFileCore(env, suffix, "MML_" + prefix);
         }
 
         protected override IHost RegisterCore(HostEnvironmentBase<DelegateEnvironment> source, string shortName, string parentFullName, IRandom rand, bool verbose, int? conc)

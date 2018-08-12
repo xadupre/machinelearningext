@@ -2,8 +2,12 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineTransforms;
+using Scikit.ML.PipelineLambdaTransforms;
 
 
 namespace Scikit.ML.TestHelper
@@ -22,7 +26,7 @@ namespace Scikit.ML.TestHelper
         /// <param name="outData"></param>
         /// <param name="outData2"></param>
         /// <param name="startsWith">Check that outputs is the same on disk after outputting the transformed data after the model was serialized</param>
-        public static void SerializationTestTransform(TlcEnvironment env,
+        public static void SerializationTestTransform(IHostEnvironment env,
                             string outModelFilePath, IDataTransform transform,
                             IDataView source, string outData, string outData2,
                             bool startsWith = false, bool skipDoubleQuote = false,
@@ -93,5 +97,34 @@ namespace Scikit.ML.TestHelper
                 }
             }
         }
+
+        /// <summary>
+        /// Converts all vector columns into string by add CSharp transform.
+        /// </summary>
+        public static IDataTransform AddFlatteningTransform(IHostEnvironment env, IDataView view)
+        {
+            IDataTransform res = null;
+            for (int i = 0; i < view.Schema.ColumnCount; ++i)
+            {
+                var ty = view.Schema.GetColumnType(i);
+                if (ty.IsVector)
+                {
+                    var name = view.Schema.GetColumnName(i);
+
+                    view = LambdaColumnHelper.Create(env,
+                                    "Lambda", view, name, name, new VectorType(NumberType.R4),
+                                    TextType.Instance,
+                                    (ref VBuffer<float> src, ref DvText dst) =>
+                                    {
+                                        var st = string.Join(";", src.Values.Select(c => c.ToString()));
+                                        dst = new DvText(st);
+                                    });
+                }
+            }
+            if (res == null)
+                res = new PassThroughTransform(env, new PassThroughTransform.Arguments(), view);
+            return res;
+        }
+
     }
 }

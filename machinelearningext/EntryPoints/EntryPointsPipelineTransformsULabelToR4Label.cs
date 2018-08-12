@@ -22,12 +22,20 @@ namespace Scikit.ML.EntryPoints
 {
     #region Definition
 
+    [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
+    public class ULabelToR4LabelTransform_ArgumentsEntryPoint : ULabelToR4LabelTransform.Arguments
+    {
+        [Argument(ArgumentType.Required, HelpText = "Input dataset",
+                  Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+        public IDataView Data;
+    }
+
     public static class EntryPointULabelToR4Label
     {
         [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_ULabelToR4Label.Name,
                               Desc = ULabelToR4LabelTransform.Summary,
                               UserName = EP_ULabelToR4Label.Name)]
-        public static CommonOutputs.TransformOutput ULabelToR4Label(IHostEnvironment env, ULabelToR4LabelTransform.ArgumentsEntryPoint input)
+        public static CommonOutputs.TransformOutput ULabelToR4Label(IHostEnvironment env, ULabelToR4LabelTransform_ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));

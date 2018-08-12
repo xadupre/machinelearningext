@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Training;
-using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.CommandLine;
-using Scikit.ML.PipelineHelper;
+using Microsoft.ML.Runtime.EntryPoints;
 
 
 namespace Scikit.ML.NearestNeighbors
@@ -29,18 +28,6 @@ namespace Scikit.ML.NearestNeighbors
         /// </summary>
         public class Arguments : NearestNeighborsArguments
         {
-        }
-
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITrainerInputWithWeight))]
-        public class ArgumentsEntryPoint : Arguments, ILearnerInputBaseArguments
-        {
-            public IDataView ITrainingData => TrainingData;
-            public Optional<string> IFeatureColumn => FeatureColumn;
-            public Optional<string> IWeightColumn => WeightColumn;
-            public Optional<string> ILabelColumn => LabelColumn;
-            public NormalizeOption INormalizeFeatures => NormalizeFeatures;
-            public CachingOptions ICaching => Caching;
-
             [Argument(ArgumentType.Required, ShortName = "data", HelpText = "The data to be used for training", SortOrder = 1, Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
             public IDataView TrainingData;
 
@@ -53,7 +40,7 @@ namespace Scikit.ML.NearestNeighbors
             public string LabelColumn = DefaultColumnNames.Label;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Column to use for example weight", ShortName = "weight", SortOrder = 4, Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public Optional<string> WeightColumn = Optional<string>.Implicit(DefaultColumnNames.Weight);
+            public string WeightColumn = null;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Normalize option for the feature column", ShortName = "norm",
                       Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
@@ -77,8 +64,8 @@ namespace Scikit.ML.NearestNeighbors
         {
             get
             {
-                return new TrainerInfo(normalization:false, calibration:false, caching:false, 
-                                       supportValid:false, supportIncrementalTrain:false);
+                return new TrainerInfo(normalization: false, calibration: false, caching: false,
+                                       supportValid: false, supportIncrementalTrain: false);
             }
         }
 

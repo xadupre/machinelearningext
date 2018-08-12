@@ -14,14 +14,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Clustering\Clustering.csproj" />
     <ProjectReference Include="..\DataManipulation\DataManipulation.csproj" />
     <ProjectReference Include="..\EntryPoints\EntryPoints.csproj" />
     <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
+    <ProjectReference Include="..\ModelSelection\ModelSelection.csproj" />
+    <ProjectReference Include="..\MultiClass\MultiClass.csproj" />
     <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
+    <ProjectReference Include="..\PipelineGraphTraining\PipelineGraphTraining.csproj" />
+    <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
+    <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
+    <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
+    <ProjectReference Include="..\PipelineTraining\PipelineTraining.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
+    <ProjectReference Include="..\ProductionPrediction\ProductionPrediction.csproj" />
     <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
     <ProjectReference Include="..\ScikitAPI\ScikitAPI.csproj" />
     <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
+    <ProjectReference Include="..\TimeSeries\TimeSeries.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +58,9 @@
     </Reference>
     <Reference Include="Microsoft.ML.CpuMath">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.CpuMath.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.FastTree">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.FastTree.dll</HintPath>
     </Reference>
   </ItemGroup>
   

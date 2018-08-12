@@ -77,6 +77,6 @@ script:
   #- cd ..
   # unit tests for machinelearningext
   - cd machinelearningext
-  - dotnet test -c Debug TestMachineLearningExt
-  - dotnet test -c Release TestMachineLearningExt
+  - dotnet test -c Debug TestMachineLearningExt -v n
+  - dotnet test -c Release TestMachineLearningExt -v n
   - cd ..

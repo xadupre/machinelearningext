@@ -67,32 +67,42 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[0]];
             if (icols.Length == 1)
             {
-                switch (kind)
+                if (kind.IsVector)
+                    throw new NotImplementedException();
+                else
                 {
-                    case DataKind.BL: return df.TGroupBy<DvBool>(icols, sort);
-                    case DataKind.I4: return df.TGroupBy<DvInt4>(icols, sort);
-                    case DataKind.U4: return df.TGroupBy<uint>(icols, sort);
-                    case DataKind.I8: return df.TGroupBy<DvInt8>(icols, sort);
-                    case DataKind.R4: return df.TGroupBy<float>(icols, sort);
-                    case DataKind.R8: return df.TGroupBy<double>(icols, sort);
-                    case DataKind.TX: return df.TGroupBy<DvText>(icols, sort);
-                    default:
-                        throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    switch (kind.RawKind)
+                    {
+                        case DataKind.BL: return df.TGroupBy<DvBool>(icols, sort);
+                        case DataKind.I4: return df.TGroupBy<DvInt4>(icols, sort);
+                        case DataKind.U4: return df.TGroupBy<uint>(icols, sort);
+                        case DataKind.I8: return df.TGroupBy<DvInt8>(icols, sort);
+                        case DataKind.R4: return df.TGroupBy<float>(icols, sort);
+                        case DataKind.R8: return df.TGroupBy<double>(icols, sort);
+                        case DataKind.TX: return df.TGroupBy<DvText>(icols, sort);
+                        default:
+                            throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    }
                 }
             }
             else
             {
-                switch (kind)
+                if (kind.IsVector)
+                    throw new NotImplementedException();
+                else
                 {
-                    case DataKind.BL: return RecGroupBy<DvBool>(df, icols, sort);
-                    case DataKind.I4: return RecGroupBy<DvInt4>(df, icols, sort);
-                    case DataKind.U4: return RecGroupBy<uint>(df, icols, sort);
-                    case DataKind.I8: return RecGroupBy<DvInt8>(df, icols, sort);
-                    case DataKind.R4: return RecGroupBy<float>(df, icols, sort);
-                    case DataKind.R8: return RecGroupBy<double>(df, icols, sort);
-                    case DataKind.TX: return RecGroupBy<DvText>(df, icols, sort);
-                    default:
-                        throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    switch (kind.RawKind)
+                    {
+                        case DataKind.BL: return RecGroupBy<DvBool>(df, icols, sort);
+                        case DataKind.I4: return RecGroupBy<DvInt4>(df, icols, sort);
+                        case DataKind.U4: return RecGroupBy<uint>(df, icols, sort);
+                        case DataKind.I8: return RecGroupBy<DvInt8>(df, icols, sort);
+                        case DataKind.R4: return RecGroupBy<float>(df, icols, sort);
+                        case DataKind.R8: return RecGroupBy<double>(df, icols, sort);
+                        case DataKind.TX: return RecGroupBy<DvText>(df, icols, sort);
+                        default:
+                            throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    }
                 }
             }
         }
@@ -103,32 +113,42 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[1]];
             if (icols.Length == 2)
             {
-                switch (kind)
+                if (kind.IsVector)
+                    throw new NotImplementedException();
+                else
                 {
-                    case DataKind.BL: return df.TGroupBy<T1, DvBool>(icols, sort);
-                    case DataKind.I4: return df.TGroupBy<T1, DvInt4>(icols, sort);
-                    case DataKind.U4: return df.TGroupBy<T1, uint>(icols, sort);
-                    case DataKind.I8: return df.TGroupBy<T1, DvInt8>(icols, sort);
-                    case DataKind.R4: return df.TGroupBy<T1, float>(icols, sort);
-                    case DataKind.R8: return df.TGroupBy<T1, double>(icols, sort);
-                    case DataKind.TX: return df.TGroupBy<T1, DvText>(icols, sort);
-                    default:
-                        throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    switch (kind.RawKind)
+                    {
+                        case DataKind.BL: return df.TGroupBy<T1, DvBool>(icols, sort);
+                        case DataKind.I4: return df.TGroupBy<T1, DvInt4>(icols, sort);
+                        case DataKind.U4: return df.TGroupBy<T1, uint>(icols, sort);
+                        case DataKind.I8: return df.TGroupBy<T1, DvInt8>(icols, sort);
+                        case DataKind.R4: return df.TGroupBy<T1, float>(icols, sort);
+                        case DataKind.R8: return df.TGroupBy<T1, double>(icols, sort);
+                        case DataKind.TX: return df.TGroupBy<T1, DvText>(icols, sort);
+                        default:
+                            throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    }
                 }
             }
             else
             {
-                switch (kind)
+                if (kind.IsVector)
+                    throw new NotImplementedException();
+                else
                 {
-                    case DataKind.BL: return RecGroupBy<T1, DvBool>(df, icols, sort);
-                    case DataKind.I4: return RecGroupBy<T1, DvInt4>(df, icols, sort);
-                    case DataKind.U4: return RecGroupBy<T1, uint>(df, icols, sort);
-                    case DataKind.I8: return RecGroupBy<T1, DvInt8>(df, icols, sort);
-                    case DataKind.R4: return RecGroupBy<T1, float>(df, icols, sort);
-                    case DataKind.R8: return RecGroupBy<T1, double>(df, icols, sort);
-                    case DataKind.TX: return RecGroupBy<T1, DvText>(df, icols, sort);
-                    default:
-                        throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    switch (kind.RawKind)
+                    {
+                        case DataKind.BL: return RecGroupBy<T1, DvBool>(df, icols, sort);
+                        case DataKind.I4: return RecGroupBy<T1, DvInt4>(df, icols, sort);
+                        case DataKind.U4: return RecGroupBy<T1, uint>(df, icols, sort);
+                        case DataKind.I8: return RecGroupBy<T1, DvInt8>(df, icols, sort);
+                        case DataKind.R4: return RecGroupBy<T1, float>(df, icols, sort);
+                        case DataKind.R8: return RecGroupBy<T1, double>(df, icols, sort);
+                        case DataKind.TX: return RecGroupBy<T1, DvText>(df, icols, sort);
+                        default:
+                            throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    }
                 }
             }
         }
@@ -140,17 +160,22 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[2]];
             if (icols.Length == 3)
             {
-                switch (kind)
+                if (kind.IsVector)
+                    throw new NotImplementedException();
+                else
                 {
-                    case DataKind.BL: return df.TGroupBy<T1, T2, DvBool>(icols, sort);
-                    case DataKind.I4: return df.TGroupBy<T1, T2, DvInt4>(icols, sort);
-                    case DataKind.U4: return df.TGroupBy<T1, T2, uint>(icols, sort);
-                    case DataKind.I8: return df.TGroupBy<T1, T2, DvInt8>(icols, sort);
-                    case DataKind.R4: return df.TGroupBy<T1, T2, float>(icols, sort);
-                    case DataKind.R8: return df.TGroupBy<T1, T2, double>(icols, sort);
-                    case DataKind.TX: return df.TGroupBy<T1, T2, DvText>(icols, sort);
-                    default:
-                        throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    switch (kind.RawKind)
+                    {
+                        case DataKind.BL: return df.TGroupBy<T1, T2, DvBool>(icols, sort);
+                        case DataKind.I4: return df.TGroupBy<T1, T2, DvInt4>(icols, sort);
+                        case DataKind.U4: return df.TGroupBy<T1, T2, uint>(icols, sort);
+                        case DataKind.I8: return df.TGroupBy<T1, T2, DvInt8>(icols, sort);
+                        case DataKind.R4: return df.TGroupBy<T1, T2, float>(icols, sort);
+                        case DataKind.R8: return df.TGroupBy<T1, T2, double>(icols, sort);
+                        case DataKind.TX: return df.TGroupBy<T1, T2, DvText>(icols, sort);
+                        default:
+                            throw new NotImplementedException($"GroupBy is not implemented for type '{kind}'.");
+                    }
                 }
             }
             else

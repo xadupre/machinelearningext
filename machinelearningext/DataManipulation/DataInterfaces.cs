@@ -75,7 +75,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// type of the column 
         /// </summary>
-        DataKind Kind { get; }
+        ColumnType Kind { get; }
 
         /// <summary>
         /// Returns a copy.
@@ -96,6 +96,13 @@ namespace Scikit.ML.DataManipulation
         /// Concatenates multiple columns for the same type.
         /// </summary>
         IDataColumn Concat(IEnumerable<IDataColumn> cols);
+
+        /// <summary>
+        /// Converts a column into another type.
+        /// </summary>
+        /// <param name="colType"></param>
+        /// <returns>new column</returns>
+        IDataColumn AsType(ColumnType colType);
 
         /// <summary>
         /// Returns the element at position row
@@ -143,6 +150,22 @@ namespace Scikit.ML.DataManipulation
         /// at position <pre>cursor.Position</pre>
         /// </summary>
         ValueGetter<DType> GetGetter<DType>(IRowCursor cursor);
+
+        /// <summary>
+        /// Raises an exception if two columns do not have the same
+        /// shape or are two much different.
+        /// </summary>
+        /// <param name="col">columns</param>
+        /// <param name="precision">precision</param>
+        /// <param name="exc">raises an exception if too different</param>
+        /// <returns>max difference</returns>
+        double AssertAlmostEqual(IDataColumn col, double precision = 1e-5, bool exc = true);
+
+        /// <summary>
+        /// The returned getter returns the element
+        /// at position <pre>cursor.Position</pre>
+        /// </summary>
+        ValueGetter<VBuffer<DType>> GetGetterVector<DType>(IRowCursor cursor);
 
         /// <summary>
         /// exact comparison
@@ -229,7 +252,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the list of types.
         /// </summary>
-        DataKind[] Kinds { get; }
+        ColumnType[] Kinds { get; }
 
         /// <summary>
         /// Returns the number of columns.
@@ -281,6 +304,16 @@ namespace Scikit.ML.DataManipulation
         /// Data is not copied.
         /// </summary>
         DataFrameView Drop(IEnumerable<string> colNames);
+
+        /// <summary>
+        /// Raises an exception if two dataframes do not have the same
+        /// shape or are two much different.
+        /// </summary>
+        /// <param name="df">dataframe</param>
+        /// <param name="precision">precision</param>
+        /// <param name="exc">raises an exception if too different</param>
+        /// <returns>max difference</returns>
+        double AssertAlmostEqual(IDataFrameView df, double precision = 1e-5, bool exc = true);
 
         #region SQL function
 

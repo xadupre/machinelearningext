@@ -62,8 +62,8 @@ test_script:
   # - cd ..
   # unit tests for machinelearningext
   - cd machinelearningext
-  - cmd /C dotnet test -c Debug TestMachineLearningExt
-  - cmd /C dotnet test -c Release TestMachineLearningExt
+  - cmd /C dotnet test -c Debug TestMachineLearningExt -v n
+  - cmd /C dotnet test -c Release TestMachineLearningExt -v n
   - cd ..
 
 after_test:

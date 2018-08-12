@@ -7,7 +7,6 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.EntryPoints;
 using Scikit.ML.PipelineHelper;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
@@ -109,14 +108,6 @@ namespace Scikit.ML.FeaturesTransforms
                 int nb = ctx.Reader.ReadInt32();
                 numThreads = nb > 0 ? (int?)nb : null;
             }
-        }
-
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoint : Arguments
-        {
-            [Argument(ArgumentType.Required, HelpText = "Input dataset",
-                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public IDataView Data;
         }
 
         #endregion
@@ -368,7 +359,7 @@ namespace Scikit.ML.FeaturesTransforms
                 if (predicate(_input.Schema.ColumnCount))
                 {
                     var cursors = _input.GetRowCursorSet(out consolidator, i => PredicatePropagation(i, predicate), n, rand);
-                    return cursors.Select(c => new PolynomialCursor<TInput>(this, c, predicate, _args, _inputCol, _multiplication)).ToArray();
+                    return cursors.Select(c => new PolynomialCursor<TInput>(this, c, i => PredicatePropagation(i, predicate), _args, _inputCol, _multiplication)).ToArray();
                 }
                 else
                     // The new column is not required. We do not need to compute it. But we need to keep the same schema.

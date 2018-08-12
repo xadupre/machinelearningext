@@ -6,13 +6,9 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.Model;
 using Scikit.ML.PipelineHelper;
 
-
-// The following files makes the object visible to maml.
-// This way, it can be added to any pipeline.
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
@@ -35,17 +31,10 @@ namespace Scikit.ML.RandomTransforms
     {
         #region identification
 
-        /// <summary>
-        /// A unique signature.
-        /// </summary>
         public const string LoaderSignature = "ResampleTransform";  // Not more than 24 letters.
         public const string Summary = "Randomly multiplies rows, the number of multiplication per rows is draws from a Poisson Law.";
         public const string RegistrationName = LoaderSignature;
 
-        /// <summary>
-        /// Identify the object for dynamic instantiation.
-        /// This is also used to track versionning when serializing and deserializing.
-        /// </summary>
         static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
@@ -60,9 +49,6 @@ namespace Scikit.ML.RandomTransforms
 
         #region parameters / command line
 
-        /// <summary>
-        /// Parameters which defines the transform.
-        /// </summary>
         public class Arguments
         {
             [Argument(ArgumentType.AtMostOnce, HelpText = "Parameter lambda of the Poison Law.", ShortName = "l")]
@@ -103,14 +89,6 @@ namespace Scikit.ML.RandomTransforms
             }
         }
 
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoint : Arguments
-        {
-            [Argument(ArgumentType.Required, HelpText = "Input dataset",
-                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public IDataView Data;
-        }
-
         #endregion
 
         #region internal members / accessors
@@ -127,9 +105,6 @@ namespace Scikit.ML.RandomTransforms
 
         #region public constructor / serialization / load / save
 
-        /// <summary>
-        /// Create a ResampleTransform transform.
-        /// </summary>
         public ResampleTransform(IHostEnvironment env, Arguments args, IDataView input)
         {
             Contracts.CheckValue(env, "env");
@@ -411,7 +386,7 @@ namespace Scikit.ML.RandomTransforms
                 _cacheReplica[did] = rep;
             }
             if (nbIn == 0)
-                ch.Warning("Resample on a condition never happened: in={0} out={1}", nbIn, nbOut);
+                ch.Warning("Resample on a condition never happened: nbIn={0} nbOut={1}", nbIn, nbOut);
         }
 
         #endregion

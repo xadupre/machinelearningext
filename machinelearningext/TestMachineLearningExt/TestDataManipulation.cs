@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using Microsoft.ML.Runtime.Data;
-using Scikit.ML.DataManipulation;
-using Scikit.ML.TestHelper;
 using Microsoft.ML.Runtime.Api;
-using Scikit.ML.PipelineHelper;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms;
+using Scikit.ML.DataManipulation;
+using Scikit.ML.TestHelper;
+using Scikit.ML.PipelineHelper;
+using Scikit.ML.ScikitAPI;
 
 
 namespace TestMachineLearningExt
@@ -141,7 +142,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
                 var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
                 var trainer = env.CreateTrainer("ova{p=lr}");
@@ -167,7 +168,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
                 var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
                 var trainer = env.CreateTrainer("lr");
@@ -193,7 +194,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
                 var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
                 ITrainerExtended trainer = env.CreateTrainer("lr");
@@ -217,7 +218,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameScoringMultiEntryPoints2()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new DataKind?[] { DataKind.R4 });
+            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -680,7 +681,6 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
             Assert.AreEqual(df.iloc[2, 0], (DvInt4)1);
         }
-
 
         [TestMethod]
         public void TestDataFrameSort2Untyped()
@@ -1267,6 +1267,32 @@ namespace TestMachineLearningExt
             var exp = "AA,BB\n0,1\n0,2\n0,3";
             var tos = sample.ToString();
             Assert.AreEqual(exp, tos);
+        }
+
+        #endregion
+
+        #region Vector Column
+
+        [TestMethod]
+        public void TestDataFrameVectorColumn()
+        {
+            var inputs = new[] {
+                new ExampleXY() { X = 1f, Y=2f },
+                new ExampleXY() { X = 3f, Y=4f },
+            };
+
+            using (var host = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                var data = host.CreateStreamingDataView(inputs);
+                var pipe = new ScikitPipeline(new[] { "Concat{col=Z:X,Y}" }, host: host);
+                var predictor = pipe.Train(data);
+                var predictions = pipe.Transform(data);
+                var df = DataFrame.ReadView(predictions, keepVectors: true);
+                Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+                var dfs = df.ToString();
+                var dfs2 = dfs.Replace("\n", ";");
+                Assert.AreEqual(dfs2, "X,Y,\"\",\"\";1,2,1,2;3,4,3,4");
+            }
         }
 
         #endregion

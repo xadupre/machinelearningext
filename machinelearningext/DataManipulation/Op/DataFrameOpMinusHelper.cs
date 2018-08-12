@@ -27,46 +27,51 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1)
         {
-            switch (c1.Kind)
+            if (c1.Kind.IsVector)
+                throw new NotImplementedException();
+            else
             {
-                case DataKind.I4:
-                    {
-                        DvInt4[] a;
-                        DataColumn<DvInt4> res;
-                        Operation(c1, out a, out res);
-                        for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, -a[i]);
-                        return new NumericColumn(res);
-                    }
-                case DataKind.I8:
-                    {
-                        DvInt8[] a;
-                        DataColumn<DvInt8> res;
-                        Operation(c1, out a, out res);
-                        for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, -a[i]);
-                        return new NumericColumn(res);
-                    }
-                case DataKind.R4:
-                    {
-                        float[] a;
-                        DataColumn<float> res;
-                        Operation(c1, out a, out res);
-                        for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, -a[i]);
-                        return new NumericColumn(res);
-                    }
-                case DataKind.R8:
-                    {
-                        double[] a;
-                        DataColumn<double> res;
-                        Operation(c1, out a, out res);
-                        for (int i = 0; i < res.Length; ++i)
-                            res.Set(i, -a[i]);
-                        return new NumericColumn(res);
-                    }
-                default:
-                    throw new DataTypeError(string.Format("{0} not implemented for column {1}.", OperationName, c1.Kind));
+                switch (c1.Kind.RawKind)
+                {
+                    case DataKind.I4:
+                        {
+                            DvInt4[] a;
+                            DataColumn<DvInt4> res;
+                            Operation(c1, out a, out res);
+                            for (int i = 0; i < res.Length; ++i)
+                                res.Set(i, -a[i]);
+                            return new NumericColumn(res);
+                        }
+                    case DataKind.I8:
+                        {
+                            DvInt8[] a;
+                            DataColumn<DvInt8> res;
+                            Operation(c1, out a, out res);
+                            for (int i = 0; i < res.Length; ++i)
+                                res.Set(i, -a[i]);
+                            return new NumericColumn(res);
+                        }
+                    case DataKind.R4:
+                        {
+                            float[] a;
+                            DataColumn<float> res;
+                            Operation(c1, out a, out res);
+                            for (int i = 0; i < res.Length; ++i)
+                                res.Set(i, -a[i]);
+                            return new NumericColumn(res);
+                        }
+                    case DataKind.R8:
+                        {
+                            double[] a;
+                            DataColumn<double> res;
+                            Operation(c1, out a, out res);
+                            for (int i = 0; i < res.Length; ++i)
+                                res.Set(i, -a[i]);
+                            return new NumericColumn(res);
+                        }
+                    default:
+                        throw new DataTypeError(string.Format("{0} not implemented for column {1}.", OperationName, c1.Kind));
+                }
             }
         }
 

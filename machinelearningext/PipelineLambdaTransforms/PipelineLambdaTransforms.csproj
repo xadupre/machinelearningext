@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Scikit.ML.PipelineLambdaTransforms</AssemblyName>
+    <RootNamespace>Scikit.ML.PipelineLambdaTransforms</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.4.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
+    <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.ML.Core">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.Data">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.Maml">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Maml.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.Api">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

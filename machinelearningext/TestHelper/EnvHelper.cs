@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System.IO;
+using System.Text;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
@@ -24,6 +25,19 @@ namespace Scikit.ML.TestHelper
             if (errWriter == null)
                 errWriter = new StreamWriter(new MemoryStream());
             return new TlcEnvironment(seed, verbose, sensitivity, conc, outWriter, errWriter);
+        }
+
+        public static TlcEnvironment NewTestEnvironment(out StringWriter sout, out StringWriter serr,
+                                                        int? seed = null, bool verbose = false,
+                                                        MessageSensitivity sensitivity = (MessageSensitivity)(-1),
+                                                        int conc = 0)
+        {
+            var sb = new StringBuilder();
+            sout = new StringWriter(sb);
+            sb = new StringBuilder();
+            serr = new StringWriter(sb);
+            return NewTestEnvironment(seed: seed, verbose: verbose, sensitivity: sensitivity,
+                                      conc: conc, outWriter: sout, errWriter: serr);
         }
     }
 }

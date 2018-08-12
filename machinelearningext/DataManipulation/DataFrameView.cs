@@ -156,7 +156,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the list of types.
         /// </summary>
-        public DataKind[] Kinds => _columns == null ? _src.Kinds : _columns.Select(c => _src.Kinds[c]).ToArray();
+        public ColumnType[] Kinds => _columns == null ? _src.Kinds : _columns.Select(c => _src.Kinds[c]).ToArray();
 
         /// <summary>
         /// A view cannot be modified by adding a column.
@@ -181,6 +181,30 @@ namespace Scikit.ML.DataManipulation
         public bool Equals(IDataFrameView dfv)
         {
             return Copy().Equals(dfv.Copy());
+        }
+
+        /// <summary>
+        /// Raises an exception if two dataframes do not have the same
+        /// shape or are two much different.
+        /// </summary>
+        /// <param name="df">dataframe</param>
+        /// <param name="precision">precision</param>
+        /// <param name="exc">raises an exception if too different</param>
+        /// <returns>max difference</returns>
+        public double AssertAlmostEqual(IDataFrameView df, double precision = 1e-5, bool exc = true)
+        {
+            if (Shape != df.Shape)
+                throw new DataValueError(string.Format("Shapes are different ({0}, {1}) != ({2}, {3})",
+                            Shape.Item1, Shape.Item2, df.Shape.Item1, df.Shape.Item2));
+            double max = 0;
+            for (int i = 0; i < df.Shape.Item2; ++i)
+            {
+                var c1 = GetColumn(i);
+                var c2 = GetColumn(i);
+                var d = c1.AssertAlmostEqual(c2, precision, exc);
+                max = Math.Max(max, d);
+            }
+            return max;
         }
 
         /// <summary>

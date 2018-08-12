@@ -8,12 +8,8 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.EntryPoints;
 using Scikit.ML.PipelineHelper;
 
-
-// The following files makes the object visible to maml.
-// This way, it can be added to any pipeline.
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
@@ -33,19 +29,12 @@ namespace Scikit.ML.NearestNeighbors
 {
     public class NearestNeighborsTransform : IDataTransform
     {
-        /// <summary>
-        /// A unique signature.
-        /// </summary>
         public const string LoaderSignature = "NearNeighborsTransform";  // Not more than 24 letters.
         public const string Summary = "Retrieve the closest neighbors among a set of points.";
         public const string RegistrationName = LoaderSignature;
         public const string LongName = "Nearest Neighbors Transform";
         public const string ShortName = "knntr";
 
-        /// <summary>
-        /// Identify the object for dynamic instantiation.
-        /// This is also used to track versionning when serializing and deserializing.
-        /// </summary>
         static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
@@ -56,9 +45,6 @@ namespace Scikit.ML.NearestNeighbors
                 loaderSignature: LoaderSignature);
         }
 
-        /// <summary>
-        /// Parameters which defines the transform.
-        /// </summary>
         public class Arguments : NearestNeighborsArguments
         {
             [Argument(ArgumentType.AtMostOnce, HelpText = "Feature column", ShortName = "col")]
@@ -104,14 +90,6 @@ namespace Scikit.ML.NearestNeighbors
             {
                 base.PostProcess();
             }
-        }
-
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoint : Arguments
-        {
-            [Argument(ArgumentType.Required, HelpText = "Input dataset",
-                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public IDataView Data;
         }
 
         IDataView _input;

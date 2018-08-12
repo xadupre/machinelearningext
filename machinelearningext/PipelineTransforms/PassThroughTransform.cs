@@ -8,13 +8,9 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.Model;
 using Scikit.ML.PipelineHelper;
 
-
-// The following files makes the object visible to maml.
-// This way, it can be added to any pipeline.
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
@@ -36,17 +32,10 @@ namespace Scikit.ML.PipelineTransforms
     /// </summary>
     public class PassThroughTransform : IDataTransform
     {
-        /// <summary>
-        /// A unique signature.
-        /// </summary>
         public const string LoaderSignature = "PassThroughTransform";  // Not more than 24 letters.
         public const string Summary = "Insert a transform which does nothing just to get a transform pointer. It can be used to dump a view on disk.";
         public const string RegistrationName = LoaderSignature;
 
-        /// <summary>
-        /// Identify the object for dynamic instantiation.
-        /// This is also used to track versionning when serializing and deserializing.
-        /// </summary>
         static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
@@ -57,9 +46,6 @@ namespace Scikit.ML.PipelineTransforms
                 loaderSignature: LoaderSignature);
         }
 
-        /// <summary>
-        /// Parameters which defines the transform.
-        /// </summary>
         public class Arguments
         {
             [Argument(ArgumentType.AtMostOnce, HelpText = "Save on disk?", ShortName = "s")]
@@ -103,14 +89,6 @@ namespace Scikit.ML.PipelineTransforms
             }
         }
 
-        [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
-        public class ArgumentsEntryPoint : Arguments
-        {
-            [Argument(ArgumentType.Required, HelpText = "Input dataset",
-                      Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
-            public IDataView Data;
-        }
-
         IDataView _input;
         Arguments _args;
         IHost _host;
@@ -123,7 +101,7 @@ namespace Scikit.ML.PipelineTransforms
         /// This method changes the sources. It does check the source
         /// has the exact same schema than the previous one.
         /// </summary>
-        /// <param name="source"></param>
+        /// <param name="source">A new data source</param>
         public void SetSource(IDataView source)
         {
             var sch = SchemaHelper.ToString(Source.Schema);
@@ -181,9 +159,6 @@ namespace Scikit.ML.PipelineTransforms
         public ISchema Schema { get { return _input.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
-        /// <summary>
-        /// Same as the input data view.
-        /// </summary>
         public long? GetRowCount(bool lazy = true)
         {
             _host.AssertValue(Source, "_input");

@@ -25,12 +25,20 @@ namespace Scikit.ML.EntryPoints
 {
     #region Definition
 
+    [TlcModule.EntryPointKind(typeof(CommonInputs.ITransformInput))]
+    public class NearestNeighborsTransform_ArgumentsEntryPoint : _NearestNeighborsTransform.Arguments
+    {
+        [Argument(ArgumentType.Required, HelpText = "Input dataset",
+                  Visibility = ArgumentAttribute.VisibilityType.EntryPointsOnly)]
+        public IDataView Data;
+    }
+
     public static class EntryPointNearestNeighborsTransform
     {
         [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_NearestNeighbors.Name,
                               Desc = _NearestNeighborsTransform.Summary,
                               UserName = EP_NearestNeighbors.Name)]
-        public static CommonOutputs.TransformOutput NearestNeighbors(IHostEnvironment env, _NearestNeighborsTransform.ArgumentsEntryPoint input)
+        public static CommonOutputs.TransformOutput NearestNeighbors(IHostEnvironment env, NearestNeighborsTransform_ArgumentsEntryPoint input)
         {
             Contracts.CheckValue(env, nameof(env));
             env.CheckValue(input, nameof(input));
