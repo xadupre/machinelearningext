@@ -426,8 +426,13 @@ namespace Scikit.ML.PipelineHelper
                 case DataKind.U1: return NumberType.U1;
                 case DataKind.U2: return NumberType.U2;
                 case DataKind.U4: return NumberType.U4;
+                case DataKind.U8: return NumberType.U8;
+                case DataKind.I1: return NumberType.I1;
+                case DataKind.I2: return NumberType.I2;
                 case DataKind.I4: return NumberType.I4;
+                case DataKind.I8: return NumberType.I8;
                 case DataKind.R4: return NumberType.R4;
+                case DataKind.R8: return NumberType.R8;
                 case DataKind.TX: return TextType.Instance;
                 default:
                     throw Contracts.ExceptNotSupp($"Unsupported output type: {kind}.");
