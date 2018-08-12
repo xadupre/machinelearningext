@@ -12,8 +12,6 @@ using Microsoft.ML.Runtime.Internal.Calibration;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
-// The following files makes the object visible to maml.
-// This way, it can be added to any pipeline.
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using TagTrainOrScoreTransform = Scikit.ML.PipelineGraphTransforms.TagTrainOrScoreTransform;
 

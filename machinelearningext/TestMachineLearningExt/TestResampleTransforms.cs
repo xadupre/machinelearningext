@@ -113,6 +113,172 @@ namespace TestMachineLearningExt
         }
 
         #endregion
+
+        #region Shake Input Transform
+
+        [TestMethod]
+        public void Testl_ShakeInputTransform()
+        {
+            var host = EnvHelper.NewTestEnvironment();
+
+            var inputs = new[] {
+                new SHExampleA() { X = new float[] { 0, 1 } },
+                new SHExampleA() { X = new float[] { 2, 3 } }
+            };
+
+            var data = host.CreateStreamingDataView(inputs);
+
+            var args = new ShakeInputTransform.Arguments
+            {
+                inputColumn = "X",
+                inputFeaturesInt = new[] { 0, 1 },
+                outputColumns = new[] { "yo" },
+                values = "-10,10;-100,100"
+            };
+
+            var trv = new SHExampleValueMapper();
+            if (trv == null)
+                throw new Exception("Invalid");
+            var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+
+            using (var cursor = shake.GetRowCursor(i => true))
+            {
+                var outValues = new List<float>();
+                var colGetter = cursor.GetGetter<VBuffer<float>>(1);
+                while (cursor.MoveNext())
+                {
+                    VBuffer<float> got = new VBuffer<float>();
+                    colGetter(ref got);
+                    outValues.AddRange(got.DenseValues());
+                }
+                if (outValues.Count != 8)
+                    throw new Exception("expected 8");
+            }
+        }
+
+        [TestMethod]
+        public void Testl_ShakeInputTransformAdd()
+        {
+            var host = EnvHelper.NewTestEnvironment();
+
+            var inputs = new[] {
+                new SHExampleA() { X = new float[] { 0, 1 } },
+                new SHExampleA() { X = new float[] { 2, 3 } }
+            };
+
+            var data = host.CreateStreamingDataView(inputs);
+
+            var args = new ShakeInputTransform.Arguments
+            {
+                inputColumn = "X",
+                inputFeaturesInt = new[] { 0, 1 },
+                outputColumns = new[] { "yo" },
+                values = "-10,10;-100,100",
+                aggregation = ShakeInputTransform.ShakeAggregation.add
+            };
+
+            var trv = new SHExampleValueMapper();
+            if (trv == null)
+                throw new Exception("Invalid");
+            var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+
+            using (var cursor = shake.GetRowCursor(i => true))
+            {
+                var outValues = new List<float>();
+                var colGetter = cursor.GetGetter<VBuffer<float>>(1);
+                while (cursor.MoveNext())
+                {
+                    VBuffer<float> got = new VBuffer<float>();
+                    colGetter(ref got);
+                    outValues.AddRange(got.DenseValues());
+                }
+                if (outValues.Count != 2)
+                    throw new Exception("expected 2");
+            }
+        }
+
+        [TestMethod]
+        public void Testl_ShakeInputTransformVector()
+        {
+            var host = EnvHelper.NewTestEnvironment();
+
+            var inputs = new[] {
+                new SHExampleA() { X = new float[] { 0, 1 } },
+                new SHExampleA() { X = new float[] { 2, 3 } }
+            };
+
+            var data = host.CreateStreamingDataView(inputs);
+
+            var args = new ShakeInputTransform.Arguments
+            {
+                inputColumn = "X",
+                inputFeaturesInt = new[] { 0, 1 },
+                outputColumns = new[] { "yo" },
+                values = "-10,10;-100,100"
+            };
+
+            var trv = new ExampleValueMapperVector();
+            if (trv == null)
+                throw new Exception("Invalid");
+            var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+
+            using (var cursor = shake.GetRowCursor(i => true))
+            {
+                var outValues = new List<float>();
+                var colGetter = cursor.GetGetter<VBuffer<float>>(1);
+                while (cursor.MoveNext())
+                {
+                    VBuffer<float> got = new VBuffer<float>();
+                    colGetter(ref got);
+                    outValues.AddRange(got.DenseValues());
+                }
+                if (outValues.Count != 16)
+                    throw new Exception("expected 16");
+            }
+        }
+
+        [TestMethod]
+        public static void Testl_ShakeInputTransformVectorAdd()
+        {
+            var host = EnvHelper.NewTestEnvironment();
+
+            var inputs = new[] {
+                new SHExampleA() { X = new float[] { 0, 1 } },
+                new SHExampleA() { X = new float[] { 2, 3 } }
+            };
+
+            var data = host.CreateStreamingDataView(inputs);
+
+            var args = new ShakeInputTransform.Arguments
+            {
+                inputColumn = "X",
+                inputFeaturesInt = new[] { 0, 1 },
+                outputColumns = new[] { "yo" },
+                values = "-10,10;-100,100",
+                aggregation = ShakeInputTransform.ShakeAggregation.add
+            };
+
+            var trv = new ExampleValueMapperVector();
+            if (trv == null)
+                throw new Exception("Invalid");
+            var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+
+            using (var cursor = shake.GetRowCursor(i => true))
+            {
+                var outValues = new List<float>();
+                var colGetter = cursor.GetGetter<VBuffer<float>>(1);
+                while (cursor.MoveNext())
+                {
+                    VBuffer<float> got = new VBuffer<float>();
+                    colGetter(ref got);
+                    outValues.AddRange(got.DenseValues());
+                }
+                if (outValues.Count != 4)
+                    throw new Exception("expected 4");
+            }
+        }
+
+        #endregion
     }
 }
 

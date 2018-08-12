@@ -69,4 +69,49 @@ namespace Scikit.ML.TestHelper
             return (ref VBuffer<float> X, ref float y) => { y = X.Values.Sum(); };
         }
     }
+
+    public class SHExampleA
+    {
+        [VectorType(2)]
+        public float[] X;
+    }
+
+    public class SHExampleASparse
+    {
+        [VectorType()]
+        public VBuffer<float> X;
+    }
+
+    public class SHExampleValueMapper : IValueMapper
+    {
+        public ColumnType InputType { get { return new VectorType(NumberType.R4, 2); } }
+        public ColumnType OutputType { get { return NumberType.R4; } }
+        public ValueMapper<TSrc, TDst> GetMapper<TSrc, TDst>()
+        {
+            return GetMapper_() as ValueMapper<TSrc, TDst>;
+        }
+
+        ValueMapper<VBuffer<float>, float> GetMapper_()
+        {
+            return (ref VBuffer<float> X, ref float y) => { y = X.Values.Sum(); };
+        }
+    }
+
+    public class ExampleValueMapperVector : IValueMapper
+    {
+        public ColumnType InputType { get { return new VectorType(NumberType.R4, 2); } }
+        public ColumnType OutputType { get { return new VectorType(NumberType.R4); } }
+        public ValueMapper<TSrc, TDst> GetMapper<TSrc, TDst>()
+        {
+            return GetMapper_() as ValueMapper<TSrc, TDst>;
+        }
+
+        ValueMapper<VBuffer<float>, VBuffer<float>> GetMapper_()
+        {
+            return (ref VBuffer<float> X, ref VBuffer<float> y) =>
+            {
+                y = new VBuffer<float>(X.Length, X.Values.Select(c => c).ToArray());
+            };
+        }
+    }
 }
