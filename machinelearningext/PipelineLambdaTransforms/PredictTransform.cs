@@ -26,7 +26,7 @@ using PredictTransform = Scikit.ML.PipelineLambdaTransforms.PredictTransform;
 namespace Scikit.ML.PipelineLambdaTransforms
 {
     /// <summary>
-    /// Scores a predictor hosted by a tagged view.
+    /// Scores a predictor.
     /// </summary>
     public class PredictTransform : AbstractSimpleTransformTemplate
     {
@@ -45,9 +45,6 @@ namespace Scikit.ML.PipelineLambdaTransforms
 
         public new class Arguments
         {
-            [Argument(ArgumentType.Required, HelpText = "Tag of the view which holds the predictor.", ShortName = "in")]
-            public string taggedPredictor;
-
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Column to use for features",
                 ShortName = "feat", Purpose = SpecialPurpose.ColumnName)]
             public string featureColumn = DefaultColumnNames.Features;
@@ -62,22 +59,20 @@ namespace Scikit.ML.PipelineLambdaTransforms
             [Argument(ArgumentType.AtMostOnce, HelpText = "Saves the model with this transform", ShortName = "s")]
             public bool serialize = true;
 
-            public void PostProcess()
+            public virtual void PostProcess()
             {
             }
 
-            public void Write(ModelSaveContext ctx, IHost host)
+            public virtual void Write(ModelSaveContext ctx, IHost host)
             {
-                ctx.Writer.Write(taggedPredictor);
                 ctx.Writer.Write(featureColumn);
                 ctx.Writer.Write(outputColumn);
                 ctx.Writer.Write(useProb ? (byte)1 : (byte)0);
                 ctx.Writer.Write(serialize ? (byte)1 : (byte)0);
             }
 
-            public void Read(ModelLoadContext ctx, IHost host)
+            public virtual void Read(ModelLoadContext ctx, IHost host)
             {
-                taggedPredictor = ctx.Reader.ReadString();
                 featureColumn = ctx.Reader.ReadString();
                 outputColumn = ctx.Reader.ReadString();
                 useProb = ctx.Reader.ReadByte() == 1;
@@ -85,8 +80,18 @@ namespace Scikit.ML.PipelineLambdaTransforms
             }
         }
 
-        readonly Arguments _args;
-        IPredictor _predictor;
+        protected Arguments _args;
+        protected IPredictor _predictor;
+
+        protected PredictTransform(IHostEnvironment env, IDataView input, string loaderSignature) :
+            base(env, input, loaderSignature)
+        {
+        }
+
+        protected PredictTransform(IHost host, ModelLoadContext ctx, IDataView input, string loaderSignature) :
+            base(host, ctx, input, loaderSignature)
+        {
+        }
 
         public PredictTransform(IHostEnvironment env, Arguments args, IDataView input) :
             base(env, input, LoaderSignature)
@@ -94,7 +99,6 @@ namespace Scikit.ML.PipelineLambdaTransforms
             _host.CheckValue(args, "args");
             args.PostProcess();
             _args = args;
-            _host.CheckValue(args.taggedPredictor, "taggedPredictor");
             _sourcePipe = Create(_host, args, input, out _sourceCtx, null);
             _host.Check(_predictor != null, "_predictor is null. It should not.");
         }
@@ -104,7 +108,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
         {
             _host.CheckValue(args, "args");
             args.PostProcess();
-            _host.Check(predictor != null || !string.IsNullOrEmpty(args.taggedPredictor), "taggedPredictor");
+            _host.Check(predictor != null);
             _sourcePipe = Create(_host, args, input, out _sourceCtx, predictor);
             _host.Check(_predictor != null, "_predictor is null. It should not.");
         }
@@ -114,6 +118,11 @@ namespace Scikit.ML.PipelineLambdaTransforms
             _host.CheckValue(ctx, "ctx");
             ctx.CheckAtModel();
             ctx.SetVersionInfo(GetVersionInfo());
+            Write(ctx);
+        }
+
+        protected void Write(ModelSaveContext ctx)
+        {
             _args.Write(ctx, _host);
             ctx.Writer.Write((byte)177);
             if (_args.serialize)
@@ -149,7 +158,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
             return h.Apply("Loading Model", ch => new PredictTransform(h, ctx, input));
         }
 
-        IDataTransform Create(IHostEnvironment env, Arguments args, IDataView input, out IDataView sourceCtx, IPredictor overwritePredictor)
+        protected virtual IDataTransform Create(IHostEnvironment env, Arguments args, IDataView input, out IDataView sourceCtx, IPredictor overwritePredictor)
         {
             sourceCtx = input;
             Contracts.CheckValue(env, "env");

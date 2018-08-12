@@ -5,12 +5,10 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;
-using Scikit.ML.MultiClass;
 using Scikit.ML.ModelSelection;
 
 

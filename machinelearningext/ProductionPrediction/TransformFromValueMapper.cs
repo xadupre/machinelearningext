@@ -112,7 +112,7 @@ namespace Scikit.ML.ProductionPrediction
                     case DataKind.R4:
                         return CreateMemoryTransformIn<VBuffer<float>>();
                     default:
-                        throw _host.ExceptNotImpl("Input Type '{0}' is not handled yet. Contact tlccontrib@microsoft.com.", InputType.AsVector.ItemType.RawKind);
+                        throw _host.ExceptNotImpl("Input Type '{0}' is not handled yet.", InputType.AsVector.ItemType.RawKind);
                 }
             }
             else
@@ -122,7 +122,7 @@ namespace Scikit.ML.ProductionPrediction
                     case DataKind.R4:
                         return CreateMemoryTransformIn<float>();
                     default:
-                        throw _host.ExceptNotImpl("Input Type '{0}' is not handled yet. Contact tlccontrib@microsoft.com.", InputType.RawKind);
+                        throw _host.ExceptNotImpl("Input Type '{0}' is not handled yet.", InputType.RawKind);
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace Scikit.ML.ProductionPrediction
                     case DataKind.R4:
                         return CreateMemoryTransformInOut<TSrc, VBuffer<float>>();
                     default:
-                        throw _host.ExceptNotImpl("Output Type '{0}' is not handled yet. Contact tlccontrib@microsoft.com.", OutputType.AsVector.ItemType.RawKind);
+                        throw _host.ExceptNotImpl("Output Type '{0}' is not handled yet.", OutputType.AsVector.ItemType.RawKind);
                 }
             }
             else
@@ -150,7 +150,7 @@ namespace Scikit.ML.ProductionPrediction
                     case DataKind.R4:
                         return CreateMemoryTransformInOut<TSrc, float>();
                     default:
-                        throw _host.ExceptNotImpl("Output Type '{0}' is not handled yet. Contact tlccontrib@microsoft.com.", OutputType.RawKind);
+                        throw _host.ExceptNotImpl("Output Type '{0}' is not handled yet.", OutputType.RawKind);
                 }
             }
         }

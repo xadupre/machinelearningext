@@ -207,7 +207,7 @@ namespace Scikit.ML.PipelineTraining
                         case DataKind.R4:
                             return GetMapperWithTransform<TSrc, VBuffer<float>, TDst>(_preProcess);
                         default:
-                            throw _host.ExceptNotSupp("Type '{0}' is not handled yet. Send a request to tlccontrib@microsoft.com.", outType);
+                            throw _host.ExceptNotSupp("Type '{0}' is not handled yet.", outType);
                     }
                 }
                 else
@@ -217,7 +217,7 @@ namespace Scikit.ML.PipelineTraining
                         case DataKind.R4:
                             return GetMapperWithTransform<TSrc, float, TDst>(_preProcess);
                         default:
-                            throw _host.ExceptNotSupp("Type '{0}' is not handled yet. Send a request to tlccontrib@microsoft.com.", outType);
+                            throw _host.ExceptNotSupp("Type '{0}' is not handled yet.", outType);
                     }
                 }
                 throw _host.ExceptNotImpl();

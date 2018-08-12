@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineTraining", "Pipelin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModelSelection", "ModelSelection\ModelSelection.csproj", "{B3BD7A20-2B82-4076-8A49-01E81D20517A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineGraphTraining", "PipelineGraphTraining\PipelineGraphTraining.csproj", "{F2DD6B96-52A5-4E2F-870C-547057E7FB70}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{B3BD7A20-2B82-4076-8A49-01E81D20517A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3BD7A20-2B82-4076-8A49-01E81D20517A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B3BD7A20-2B82-4076-8A49-01E81D20517A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2DD6B96-52A5-4E2F-870C-547057E7FB70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2DD6B96-52A5-4E2F-870C-547057E7FB70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2DD6B96-52A5-4E2F-870C-547057E7FB70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2DD6B96-52A5-4E2F-870C-547057E7FB70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
