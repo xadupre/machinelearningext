@@ -1,38 +1,30 @@
-﻿#if false
-//------------------------------------------------------------------------------
-// <copyright company="Microsoft Corporation">
-//     Copyright (c) Microsoft Corporation. All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
+﻿// See the LICENSE file in the project root for more information.
 
 using System.Linq;
-using Microsoft.MachineLearning;
-using Microsoft.MachineLearning.CommandLine;
-using Microsoft.MachineLearning.Data;
-using Microsoft.MachineLearning.Training;
-using Microsoft.MachineLearning.TlcContribHelper;
-using Microsoft.MachineLearning.TlcContribPipelineTransforms;
+using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Runtime.Training;
+using Scikit.ML.PipelineHelper;
+using Scikit.ML.PipelineTransforms;
+using Scikit.ML.ProductionPrediction;
 
-using PrePostProcessTrainer = Microsoft.MachineLearning.TlcContribWrappingPredictors.PrePostProcessTrainer;
+using PrePostProcessTrainer = Scikit.ML.PipelineTraining.PrePostProcessTrainer;
 
 [assembly: LoadableClass(PrePostProcessTrainer.Summary, typeof(PrePostProcessTrainer), typeof(PrePostProcessTrainer.Arguments),
-    new[] { typeof(SignatureTrainer) }, PrePostProcessTrainer.UserNameValue, 
+    new[] { typeof(SignatureTrainer) }, PrePostProcessTrainer.UserNameValue,
     PrePostProcessTrainer.LoadNameValue)]
 
 
-namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
+namespace Scikit.ML.PipelineTraining
 {
     using CR = RoleMappedSchema.ColumnRole;
 
     /// <summary>
     /// Append optional transforms to preprocess and/or postprocess a trainer.
     /// </summary>
-    public class PrePostProcessTrainer : TrainerBase<RoleMappedData, IPredictor>
+    public class PrePostProcessTrainer : TrainerBase<IPredictor>
     {
-#if (TLC36 || TLC37 || TLC38)
-        IHost Host => _host;
-#endif
-
         internal const string LoadNameValue = "PrePost";
         internal const string UserNameValue = "PPTSP";
         internal const string Summary = "Append optional transforms to preprocess and/or postprocess a trainer. " +
@@ -63,7 +55,7 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
         }
 
         private readonly Arguments _args;
-        private ITrainer<RoleMappedData> _trainer;
+        private ITrainer _trainer;
         private IDataTransform _preProcess;
         private IDataTransform _postProcess;
         private IDataTransform _preTrainProcess;
@@ -73,17 +65,13 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
         private string _inputColumn;
         private bool _cache;
 
-#if (!TLC36)
         public PrePostProcessTrainer(IHostEnvironment env, Arguments args) : base(env, LoadNameValue)
-#else
-        public PrePostProcessTrainer(Arguments args, IHostEnvironment env) : base(env, LoadNameValue)
-#endif
         {
             _args = args = args ?? new Arguments();
             Contracts.CheckUserArg(_args.predictorType.IsGood(), "predictorType", "Must specify a base learner type");
             Contracts.CheckUserArg(!string.IsNullOrEmpty(args.outputColumn), "outputColumn", "outputColumn cannot be empty");
             var temp = _args.predictorType.CreateInstance(env);
-            _trainer = temp as ITrainer<RoleMappedData>;
+            _trainer = temp as ITrainer;
             if (_trainer == null)
                 env.Except(temp == null ? "Trainer cannot be cast: {0}." : "Trainer cannot be instantiated: {0}.", _args.predictorType);
             _preProcess = null;
@@ -95,19 +83,12 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
             _cache = args.cache;
         }
 
-        public override bool WantCaching
-        {
-            // No matter what the internal predictor, we're performing many passes
-            // simply by virtue of this being one-versus-all.
-            get { return _cache; }
-        }
-
+        public override TrainerInfo Info => new TrainerInfo(false, false, _cache);
         public override PredictionKind PredictionKind { get { Contracts.Assert(_trainer != null); return _trainer.PredictionKind; } }
-        public override bool NeedNormalization { get { return false; } }
-        public override bool NeedCalibration { get { return false; } }
 
-        public override void Train(RoleMappedData data)
+        public override IPredictor Train(TrainContext ctx)
         {
+            var data = ctx.TrainingSet;
             Contracts.CheckValue(data, "data");
             Contracts.CheckValue(_trainer, "_trainer");
 
@@ -136,18 +117,13 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
                 }
             }
             else
-#if (!TLC36)
                 _preProcess = new PassThroughTransform(Host, new PassThroughTransform.Arguments { }, view);
-#else
-                _preProcess = new PassThroughTransform(new PassThroughTransform.Arguments { }, _host, view);
-#endif
             view = _preProcess;
 
             // New RoleDataMapping
             var roles = data.Schema.GetColumnRoleNames()
                 .Where(kvp => kvp.Key.Value != CR.Feature.Value)
                 .Where(kvp => kvp.Key.Value != CR.Group.Value)
-                .Where(kvp => kvp.Key.Value != CR.Id.Value)
                 .Where(kvp => kvp.Key.Value != CR.Label.Value)
                 .Where(kvp => kvp.Key.Value != CR.Name.Value)
                 .Where(kvp => kvp.Key.Value != CR.Weight.Value);
@@ -155,13 +131,11 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
                 roles = roles.Prepend(CR.Feature.Bind(data.Schema.Feature.Name));
             if (data.Schema.Group != null)
                 roles = roles.Prepend(CR.Group.Bind(data.Schema.Group.Name));
-            if (data.Schema.Id != null)
-                roles = roles.Prepend(CR.Id.Bind(data.Schema.Id.Name));
             if (data.Schema.Label != null)
                 roles = roles.Prepend(CR.Label.Bind(data.Schema.Label.Name));
             if (data.Schema.Weight != null)
                 roles = roles.Prepend(CR.Weight.Bind(data.Schema.Weight.Name));
-            var td = RoleMappedData.Create(view, roles);
+            var td = new RoleMappedData(view, roles);
 
             // Train.
             if (_args.predictorType != null)
@@ -173,8 +147,7 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
                     ch2.Info("Initial schema: {0}", sch1);
                     ch2.Info("Schema before training: {0}", sch2);
                     ch2.Info("Train a predictor: {0}", _args.predictorType);
-                    _trainer.Train(td);
-                    _predictor = _trainer.CreatePredictor();
+                    _predictor = _trainer.Train(td);
                     ch2.Done();
                 }
             }
@@ -185,7 +158,7 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
                 {
                     ch2.Info("Creates a transfrom from a predictor");
                     _inputColumn = td.Schema.Feature.Name;
-                    _predictorAsTransform = new TransformFromValueMapper(Host, _predictor as IValueMapper, 
+                    _predictorAsTransform = new TransformFromValueMapper(Host, _predictor as IValueMapper,
                                                         view, td.Schema.Feature.Name, _outputColumn);
                     ch2.Done();
                 }
@@ -204,9 +177,10 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
             }
             else
                 _postProcess = null;
+            return CreatePredictor();
         }
 
-        public override IPredictor CreatePredictor()
+        IPredictor CreatePredictor()
         {
             if (_preProcess == null)
                 throw Host.Except("preProcess should not be null even if it is a PassThroughTransform.");
@@ -214,4 +188,3 @@ namespace Microsoft.MachineLearning.TlcContribWrappingPredictors
         }
     }
 }
-#endif

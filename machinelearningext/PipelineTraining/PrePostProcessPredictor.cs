@@ -1,19 +1,19 @@
-﻿#if false
-// See the LICENSE file in the project root for more information.
+﻿// See the LICENSE file in the project root for more information.
 
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
 using Microsoft.ML.Runtime.Model;
 using Scikit.ML.PipelineHelper;
+using Scikit.ML.ProductionPrediction;
 
-using PrePostProcessPredictor = Scikit.ML.PipelineGraphTransforms.PrePostProcessPredictor;
+using PrePostProcessPredictor = Scikit.ML.PipelineTraining.PrePostProcessPredictor;
 
 [assembly: LoadableClass(typeof(PrePostProcessPredictor), null, typeof(SignatureLoadModel),
     "Preprocess Postprocess Predictor", PrePostProcessPredictor.LoaderSignature)]
 
 
-namespace Scikit.ML.PipelineGraphTransforms
+namespace Scikit.ML.PipelineTraining
 {
     public class PrePostProcessPredictor : IPredictor, ICanSaveModel, IValueMapper
     {
@@ -78,8 +78,10 @@ namespace Scikit.ML.PipelineGraphTransforms
                 ctx.SaveModel(_postProcess, "_postProcess");
         }
 
-        private PrePostProcessPredictor(IHostEnvironment env, ModelLoadContext ctx)
+        private PrePostProcessPredictor(IHost host, ModelLoadContext ctx)
         {
+            Contracts.CheckValue(host, nameof(host));
+            _host = host;
             _inputColumn = ctx.Reader.ReadString();
             var type = SchemaHelper.ReadType(ctx);
             _outputColumn = ctx.Reader.ReadString();
@@ -111,22 +113,23 @@ namespace Scikit.ML.PipelineGraphTransforms
                 }
             }
 
-            ctx.LoadModel<IDataTransform, SignatureLoadDataTransform>(env, out _preProcess, "_preProcess", data);
-            ctx.LoadModel<IPredictor, SignatureLoadModel>(env, out _predictor, "_predictor");
+            ctx.LoadModel<IDataTransform, SignatureLoadDataTransform>(_host, out _preProcess, "_preProcess", data);
+            ctx.LoadModel<IPredictor, SignatureLoadModel>(_host, out _predictor, "_predictor");
             var hasPost = ctx.Reader.ReadBoolByte();
             if (hasPost)
-                ctx.LoadModel<IDataTransform, SignatureLoadDataTransform>(env, out _postProcess, "_postProcess", _transformFromPredictor);
+                ctx.LoadModel<IDataTransform, SignatureLoadDataTransform>(_host, out _postProcess, "_postProcess", _transformFromPredictor);
             else
                 _postProcess = null;
-            _transformFromPredictor = new TransformFromValueMapper(env, _predictor as IValueMapper, _preProcess, _inputColumn, _outputColumn);
+            _transformFromPredictor = new TransformFromValueMapper(_host, _predictor as IValueMapper, _preProcess, _inputColumn, _outputColumn);
         }
 
         public static PrePostProcessPredictor Create(IHostEnvironment env, ModelLoadContext ctx)
         {
             Contracts.CheckValue(env, "env");
-            env.CheckValue(ctx, "ctx");
+            var h = env.Register(RegistrationName);
+            h.CheckValue(ctx, "ctx");
             ctx.CheckAtModel(GetVersionInfo());
-            return new PrePostProcessPredictor(env, ctx);
+            return new PrePostProcessPredictor(h, ctx);
         }
 
         #region IValueMapper interface
@@ -237,4 +240,3 @@ namespace Scikit.ML.PipelineGraphTransforms
         #endregion
     }
 }
-#endif

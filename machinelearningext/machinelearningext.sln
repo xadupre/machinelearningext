@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeSeries", "TimeSeries\Ti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineLambdaTransforms", "PipelineLambdaTransforms\PipelineLambdaTransforms.csproj", "{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineTraining", "PipelineTraining\PipelineTraining.csproj", "{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C1008D9-0F0D-4417-8FE6-81328E7A9CF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
