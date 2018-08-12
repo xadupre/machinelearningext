@@ -8,7 +8,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.TestHelper;
-using Scikit.ML.PipelineGraphTransforms;
+using Scikit.ML.PipelineLambdaTransforms;
 using Scikit.ML.ProductionPrediction;
 
 

@@ -1461,7 +1461,7 @@ namespace Scikit.ML.DataManipulation
                 {
                     var c1 = (_colsR4[i] as DataColumn<float>).Data;
                     var c2 = (c._colsR4[i] as DataColumn<float>).Data;
-                    var d = NumericHelper.AlmostEquals(c1, c2, (float)precision);
+                    var d = NumericHelper.AlmostEqual(c1, c2, (float)precision);
                     if (d != 0f)
                     {
                         if (exc)
@@ -1476,7 +1476,7 @@ namespace Scikit.ML.DataManipulation
                 {
                     var c1 = (_colsR8[i] as DataColumn<double>).Data;
                     var c2 = (c._colsR8[i] as DataColumn<double>).Data;
-                    var d = NumericHelper.AlmostEquals(c1, c2, precision);
+                    var d = NumericHelper.AlmostEqual(c1, c2, precision);
                     if (d != 0)
                     {
                         if (exc)

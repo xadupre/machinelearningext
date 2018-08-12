@@ -1,21 +1,14 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Internal.Internallearn;
-using Microsoft.ML.Runtime.Data.Conversion;
 using Microsoft.ML.Runtime.Training;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
-using Scikit.ML.PipelineGraphTransforms;
+using Scikit.ML.PipelineLambdaTransforms;
 
 
 namespace Scikit.ML.MultiClass

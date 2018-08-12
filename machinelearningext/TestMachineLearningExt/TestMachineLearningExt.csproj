@@ -20,11 +20,14 @@
     <ProjectReference Include="..\MultiClass\MultiClass.csproj" />
     <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
     <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
+    <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
+    <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
     <ProjectReference Include="..\ProductionPrediction\ProductionPrediction.csproj" />
     <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
     <ProjectReference Include="..\ScikitAPI\ScikitAPI.csproj" />
     <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
+    <ProjectReference Include="..\TimeSeries\TimeSeries.csproj" />
   </ItemGroup>
 
   <ItemGroup>

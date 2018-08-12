@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
+    <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
   </ItemGroup>
 
   <ItemGroup>

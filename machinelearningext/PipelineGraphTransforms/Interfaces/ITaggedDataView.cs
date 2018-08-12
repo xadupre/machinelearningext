@@ -11,6 +11,7 @@ using System.Linq;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Api;
+using Scikit.ML.PipelineTransforms;
 
 
 namespace Scikit.ML.PipelineGraphTransforms

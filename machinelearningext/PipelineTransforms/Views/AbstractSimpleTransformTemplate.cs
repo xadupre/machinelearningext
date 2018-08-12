@@ -12,7 +12,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.CommandLine;
 
 
-namespace Scikit.ML.PipelineGraphTransforms
+namespace Scikit.ML.PipelineTransforms
 {
     /// <summary>
     /// Common class to pass through transform.

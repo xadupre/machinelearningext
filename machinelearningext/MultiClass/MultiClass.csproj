@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
+    <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
     <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
   </ItemGroup>

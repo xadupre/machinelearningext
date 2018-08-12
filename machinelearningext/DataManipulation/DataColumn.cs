@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
-using Microsoft.ML.Runtime.Data.Conversion;
 
 
 namespace Scikit.ML.DataManipulation
@@ -247,6 +246,78 @@ namespace Scikit.ML.DataManipulation
             {
                 iter.MoveNext();
                 Set(row, iter.Current);
+            }
+        }
+
+        /// <summary>
+        /// Raises an exception if two columns do not have the same
+        /// shape or are two much different.
+        /// </summary>
+        /// <param name="col">columns</param>
+        /// <param name="precision">precision</param>
+        /// <param name="exc">raises an exception if too different</param>
+        /// <returns>max difference</returns>
+        public double AssertAlmostEqual(IDataColumn col, double precision = 1e-5, bool exc = true)
+        {
+            var colt = col as DataColumn<DType>;
+            if (colt is null)
+                throw new DataValueError(string.Format("Column types are different {0} != {1}",
+                                                       GetType(), col.GetType()));
+            if(Length != colt.Length)
+                throw new DataValueError(string.Format("Column have different length {0} != {1}",
+                                                       Length, colt.Length));
+            if (Kind.IsVector)
+                throw new NotImplementedException();
+            else
+            {
+                switch(Kind.RawKind)
+                {
+                    case DataKind.BL:
+                        return NumericHelper.AssertAlmostEqual(_data as DvBool[], colt._data as DvBool[], precision, exc);
+                    case DataKind.I4:
+                        return NumericHelper.AssertAlmostEqual(_data as DvInt4[], colt._data as DvInt4[], precision, exc);
+                    case DataKind.U4:
+                        return NumericHelper.AssertAlmostEqual(_data as uint[], colt._data as uint[], precision, exc);
+                    case DataKind.I8:
+                        return NumericHelper.AssertAlmostEqual(_data as DvInt8[], colt._data as DvInt8[], precision, exc);
+                    case DataKind.R4:
+                        return NumericHelper.AssertAlmostEqual(_data as float[], colt._data as float[], precision, exc);
+                    case DataKind.R8:
+                        return NumericHelper.AssertAlmostEqual(_data as double[], colt._data as double[], precision, exc);
+                    case DataKind.TX:
+                        return NumericHelper.AssertAlmostEqual(_data as DvText[], colt._data as DvText[], precision, exc);
+                    default:
+                        throw new DataTypeError($"Unable to handle kind '{Kind}'");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Converts a column into another type.
+        /// </summary>
+        /// <param name="colType"></param>
+        /// <returns>new column</returns>
+        public IDataColumn AsType(ColumnType colType)
+        {
+            if (Kind == colType)
+                return this;
+            if (Kind.IsVector || colType.IsVector)
+                throw new NotImplementedException();
+            else
+            {
+                switch(Kind.RawKind)
+                {
+                    case DataKind.I4:
+                            switch(colType.RawKind)
+                            {
+                                case DataKind.R4:
+                                return new DataColumn<float>(NumericHelper.Convert(_data as DvInt4[], float.NaN));
+                                default:
+                                    throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
+                            }
+                    default:
+                        throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
+                }
             }
         }
 

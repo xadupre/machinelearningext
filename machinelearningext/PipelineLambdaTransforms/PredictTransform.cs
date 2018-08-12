@@ -11,7 +11,7 @@ using Scikit.ML.PipelineTransforms;
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
 using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
-using PredictTransform = Scikit.ML.PipelineGraphTransforms.PredictTransform;
+using PredictTransform = Scikit.ML.PipelineLambdaTransforms.PredictTransform;
 
 
 [assembly: LoadableClass(PredictTransform.Summary, typeof(PredictTransform),
@@ -23,7 +23,7 @@ using PredictTransform = Scikit.ML.PipelineGraphTransforms.PredictTransform;
     "Run prediction for a transform", PredictTransform.LoaderSignature, "Predict")]
 
 
-namespace Scikit.ML.PipelineGraphTransforms
+namespace Scikit.ML.PipelineLambdaTransforms
 {
     /// <summary>
     /// Scores a predictor hosted by a tagged view.
@@ -158,11 +158,7 @@ namespace Scikit.ML.PipelineGraphTransforms
 
             IPredictor predictor;
             if (overwritePredictor == null)
-            {
-                env.CheckUserArg(!string.IsNullOrWhiteSpace(args.taggedPredictor), "taggedPredictor",
-                    "The input tag is required.");
-                predictor = TagHelper.GetTaggedPredictor(env, input, args.taggedPredictor);
-            }
+                throw env.Except("No defined predictor.");
             else
                 predictor = overwritePredictor;
 

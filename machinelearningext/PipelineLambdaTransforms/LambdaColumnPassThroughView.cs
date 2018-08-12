@@ -11,7 +11,7 @@ using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
 
-namespace Scikit.ML.PipelineGraphTransforms
+namespace Scikit.ML.PipelineLambdaTransforms
 {
     public static class LambdaColumnHelper
     {

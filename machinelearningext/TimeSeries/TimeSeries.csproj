@@ -1,17 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Scikit.ML.PipelineGraphTransforms</AssemblyName>
-    <RootNamespace>Scikit.ML.PipelineGraphTransforms</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AssemblyName>Scikit.ML.TimeSeries</AssemblyName>
+    <RootNamespace>Scikit.ML.TimeSeries</RootNamespace>
     <Version>0.4.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
     <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
-    <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
   </ItemGroup>
 
   <ItemGroup>

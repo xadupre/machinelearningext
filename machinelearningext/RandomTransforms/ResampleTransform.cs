@@ -388,7 +388,7 @@ namespace Scikit.ML.RandomTransforms
                 _cacheReplica[did] = rep;
             }
             if (nbIn == 0)
-                ch.Warning("Resample on a condition never happened: in={0} out={1}", nbIn, nbOut);
+                ch.Warning("Resample on a condition never happened: nbIn={0} nbOut={1}", nbIn, nbOut);
         }
 
         #endregion

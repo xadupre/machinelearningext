@@ -2,15 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Scikit.ML.PipelineGraphTransforms</AssemblyName>
-    <RootNamespace>Scikit.ML.PipelineGraphTransforms</RootNamespace>
+    <AssemblyName>Scikit.ML.PipelineLambdaTransforms</AssemblyName>
+    <RootNamespace>Scikit.ML.PipelineLambdaTransforms</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>0.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
-    <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
     <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
   </ItemGroup>
 

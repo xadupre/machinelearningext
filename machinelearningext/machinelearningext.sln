@@ -29,6 +29,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultiClass", "MultiClass\Mu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProductionPrediction", "ProductionPrediction\ProductionPrediction.csproj", "{12E282B3-5C99-4DC6-B6EB-8C9F3A07A1CC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeSeries", "TimeSeries\TimeSeries.csproj", "{33DB0CB7-9E0C-41C1-AB89-6077FA321D51}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineLambdaTransforms", "PipelineLambdaTransforms\PipelineLambdaTransforms.csproj", "{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +91,14 @@ Global
 		{12E282B3-5C99-4DC6-B6EB-8C9F3A07A1CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12E282B3-5C99-4DC6-B6EB-8C9F3A07A1CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12E282B3-5C99-4DC6-B6EB-8C9F3A07A1CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33DB0CB7-9E0C-41C1-AB89-6077FA321D51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33DB0CB7-9E0C-41C1-AB89-6077FA321D51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33DB0CB7-9E0C-41C1-AB89-6077FA321D51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33DB0CB7-9E0C-41C1-AB89-6077FA321D51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A7AD35B-672B-4AC9-A682-C4BF1AB66B21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

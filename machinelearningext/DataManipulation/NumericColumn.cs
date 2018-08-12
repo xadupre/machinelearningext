@@ -70,6 +70,29 @@ namespace Scikit.ML.DataManipulation
             return new NumericColumn(filt[0].Concat(filt));
         }
 
+        /// <summary>
+        /// Raises an exception if two columns do not have the same
+        /// shape or are two much different.
+        /// </summary>
+        /// <param name="df">columns</param>
+        /// <param name="precision">precision</param>
+        /// <param name="exc">raises an exception if too different</param>
+        /// <returns>max difference</returns>
+        public double AssertAlmostEqual(IDataColumn col, double precision = 1e-5, bool exc = true)
+        {
+            return _column.AssertAlmostEqual(col, precision, exc);
+        }
+
+        /// <summary>
+        /// Converts a column into another type.
+        /// </summary>
+        /// <param name="colType"></param>
+        /// <returns>new columns</returns>
+        public IDataColumn AsType(ColumnType colType)
+        {
+            return _column.AsType(colType);
+        }
+
         #endregion
 
         #region Set + Enumerator

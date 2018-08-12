@@ -8,11 +8,7 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Trainers;
-using Microsoft.ML.Transforms;
-using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
-using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
 using Scikit.ML.MultiClass;
 
@@ -598,7 +594,7 @@ namespace TestMachineLearningExt
             xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", xf);
             var roles = env.CreateExamples(xf, "Features", "Label");
 
-            string pred = addpre ? "PrePost{pre=poly{in=Features} p=___ pret=Take{n=80}}" : "PrePost{p=___ pret=Take{n=80}}";
+            string pred = addpre ? "PrePost{pre=poly{col=Features} p=___ pret=Take{n=80}}" : "PrePost{p=___ pret=Take{n=80}}";
             pred = pred.Replace("___", modelName);
             var trainer = env.CreateTrainer(pred);
             using (var ch = env.Start("Train"))

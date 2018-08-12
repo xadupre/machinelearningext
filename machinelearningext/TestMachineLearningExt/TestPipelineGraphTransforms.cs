@@ -8,11 +8,7 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Trainers;
-using Microsoft.ML.Transforms;
-using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
-using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
 
 
