@@ -1,4 +1,4 @@
-# About machine learning
+# Custom Extensions to ML.net
 
 This project proposes some extension to
 [machinelearning](https://github.com/dotnet/machinelearning)
