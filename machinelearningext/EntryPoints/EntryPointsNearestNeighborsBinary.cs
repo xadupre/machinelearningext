@@ -74,7 +74,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, NearestNeighborsBinary input, NearestNeighborsBinary.Output output)
         {
-            exp.AddSerialize(EntryPointsConstants.EntryPointPrefix + NearestNeighborsBinary.Name, input, output);
+            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + NearestNeighborsBinary.Name, input, output);
         }
     }
 

@@ -210,8 +210,9 @@ namespace Scikit.ML.PipelineGraphTransforms
                 string feat;
                 string group;
                 var data = CreateDataFromArgs(_host, ch, new OpaqueDataView(input), args, out feat, out group);
-                _predictor = TrainUtils.Train(host, ch, data, trainer, args.Trainer.Kind, null,
-                    args.calibrator, args.maxCalibrationExamples, null);
+                ICalibratorTrainer calibrator = args.calibrator == null ? null : args.calibrator.CreateInstance(host);
+                var extTrainer = new ExtendedTrainer(trainer, null);
+                _predictor = extTrainer.Train(host, ch, data, null, calibrator, args.maxCalibrationExamples);
 
                 if (!string.IsNullOrEmpty(args.outputModel))
                 {

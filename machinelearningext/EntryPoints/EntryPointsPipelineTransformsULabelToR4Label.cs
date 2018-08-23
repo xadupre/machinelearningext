@@ -65,7 +65,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, ULabelToR4Label input, ULabelToR4Label.Output output)
         {
-            exp.AddSerialize(EntryPointsConstants.EntryPointPrefix + EP_ULabelToR4Label.Name, input, output);
+            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_ULabelToR4Label.Name, input, output);
         }
     }
 

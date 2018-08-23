@@ -65,7 +65,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, Polynomial input, Polynomial.Output output)
         {
-            exp.AddSerialize(EntryPointsConstants.EntryPointPrefix + EP_Polynomial.Name, input, output);
+            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_Polynomial.Name, input, output);
         }
     }
 

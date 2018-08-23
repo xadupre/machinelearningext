@@ -44,7 +44,7 @@ namespace Scikit.ML.PipelineHelper
         /// <param name="inpPredictor">for continuous training, initial state</param>
         /// <returns>predictor</returns>
         IPredictor Train(IHostEnvironment env, IChannel ch, RoleMappedData data, RoleMappedData validData = null,
-                         SubComponent<ICalibratorTrainer, SignatureCalibrator> calibrator = null, int maxCalibrationExamples = 0,
+                         ICalibratorTrainer calibrator = null, int maxCalibrationExamples = 0,
                          bool? cacheData = null, IPredictor inpPredictor = null);
     }
 
