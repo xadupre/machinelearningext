@@ -44,14 +44,22 @@ jobs:
             sudo apt-get install cmake
             cmake --version
 
+# curl -sSL "https://packages.microsoft.com/keys/microsoft.asc" | sudo -E apt-key add -
+# echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" | sudo tee -a /etc/apt/sources.list > /dev/null
+# sudo apt-get update
+# sudo -E apt-get -yq update &>> ~/apt-get-update.log
+# sudo -E apt-get -yqf --no-install-suggests --no-install-recommends --force-yes install dotnet-sdk-2.1.200
       - run:
           name: install dotnet
           command: |
-            curl -sSL "https://packages.microsoft.com/keys/microsoft.asc" | sudo -E apt-key add -
-            echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" | sudo tee -a /etc/apt/sources.list > /dev/null
+            wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.asc.gpg
+            sudo mv microsoft.asc.gpg /etc/apt/trusted.gpg.d/
+            wget -q https://packages.microsoft.com/config/debian/8/prod.list
+            sudo mv prod.list /etc/apt/sources.list.d/microsoft-prod.list
+            sudo chown root:root /etc/apt/trusted.gpg.d/microsoft.asc.gpg
+            sudo chown root:root /etc/apt/sources.list.d/microsoft-prod.list
             sudo apt-get update
-            sudo -E apt-get -yq update &>> ~/apt-get-update.log
-            sudo -E apt-get -yqf --no-install-suggests --no-install-recommends --force-yes install dotnet-sdk-2.1.200
+            sudo apt-get install dotnet-sdk-2.1
 
       - run:
           name: remove clang
