@@ -211,7 +211,8 @@ namespace Scikit.ML.PipelineGraphTransforms
                 string group;
                 var data = CreateDataFromArgs(_host, ch, new OpaqueDataView(input), args, out feat, out group);
                 ICalibratorTrainer calibrator = args.calibrator == null ? null : args.calibrator.CreateInstance(host);
-                var extTrainer = new ExtendedTrainer(trainer, null);
+                var nameTrainer = args.Trainer.ToString().Replace("{", "").Replace("}", "").Replace(" ", "").Replace("=", "").Replace("+", "Y").Replace("-", "N");
+                var extTrainer = new ExtendedTrainer(trainer, nameTrainer);
                 _predictor = extTrainer.Train(host, ch, data, null, calibrator, args.maxCalibrationExamples);
 
                 if (!string.IsNullOrEmpty(args.outputModel))
