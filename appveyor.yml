@@ -70,18 +70,8 @@ after_test:
   - if not exist dist mkdir dist
   - if not exist dist\Release mkdir dist\Release
   - if not exist dist\Debug mkdir dist\Debug
-  - copy machinelearningext\DataManipulation\bin\Release\netstandard2.0\Scikit.ML.DataManipulation* dist\Release
-  - copy machinelearningext\DataManipulation\bin\Debug\netstandard2.0\Scikit.ML.DataManipulation* dist\Debug
-  - copy machinelearningext\EntryPoints\bin\Release\netstandard2.0\Scikit.ML.EntryPoints* dist\Release
-  - copy machinelearningext\EntryPoints\bin\Debug\netstandard2.0\Scikit.ML.EntryPoints* dist\Debug
-  - copy machinelearningext\FeaturesTransforms\bin\Release\netstandard2.0\Scikit.ML.FeaturesTransforms* dist\Release
-  - copy machinelearningext\FeaturesTransforms\bin\Debug\netstandard2.0\Scikit.ML.FeaturesTransforms* dist\Debug
-  - copy machinelearningext\NearestNeighbors\bin\Release\netstandard2.0\Scikit.ML.NearestNeighbors* dist\Release
-  - copy machinelearningext\NearestNeighbors\bin\Debug\netstandard2.0\Scikit.ML.NearestNeighbors* dist\Debug
-  - copy machinelearningext\PipelineHelper\bin\Release\netstandard2.0\Scikit.ML.PipelineHelper* dist\Release
-  - copy machinelearningext\PipelineHelper\bin\Debug\netstandard2.0\Scikit.ML.PipelineHelper* dist\Debug
-  - copy machinelearningext\PipelineTransforms\bin\Release\netstandard2.0\Scikit.ML.PipelineTransforms* dist\Release
-  - copy machinelearningext\PipelineTransforms\bin\Debug\netstandard2.0\Scikit.ML.PipelineTransforms* dist\Debug
+  - copy machinelearningext\TestMachineLearningExt\bin\Release\netstandard2.0\* dist\Release
+  - copy machinelearningext\TestMachineLearningExt\bin\Debug\netstandard2.0\* dist\Debug
 
 artifacts:
   - path: dist
