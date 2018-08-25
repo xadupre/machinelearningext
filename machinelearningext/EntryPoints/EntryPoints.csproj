@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Scikit.ML.EntryPoints</AssemblyName>
     <RootNamespace>Scikit.ML.EntryPoints</RootNamespace>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 

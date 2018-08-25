@@ -5,7 +5,7 @@
     <AssemblyName>Scikit.ML.PipelineTransforms</AssemblyName>
     <RootNamespace>Scikit.ML.PipelineTransforms</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
