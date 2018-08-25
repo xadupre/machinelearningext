@@ -65,7 +65,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, PassThrough input, PassThrough.Output output)
         {
-            exp.AddSerialize(EntryPointsConstants.EntryPointPrefix + EP_PassThrough.Name, input, output);
+            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_PassThrough.Name, input, output);
         }
     }
 

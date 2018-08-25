@@ -35,6 +35,24 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
+        public void TestHelpModels()
+        {
+            foreach (var name in new[] { "Resample" })
+            {
+                var cmd = $"? {name}";
+                using (var std = new StdCapture())
+                {
+                    Maml.MainAll(cmd);
+                    var sout = std.StdOut.ToString();
+                    var serr = std.StdErr.ToString();
+                    Assert.IsTrue(!serr.Contains("Can't instantiate"));
+                    Assert.IsTrue(sout.Length > 0);
+                    Assert.IsTrue(!sout.Contains("Unknown"));
+                }
+            }
+        }
+
+        [TestMethod]
         public void TestCSGenerator()
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;

@@ -5,3 +5,4 @@ _tests
 dist
 build
 
+*.pyc

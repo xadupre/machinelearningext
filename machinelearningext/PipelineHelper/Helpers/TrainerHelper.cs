@@ -1,9 +1,11 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System.Linq;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Internal.Calibration;
+using Microsoft.ML.Runtime.Data.IO;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -60,14 +62,64 @@ namespace Scikit.ML.PipelineHelper
         /// <param name="calibrator">calibrator</param>
         /// <param name="maxCalibrationExamples">number of examples used to calibrate</param>
         /// <param name="cacheData">cache training data</param>
-        /// <param name="inpPredictor">for continuous training, initial state</param>
+        /// <param name="inputPredictor">for continuous training, initial state</param>
         /// <returns>predictor</returns>
         public IPredictor Train(IHostEnvironment env, IChannel ch, RoleMappedData data, RoleMappedData validData = null,
-                                SubComponent<ICalibratorTrainer, SignatureCalibrator> calibrator = null, int maxCalibrationExamples = 0,
-                                bool? cacheData = null, IPredictor inpPredictor = null)
+                                ICalibratorTrainer calibrator = null, int maxCalibrationExamples = 0,
+                                bool? cacheData = null, IPredictor inputPredictor = null)
         {
+            /*
             return TrainUtils.Train(env, ch, data, Trainer, LoadName, validData, calibrator, maxCalibrationExamples,
                                     cacheData, inpPredictor);
+                                    */
+
+            var trainer = Trainer;
+            var name = LoadName;
+
+            Contracts.CheckValue(env, nameof(env));
+            env.CheckValue(ch, nameof(ch));
+            ch.CheckValue(data, nameof(data));
+            ch.CheckValue(trainer, nameof(trainer));
+            ch.CheckNonEmpty(name, nameof(name));
+            ch.CheckValueOrNull(validData);
+            ch.CheckValueOrNull(inputPredictor);
+
+            AddCacheIfWanted(env, ch, trainer, ref data, cacheData);
+            ch.Trace("Training");
+            if (validData != null)
+                AddCacheIfWanted(env, ch, trainer, ref validData, cacheData);
+
+            if (inputPredictor != null && !trainer.Info.SupportsIncrementalTraining)
+            {
+                ch.Warning("Ignoring " + nameof(TrainCommand.Arguments.InputModelFile) +
+                    ": Trainer does not support incremental training.");
+                inputPredictor = null;
+            }
+            ch.Assert(validData == null || trainer.Info.SupportsValidation);
+            var predictor = trainer.Train(new TrainContext(data, validData, inputPredictor));
+            return CalibratorUtils.TrainCalibratorIfNeeded(env, ch, calibrator, maxCalibrationExamples, trainer, predictor, data);
+        }
+
+        public static bool AddCacheIfWanted(IHostEnvironment env, IChannel ch, ITrainer trainer, ref RoleMappedData data, bool? cacheData)
+        {
+            Contracts.AssertValue(env, nameof(env));
+            env.AssertValue(ch, nameof(ch));
+            ch.AssertValue(trainer, nameof(trainer));
+            ch.AssertValue(data, nameof(data));
+
+            bool shouldCache = cacheData ?? !(data.Data is BinaryLoader) && trainer.Info.WantCaching;
+
+            if (shouldCache)
+            {
+                ch.Trace("Caching");
+                var prefetch = data.Schema.GetColumnRoles().Select(kc => kc.Value.Index).ToArray();
+                var cacheView = new CacheDataView(env, data.Data, prefetch);
+                // Because the prefetching worked, we know that these are valid columns.
+                data = new RoleMappedData(cacheView, data.Schema.GetColumnRoleNames());
+            }
+            else
+                ch.Trace("Not caching");
+            return shouldCache;
         }
     }
 
