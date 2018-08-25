@@ -70,8 +70,8 @@ after_test:
   - if not exist dist mkdir dist
   - if not exist dist\Release mkdir dist\Release
   - if not exist dist\Debug mkdir dist\Debug
-  - copy machinelearningext\TestMachineLearningExt\bin\Release\netstandard2.0\* dist\Release
-  - copy machinelearningext\TestMachineLearningExt\bin\Debug\netstandard2.0\* dist\Debug
+  - python -u copy_binaries.py Release dist\Release
+  - python -u copy_binaries.py Debug dist\Debug
 
 artifacts:
   - path: dist

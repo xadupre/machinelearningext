@@ -176,8 +176,8 @@ jobs:
             mkdir -p test-reports/dist
             mkdir -p test-reports/dist/Debug
             mkdir -p test-reports/dist/Release
-            cp -r  machinelearningext/TestMachineLearningExt/bin/Release/netstandard2.0/* test-reports/dist/Release
-            cp -r  machinelearningext/TestMachineLearningExt/bin/Debug/netstandard2.0/* test-reports/dist/Debug
+            python -u copy_binaries.py Release test-reports/dist/Release
+            python -u copy_binaries.py Debug test-reports/dist/Release
             
       - store_artifacts:
           path: test-reports
