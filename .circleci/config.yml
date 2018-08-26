@@ -45,6 +45,14 @@ jobs:
             cmake --version
 
       - run:
+          name: install mono (for documentation)
+          command: |
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+            echo "deb https://download.mono-project.com/repo/debian stable-jessie main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+            sudo apt-get update
+            sudo apt-get install mono-devel ca-certificates-mono
+
+      - run:
           name: install dotnet
           command: |
             wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.asc.gpg
@@ -69,6 +77,14 @@ jobs:
                     export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
                     sudo echo "export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:\$PATH" >> ~/.bashrc
                     clang --version
+
+      - run:
+          name: documentation installation
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install pyquickhelper
+            pip install csharpy
 
       - save_cache:
           paths:
@@ -179,14 +195,6 @@ jobs:
             mkdir -p test-reports/doc
             python -u copy_binaries.py Release test-reports/dist/Release
             python -u copy_binaries.py Debug test-reports/dist/Release
-
-      - run:
-          name: documentation installation
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install pyquickhelper
-            pip install csharpy
 
       - run:
           name: documentation compilation
