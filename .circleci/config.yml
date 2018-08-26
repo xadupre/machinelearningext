@@ -100,6 +100,7 @@ jobs:
             . venv/bin/activate
             pip install pyquickhelper
             pip install csharpy
+            pip install -r docs/requirements.txt
 
       - save_cache:
           paths:
