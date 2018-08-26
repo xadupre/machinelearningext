@@ -176,8 +176,24 @@ jobs:
             mkdir -p test-reports/dist
             mkdir -p test-reports/dist/Debug
             mkdir -p test-reports/dist/Release
+            mkdir -p test-reports/doc
             python -u copy_binaries.py Release test-reports/dist/Release
             python -u copy_binaries.py Debug test-reports/dist/Release
+            
+      - run:
+          name: documentation installation
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install csharpy pyquickhelper
+
+      - run:
+          name: documentation compilation
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            python -c "from sphinx import build_main;build_main(['-j2','-v','-T','-b','html','-d','docs/doctrees','docs/source','docs/build'])"
+            zip -r -9  test-reports/doc/documentation_html.zip docs/build/html
             
       - store_artifacts:
           path: test-reports
