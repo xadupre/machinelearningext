@@ -179,13 +179,14 @@ jobs:
             mkdir -p test-reports/doc
             python -u copy_binaries.py Release test-reports/dist/Release
             python -u copy_binaries.py Debug test-reports/dist/Release
-            
+
       - run:
           name: documentation installation
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install csharpy pyquickhelper
+            pip install pyquickhelper
+            pip install csharpy
 
       - run:
           name: documentation compilation
