@@ -94,7 +94,36 @@ jobs:
             cd ..
 
       - run:
-          name: documentation installation
+          name: Install pandoc (documentation)
+          command: |
+                    sudo apt-get update 
+                    wget https://github.com/jgm/pandoc/releases/download/2.2.1/pandoc-2.2.1-1-amd64.deb
+                    sudo dpkg -i pandoc-2.2.1-1-amd64.deb
+          
+      - run:
+          name: Install tex (documentation)
+          command: |
+                    sudo apt-get install -y texlive
+                    sudo apt-get install -y texlive-latex-extra
+                    sudo apt-get install -y dvipng
+          
+      - run:
+          name: Install 7z, unrar (documentation)
+          command: |
+                    sudo apt-get install -y p7zip-full
+          
+      - run:
+          name: Install InkScape (documentation)
+          command: |
+                    sudo apt-get install -y inkscape
+          
+      - run:
+          name: Install graphviz (documentation)
+          command: |
+                    sudo apt-get install -y graphviz
+          
+      - run:
+          name: Python packages (documentation)
           command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -126,19 +155,6 @@ jobs:
             cd machinelearning
             bash build.sh -Debug
             cd ..
-
-# Too long
-#      - run:
-#          name: run tests machinelearning release
-#          env:
-#            DOTNET_CLI_TELEMETRY_OPTOUT:1
-#          command: |
-#            export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
-#            export LANG=en_US.UTF-8
-#            export DOTNET_CLI_TELEMETRY_OPTOUT=1
-#            cd machinelearning
-#            bash build.sh -runtests -Release
-#            cd ..
 
       - run:
           name: publish machinelearning release
@@ -218,7 +234,9 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             python -c "from sphinx import build_main;build_main(['-j2','-v','-T','-b','html','-d','docs/doctrees','docs/source','docs/build'])"
-            zip -r -9  test-reports/doc/documentation_html.zip docs/build/html
+            ls docs
+            ls build
+            zip -r -9 test-reports/doc/documentation_html.zip docs/build/html
             
       - store_artifacts:
           path: test-reports
