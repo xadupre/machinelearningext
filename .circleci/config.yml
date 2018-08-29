@@ -45,6 +45,14 @@ jobs:
             cmake --version
 
       - run:
+          name: install mono (for documentation)
+          command: |
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+            echo "deb https://download.mono-project.com/repo/debian stable-jessie main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+            sudo apt-get update
+            sudo apt-get install mono-devel ca-certificates-mono
+
+      - run:
           name: install dotnet
           command: |
             wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.asc.gpg
@@ -70,6 +78,59 @@ jobs:
                     sudo echo "export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:\$PATH" >> ~/.bashrc
                     clang --version
 
+      - run:
+          name: install pythonnet
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install pycparser
+            export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
+            clang --version
+            python3 -m pip install -U pip
+            python3 -m pip install -U setuptools wheel
+            git clone https://github.com/pythonnet/pythonnet.git
+            cd pythonnet
+            python3 setup.py install --xplat
+            cd ..
+
+      - run:
+          name: Install pandoc (documentation)
+          command: |
+                    sudo apt-get update 
+                    wget https://github.com/jgm/pandoc/releases/download/2.2.1/pandoc-2.2.1-1-amd64.deb
+                    sudo dpkg -i pandoc-2.2.1-1-amd64.deb
+          
+      - run:
+          name: Install tex (documentation)
+          command: |
+                    sudo apt-get install -y texlive
+                    sudo apt-get install -y texlive-latex-extra
+                    sudo apt-get install -y dvipng
+          
+      - run:
+          name: Install 7z, unrar (documentation)
+          command: |
+                    sudo apt-get install -y p7zip-full
+          
+      - run:
+          name: Install InkScape (documentation)
+          command: |
+                    sudo apt-get install -y inkscape
+          
+      - run:
+          name: Install graphviz (documentation)
+          command: |
+                    sudo apt-get install -y graphviz
+          
+      - run:
+          name: Python packages (documentation)
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install pyquickhelper
+            pip install csharpy
+            pip install -r docs/requirements.txt
+
       - save_cache:
           paths:
             - ./venv
@@ -94,19 +155,6 @@ jobs:
             cd machinelearning
             bash build.sh -Debug
             cd ..
-
-# Too long
-#      - run:
-#          name: run tests machinelearning release
-#          env:
-#            DOTNET_CLI_TELEMETRY_OPTOUT:1
-#          command: |
-#            export PATH=/home/circleci/repo/clang+llvm-6.0.0-x86_64-linux-gnu-debian8/bin:$PATH
-#            export LANG=en_US.UTF-8
-#            export DOTNET_CLI_TELEMETRY_OPTOUT=1
-#            cd machinelearning
-#            bash build.sh -runtests -Release
-#            cd ..
 
       - run:
           name: publish machinelearning release
@@ -176,18 +224,17 @@ jobs:
             mkdir -p test-reports/dist
             mkdir -p test-reports/dist/Debug
             mkdir -p test-reports/dist/Release
-            cp -r  machinelearningext/DataManipulation/bin/Release/netstandard2.0/Scikit.ML.DataManipulation* test-reports/dist/Release
-            cp -r  machinelearningext/DataManipulation/bin/Debug/netstandard2.0/Scikit.ML.DataManipulation* test-reports/dist/Debug
-            cp -r  machinelearningext/EntryPoints/bin/Release/netstandard2.0/Scikit.ML.EntryPoints* test-reports/dist/Release
-            cp -r  machinelearningext/EntryPoints/bin/Debug/netstandard2.0/Scikit.ML.EntryPoints* test-reports/dist/Debug
-            cp -r  machinelearningext/FeaturesTransforms/bin/Release/netstandard2.0/Scikit.ML.FeaturesTransforms* test-reports/dist/Release
-            cp -r  machinelearningext/FeaturesTransforms/bin/Debug/netstandard2.0/Scikit.ML.FeaturesTransforms* test-reports/dist/Debug
-            cp -r  machinelearningext/NearestNeighbors/bin/Release/netstandard2.0/Scikit.ML.NearestNeighbors* test-reports/dist/Release
-            cp -r  machinelearningext/NearestNeighbors/bin/Debug/netstandard2.0/Scikit.ML.NearestNeighbors* test-reports/dist/Debug
-            cp -r  machinelearningext/PipelineHelper/bin/Release/netstandard2.0/Scikit.ML.PipelineHelper* test-reports/dist/Release
-            cp -r  machinelearningext/PipelineHelper/bin/Debug/netstandard2.0/Scikit.ML.PipelineHelper* test-reports/dist/Debug
-            cp -r  machinelearningext/PipelineTransforms/bin/Release/netstandard2.0/Scikit.ML.PipelineTransforms* test-reports/dist/Release
-            cp -r  machinelearningext/PipelineTransforms/bin/Debug/netstandard2.0/Scikit.ML.PipelineTransforms* test-reports/dist/Debug
+            mkdir -p test-reports/doc
+            python -u copy_binaries.py Release test-reports/dist/Release
+            python -u copy_binaries.py Debug test-reports/dist/Release
+
+      - run:
+          name: documentation compilation
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            python -c "from sphinx import build_main;build_main(['-j2','-v','-T','-b','html','-d','docs/doctrees','docs/source','docs/build'])"
+            zip -r -9 test-reports/doc/documentation_html.zip docs/build
             
       - store_artifacts:
           path: test-reports

@@ -7,17 +7,6 @@ git:
 matrix:
   include:
     - python: 3.6
-      env: &xplat-env
-        - BUILD_OPTS=--xplat
-        - NUNIT_PATH=~/.nuget/packages/nunit.consolerunner/3.*/tools/nunit3-console.exe
-      addons: &xplat-addons
-        apt:
-          sources:
-          - sourceline: deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main
-            key_url: https://packages.microsoft.com/keys/microsoft.asc
-          packages:
-            - dotnet-sdk-2.1.200
-
 env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
@@ -53,6 +42,12 @@ before_install:
   - sudo apt-get install -qq g++-5 --allow-unauthenticated
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 90
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 90
+  # dotnet
+  - wget -q https://packages.microsoft.com/config/ubuntu/14.04/packages-microsoft-prod.deb
+  - sudo dpkg -i packages-microsoft-prod.deb
+  - sudo apt-get install apt-transport-https
+  - sudo apt-get update
+  - sudo apt-get install dotnet-sdk-2.1
 
 before_script:
   - sudo unlink /usr/bin/gcc && sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc

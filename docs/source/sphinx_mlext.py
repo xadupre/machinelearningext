@@ -35,9 +35,12 @@ def copy_missing_dll():
               os.path.join(this, "..", "..", "machinelearning", "packages", "newtonsoft.json", "10.0.3", "lib", "netstandard1.3")]
     for miss in misses:
         for dl in os.listdir(miss):
+            src = os.path.join(miss, dl)
+            if not os.path.isfile(src):
+                continue
             dst = os.path.join(dll, dl)
             if not os.path.exists(dst):
-                print("copy '{0}'".format(dl))
+                print("copy '{0}' to '{1}'".format(dl, dll))
                 shutil.copy(os.path.join(miss, dl), dll)
 
 
