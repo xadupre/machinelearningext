@@ -234,9 +234,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             python -c "from sphinx import build_main;build_main(['-j2','-v','-T','-b','html','-d','docs/doctrees','docs/source','docs/build'])"
-            ls docs
-            ls docs/build
-            zip -r -9 test-reports/doc/documentation_html.zip docs/build/html
+            zip -r -9 test-reports/doc/documentation_html.zip docs/build
             
       - store_artifacts:
           path: test-reports
