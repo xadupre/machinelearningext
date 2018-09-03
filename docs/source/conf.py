@@ -15,7 +15,7 @@ import csharpy
 project = 'Custom Extensions to ML.net'
 copyright = '2018'
 author = 'Xavier Dupré'
-version = '0.4.0'
+version = '0.6.0'
 release = version
 
 
@@ -46,6 +46,7 @@ language = None
 master_doc = 'index'
 pygments_style = 'sphinx'
 templates_path = ['_templates']
+html_logo = "project_ico.png"
 
 # -- Shortcuts ---------------------------------------------------------------
 
