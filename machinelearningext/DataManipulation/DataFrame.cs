@@ -381,7 +381,7 @@ namespace Scikit.ML.DataManipulation
         /// <param name="host">host</param>
         /// <param name="index">add a column to hold the index</param>
         /// <returns>TextLoader</returns>
-        public static TextLoader ReadCsvToTextLoader(string filename,
+        public static IDataView ReadCsvToTextLoader(string filename,
                                         char sep = ',', bool header = true,
                                         string[] names = null, ColumnType[] dtypes = null,
                                         int nrows = -1, int guess_rows = 10,
@@ -407,7 +407,8 @@ namespace Scikit.ML.DataManipulation
             };
             if (host == null)
                 host = new TlcEnvironment().Register("TextLoader");
-            return new TextLoader(host, args, new MultiFileSource(filename));
+            var multiSource = new MultiFileSource(filename);
+            return new TextLoader(host, args, multiSource).Read(multiSource);
         }
 
         /// <summary>

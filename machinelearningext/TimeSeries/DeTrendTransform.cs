@@ -272,7 +272,7 @@ namespace Scikit.ML.TimeSeries
             {
                 ch.Trace("Constructing trainer");
                 ITrainer trainer = _args.optim.CreateInstance(Host);
-                _trend = TrainUtils.Train(Host, ch, roles, trainer, "trend", null, null, 0, null);
+                _trend = TrainUtils.Train(Host, ch, roles, trainer, null, null, 0, null);
                 ch.Done();
             }
             return BuildTransform(_trend);

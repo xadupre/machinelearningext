@@ -87,7 +87,7 @@ namespace TestMachineLearningExt
             IPredictor model;
             using (var ch = env.Start("Train"))
             {
-                model = TrainUtils.Train(env, ch, roleMap, trainer, "KM", null, 0);
+                model = TrainUtils.Train(env, ch, roleMap, trainer, null, 0);
                 ch.Done();
             }
 
@@ -146,7 +146,7 @@ namespace TestMachineLearningExt
             IPredictor model;
             using (var ch = env.Start("test"))
             {
-                model = TrainUtils.Train(env, ch, roleMap, trainer, "KM", null, 0);
+                model = TrainUtils.Train(env, ch, roleMap, trainer, null, 0);
                 ch.Done();
             }
 
