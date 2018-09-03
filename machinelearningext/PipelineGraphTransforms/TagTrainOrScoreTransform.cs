@@ -46,8 +46,11 @@ namespace Scikit.ML.PipelineGraphTransforms
                 loaderSignature: LoaderSignature);
         }
 
-        public new class Arguments : TrainAndScoreTransform.ArgumentsBase<SignatureTrainer>
+        public new class Arguments : TrainAndScoreTransform.ArgumentsBase
         {
+            [Argument(ArgumentType.Multiple, HelpText = "Trainer", ShortName = "tr")]
+            public SubComponent<ITrainer, SignatureTrainer> trainer = new SubComponent<ITrainer, SignatureTrainer>("PlattCalibration");
+
             [Argument(ArgumentType.Multiple, HelpText = "Output calibrator", ShortName = "cali", NullName = "<None>")]
             public SubComponent<ICalibratorTrainer, SignatureCalibrator> calibrator = new SubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
 
@@ -192,7 +195,7 @@ namespace Scikit.ML.PipelineGraphTransforms
             env.CheckValue(args, "args");
             env.CheckValue(input, "input");
             env.CheckValue(args.tag, "tag is empty");
-            env.CheckUserArg(args.Trainer.IsGood(), "trainer",
+            env.CheckUserArg(args.trainer.IsGood(), "trainer",
                 "Trainer cannot be null. If your model is already trained, please use ScoreTransform instead.");
 
             var views = TagHelper.EnumerateTaggedView(true, input).Where(c => c.Item1 == args.tag);
@@ -204,14 +207,14 @@ namespace Scikit.ML.PipelineGraphTransforms
             using (var ch = host.Start("Train"))
             {
                 ch.Trace("Constructing trainer");
-                ITrainer trainer = args.Trainer.CreateInstance(host);
+                ITrainer trainer = args.trainer.CreateInstance(host);
                 var customCols = TrainUtils.CheckAndGenerateCustomColumns(env, args.CustomColumn);
 
                 string feat;
                 string group;
                 var data = CreateDataFromArgs(_host, ch, new OpaqueDataView(input), args, out feat, out group);
                 ICalibratorTrainer calibrator = args.calibrator == null ? null : args.calibrator.CreateInstance(host);
-                var nameTrainer = args.Trainer.ToString().Replace("{", "").Replace("}", "").Replace(" ", "").Replace("=", "").Replace("+", "Y").Replace("-", "N");
+                var nameTrainer = args.trainer.ToString().Replace("{", "").Replace("}", "").Replace(" ", "").Replace("=", "").Replace("+", "Y").Replace("-", "N");
                 var extTrainer = new ExtendedTrainer(trainer, nameTrainer);
                 _predictor = extTrainer.Train(host, ch, data, null, calibrator, args.maxCalibrationExamples);
 
@@ -246,8 +249,8 @@ namespace Scikit.ML.PipelineGraphTransforms
             }
         }
 
-        private static RoleMappedData CreateDataFromArgs<TSigTrainer>(IHostEnvironment env, IExceptionContext ectx, IDataView input,
-            TrainAndScoreTransform.ArgumentsBase<TSigTrainer> args, out string feat, out string group)
+        private static RoleMappedData CreateDataFromArgs(IHostEnvironment env, IExceptionContext ectx, IDataView input,
+            TrainAndScoreTransform.ArgumentsBase args, out string feat, out string group)
         {
             var schema = input.Schema;
             feat = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "FeatureColumn", args.FeatureColumn, DefaultColumnNames.Features);
