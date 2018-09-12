@@ -3,9 +3,10 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
+using Scikit.ML.PipelineHelper;
+
 
 // This indicates where to find objects in ML.net assemblies.
 using ComponentCreation = Microsoft.ML.Runtime.Api.ComponentCreation;

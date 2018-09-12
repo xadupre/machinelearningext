@@ -8,6 +8,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Training;
 using Microsoft.ML.Runtime.Internal.Calibration;
 using Scikit.ML.RandomTransforms;
+using Scikit.ML.PipelineHelper;
 
 using OptimizedOVATrainer = Scikit.ML.MultiClass.OptimizedOVATrainer;
 

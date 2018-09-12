@@ -8,6 +8,7 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Data.IO;
+using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;

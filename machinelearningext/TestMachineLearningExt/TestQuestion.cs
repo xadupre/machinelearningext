@@ -8,7 +8,7 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Transforms;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
+using Scikit.ML.PipelineHelper;
 
 
 namespace TestMachineLearningExt
