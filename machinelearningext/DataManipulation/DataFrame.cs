@@ -9,7 +9,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Data.IO;
 using Scikit.ML.PipelineHelper;
-using Data = Microsoft.ML.Data;
+using DataLegacy = Microsoft.ML.Legacy.Data;
 
 
 namespace Scikit.ML.DataManipulation
@@ -183,35 +183,44 @@ namespace Scikit.ML.DataManipulation
             return _data.AddColumn(name, values.Kind, values.Length, values);
         }
 
-        public int AddColumn(string name, DvBool[] values) { return AddColumn(name, new DataColumn<DvBool>(values)); }
         public int AddColumn(string name, bool[] values)
         {
-            var buf = new DvBool[values.Length];
+            var buf = new bool[values.Length];
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = values[i];
-            return AddColumn(name, new DataColumn<DvBool>(buf));
+            return AddColumn(name, new DataColumn<bool>(buf));
         }
-        public int AddColumn(string name, DvInt4[] values) { return AddColumn(name, new DataColumn<DvInt4>(values)); }
+
         public int AddColumn(string name, int[] values)
         {
-            var buf = new DvInt4[values.Length];
+            var buf = new int[values.Length];
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = values[i];
-            return AddColumn(name, new DataColumn<DvInt4>(buf));
+            return AddColumn(name, new DataColumn<int>(buf));
         }
-        public int AddColumn(string name, DvInt8[] values) { return AddColumn(name, new DataColumn<DvInt8>(values)); }
-        public int AddColumn(string name, Int64[] values)
+
+        public int AddColumn(string name, long[] values)
         {
-            var buf = new DvInt8[values.Length];
+            var buf = new Int64[values.Length];
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = values[i];
-            return AddColumn(name, new DataColumn<DvInt8>(buf));
+            return AddColumn(name, new DataColumn<Int64>(buf));
         }
+
         public int AddColumn(string name, uint[] values) { return AddColumn(name, new DataColumn<uint>(values)); }
         public int AddColumn(string name, float[] values) { return AddColumn(name, new DataColumn<float>(values)); }
         public int AddColumn(string name, double[] values) { return AddColumn(name, new DataColumn<double>(values)); }
         public int AddColumn(string name, DvText[] values) { return AddColumn(name, new DataColumn<DvText>(values)); }
+
         public int AddColumn(string name, string[] values)
+        {
+            var buf = new DvText[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new DvText(values[i]);
+            return AddColumn(name, new DataColumn<DvText>(buf));
+        }
+
+        public int AddColumn(string name, ReadOnlyMemory<char>[] values)
         {
             var buf = new DvText[values.Length];
             for (int i = 0; i < values.Length; ++i)
@@ -351,7 +360,7 @@ namespace Scikit.ML.DataManipulation
         {
             IHostEnvironment env = host;
             if (env == null)
-                env = new TlcEnvironment();
+                env = new ConsoleEnvironment();
             var saver = new TextSaver(env, new TextSaver.Arguments()
             {
                 Separator = sep,
@@ -406,7 +415,7 @@ namespace Scikit.ML.DataManipulation
                 MaxRows = nrows > 0 ? (int?)nrows : null
             };
             if (host == null)
-                host = new TlcEnvironment().Register("TextLoader");
+                host = new ConsoleEnvironment().Register("TextLoader");
             var multiSource = new MultiFileSource(filename);
             return new TextLoader(host, args, multiSource).Read(multiSource);
         }
@@ -825,11 +834,11 @@ namespace Scikit.ML.DataManipulation
 
         #region EntryPoints
 
-        public Data.TextLoader EPTextLoader(string dataPath, char sep = ',', bool header = true)
+        public DataLegacy.TextLoader EPTextLoader(string dataPath, char sep = ',', bool header = true)
         {
-            var loader = new Data.TextLoader(dataPath)
+            var loader = new DataLegacy.TextLoader(dataPath)
             {
-                Arguments = new Data.TextLoaderArguments()
+                Arguments = new DataLegacy.TextLoaderArguments()
                 {
                     Separator = new[] { sep },
                     HasHeader = header,

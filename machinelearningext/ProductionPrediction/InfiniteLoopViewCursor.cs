@@ -49,7 +49,7 @@ namespace Scikit.ML.ProductionPrediction
         {
             if (_ownCursor != null)
                 throw Contracts.Except("GetRowCursor was called a second time which probably means this function was called from multiple threads. " +
-                    "Be sure that TlcEnvironment is called by parameter conc:1.");
+                    "Be sure that an environment is called by parameter conc:1.");
             _ownCursor = new CursorType(this, needCol, _otherValues);
             return _ownCursor;
         }

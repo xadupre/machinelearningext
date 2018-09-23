@@ -30,7 +30,7 @@ namespace Scikit.ML.ProductionPrediction
         readonly int _inputIndex;
         readonly ColumnType _outputType;
         readonly IRowCursor _currentInputCursor;
-        readonly TlcEnvironment _singleThreadEnv;
+        readonly IHostEnvironment _singleThreadEnv;
 
         /// <summary>
         /// Constructor.
@@ -73,7 +73,7 @@ namespace Scikit.ML.ProductionPrediction
                     outputColumn, SchemaHelper.ToString(transform.Schema));
             _outputType = _transform.Schema.GetColumnType(index);
 
-            _singleThreadEnv = singleThread ? new TlcEnvironment(conc: 1, verbose: false) : null;
+            _singleThreadEnv = singleThread ? new PassThroughEnvironment(env, conc: 1, verbose: false) : null;
         }
 
         public ValueMapper<TSrc, TDst> GetMapper<TSrc, TDst>()

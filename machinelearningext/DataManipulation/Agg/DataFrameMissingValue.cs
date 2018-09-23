@@ -2,6 +2,8 @@
 
 using System;
 using Microsoft.ML.Runtime.Data;
+using DvText = Scikit.ML.PipelineHelper.DvText;
+
 
 namespace Scikit.ML.DataManipulation
 {
@@ -16,13 +18,69 @@ namespace Scikit.ML.DataManipulation
                 switch (kind.RawKind)
                 {
                     case DataKind.BL:
-                        return subcase is bool ? (object)(bool)false : DvBool.NA; ;
+                        throw new NotImplementedException("NA is not available for bool");
                     case DataKind.I4:
-                        return subcase is int ? (object)(int)0 : (object)DvInt4.NA;
+                        throw new NotImplementedException("NA is not available for int");
                     case DataKind.U4:
                         return 0;
                     case DataKind.I8:
-                        return subcase is Int64 ? (object)(Int64)0 : DvInt8.NA;
+                        throw new NotImplementedException("NA is not available for long");
+                    case DataKind.R4:
+                        return float.NaN;
+                    case DataKind.R8:
+                        return double.NaN;
+                    case DataKind.TX:
+                        return subcase is string ? (object)(string)null : DvText.NA;
+                    default:
+                        throw new NotImplementedException($"Unknown missing value for type '{kind}'.");
+                }
+            }
+        }
+
+        public static object GetMissingOrDefaultValue(ColumnType kind, object subcase = null)
+        {
+            if (kind.IsVector)
+                return null;
+            else
+            {
+                switch (kind.RawKind)
+                {
+                    case DataKind.BL:
+                        return false;
+                    case DataKind.I4:
+                        return 0;
+                    case DataKind.U4:
+                        return 0;
+                    case DataKind.I8:
+                        return 0;
+                    case DataKind.R4:
+                        return float.NaN;
+                    case DataKind.R8:
+                        return double.NaN;
+                    case DataKind.TX:
+                        return subcase is string ? (object)(string)null : DvText.NA;
+                    default:
+                        throw new NotImplementedException($"Unknown missing value for type '{kind}'.");
+                }
+            }
+        }
+
+        public static object GetMissingOrDefaultMissingValue(ColumnType kind, object subcase = null)
+        {
+            if (kind.IsVector)
+                return null;
+            else
+            {
+                switch (kind.RawKind)
+                {
+                    case DataKind.BL:
+                        throw new NotSupportedException("No missing value for boolean. Convert to int.");
+                    case DataKind.I4:
+                        return int.MinValue;
+                    case DataKind.U4:
+                        return uint.MaxValue;
+                    case DataKind.I8:
+                        return long.MinValue;
                     case DataKind.R4:
                         return float.NaN;
                     case DataKind.R8:

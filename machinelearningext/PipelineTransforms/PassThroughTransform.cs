@@ -66,9 +66,9 @@ namespace Scikit.ML.PipelineTransforms
                 return res;
             }
 
-            public SubComponent<IDataSaver, SignatureDataSaver> GetSaverComponent()
+            public ISubComponent<IDataSaver> GetSaverComponent()
             {
-                return new SubComponent<IDataSaver, SignatureDataSaver>(saverSettings);
+                return new ScikitSubComponent<IDataSaver, SignatureDataSaver>(saverSettings);
             }
 
             public void Save(ModelSaveContext ctx)

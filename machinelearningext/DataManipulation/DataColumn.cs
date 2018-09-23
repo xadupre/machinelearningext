@@ -59,10 +59,10 @@ namespace Scikit.ML.DataManipulation
                 {
                     switch (Kind.RawKind)
                     {
-                        case DataKind.Bool: res.Set(DvBool.NA); break;
-                        case DataKind.I4: res.Set(DvInt4.NA); break;
+                        case DataKind.Bool: res.Set(false); break;
+                        case DataKind.I4: res.Set(0); break;
                         case DataKind.U4: res.Set(0); break;
-                        case DataKind.I8: res.Set(DvInt8.NA); break;
+                        case DataKind.I8: res.Set(0); break;
                         case DataKind.R4: res.Set(float.NaN); break;
                         case DataKind.R8: res.Set(double.NaN); break;
                         case DataKind.TX: res.Set(DvText.NA); break;
@@ -165,7 +165,7 @@ namespace Scikit.ML.DataManipulation
             if (numCol is null)
             {
                 var enumerable = value as IEnumerable;
-                if (enumerable == null || value is string || value is DvText)
+                if (enumerable == null || value is string || value is ReadOnlyMemory<char>)
                 {
                     DType dt;
                     ObjectConversion.Convert(ref value, out dt);
@@ -263,23 +263,23 @@ namespace Scikit.ML.DataManipulation
             if (colt is null)
                 throw new DataValueError(string.Format("Column types are different {0} != {1}",
                                                        GetType(), col.GetType()));
-            if(Length != colt.Length)
+            if (Length != colt.Length)
                 throw new DataValueError(string.Format("Column have different length {0} != {1}",
                                                        Length, colt.Length));
             if (Kind.IsVector)
                 throw new NotImplementedException();
             else
             {
-                switch(Kind.RawKind)
+                switch (Kind.RawKind)
                 {
                     case DataKind.BL:
-                        return NumericHelper.AssertAlmostEqual(_data as DvBool[], colt._data as DvBool[], precision, exc);
+                        return NumericHelper.AssertAlmostEqual(_data as bool[], colt._data as bool[], precision, exc);
                     case DataKind.I4:
-                        return NumericHelper.AssertAlmostEqual(_data as DvInt4[], colt._data as DvInt4[], precision, exc);
+                        return NumericHelper.AssertAlmostEqual(_data as int[], colt._data as int[], precision, exc);
                     case DataKind.U4:
                         return NumericHelper.AssertAlmostEqual(_data as uint[], colt._data as uint[], precision, exc);
                     case DataKind.I8:
-                        return NumericHelper.AssertAlmostEqual(_data as DvInt8[], colt._data as DvInt8[], precision, exc);
+                        return NumericHelper.AssertAlmostEqual(_data as long[], colt._data as long[], precision, exc);
                     case DataKind.R4:
                         return NumericHelper.AssertAlmostEqual(_data as float[], colt._data as float[], precision, exc);
                     case DataKind.R8:
@@ -305,16 +305,16 @@ namespace Scikit.ML.DataManipulation
                 throw new NotImplementedException();
             else
             {
-                switch(Kind.RawKind)
+                switch (Kind.RawKind)
                 {
                     case DataKind.I4:
-                            switch(colType.RawKind)
-                            {
-                                case DataKind.R4:
-                                return new DataColumn<float>(NumericHelper.Convert(_data as DvInt4[], float.NaN));
-                                default:
-                                    throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
-                            }
+                        switch (colType.RawKind)
+                        {
+                            case DataKind.R4:
+                                return new DataColumn<float>(NumericHelper.Convert(_data as int[], float.NaN));
+                            default:
+                                throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
+                        }
                     default:
                         throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
                 }
@@ -394,13 +394,36 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         public ValueGetter<DType2> GetGetter<DType2>(IRowCursor cursor)
         {
-            var _data2 = _data as DType2[];
-            var missing = DataFrameMissingValue.GetMissingValue(Kind);
-            return (ref DType2 value) =>
+            if (typeof(DType2) == typeof(ReadOnlyMemory<char>))
+            {
+                return GetGetterReadOnlyMemory(cursor) as ValueGetter<DType2>;
+            }
+            else
+            {
+                var _data2 = _data as DType2[];
+                if (_data2 == null)
+                    throw new NotSupportedException(string.Format("Unable to convert into {0}", typeof(DType2)));
+                var missing = DataFrameMissingValue.GetMissingOrDefaultValue(Kind);
+                return (ref DType2 value) =>
+                {
+                    value = cursor.Position < _data.LongLength
+                            ? _data2[cursor.Position]
+                            : (DType2)missing;
+                };
+            }
+        }
+
+        private ValueGetter<ReadOnlyMemory<char>> GetGetterReadOnlyMemory(IRowCursor cursor)
+        {
+            var _data2 = _data as DvText[];
+            if (_data2 == null)
+                throw new NotSupportedException(string.Format("Unable to convert into DvText"));
+            var missing = DataFrameMissingValue.GetMissingOrDefaultValue(Kind);
+            return (ref ReadOnlyMemory<char> value) =>
             {
                 value = cursor.Position < _data.LongLength
-                        ? _data2[cursor.Position]
-                        : (DType2)missing;
+                        ? _data2[cursor.Position].str
+                        : null;
             };
         }
 
@@ -413,10 +436,10 @@ namespace Scikit.ML.DataManipulation
             var kind = SchemaHelper.GetKind<DType2>();
             switch (kind)
             {
-                case DataKind.BL: return GetGetterVectorEqSort<DvBool>(cursor) as ValueGetter<VBuffer<DType2>>;
-                case DataKind.I4: return GetGetterVectorEqSort<DvInt4>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.BL: return GetGetterVectorEqSort<bool>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.I4: return GetGetterVectorEqSort<int>(cursor) as ValueGetter<VBuffer<DType2>>;
                 case DataKind.U4: return GetGetterVectorEqSort<uint>(cursor) as ValueGetter<VBuffer<DType2>>;
-                case DataKind.I8: return GetGetterVectorEqSort<DvInt8>(cursor) as ValueGetter<VBuffer<DType2>>;
+                case DataKind.I8: return GetGetterVectorEqSort<long>(cursor) as ValueGetter<VBuffer<DType2>>;
                 case DataKind.R4: return GetGetterVectorEqSort<float>(cursor) as ValueGetter<VBuffer<DType2>>;
                 case DataKind.R8: return GetGetterVectorEqSort<double>(cursor) as ValueGetter<VBuffer<DType2>>;
                 case DataKind.TX: return GetGetterVectorEqSort<DvText>(cursor) as ValueGetter<VBuffer<DType2>>;
@@ -522,18 +545,20 @@ namespace Scikit.ML.DataManipulation
 
         public IDataColumn Aggregate(AggregatedFunction func, int[] rows = null)
         {
-            if (typeof(DType) == typeof(DvBool))
-                return new DataColumn<DvBool>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvBool)), rows) });
-            if (typeof(DType) == typeof(DvInt4))
-                return new DataColumn<DvInt4>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvInt4)), rows) });
+            if (typeof(DType) == typeof(bool))
+                return new DataColumn<bool>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(bool)), rows) });
+            if (typeof(DType) == typeof(int))
+                return new DataColumn<int>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(int)), rows) });
             if (typeof(DType) == typeof(uint))
                 return new DataColumn<uint>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(uint)), rows) });
-            if (typeof(DType) == typeof(DvInt8))
-                return new DataColumn<DvInt8>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvInt8)), rows) });
+            if (typeof(DType) == typeof(long))
+                return new DataColumn<long>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(long)), rows) });
             if (typeof(DType) == typeof(float))
                 return new DataColumn<float>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(float)), rows) });
             if (typeof(DType) == typeof(double))
                 return new DataColumn<double>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(double)), rows) });
+            if (typeof(DType) == typeof(ReadOnlyMemory<char>))
+                return new DataColumn<DvText>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvText)), rows) });
             if (typeof(DType) == typeof(DvText))
                 return new DataColumn<DvText>(new[] { Aggregate(DataFrameAggFunctions.GetAggFunction(func, default(DvText)), rows) });
             throw new NotImplementedException($"Unkown type '{typeof(DType)}'.");

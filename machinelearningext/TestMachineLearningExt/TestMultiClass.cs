@@ -38,15 +38,15 @@ namespace TestMachineLearningExt
             using (var cursor = multiplied.GetRowCursor(i => true))
             {
                 var labelGetter = cursor.GetGetter<uint>(1);
-                var binGetter = cursor.GetGetter<DvBool>(2);
-                var cont = new List<Tuple<uint, DvBool>>();
-                DvBool bin = DvBool.NA;
+                var binGetter = cursor.GetGetter<bool>(2);
+                var cont = new List<Tuple<uint, bool>>();
+                bool bin = false;
                 while (cursor.MoveNext())
                 {
                     uint got = 0;
                     labelGetter(ref got);
                     binGetter(ref bin);
-                    cont.Add(new Tuple<uint, DvBool>(got, bin));
+                    cont.Add(new Tuple<uint, bool>(got, bin));
                 }
 
                 if (max >= 3)
@@ -57,7 +57,7 @@ namespace TestMachineLearningExt
                     {
                         for (int i = 0; i < 3; ++i)
                         {
-                            var co = cont.Where(c => c.Item1 == (uint)i && c.Item2.IsTrue);
+                            var co = cont.Where(c => c.Item1 == (uint)i && c.Item2);
                             if (co.Count() != 1)
                                 throw new Exception(string.Format("Unexpected number of true labels for class {0} - algo={1} - max={2}", i, algo, max));
                         }
@@ -89,14 +89,14 @@ namespace TestMachineLearningExt
             using (var cursor = multiplied.GetRowCursor(i => true))
             {
                 var labelGetter = cursor.GetGetter<uint>(1);
-                var labelVectorGetter = cursor.GetGetter<VBuffer<DvBool>>(1);
+                var labelVectorGetter = cursor.GetGetter<VBuffer<bool>>(1);
                 var labelVectorFloatGetter = cursor.GetGetter<VBuffer<float>>(1);
-                var binGetter = cursor.GetGetter<DvBool>(2);
+                var binGetter = cursor.GetGetter<bool>(2);
                 Contracts.CheckValue(binGetter, "Type mismatch.");
-                var cont = new List<Tuple<uint, DvBool>>();
-                DvBool bin = DvBool.NA;
+                var cont = new List<Tuple<uint, bool>>();
+                bool bin = false;
                 uint got = 0;
-                var gotv = new VBuffer<DvBool>();
+                var gotv = new VBuffer<bool>();
                 var gotvf = new VBuffer<float>();
                 while (cursor.MoveNext())
                 {
@@ -104,10 +104,10 @@ namespace TestMachineLearningExt
                     labelVectorGetter(ref gotv);
                     labelVectorFloatGetter(ref gotvf);
                     binGetter(ref bin);
-                    cont.Add(new Tuple<uint, DvBool>(got, bin));
+                    cont.Add(new Tuple<uint, bool>(got, bin));
                     if (gotv.Length != 3) throw new Exception("Bad dimension (Length)");
                     if (gotv.Count != 1) throw new Exception("Bad dimension (Count)");
-                    if (!gotv.Values[0].IsTrue) throw new Exception("Bad value (Count)");
+                    if (!gotv.Values[0]) throw new Exception("Bad value (Count)");
                     if (gotv.Indices[0] != got) throw new Exception("Bad index (Count)");
                     var ar = gotv.DenseValues().ToArray();
                     if (ar.Length != 3) throw new Exception("Bad dimension (dense)");
@@ -128,7 +128,7 @@ namespace TestMachineLearningExt
                     {
                         for (int i = 0; i < 3; ++i)
                         {
-                            var co = cont.Where(c => c.Item1 == (uint)i && c.Item2.IsTrue);
+                            var co = cont.Where(c => c.Item1 == (uint)i && c.Item2);
                             if (co.Count() != 1)
                                 throw new Exception(string.Format("Unexpected number of true labels for class {0} - algo={1} - max={2}", i, algo, max));
                         }

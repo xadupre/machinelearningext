@@ -41,14 +41,14 @@ namespace TestMachineLearningExt
             var ans = new VBuffer<float>();
 
             var cursor = data.GetRowCursor(i => true);
-            var gety = cursor.GetGetter<DvInt4>(1);
+            var gety = cursor.GetGetter<int>(1);
 
             var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(host, trv, null, "X", "X", cursor);
             var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
 
             var listy = new List<int>();
             var listx = new List<float>();
-            DvInt4 y = 0;
+            int y = 0;
             while (cursor.MoveNext())
             {
                 mapper(ref inob, ref ans);
@@ -104,14 +104,14 @@ namespace TestMachineLearningExt
             var ans = new VBuffer<float>();
 
             var cursor = data.GetRowCursor(i => true);
-            var gety = cursor.GetGetter<DvInt4>(1);
+            var gety = cursor.GetGetter<int>(1);
 
             var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(host, trv, null, "X", "X", cursor, true);
             var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
 
             var listy = new List<int>();
             var listx = new List<float>();
-            DvInt4 y = 0;
+            int y = 0;
             int tour = 0;
             while (cursor.MoveNext())
             {

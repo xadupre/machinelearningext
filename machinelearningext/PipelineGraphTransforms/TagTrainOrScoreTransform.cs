@@ -49,16 +49,16 @@ namespace Scikit.ML.PipelineGraphTransforms
         public new class Arguments : TrainAndScoreTransform.ArgumentsBase
         {
             [Argument(ArgumentType.Multiple, HelpText = "Trainer", ShortName = "tr")]
-            public SubComponent<ITrainer, SignatureTrainer> trainer = new SubComponent<ITrainer, SignatureTrainer>("PlattCalibration");
+            public ISubComponent<ITrainer> trainer = new ScikitSubComponent<ITrainer, SignatureTrainer>("PlattCalibration");
 
             [Argument(ArgumentType.Multiple, HelpText = "Output calibrator", ShortName = "cali", NullName = "<None>")]
-            public SubComponent<ICalibratorTrainer, SignatureCalibrator> calibrator = new SubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
+            public ISubComponent<ICalibratorTrainer> calibrator = new ScikitSubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
 
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Number of instances to train the calibrator", ShortName = "numcali")]
             public int maxCalibrationExamples = 1000000000;
 
             [Argument(ArgumentType.Multiple, HelpText = "Scorer to use", NullName = "<Auto>")]
-            public SubComponent<IDataScorerTransform, SignatureDataScorer> scorer;
+            public ISubComponent<IDataScorerTransform> scorer;
 
             [Argument(ArgumentType.Required, HelpText = "To tag the predictor if it is trained.", ShortName = "tag")]
             public string tag = "taggedPredictor";

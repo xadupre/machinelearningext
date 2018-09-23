@@ -46,10 +46,10 @@ namespace Scikit.ML.PipelineGraphTransforms
         public class Arguments
         {
             [Argument(ArgumentType.Multiple, HelpText = "First transform", ShortName = "xf1")]
-            public SubComponent<IDataTransform, SignatureDataTransform> transformType1 = null;
+            public ISubComponent<IDataTransform> transformType1 = null;
 
             [Argument(ArgumentType.Multiple, HelpText = "Second transform", ShortName = "xf2")]
-            public SubComponent<IDataTransform, SignatureDataTransform> transformType2 = null;
+            public ISubComponent<IDataTransform> transformType2 = null;
         }
 
         IDataView _input;

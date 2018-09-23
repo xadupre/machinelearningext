@@ -14,6 +14,7 @@ using Microsoft.ML.Runtime.CommandLine;
 using PolynomialTransform = Scikit.ML.FeaturesTransforms.PolynomialTransform;
 using EntryPointPolynomial = Scikit.ML.EntryPoints.EntryPointPolynomial;
 using EP_Polynomial = Scikit.ML.EntryPoints.Polynomial;
+using Legacy = Microsoft.ML.Legacy;
 
 [assembly: LoadableClass(typeof(void), typeof(EntryPointPolynomial), null,
     typeof(SignatureEntryPointModule), EP_Polynomial.Name)]
@@ -76,7 +77,7 @@ namespace Scikit.ML.EntryPoints
     /// <summary>
     /// Multiplies features, build polynomial features x1, x1^2, x1x2, x2, x2^2... The output should be cached otherwise the transform will recompute the features each time it is needed. Use CacheTransform.
     /// </summary>
-    public sealed partial class Polynomial : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
+    public sealed partial class Polynomial : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
         public const string Name = nameof(Polynomial);
 
@@ -159,13 +160,13 @@ namespace Scikit.ML.EntryPoints
         }
         public Var<IDataView> GetInputData() => Data;
 
-        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
+        public Legacy.ILearningPipelineStep ApplyStep(Legacy.ILearningPipelineStep previousStep, Experiment experiment)
         {
             if (previousStep != null)
             {
-                if (!(previousStep is ILearningPipelineDataStep dataStep))
+                if (!(previousStep is Legacy.ILearningPipelineDataStep dataStep))
                 {
-                    throw new InvalidOperationException($"{ nameof(Polynomial)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
+                    throw new InvalidOperationException($"{ nameof(Polynomial)} only supports an { nameof(Legacy.ILearningPipelineDataStep)} as an input.");
                 }
 
                 Data = dataStep.Data;
@@ -174,7 +175,7 @@ namespace Scikit.ML.EntryPoints
             return new PolynomialPipelineStep(output);
         }
 
-        private class PolynomialPipelineStep : ILearningPipelineDataStep
+        private class PolynomialPipelineStep : Legacy.ILearningPipelineDataStep
         {
             public PolynomialPipelineStep(Output output)
             {

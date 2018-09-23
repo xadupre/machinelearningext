@@ -10,14 +10,6 @@ using ArgumentAttribute = Microsoft.ML.Runtime.CommandLine.ArgumentAttribute;
 using ArgumentType = Microsoft.ML.Runtime.CommandLine.ArgumentType;
 
 using DataKind = Microsoft.ML.Runtime.Data.DataKind;
-using DvBool = Microsoft.ML.Runtime.Data.DvBool;
-using DvInt1 = Microsoft.ML.Runtime.Data.DvInt1;
-using DvInt2 = Microsoft.ML.Runtime.Data.DvInt2;
-using DvInt4 = Microsoft.ML.Runtime.Data.DvInt4;
-using DvInt8 = Microsoft.ML.Runtime.Data.DvInt8;
-using DvText = Microsoft.ML.Runtime.Data.DvText;
-using DvDateTime = Microsoft.ML.Runtime.Data.DvDateTime;
-using DvTimeSpan = Microsoft.ML.Runtime.Data.DvTimeSpan;
 using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
 using IDataView = Microsoft.ML.Runtime.Data.IDataView;
 using IRowCursor = Microsoft.ML.Runtime.Data.IRowCursor;
@@ -30,6 +22,7 @@ using ModelSaveContext = Microsoft.ML.Runtime.Model.ModelSaveContext;
 using VersionInfo = Microsoft.ML.Runtime.Model.VersionInfo;
 
 using DataFrame = Scikit.ML.DataManipulation.DataFrame;
+using DvText = Scikit.ML.PipelineHelper.DvText;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
@@ -259,25 +252,25 @@ namespace Scikit.ML.PipelineTransforms
                     case DataKind.U8:
                         return CreateTransform<UInt64>();
                     case DataKind.I1:
-                        return CreateTransform<DvInt1>();
+                        return CreateTransform<char>();
                     case DataKind.I2:
-                        return CreateTransform<DvInt2>();
+                        return CreateTransform<short>();
                     case DataKind.I4:
-                        return CreateTransform<DvInt4>();
+                        return CreateTransform<int>();
                     case DataKind.I8:
-                        return CreateTransform<DvInt8>();
+                        return CreateTransform<long>();
                     case DataKind.R4:
                         return CreateTransform<float>();
                     case DataKind.R8:
                         return CreateTransform<double>();
                     case DataKind.BL:
-                        return CreateTransform<DvBool>();
+                        return CreateTransform<bool>();
                     case DataKind.Text:
                         return CreateTransform<DvText>();
                     case DataKind.DT:
-                        return CreateTransform<DvDateTime>();
+                        return CreateTransform<DateTime>();
                     case DataKind.TS:
-                        return CreateTransform<DvTimeSpan>();
+                        return CreateTransform<TimeSpan>();
                     default:
                         throw Host.Except("Unexpected raw type for a sortColumn. It cannot be an array.");
                 }

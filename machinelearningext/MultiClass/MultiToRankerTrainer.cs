@@ -55,8 +55,8 @@ namespace Scikit.ML.MultiClass
             public bool groupIsU4 = false;
 
             [Argument(ArgumentType.Multiple, HelpText = "Base predictor", ShortName = "p", SortOrder = 1)]
-            public SubComponent<TScalarTrainer, SignatureRankerTrainer> predictorType =
-                new SubComponent<TScalarTrainer, SignatureRankerTrainer>("ftrank");
+            public ISubComponent<TScalarTrainer> predictorType =
+                new ScikitSubComponent<TScalarTrainer, SignatureRankerTrainer>("ftrank");
         }
 
         #endregion
@@ -217,7 +217,7 @@ namespace Scikit.ML.MultiClass
                             ConcatTransform.Column.Parse(string.Format("{0}:{1},{2}",
                             newFeatures, data.Schema.Feature.Name, labName)) };
             var args = new ConcatTransform.Arguments { Column = colu };
-            var after_concatenation_ = new ConcatTransform(Host, args, viewI);
+            var after_concatenation_ = ConcatTransform.Create(Host, args, viewI);
 
             #endregion
 

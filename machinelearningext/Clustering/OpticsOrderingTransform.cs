@@ -510,9 +510,9 @@ namespace Scikit.ML.Clustering
                     throw new IndexOutOfRangeException();
             }
 
-            ValueGetter<DvInt8> GetGetterOrdering()
+            ValueGetter<long> GetGetterOrdering()
             {
-                return (ref DvInt8 orderingId) =>
+                return (ref long orderingId) =>
                 {
                     orderingId = _view.GetMappedIndex(_inputCursor.Position);
                 };

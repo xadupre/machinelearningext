@@ -578,9 +578,9 @@ namespace Scikit.ML.Clustering
                 }
             }
 
-            ValueGetter<DvInt4> GetGetterCluster(int runIndex)
+            ValueGetter<int> GetGetterCluster(int runIndex)
             {
-                return (ref DvInt4 cluster) =>
+                return (ref int cluster) =>
                 {
                     cluster = _view.GetMappedIndex(runIndex, (int)_inputCursor.Position);
                 };

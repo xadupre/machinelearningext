@@ -52,8 +52,8 @@ namespace Scikit.ML.MultiClass
         public new class Arguments : MultiToTrainerCommon.Arguments
         {
             [Argument(ArgumentType.Multiple, HelpText = "Base predictor", ShortName = "p", SortOrder = 1)]
-            public SubComponent<TScalarTrainer, SignatureBinaryClassifierTrainer> predictorType =
-                new SubComponent<TScalarTrainer, SignatureBinaryClassifierTrainer>("ft");
+            public ISubComponent<TScalarTrainer> predictorType =
+                new ScikitSubComponent<TScalarTrainer, SignatureBinaryClassifierTrainer>("ft");
         }
 
         #endregion
@@ -188,7 +188,7 @@ namespace Scikit.ML.MultiClass
                             newFeatures, data.Schema.Feature.Name, labName)) };
             var args = new ConcatTransform.Arguments { Column = colu };
 
-            IDataView after_concatenation = new ConcatTransform(Host, args, viewI);
+            IDataView after_concatenation = ConcatTransform.Create(Host, args, viewI);
 
             var roles = data.Schema.GetColumnRoleNames()
                 .Where(kvp => kvp.Key.Value != RoleMappedSchema.ColumnRole.Label.Value)

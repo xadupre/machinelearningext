@@ -47,7 +47,7 @@ namespace DocHelperMlExt
                 new ExampleVector() { X = new float[] { 3, 4, 7 } },
             };
 
-            using (var host = new TlcEnvironment(conc: 1))
+            using (var host = new ConsoleEnvironment(conc: 1))
             {
                 var data = host.CreateStreamingDataView(inputs);
                 var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host);

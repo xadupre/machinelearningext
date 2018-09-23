@@ -10,6 +10,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.CommandLine;
+using Legacy = Microsoft.ML.Legacy;
 using ULabelToR4LabelTransform = Scikit.ML.PipelineTransforms.ULabelToR4LabelTransform;
 using EntryPointULabelToR4Label = Scikit.ML.EntryPoints.EntryPointULabelToR4Label;
 using EP_ULabelToR4Label = Scikit.ML.EntryPoints.ULabelToR4Label;
@@ -76,7 +77,7 @@ namespace Scikit.ML.EntryPoints
     /// <summary>
     /// Converts a Key label into a Float label (does nothing if the input is a float).
     /// </summary>
-    public sealed partial class ULabelToR4Label : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
+    public sealed partial class ULabelToR4Label : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
         public const string Name = nameof(ULabelToR4Label);
 
@@ -148,13 +149,13 @@ namespace Scikit.ML.EntryPoints
         }
         public Var<IDataView> GetInputData() => Data;
 
-        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
+        public Legacy.ILearningPipelineStep ApplyStep(Legacy.ILearningPipelineStep previousStep, Experiment experiment)
         {
             if (previousStep != null)
             {
-                if (!(previousStep is ILearningPipelineDataStep dataStep))
+                if (!(previousStep is Legacy.ILearningPipelineDataStep dataStep))
                 {
-                    throw new InvalidOperationException($"{ nameof(ULabelToR4Label)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
+                    throw new InvalidOperationException($"{ nameof(ULabelToR4Label)} only supports an { nameof(Legacy.ILearningPipelineDataStep)} as an input.");
                 }
 
                 Data = dataStep.Data;
@@ -163,7 +164,7 @@ namespace Scikit.ML.EntryPoints
             return new ULabelToR4LabelPipelineStep(output);
         }
 
-        private class ULabelToR4LabelPipelineStep : ILearningPipelineDataStep
+        private class ULabelToR4LabelPipelineStep : Legacy.ILearningPipelineDataStep
         {
             public ULabelToR4LabelPipelineStep(Output output)
             {

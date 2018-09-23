@@ -3,13 +3,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
-using Microsoft.ML.Transforms;
-using Microsoft.ML.Trainers;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.ScikitAPI;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
@@ -49,8 +48,8 @@ namespace TestMachineLearningExt
                 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
                 var learningPipeline = new GenericLearningPipeline();
                 learningPipeline.Add(importData);
-                learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-                learningPipeline.Add(new StochasticDualCoordinateAscentRegressor() { MaxIterations = 2 });
+                learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+                learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor() { MaxIterations = 2 });
                 var predictor = learningPipeline.Train();
                 var predictions = predictor.Predict(df);
                 var dfout = DataFrame.ReadView(predictions);

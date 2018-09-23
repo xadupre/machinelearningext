@@ -7,12 +7,11 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Trainers;
-using Microsoft.ML.Transforms;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
@@ -35,10 +34,10 @@ namespace TestMachineLearningExt
                 var values = new List<int>();
                 using (var cursor = tr.GetRowCursor(i => true))
                 {
-                    var columnGetter = cursor.GetGetter<DvInt4>(1);
+                    var columnGetter = cursor.GetGetter<int>(1);
                     while (cursor.MoveNext())
                     {
-                        DvInt4 got = 0;
+                        int got = 0;
                         columnGetter(ref got);
                         values.Add((int)got);
                     }
@@ -117,10 +116,10 @@ namespace TestMachineLearningExt
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.PassThrough() { Filename = outPass, SaveOnDisk = true });
-            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
@@ -171,10 +170,10 @@ namespace TestMachineLearningExt
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.ULabelToR4Label("Label"));
-            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
@@ -200,10 +199,10 @@ namespace TestMachineLearningExt
             using (var cursor = data.GetRowCursor(i => true))
             {
                 var sortedValues = new List<int>();
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
+                var sortColumnGetter = cursor.GetGetter<int>(1);
                 while (cursor.MoveNext())
                 {
-                    DvInt4 got = 0;
+                    int got = 0;
                     sortColumnGetter(ref got);
                     sortedValues.Add((int)got);
                 }
@@ -228,10 +227,10 @@ namespace TestMachineLearningExt
             using (var cursor = sorted.GetRowCursor(i => true))
             {
                 var sortedValues = new List<int>();
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
+                var sortColumnGetter = cursor.GetGetter<int>(1);
                 while (cursor.MoveNext())
                 {
-                    DvInt4 got = 0;
+                    int got = 0;
                     sortColumnGetter(ref got);
                     sortedValues.Add((int)got);
                 }
@@ -258,10 +257,10 @@ namespace TestMachineLearningExt
             using (var cursor = data.GetRowCursor(i => true))
             {
                 var sortedValues = new List<int>();
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
+                var sortColumnGetter = cursor.GetGetter<int>(1);
                 while (cursor.MoveNext())
                 {
-                    DvInt4 got = 0;
+                    int got = 0;
                     sortColumnGetter(ref got);
                     sortedValues.Add((int)got);
                 }
@@ -286,10 +285,10 @@ namespace TestMachineLearningExt
             using (var cursor = lastTransform.GetRowCursor(i => true))
             {
                 var sortedValues = new List<int>();
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
+                var sortColumnGetter = cursor.GetGetter<int>(1);
                 while (cursor.MoveNext())
                 {
-                    DvInt4 got = 0;
+                    int got = 0;
                     sortColumnGetter(ref got);
                     sortedValues.Add((int)got);
                 }

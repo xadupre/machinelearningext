@@ -36,19 +36,19 @@ namespace Scikit.ML.PipelineTraining
         public sealed class Arguments
         {
             [Argument(ArgumentType.Multiple, HelpText = "Transform which preprocesses the data (can be null)", ShortName = "pre")]
-            public SubComponent<IDataTransform, SignatureDataTransform> preType = null;
+            public ISubComponent<IDataTransform> preType = null;
 
             [Argument(ArgumentType.Multiple, HelpText = "Transform which preprocesses the data before training and only before training (can be null)", ShortName = "pret")]
-            public SubComponent<IDataTransform, SignatureDataTransform> preTrainType = null;
+            public ISubComponent<IDataTransform> preTrainType = null;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Cache the data preprocessed only for training (", ShortName = "c")]
             public bool cache = false;
 
             [Argument(ArgumentType.Multiple, HelpText = "Transform which postprocesses the data (can be null)", ShortName = "post")]
-            public SubComponent<IDataTransform, SignatureDataTransform> postType = null;
+            public ISubComponent<IDataTransform> postType = null;
 
             [Argument(ArgumentType.Multiple, HelpText = "Predictor", ShortName = "p")]
-            public SubComponent<ITrainer, SignatureTrainer> predictorType = null;
+            public ISubComponent<ITrainer> predictorType = null;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Output column for the predictor", ShortName = "col")]
             public string outputColumn = "output";

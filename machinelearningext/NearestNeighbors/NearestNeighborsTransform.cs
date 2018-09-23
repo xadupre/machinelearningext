@@ -286,7 +286,7 @@ namespace Scikit.ML.NearestNeighbors
 
             VBuffer<float> _tempFeatures;
             VBuffer<float> _distance;
-            VBuffer<DvInt8> _idn;
+            VBuffer<long> _idn;
 
             public NearestNeighborsCursor(IRowCursor cursor, NearestNeighborsTransform parent, Func<int, bool> predicate, int colFeatures)
             {
@@ -297,7 +297,7 @@ namespace Scikit.ML.NearestNeighbors
                 _getterFeatures = _inputCursor.GetGetter<VBuffer<float>>(colFeatures);
                 _tempFeatures = new VBuffer<float>();
                 _distance = new VBuffer<float>(_k, new float[_k]);
-                _idn = new VBuffer<DvInt8>(_k, new DvInt8[_k]);
+                _idn = new VBuffer<long>(_k, new long[_k]);
             }
 
             public ICursor GetRootCursor()
@@ -356,12 +356,12 @@ namespace Scikit.ML.NearestNeighbors
                     res.Length > _distance.Values.Length || _distance.Values == null)
                 {
                     _distance = new VBuffer<float>(res.Length, new float[res.Length]);
-                    _idn = new VBuffer<DvInt8>(res.Length, new DvInt8[res.Length]);
+                    _idn = new VBuffer<long>(res.Length, new long[res.Length]);
                 }
                 else if (res.Length > _distance.Count)
                 {
                     _distance = new VBuffer<float>(res.Length, _distance.Values);
-                    _idn = new VBuffer<DvInt8>(res.Length, _idn.Values);
+                    _idn = new VBuffer<long>(res.Length, _idn.Values);
                 }
                 int pos = 0;
                 foreach (var pair in res.OrderBy(c => c.Key))
@@ -402,12 +402,12 @@ namespace Scikit.ML.NearestNeighbors
                     throw Contracts.Except("Unexpected column for distance (position:{0})", col);
             }
 
-            ValueGetter<VBuffer<DvInt8>> GetGetterIdNeighbors(int col)
+            ValueGetter<VBuffer<long>> GetGetterIdNeighbors(int col)
             {
                 if (col == _inputCursor.Schema.ColumnCount + 1)
-                    return (ref VBuffer<DvInt8> distance) =>
+                    return (ref VBuffer<long> distance) =>
                     {
-                        distance = new VBuffer<DvInt8>(_idn.Count, _idn.Values);
+                        distance = new VBuffer<long>(_idn.Count, _idn.Values);
                     };
                 else
                     throw Contracts.Except("Unexpected column for neighbors ids (position:{0})", col);

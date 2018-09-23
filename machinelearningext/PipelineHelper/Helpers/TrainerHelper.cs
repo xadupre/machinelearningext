@@ -42,7 +42,7 @@ namespace Scikit.ML.PipelineHelper
         /// <param name="extraArgs">additional arguments</param>
         public static ITrainerExtended CreateTrainer(IHostEnvironment env, string settings, params object[] extraArgs)
         {
-            var sc = SubComponent.Parse<ITrainer, SignatureTrainer>(settings);
+            var sc = ScikitSubComponent.Parse<ITrainer, SignatureTrainer>(settings);
             var inst = sc.CreateInstance(env, extraArgs);
             return new ExtendedTrainer(inst, sc.Kind);
         }

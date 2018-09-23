@@ -62,8 +62,8 @@ namespace Scikit.ML.TimeSeries
             public string timeColumn;
 
             [Argument(ArgumentType.Multiple, HelpText = "Parameters to use for the linear optimizer.")]
-            public SubComponent<ITrainer, SignatureRegressorTrainer> optim =
-                new SubComponent<ITrainer, SignatureRegressorTrainer>("sasdcar");
+            public ISubComponent<ITrainer> optim =
+                new ScikitSubComponent<ITrainer, SignatureRegressorTrainer>("sasdcar");
 
             public void Write(ModelSaveContext ctx, IHost host)
             {
@@ -78,7 +78,7 @@ namespace Scikit.ML.TimeSeries
                 columns = Column1x1.ParseMulti(sr);
                 timeColumn = ctx.Reader.ReadString();
                 var opt = ctx.Reader.ReadString();
-                optim = new SubComponent<ITrainer, SignatureRegressorTrainer>(opt);
+                optim = new ScikitSubComponent<ITrainer, SignatureRegressorTrainer>(opt);
             }
         }
 
@@ -295,7 +295,7 @@ namespace Scikit.ML.TimeSeries
                     ConcatTransform.Column.Parse(string.Format("{0}:{1},{2}", tempColumn, slotName, newName)),
                }
             };
-            var concat = new ConcatTransform(Host, cargs, predict);
+            var concat = ConcatTransform.Create(Host, cargs, predict);
 
             var lambdaView = LambdaColumnHelper.Create(Host,
                 "DeTrendTransform", concat, tempColumn, _args.columns[0].Name, new VectorType(NumberType.R4, 2),

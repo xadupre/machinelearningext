@@ -60,7 +60,7 @@ namespace Scikit.ML.PipelineGraphTransforms
             public string filename;
 
             [Argument(ArgumentType.Multiple, HelpText = "Loader settings if data is loaded from disk (default is binary).", ShortName = "loader")]
-            public SubComponent<IDataLoader, SignatureDataLoader> loaderSettings = new SubComponent<IDataLoader, SignatureDataLoader>("binary");
+            public ISubComponent<IDataLoader> loaderSettings = new ScikitSubComponent<IDataLoader, SignatureDataLoader>("binary");
 
             public void Read(ModelLoadContext ctx, IHost host)
             {
@@ -72,7 +72,7 @@ namespace Scikit.ML.PipelineGraphTransforms
                 var sloader = ctx.Reader.ReadString();
                 if (string.IsNullOrEmpty(sloader))
                     sloader = "binary";
-                loaderSettings = new SubComponent<IDataLoader, SignatureDataLoader>(sloader);
+                loaderSettings = new ScikitSubComponent<IDataLoader, SignatureDataLoader>(sloader);
             }
 
             public void Write(ModelSaveContext ctx, IHost host)

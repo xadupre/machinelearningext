@@ -3,19 +3,24 @@
 using System;
 using System.Text;
 using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Internal.Utilities;
+using Microsoft.ML.Runtime.EntryPoints;
 
 
 namespace Scikit.ML.PipelineHelper
 {
-    /// <summary>
-    /// This class is used to represent the command line encoding of a component plus its
-    /// settings. Typically, these settings will be parsed at a later time. Parsing at
-    /// the parent level merely gathers the settings into an instance of SubComponent.
-    /// </summary>
+    public interface ISubComponent<out TComponent> : IComponentFactory<TComponent>
+    {
+        TComponent CreateInstance(IHostEnvironment env, params object[] extra);
+        string Kind { get; }
+        string SubComponentSettings { get; }
+        bool IsGood();
+    }
+
     [Serializable]
-    public class SubComponent : IEquatable<SubComponent>
+    public class ScikitSubComponent : IEquatable<ScikitSubComponent>
     {
         private static readonly string[] _empty = new string[0];
 
@@ -46,6 +51,11 @@ namespace Scikit.ML.PipelineHelper
             set { _settings = string.IsNullOrEmpty(value) ? _empty : new string[] { value }; }
         }
 
+        public bool IsGood()
+        {
+            return true;
+        }
+
         /// <summary>
         /// It's generally better to use the IsGood() extension method. It handles null testing
         /// and empty testing.
@@ -59,14 +69,14 @@ namespace Scikit.ML.PipelineHelper
             }
         }
 
-        public SubComponent()
+        public ScikitSubComponent()
         {
             _kind = "";
             _settings = _empty;
             AssertValid();
         }
 
-        public SubComponent(string kind)
+        public ScikitSubComponent(string kind)
         {
             _kind = kind ?? "";
             _settings = _empty;
@@ -76,7 +86,7 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// This assumes ownership of the settings array.
         /// </summary>
-        public SubComponent(string kind, params string[] settings)
+        public ScikitSubComponent(string kind, params string[] settings)
         {
             _kind = kind ?? "";
             if (settings == null || settings.Length == 1 && string.IsNullOrEmpty(settings[0]))
@@ -85,7 +95,7 @@ namespace Scikit.ML.PipelineHelper
             AssertValid();
         }
 
-        public SubComponent(string kind, string settings)
+        public ScikitSubComponent(string kind, string settings)
         {
             _kind = kind ?? "";
             if (string.IsNullOrEmpty(settings))
@@ -101,7 +111,7 @@ namespace Scikit.ML.PipelineHelper
             Contracts.AssertValue(_settings);
         }
 
-        public bool Equals(SubComponent other)
+        public bool Equals(ScikitSubComponent other)
         {
             if (other == null)
                 return false;
@@ -134,7 +144,7 @@ namespace Scikit.ML.PipelineHelper
 
         public override bool Equals(object obj)
         {
-            SubComponent other = obj as SubComponent;
+            ScikitSubComponent other = obj as ScikitSubComponent;
             if (other == null)
                 return false;
             return Equals(other);
@@ -177,7 +187,7 @@ namespace Scikit.ML.PipelineHelper
             args = CmdLexer.UnquoteValue(str.Substring(ich));
         }
 
-        public static SubComponent Parse(string str)
+        public static ScikitSubComponent Parse(string str)
         {
             string kind;
             string args;
@@ -185,10 +195,10 @@ namespace Scikit.ML.PipelineHelper
 
             Contracts.AssertValueOrNull(kind);
             Contracts.AssertValueOrNull(args);
-            return new SubComponent(kind, args);
+            return new ScikitSubComponent(kind, args);
         }
 
-        public static SubComponent<TRes, TSig> Parse<TRes, TSig>(string str)
+        public static ScikitSubComponent<TRes, TSig> Parse<TRes, TSig>(string str)
             where TRes : class
         {
             string kind;
@@ -197,16 +207,16 @@ namespace Scikit.ML.PipelineHelper
 
             Contracts.AssertValueOrNull(kind);
             Contracts.AssertValueOrNull(args);
-            return new SubComponent<TRes, TSig>(kind, args);
+            return new ScikitSubComponent<TRes, TSig>(kind, args);
         }
 
-        public static SubComponent Create(Type type)
+        public static ScikitSubComponent Create(Type type)
         {
-            Contracts.Check(type != null && typeof(SubComponent).IsAssignableFrom(type));
-            return (SubComponent)Activator.CreateInstance(type);
+            Contracts.Check(type != null && typeof(ScikitSubComponent).IsAssignableFrom(type));
+            return (ScikitSubComponent)Activator.CreateInstance(type);
         }
 
-        public static SubComponent Clone(SubComponent src, Type type = null)
+        public static ScikitSubComponent Clone(ScikitSubComponent src, Type type = null)
         {
             if (src == null)
                 return null;
@@ -223,20 +233,20 @@ namespace Scikit.ML.PipelineHelper
     }
 
     [Serializable]
-    public class SubComponent<TRes, TSig> : SubComponent
+    public class ScikitSubComponent<TRes, TSig> : ScikitSubComponent, ISubComponent<TRes>
         where TRes : class
     {
-        public SubComponent()
+        public ScikitSubComponent()
             : base()
         {
         }
 
-        public SubComponent(string kind)
+        public ScikitSubComponent(string kind)
             : base(kind)
         {
         }
 
-        public SubComponent(string kind, params string[] settings)
+        public ScikitSubComponent(string kind, params string[] settings)
             : base(kind, settings)
         {
         }
@@ -249,11 +259,16 @@ namespace Scikit.ML.PipelineHelper
                 return result;
             throw Contracts.Except("Unknown loadable class: {0}", Kind).MarkSensitive(MessageSensitivity.None);
         }
+
+        public TRes CreateComponent(IHostEnvironment env)
+        {
+            return CreateInstance(env);
+        }
     }
 
     public static class SubComponentExtensions
     {
-        public static bool IsGood(this SubComponent src)
+        public static bool IsGood(this ScikitSubComponent src)
         {
             return src != null && !src.IsEmpty;
         }

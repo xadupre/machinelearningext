@@ -183,7 +183,7 @@ namespace Scikit.ML.DataManipulation
         /// <code>
         /// var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
         /// var df = DataFrame.ReadStr(text);
-        /// df["fAA"] = df["AA"].Apply((ref DvInt4 vin, ref float vout) => { vout = (float)vin; });
+        /// df["fAA"] = df["AA"].Apply((ref int vin, ref float vout) => { vout = (float)vin; });
         /// </code>
         /// </summary>
         NumericColumn Apply<TSrc, TDst>(ValueMapper<TSrc, TDst> mapper)

@@ -11,7 +11,7 @@ namespace Scikit.ML.TestHelper
     {
         [VectorType(2)]
         public float[] X;
-        public DvInt4 Y;
+        public int Y;
 
         public static InputOutput[] CreateInputs()
         {

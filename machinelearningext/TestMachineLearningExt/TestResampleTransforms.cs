@@ -7,12 +7,11 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Trainers;
-using Microsoft.ML.Transforms;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.RandomTransforms;
 using Scikit.ML.TestHelper;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
@@ -39,10 +38,10 @@ namespace TestMachineLearningExt
                 var values = new List<int>();
                 using (var cursor = tr.GetRowCursor(i => true))
                 {
-                    var columnGetter = cursor.GetGetter<DvInt4>(1);
+                    var columnGetter = cursor.GetGetter<int>(1);
                     while (cursor.MoveNext())
                     {
-                        DvInt4 got = 0;
+                        int got = 0;
                         columnGetter(ref got);
                         values.Add((int)got);
                     }
@@ -102,10 +101,10 @@ namespace TestMachineLearningExt
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.Resample() { Lambda = 1f });
-            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);

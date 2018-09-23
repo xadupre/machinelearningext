@@ -38,14 +38,14 @@ namespace TestMachineLearningExt
 
             var transformedData = new SplitTrainTestTransform(host, args, data);
 
-            var counter1 = new Dictionary<DvInt4, List<DvInt4>>();
+            var counter1 = new Dictionary<int, List<int>>();
             using (var cursor = transformedData.GetRowCursor(i => true))
             {
                 int index;
                 cursor.Schema.TryGetColumnIndex("Y", out index);
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(index);
+                var sortColumnGetter = cursor.GetGetter<int>(index);
                 cursor.Schema.TryGetColumnIndex(args.newColumn, out index);
-                var partGetter = cursor.GetGetter<DvInt4>(index);
+                var partGetter = cursor.GetGetter<int>(index);
                 var schema = SchemaHelper.ToString(cursor.Schema);
                 if (string.IsNullOrEmpty(schema))
                     throw new Exception("null");
@@ -53,14 +53,14 @@ namespace TestMachineLearningExt
                     throw new Exception(schema);
                 var schema2 = SchemaHelper.ToString(transformedData.Schema);
                 SchemaHelper.CheckSchema(host, transformedData.Schema, cursor.Schema);
-                DvInt4 got = 0;
-                DvInt4 part = 0;
+                int got = 0;
+                int part = 0;
                 while (cursor.MoveNext())
                 {
                     sortColumnGetter(ref got);
                     partGetter(ref part);
                     if (!counter1.ContainsKey(part))
-                        counter1[part] = new List<DvInt4>();
+                        counter1[part] = new List<int>();
                     if (counter1[part].Any() && got.Equals(counter1[part][counter1[part].Count - 1]))
                         throw new Exception("Unexpected value, they should be all different.");
                     counter1[part].Add(got);
@@ -79,8 +79,8 @@ namespace TestMachineLearningExt
                 if (hash.Count != part.Value.Count)
                     throw new Exception(string.Format("Not identical id for part {0}", part));
             }
-            var part0 = new HashSet<DvInt4>(counter1[0]);
-            var part1 = new HashSet<DvInt4>(counter1[1]);
+            var part0 = new HashSet<int>(counter1[0]);
+            var part1 = new HashSet<int>(counter1[1]);
             if (part0.Intersect(part1).Any())
                 throw new Exception("Intersection is not null.");
 
@@ -91,7 +91,7 @@ namespace TestMachineLearningExt
                 throw new Exception("Size are different from ratios.");
 
             // We check a second run brings the same results (CacheView).
-            var counter2 = new Dictionary<DvInt4, List<DvInt4>>();
+            var counter2 = new Dictionary<int, List<int>>();
             using (var cursor = transformedData.GetRowCursor(i => true))
             {
                 var schema = SchemaHelper.ToString(cursor.Schema);
@@ -103,17 +103,17 @@ namespace TestMachineLearningExt
                 SchemaHelper.CheckSchema(host, transformedData.Schema, cursor.Schema);
                 int index;
                 cursor.Schema.TryGetColumnIndex("Y", out index);
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(index);
+                var sortColumnGetter = cursor.GetGetter<int>(index);
                 cursor.Schema.TryGetColumnIndex(args.newColumn, out index);
-                var partGetter = cursor.GetGetter<DvInt4>(index);
-                DvInt4 got = 0;
-                DvInt4 part = 0;
+                var partGetter = cursor.GetGetter<int>(index);
+                int got = 0;
+                int part = 0;
                 while (cursor.MoveNext())
                 {
                     sortColumnGetter(ref got);
                     partGetter(ref part);
                     if (!counter2.ContainsKey(part))
-                        counter2[part] = new List<DvInt4>();
+                        counter2[part] = new List<int>();
                     counter2[part].Add(got);
                 }
             }
@@ -124,8 +124,8 @@ namespace TestMachineLearningExt
             {
                 var list1 = pair.Value;
                 var list2 = counter2[pair.Key];
-                var difList = list1.Where(a => !list2.Any(a1 => (a1 == a).IsTrue))
-                    .Union(list2.Where(a => !list1.Any(a1 => (a1 == a).IsTrue)));
+                var difList = list1.Where(a => !list2.Any(a1 => a1 == a))
+                    .Union(list2.Where(a => !list1.Any(a1 => a1 == a)));
                 if (difList.Any())
                     throw new Exception("Not the same results for a part.");
             }

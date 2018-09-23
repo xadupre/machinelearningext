@@ -4,16 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.ML;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.Data;
-using Transforms = Microsoft.ML.Transforms;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace Scikit.ML.PipelineHelper
 {
-    class GenericScorerPipelineStep : ILearningPipelineDataStep
+    class GenericScorerPipelineStep : Legacy.ILearningPipelineDataStep
     {
         public GenericScorerPipelineStep(Var<IDataView> data, Var<ITransformModel> model)
         {
@@ -40,7 +39,7 @@ namespace Scikit.ML.PipelineHelper
     /// var model = pipeline.Train&lt;SentimentData, SentimentPrediction&gt;();
     /// </code>
     /// </example>
-    public class GenericLearningPipeline : LearningPipeline
+    public class GenericLearningPipeline : Legacy.LearningPipeline
     {
         private readonly int? _seed;
         private readonly int _conc;
@@ -59,25 +58,25 @@ namespace Scikit.ML.PipelineHelper
         /// </summary>
         public ExtendedPredictionModel Train(IHostEnvironment environment = null)
         {
-            TlcEnvironment tlcenv = null;
+            ConsoleEnvironment tlcenv = null;
             if (environment == null)
-                environment = tlcenv = new TlcEnvironment(seed: _seed, conc: _conc);
+                environment = tlcenv = new ConsoleEnvironment(seed: _seed, conc: _conc);
 
             Experiment experiment = environment.CreateExperiment();
-            ILearningPipelineStep step = null;
-            List<ILearningPipelineLoader> loaders = new List<ILearningPipelineLoader>();
+            Legacy.ILearningPipelineStep step = null;
+            List<Legacy.ILearningPipelineLoader> loaders = new List<Legacy.ILearningPipelineLoader>();
             List<Var<ITransformModel>> transformModels = new List<Var<ITransformModel>>();
             Var<ITransformModel> lastTransformModel = null;
 
-            foreach (ILearningPipelineItem currentItem in this)
+            foreach (Legacy.ILearningPipelineItem currentItem in this)
             {
-                if (currentItem is ILearningPipelineLoader loader)
+                if (currentItem is Legacy.ILearningPipelineLoader loader)
                     loaders.Add(loader);
 
                 step = currentItem.ApplyStep(step, experiment);
-                if (step is ILearningPipelineDataStep dataStep && dataStep.Model != null)
+                if (step is Legacy.ILearningPipelineDataStep dataStep && dataStep.Model != null)
                     transformModels.Add(dataStep.Model);
-                else if (step is ILearningPipelinePredictorStep predictorDataStep)
+                else if (step is Legacy.ILearningPipelinePredictorStep predictorDataStep)
                 {
                     if (lastTransformModel != null)
                         transformModels.Insert(0, lastTransformModel);
@@ -85,7 +84,7 @@ namespace Scikit.ML.PipelineHelper
                     Var<IPredictorModel> predictorModel;
                     if (transformModels.Count != 0)
                     {
-                        var localModelInput = new Transforms.ManyHeterogeneousModelCombiner
+                        var localModelInput = new Legacy.Transforms.ManyHeterogeneousModelCombiner
                         {
                             PredictorModel = predictorDataStep.Model,
                             TransformModels = new ArrayVar<ITransformModel>(transformModels.ToArray())
@@ -96,7 +95,7 @@ namespace Scikit.ML.PipelineHelper
                     else
                         predictorModel = predictorDataStep.Model;
 
-                    var scorer = new Transforms.Scorer
+                    var scorer = new Legacy.Transforms.Scorer
                     {
                         PredictorModel = predictorModel
                     };
@@ -113,7 +112,7 @@ namespace Scikit.ML.PipelineHelper
                 if (lastTransformModel != null)
                     transformModels.Insert(0, lastTransformModel);
 
-                var modelInput = new Transforms.ModelCombiner
+                var modelInput = new Legacy.Transforms.ModelCombiner
                 {
                     Models = new ArrayVar<ITransformModel>(transformModels.ToArray())
                 };
@@ -123,7 +122,7 @@ namespace Scikit.ML.PipelineHelper
             }
 
             experiment.Compile();
-            foreach (ILearningPipelineLoader loader in loaders)
+            foreach (Legacy.ILearningPipelineLoader loader in loaders)
             {
                 loader.SetInput(environment, experiment);
             }
@@ -151,23 +150,23 @@ namespace Scikit.ML.PipelineHelper
         internal IDataView Execute(IHostEnvironment environment)
         {
             Experiment experiment = environment.CreateExperiment();
-            ILearningPipelineStep step = null;
-            List<ILearningPipelineLoader> loaders = new List<ILearningPipelineLoader>();
-            foreach (ILearningPipelineItem currentItem in this)
+            Legacy.ILearningPipelineStep step = null;
+            List<Legacy.ILearningPipelineLoader> loaders = new List<Legacy.ILearningPipelineLoader>();
+            foreach (Legacy.ILearningPipelineItem currentItem in this)
             {
-                if (currentItem is ILearningPipelineLoader loader)
+                if (currentItem is Legacy.ILearningPipelineLoader loader)
                     loaders.Add(loader);
 
                 step = currentItem.ApplyStep(step, experiment);
             }
 
-            if (!(step is ILearningPipelineDataStep endDataStep))
+            if (!(step is Legacy.ILearningPipelineDataStep endDataStep))
             {
-                throw new InvalidOperationException($"{nameof(LearningPipeline)}.{nameof(Execute)} must have a Data step as the last step.");
+                throw new InvalidOperationException($"{nameof(Legacy.LearningPipeline)}.{nameof(Execute)} must have a Data step as the last step.");
             }
 
             experiment.Compile();
-            foreach (ILearningPipelineLoader loader in loaders)
+            foreach (Legacy.ILearningPipelineLoader loader in loaders)
             {
                 loader.SetInput(environment, experiment);
             }
@@ -184,7 +183,7 @@ namespace Scikit.ML.PipelineHelper
 
         public ExtendedPredictionModel(Stream stream, IHostEnvironment env = null)
         {
-            _env = env ?? new TlcEnvironment();
+            _env = env ?? new ConsoleEnvironment();
             _predictorModel = new TransformModel(_env, stream);
         }
 
@@ -212,7 +211,7 @@ namespace Scikit.ML.PipelineHelper
             if (!schema.HasSlotNames(colIndex, expectedLabelCount))
                 return false;
 
-            VBuffer<DvText> labels = new VBuffer<DvText>();
+            var labels = new VBuffer<ReadOnlyMemory<char>>();
             schema.GetMetadata(MetadataUtils.Kinds.SlotNames, colIndex, ref labels);
 
             if (labels.Length != expectedLabelCount)

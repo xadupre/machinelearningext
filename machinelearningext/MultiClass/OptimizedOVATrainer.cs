@@ -39,10 +39,10 @@ namespace Scikit.ML.MultiClass
             public bool useProbabilities = true;
 
             [Argument(ArgumentType.Multiple, HelpText = "Base predictor", ShortName = "p", SortOrder = 1)]
-            public SubComponent<TScalarTrainer, SignatureBinaryClassifierTrainer> predictorType = null;
+            public ISubComponent<TScalarTrainer> predictorType = null;
 
             [Argument(ArgumentType.Multiple, HelpText = "Output calibrator", ShortName = "cali", NullName = "<None>")]
-            public SubComponent<ICalibratorTrainer, SignatureCalibrator> calibratorType = new SubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
+            public ISubComponent<ICalibratorTrainer> calibratorType = new ScikitSubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
 
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Number of instances to train the calibrator", ShortName = "numcali")]
             public int maxCalibrationExamples = 1000000000;
@@ -54,7 +54,7 @@ namespace Scikit.ML.MultiClass
             public bool dropNALabel = true;
 
             [Argument(ArgumentType.Multiple, HelpText = "Add a cache transform before training. That might required if cursor happen to be in an unstable state", ShortName = "cache", NullName = "<None>")]
-            public SubComponent<IDataTransform, SignatureDataTransform> cacheTransform = null;
+            public ISubComponent<IDataTransform> cacheTransform = null;
         }
 
         private readonly Arguments _args;

@@ -18,7 +18,7 @@ namespace Scikit.ML.ProductionPrediction
         where TRowInput : class
     {
 
-        readonly TlcEnvironment _env;
+        readonly IHostEnvironment _env;
         readonly IDataView _transforms;
         readonly Predictor _predictor;
         readonly ValueMapper<VBuffer<float>, float> _mapper;
@@ -38,7 +38,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="output">name of the output column</param>
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
-        public ValueMapperPredictionEngine(TlcEnvironment env, string modelName,
+        public ValueMapperPredictionEngine(IHostEnvironment env, string modelName,
                 string features = "Features", string output = "Probability", bool getterEachTime = false, bool outputIsFloat = true) :
             this(env, File.OpenRead(modelName), features, output, getterEachTime, outputIsFloat)
         {
@@ -53,7 +53,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="output">name of the output column</param>
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
-        public ValueMapperPredictionEngine(TlcEnvironment env, Stream modelStream,
+        public ValueMapperPredictionEngine(IHostEnvironment env, Stream modelStream,
                 string features = "Features", string output = "Probability",
                 bool getterEachTime = false, bool outputIsFloat = true)
         {

@@ -3,7 +3,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime.Data;
+using DvText = Scikit.ML.PipelineHelper.DvText;
 
 
 namespace Scikit.ML.DataManipulation
@@ -47,7 +47,7 @@ namespace Scikit.ML.DataManipulation
             return Enumerable.Max(Enumerable.Zip(exp, res, (a, b) => AlmostEqual(a, b, precision)), c => c);
         }
 
-        public static double AssertAlmostEqual(DvBool[] a1, DvBool[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(bool[] a1, bool[] a2, double precision = 1e-5, bool exc = true)
         {
             if (a1.Length != a2.Length)
                 throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
@@ -73,13 +73,12 @@ namespace Scikit.ML.DataManipulation
             return 0;
         }
 
-        public static double AssertAlmostEqual(DvInt4[] a1, DvInt4[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(int[] a1, int[] a2, double precision = 1e-5, bool exc = true)
         {
             if (a1.Length != a2.Length)
                 throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
             for (int i = 0; i < a1.Length; ++i)
-                if ((a1[i].IsNA && !a2[i].IsNA) || (!a1[i].IsNA && a2[i].IsNA) ||
-                    (!a1[i].IsNA && a1[i].RawValue - a2[i].RawValue >= precision))
+                if (a1[i] != a2[i])
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
                     else
@@ -87,13 +86,12 @@ namespace Scikit.ML.DataManipulation
             return 0;
         }
 
-        public static double AssertAlmostEqual(DvInt8[] a1, DvInt8[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(long[] a1, long[] a2, double precision = 1e-5, bool exc = true)
         {
             if (a1.Length != a2.Length)
                 throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
             for (int i = 0; i < a1.Length; ++i)
-                if ((a1[i].IsNA && !a2[i].IsNA) || (!a1[i].IsNA && a2[i].IsNA) ||
-                    (!a1[i].IsNA && a1[i].RawValue - a2[i].RawValue >= precision))
+                if (a1[i] != a2[i])
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
                     else
@@ -140,13 +138,13 @@ namespace Scikit.ML.DataManipulation
             return 0;
         }
 
-        public static float[] Convert(DvInt4[] data, float missingValue = float.NaN)
+        public static float[] Convert(int[] data, float missingValue = float.NaN)
         {
             if (data is null)
                 return null;
             var res = new float[data.Length];
             for (int i = 0; i < data.Length; ++i)
-                res[i] = data[i].IsNA ? missingValue : (float)data[i];
+                res[i] = (float)data[i];
             return res;
         }
     }

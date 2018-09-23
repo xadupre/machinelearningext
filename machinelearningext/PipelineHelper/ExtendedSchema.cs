@@ -238,11 +238,11 @@ namespace Scikit.ML.PipelineHelper
             if (kind == MetadataUtils.Kinds.SlotNames)
             {
                 var res = GetSlotNames(col);
-                DvText[] dres = new DvText[res.Length];
+                var dres = new ReadOnlyMemory<char>[res.Length];
                 for (int i = 0; i < res.Length; ++i)
-                    dres[i] = new DvText(res[i]);
-                var vec = new VBuffer<DvText>(res.Length, dres);
-                ValueGetter<VBuffer<DvText>> conv = (ref VBuffer<DvText> val) => { val = vec; };
+                    dres[i] = new ReadOnlyMemory<char>(res[i].ToCharArray());
+                var vec = new VBuffer<ReadOnlyMemory<char>>(res.Length, dres);
+                ValueGetter<VBuffer<ReadOnlyMemory<char>>> conv = (ref VBuffer<ReadOnlyMemory<char>> val) => { val = vec; };
                 var conv2 = conv as ValueGetter<TValue>;
                 conv2(ref value);
                 return;
@@ -251,11 +251,11 @@ namespace Scikit.ML.PipelineHelper
             int index;
             if (TryGetColumnIndex(kind, out index))
             {
-                if (typeof(TValue) == typeof(DvText))
+                if (typeof(TValue) == typeof(ReadOnlyMemory<char>))
                 {
-                    ValueMapper<string, DvText> convs = (ref string src, ref DvText dst) =>
+                    ValueMapper<string, ReadOnlyMemory<char>> convs = (ref string src, ref ReadOnlyMemory<char> dst) =>
                     {
-                        dst = new DvText(src);
+                        dst = new ReadOnlyMemory<char>(src.ToCharArray());
                     };
                     var convs2 = convs as ValueMapper<string, TValue>;
                     convs2(ref kind, ref value);

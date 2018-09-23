@@ -40,7 +40,7 @@ namespace Scikit.ML.ScikitAPI
                               string predictor = null,
                               IHostEnvironment host = null)
         {
-            _env = host ?? new TlcEnvironment();
+            _env = host ?? new ConsoleEnvironment();
             _transforms = new StepTransform[transforms == null ? 1 : transforms.Length + 1];
             // We add a PassThroughTransform to be able to change the source.
             _transforms[0] = new StepTransform() { transformSettings = "pass", transform = null };
@@ -60,14 +60,14 @@ namespace Scikit.ML.ScikitAPI
 
         public ScikitPipeline(string filename, IHostEnvironment host = null)
         {
-            _env = host ?? new TlcEnvironment();
+            _env = host ?? new ConsoleEnvironment();
             using (var st = File.OpenRead(filename))
                 Load(st);
         }
 
         public ScikitPipeline(Stream st, IHostEnvironment host = null)
         {
-            _env = host ?? new TlcEnvironment();
+            _env = host ?? new ConsoleEnvironment();
             Load(st);
         }
 

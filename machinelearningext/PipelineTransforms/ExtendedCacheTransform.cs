@@ -91,7 +91,7 @@ namespace Scikit.ML.PipelineTransforms
             public bool reuse = false;
 
             [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver")]
-            public SubComponent<IDataSaver, SignatureDataSaver> saverSettings = new SubComponent<IDataSaver, SignatureDataSaver>("binary");
+            public ISubComponent<IDataSaver> saverSettings = new ScikitSubComponent<IDataSaver, SignatureDataSaver>("binary");
         }
 
         #endregion

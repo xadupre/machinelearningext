@@ -10,6 +10,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.CommandLine;
+using Legacy = Microsoft.ML.Legacy;
 using ResampleTransform = Scikit.ML.RandomTransforms.ResampleTransform;
 using EntryPointResample = Scikit.ML.EntryPoints.EntryPointResample;
 using EP_Resample = Scikit.ML.EntryPoints.Resample;
@@ -76,7 +77,7 @@ namespace Scikit.ML.EntryPoints
     /// <summary>
     /// Randomly multiplies rows, the number of multiplication per rows is draws from a Poisson Law.
     /// </summary>
-    public sealed partial class Resample : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
+    public sealed partial class Resample : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
         public const string Name = nameof(Resample);
 
@@ -131,13 +132,13 @@ namespace Scikit.ML.EntryPoints
         }
         public Var<IDataView> GetInputData() => Data;
 
-        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
+        public Legacy.ILearningPipelineStep ApplyStep(Legacy.ILearningPipelineStep previousStep, Experiment experiment)
         {
             if (previousStep != null)
             {
-                if (!(previousStep is ILearningPipelineDataStep dataStep))
+                if (!(previousStep is Legacy.ILearningPipelineDataStep dataStep))
                 {
-                    throw new InvalidOperationException($"{ nameof(Resample)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
+                    throw new InvalidOperationException($"{ nameof(Resample)} only supports an { nameof(Legacy.ILearningPipelineDataStep)} as an input.");
                 }
 
                 Data = dataStep.Data;
@@ -146,7 +147,7 @@ namespace Scikit.ML.EntryPoints
             return new ResamplePipelineStep(output);
         }
 
-        private class ResamplePipelineStep : ILearningPipelineDataStep
+        private class ResamplePipelineStep : Legacy.ILearningPipelineDataStep
         {
             public ResamplePipelineStep(Output output)
             {

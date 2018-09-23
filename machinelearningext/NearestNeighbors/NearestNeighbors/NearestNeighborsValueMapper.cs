@@ -98,8 +98,8 @@ namespace Scikit.ML.NearestNeighbors
 
             var conv = new TypedConverters<TLabel>(DataKind.I4);
 
-            DvInt4 imini = 0, imaxi = 0;
-            var convMapper = conv.GetMapper<DvInt4>();
+            int imini = 0, imaxi = 0;
+            var convMapper = conv.GetMapper<int>();
             if (convMapper == null)
                 throw _host.Except("No conversion from {0} to {1}", typeof(TLabel), typeof(int));
             switch (kind)
@@ -109,7 +109,7 @@ namespace Scikit.ML.NearestNeighbors
                         throw _host.Except("Only one class, two are expected.");
                     convMapper(ref mini, ref imini);
                     convMapper(ref maxi, ref imaxi);
-                    if (imaxi.RawValue - imini.RawValue != 1)
+                    if (imaxi - imini != 1)
                         throw _host.Except("More than two classes: min(labels)={0} max(labels)={1}", imini, imaxi);
                     return 2;
                 case PredictionKind.MultiClassClassification:
@@ -117,7 +117,7 @@ namespace Scikit.ML.NearestNeighbors
                         throw _host.Except("Only one class, more are expected.");
                     convMapper(ref mini, ref imini);
                     convMapper(ref maxi, ref imaxi);
-                    return imini.RawValue == 0 ? imaxi.RawValue + 1 : imini.RawValue;
+                    return imini == 0 ? imaxi + 1 : imini;
                 default:
                     throw _host.ExceptNotSupp("Not suported for predictor {0}", kind);
             }
@@ -153,10 +153,10 @@ namespace Scikit.ML.NearestNeighbors
         {
             var conv = new TypedConverters<TLabel>();
             TLabel positiveClass = default(TLabel);
-            if (typeof(TLabel) == typeof(DvBool))
+            if (typeof(TLabel) == typeof(bool))
             {
-                var convMap = conv.GetMapperFrom<DvBool>();
-                var b = DvBool.True;
+                var convMap = conv.GetMapperFrom<bool>();
+                var b = true;
                 convMap(ref b, ref positiveClass);
             }
             else if (typeof(TLabel) == typeof(float))

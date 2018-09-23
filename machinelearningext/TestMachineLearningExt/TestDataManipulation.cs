@@ -7,12 +7,11 @@ using System.Linq;
 using System.IO;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Trainers;
-using Microsoft.ML.Transforms;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.ScikitAPI;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
@@ -39,22 +38,22 @@ namespace TestMachineLearningExt
             Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
             Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
             Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
-            Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[140, 0], (DvInt4)2);
-            df.iloc[1, 0] = (DvInt4)10;
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)10);
-            df.loc[1, "Label"] = (DvInt4)11;
-            Assert.AreEqual(df.loc[1, "Label"], (DvInt4)11);
+            Assert.AreEqual(df.iloc[0, 0], (int)0);
+            Assert.AreEqual(df.iloc[1, 0], (int)0);
+            Assert.AreEqual(df.iloc[140, 0], (int)2);
+            df.iloc[1, 0] = (int)10;
+            Assert.AreEqual(df.iloc[1, 0], (int)10);
+            df.loc[1, "Label"] = (int)11;
+            Assert.AreEqual(df.loc[1, "Label"], (int)11);
             var d = df[1];
             Assert.AreEqual(d.Count, 5);
-            Assert.AreEqual(d["Label"], (DvInt4)11);
+            Assert.AreEqual(d["Label"], (int)11);
             var col = df["Label"];
             Assert.AreEqual(col.Length, 150);
             df["Label2"] = df["Label"];
             col = df["Label2"];
             Assert.AreEqual(col.Length, 150);
-            Assert.AreEqual(df.loc[1, "Label2"], (DvInt4)11);
+            Assert.AreEqual(df.loc[1, "Label2"], (int)11);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 6));
         }
 
@@ -72,9 +71,9 @@ namespace TestMachineLearningExt
                 Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
                 Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
                 Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
-                Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
-                Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
-                Assert.AreEqual(df.iloc[140, 0], (DvInt4)2);
+                Assert.AreEqual(df.iloc[0, 0], (int)0);
+                Assert.AreEqual(df.iloc[1, 0], (int)0);
+                Assert.AreEqual(df.iloc[140, 0], (int)2);
             }
         }
 
@@ -86,7 +85,7 @@ namespace TestMachineLearningExt
             var df1 = DataFrame.ReadCsv(iris, sep: '\t');
             var df2 = DataFrame.ReadView(loader);
             Assert.IsTrue(df1 == df2);
-            df2.iloc[1, 0] = (DvInt4)10;
+            df2.iloc[1, 0] = (int)10;
             Assert.IsTrue(df1 != df2);
         }
 
@@ -143,9 +142,9 @@ namespace TestMachineLearningExt
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
                 var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-                var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
-                var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
-                var trainer = env.CreateTrainer("ova{p=lr}");
+                var conc = env.CreateTransform("Concat{col=Features:Sepal_length,Sepal_width}", df);
+                var trainingData = env.CreateExamples(conc, "Features", label: "Label");
+                var trainer = env.CreateTrainer("ova{p=ap}");
                 using (var ch = env.Start("test"))
                 {
                     var pred = trainer.Train(env, ch, trainingData);
@@ -153,8 +152,8 @@ namespace TestMachineLearningExt
                     var predictions = DataFrame.ReadView(scorer);
                     var v = predictions.iloc[0, 7];
                     Assert.AreEqual(v, (uint)1);
-                    Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
-                    Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
+                    Assert.AreEqual(predictions.Schema.GetColumnName(5), "Features.0");
+                    Assert.AreEqual(predictions.Schema.GetColumnName(6), "Features.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 11));
                     ch.Done();
@@ -178,7 +177,7 @@ namespace TestMachineLearningExt
                     var scorer = PredictorHelper.Predict(env, pred, trainingData);
                     var predictions = DataFrame.ReadView(scorer);
                     var v = predictions.iloc[0, 7];
-                    Assert.AreEqual(v, DvBool.False);
+                    Assert.AreEqual(v, false);
                     Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
                     Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
@@ -204,7 +203,7 @@ namespace TestMachineLearningExt
                     var viewpred = PredictorHelper.Predict(env, pred, trainingData);
                     var predictions = DataFrame.ReadView(viewpred);
                     var v = predictions.iloc[0, 7];
-                    Assert.AreEqual(v, DvBool.False);
+                    Assert.AreEqual(v, false);
                     Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
                     Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
@@ -223,8 +222,8 @@ namespace TestMachineLearningExt
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrame.ReadView(predictions);
@@ -256,8 +255,8 @@ namespace TestMachineLearningExt
 
             df["AA2"] = df["AA"] + 10;
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 6));
-            Assert.AreEqual(df.iloc[0, 5], (DvInt4)10);
-            Assert.AreEqual(df.iloc[1, 5], (DvInt4)11);
+            Assert.AreEqual(df.iloc[0, 5], (int)10);
+            Assert.AreEqual(df.iloc[1, 5], (int)11);
 
             df["CC2"] = df["CC"] + "10";
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 7));
@@ -281,8 +280,8 @@ namespace TestMachineLearningExt
 
             df["AA2"] = df["AA"] * 10;
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 5));
-            Assert.AreEqual(df.iloc[0, 4], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 4], (DvInt4)10);
+            Assert.AreEqual(df.iloc[0, 4], (int)0);
+            Assert.AreEqual(df.iloc[1, 4], (int)10);
         }
 
         [TestMethod]
@@ -301,8 +300,8 @@ namespace TestMachineLearningExt
 
             df["AA2"] = df["AA"] - 10;
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 5));
-            Assert.AreEqual(df.iloc[0, 4], (DvInt4)(-10));
-            Assert.AreEqual(df.iloc[1, 4], (DvInt4)(-9));
+            Assert.AreEqual(df.iloc[0, 4], (int)(-10));
+            Assert.AreEqual(df.iloc[1, 4], (int)(-9));
         }
 
         [TestMethod]
@@ -316,21 +315,21 @@ namespace TestMachineLearningExt
 
             df["BB*BB"] = df["AA"] == df["BB"];
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], DvBool.False);
-            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+            Assert.AreEqual(df.iloc[0, 3], false);
+            Assert.AreEqual(df.iloc[1, 3], false);
 
             df["AA2"] = df["AA"] == 0;
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 5));
-            Assert.AreEqual(df.iloc[0, 4], DvBool.True);
-            Assert.AreEqual(df.iloc[1, 4], DvBool.False);
+            Assert.AreEqual(df.iloc[0, 4], true);
+            Assert.AreEqual(df.iloc[1, 4], false);
 
             var view = df[df["AA"] == 0];
             Assert.AreEqual(view.Shape, new Tuple<int, int>(1, 5));
 
             df["CC2"] = df["CC"] == "text";
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 6));
-            Assert.AreEqual(df.iloc[0, 5], DvBool.True);
-            Assert.AreEqual(df.iloc[1, 5], DvBool.False);
+            Assert.AreEqual(df.iloc[0, 5], true);
+            Assert.AreEqual(df.iloc[1, 5], false);
         }
 
         [TestMethod]
@@ -349,8 +348,8 @@ namespace TestMachineLearningExt
 
             df["AA2"] = df["AA"] / 10;
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 5));
-            Assert.AreEqual(df.iloc[0, 4], (DvInt4)(0));
-            Assert.AreEqual(df.iloc[1, 4], (DvInt4)(0));
+            Assert.AreEqual(df.iloc[0, 4], (int)(0));
+            Assert.AreEqual(df.iloc[1, 4], (int)(0));
         }
 
         [TestMethod]
@@ -364,8 +363,8 @@ namespace TestMachineLearningExt
 
             df["BB*BB"] = df["AA"] > df["BB"];
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], DvBool.False);
-            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+            Assert.AreEqual(df.iloc[0, 3], false);
+            Assert.AreEqual(df.iloc[1, 3], false);
         }
 
         [TestMethod]
@@ -379,8 +378,8 @@ namespace TestMachineLearningExt
 
             df["BB*BB"] = df["AA"] >= df["BB"];
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], DvBool.False);
-            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+            Assert.AreEqual(df.iloc[0, 3], false);
+            Assert.AreEqual(df.iloc[1, 3], false);
         }
 
         [TestMethod]
@@ -394,8 +393,8 @@ namespace TestMachineLearningExt
 
             df["BB*BB"] = df["AA"] < df["BB"];
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
-            Assert.AreEqual(df.iloc[1, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[0, 3], true);
+            Assert.AreEqual(df.iloc[1, 3], true);
         }
 
         [TestMethod]
@@ -409,8 +408,8 @@ namespace TestMachineLearningExt
 
             df["BB*BB"] = df["AA"] <= df["BB"];
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
-            Assert.AreEqual(df.iloc[1, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[0, 3], true);
+            Assert.AreEqual(df.iloc[1, 3], true);
         }
 
         [TestMethod]
@@ -424,8 +423,8 @@ namespace TestMachineLearningExt
 
             df["min"] = -df["AA"];
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 3], (DvInt4)(-1));
+            Assert.AreEqual(df.iloc[0, 3], (int)0);
+            Assert.AreEqual(df.iloc[1, 3], (int)(-1));
         }
 
         [TestMethod]
@@ -439,8 +438,8 @@ namespace TestMachineLearningExt
 
             df["min"] = !(df["AA"] == 1);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
-            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+            Assert.AreEqual(df.iloc[0, 3], true);
+            Assert.AreEqual(df.iloc[1, 3], false);
         }
 
         [TestMethod]
@@ -469,8 +468,8 @@ namespace TestMachineLearningExt
 
             df["and"] = (df["AA"] == 0) & (df["BB"] == 1f);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
-            Assert.AreEqual(df.iloc[1, 3], DvBool.False);
+            Assert.AreEqual(df.iloc[0, 3], true);
+            Assert.AreEqual(df.iloc[1, 3], false);
         }
 
         [TestMethod]
@@ -484,8 +483,8 @@ namespace TestMachineLearningExt
 
             df["or"] = (df["AA"] == 1) | (df["BB"] == 1f);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
-            Assert.AreEqual(df.iloc[0, 3], DvBool.True);
-            Assert.AreEqual(df.iloc[1, 3], DvBool.True);
+            Assert.AreEqual(df.iloc[0, 3], true);
+            Assert.AreEqual(df.iloc[1, 3], true);
         }
 
         #endregion
@@ -512,9 +511,9 @@ namespace TestMachineLearningExt
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
-            df.iloc[df["AA"].Filter<DvInt4>(c => (int)c == 1), 2] = "changed";
+            df.iloc[df["AA"].Filter<int>(c => (int)c == 1), 2] = "changed";
             Assert.AreEqual(df.iloc[1, 2].ToString(), "changed");
-            df.loc[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = "changed2";
+            df.loc[df["AA"].Filter<int>(c => (int)c == 1), "CC"] = "changed2";
             Assert.AreEqual(df.iloc[1, 2].ToString(), "changed2");
         }
 
@@ -527,7 +526,7 @@ namespace TestMachineLearningExt
             var copy = df.Copy();
             var tos2 = copy.ToString();
             Assert.AreEqual(tos, tos2);
-            copy.iloc[copy["AA"].Filter<DvInt4>(c => (int)c == 1), 2] = "changed";
+            copy.iloc[copy["AA"].Filter<int>(c => (int)c == 1), 2] = "changed";
             tos2 = copy.ToString();
             Assert.AreNotEqual(tos, tos2);
         }
@@ -575,7 +574,7 @@ namespace TestMachineLearningExt
             var df = DataFrame.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
 
-            df["fAA"] = df["AA"].Apply((ref DvInt4 vin, ref float vout) => { vout = (float)vin; });
+            df["fAA"] = df["AA"].Apply((ref int vin, ref float vout) => { vout = (float)vin; });
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
             Assert.AreEqual(df.iloc[0, 3], 0f);
             Assert.AreEqual(df.iloc[1, 3], 1f);
@@ -608,8 +607,8 @@ namespace TestMachineLearningExt
 
             df["AA"].Sort(false, true);
             Assert.AreEqual(order.Length, 2);
-            Assert.AreEqual(df.iloc[0, 0], (DvInt4)1);
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
+            Assert.AreEqual(df.iloc[0, 0], (int)1);
+            Assert.AreEqual(df.iloc[1, 0], (int)0);
         }
 
         [TestMethod]
@@ -619,26 +618,26 @@ namespace TestMachineLearningExt
             var df = DataFrame.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
 
-            var el1 = df.EnumerateItems<DvInt4>(new[] { "AA" }).Select(c => c.ToTuple()).ToArray();
+            var el1 = df.EnumerateItems<int>(new[] { "AA" }).Select(c => c.ToTuple()).ToArray();
             Assert.AreEqual(el1.Length, 2);
             Assert.AreEqual(el1[0].Item1, 0);
             Assert.AreEqual(el1[1].Item1, 1);
 
-            var el2 = df.EnumerateItems<DvInt4, float>(new[] { "AA", "BB" }).Select(c => c.ToTuple()).ToArray();
+            var el2 = df.EnumerateItems<int, float>(new[] { "AA", "BB" }).Select(c => c.ToTuple()).ToArray();
             Assert.AreEqual(el2.Length, 2);
             Assert.AreEqual(el2[0].Item1, 0);
             Assert.AreEqual(el2[1].Item1, 1);
             Assert.AreEqual(el2[0].Item2, 1f);
             Assert.AreEqual(el2[1].Item2, 1.1f);
 
-            var el3 = df.EnumerateItems<DvInt4, float, DvText>(new[] { "AA", "BB", "CC" }).Select(c => c.ToTuple()).ToArray();
+            var el3 = df.EnumerateItems<int, float, DvText>(new[] { "AA", "BB", "CC" }).Select(c => c.ToTuple()).ToArray();
             Assert.AreEqual(el3.Length, 2);
             Assert.AreEqual(el3[0].Item1, 0);
             Assert.AreEqual(el3[1].Item1, 1);
             Assert.AreEqual(el3[0].Item2, 1f);
             Assert.AreEqual(el3[1].Item2, 1.1f);
-            Assert.AreEqual(el3[0].Item3, new DvText("text"));
-            Assert.AreEqual(el3[1].Item3, new DvText("text2"));
+            Assert.AreEqual(el3[0].Item3.ToString(), "text");
+            Assert.AreEqual(el3[1].Item3.ToString(), "text2");
         }
 
         #endregion
@@ -652,18 +651,18 @@ namespace TestMachineLearningExt
             var df = DataFrame.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
 
-            df.TSort<DvInt4, float>(new[] { 0, 1 });
-            Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[2, 0], (DvInt4)1);
+            df.TSort<int, float>(new[] { 0, 1 });
+            Assert.AreEqual(df.iloc[0, 0], (int)0);
+            Assert.AreEqual(df.iloc[1, 0], (int)0);
+            Assert.AreEqual(df.iloc[2, 0], (int)1);
             Assert.AreEqual(df.iloc[0, 1], -1.1f);
             Assert.AreEqual(df.iloc[1, 1], 1f);
             Assert.AreEqual(df.iloc[2, 1], 1.1f);
 
-            df.TSort<DvInt4, float>(new[] { 0, 1 }, false);
-            Assert.AreEqual(df.iloc[2, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[0, 0], (DvInt4)1);
+            df.TSort<int, float>(new[] { 0, 1 }, false);
+            Assert.AreEqual(df.iloc[2, 0], (int)0);
+            Assert.AreEqual(df.iloc[1, 0], (int)0);
+            Assert.AreEqual(df.iloc[0, 0], (int)1);
             Assert.AreEqual(df.iloc[2, 1], -1.1f);
             Assert.AreEqual(df.iloc[1, 1], 1f);
             Assert.AreEqual(df.iloc[0, 1], 1.1f);
@@ -677,9 +676,9 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
 
             df.Sort(new[] { "AA" });
-            Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[2, 0], (DvInt4)1);
+            Assert.AreEqual(df.iloc[0, 0], (int)0);
+            Assert.AreEqual(df.iloc[1, 0], (int)0);
+            Assert.AreEqual(df.iloc[2, 0], (int)1);
         }
 
         [TestMethod]
@@ -690,17 +689,17 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
 
             df.Sort(new[] { "AA", "BB" });
-            Assert.AreEqual(df.iloc[0, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[2, 0], (DvInt4)1);
+            Assert.AreEqual(df.iloc[0, 0], (int)0);
+            Assert.AreEqual(df.iloc[1, 0], (int)0);
+            Assert.AreEqual(df.iloc[2, 0], (int)1);
             Assert.AreEqual(df.iloc[0, 1], -1.1f);
             Assert.AreEqual(df.iloc[1, 1], 1f);
             Assert.AreEqual(df.iloc[2, 1], 1.1f);
 
             df.Sort(new[] { "AA", "BB" }, false);
-            Assert.AreEqual(df.iloc[2, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[1, 0], (DvInt4)0);
-            Assert.AreEqual(df.iloc[0, 0], (DvInt4)1);
+            Assert.AreEqual(df.iloc[2, 0], (int)0);
+            Assert.AreEqual(df.iloc[1, 0], (int)0);
+            Assert.AreEqual(df.iloc[0, 0], (int)1);
             Assert.AreEqual(df.iloc[2, 1], -1.1f);
             Assert.AreEqual(df.iloc[1, 1], 1f);
             Assert.AreEqual(df.iloc[0, 1], 1.1f);
@@ -715,15 +714,15 @@ namespace TestMachineLearningExt
             var view = df[new int[] { 1, 2 }];
             Assert.AreEqual(view.Length, 2);
 
-            view.TSort<DvInt4, float>(new[] { 0, 1 });
-            Assert.AreEqual(view.iloc[0, 0], (DvInt4)0);
-            Assert.AreEqual(view.iloc[1, 0], (DvInt4)1);
+            view.TSort<int, float>(new[] { 0, 1 });
+            Assert.AreEqual(view.iloc[0, 0], (int)0);
+            Assert.AreEqual(view.iloc[1, 0], (int)1);
             Assert.AreEqual(view.iloc[0, 1], -1.1f);
             Assert.AreEqual(view.iloc[1, 1], 1.1f);
 
-            view.TSort<DvInt4, float>(new[] { 0, 1 }, false);
-            Assert.AreEqual(view.iloc[1, 0], (DvInt4)0);
-            Assert.AreEqual(view.iloc[0, 0], (DvInt4)1);
+            view.TSort<int, float>(new[] { 0, 1 }, false);
+            Assert.AreEqual(view.iloc[1, 0], (int)0);
+            Assert.AreEqual(view.iloc[0, 0], (int)1);
             Assert.AreEqual(view.iloc[1, 1], -1.1f);
             Assert.AreEqual(view.iloc[0, 1], 1.1f);
         }
@@ -743,8 +742,8 @@ namespace TestMachineLearningExt
 
             var rows2 = new Dictionary<string, object>[]
             {
-                new Dictionary<string, object>() { {"AA", (DvInt4)0 }, {"BB", 1f }, {"CC", new DvText("text") } },
-                new Dictionary<string, object>() { {"AA", (DvInt4)1 }, {"BB", 1.1f }, {"CC", new DvText("text2") } },
+                new Dictionary<string, object>() { {"AA", (int)0 }, {"BB", 1f }, {"CC", new DvText("text") } },
+                new Dictionary<string, object>() { {"AA", (int)1 }, {"BB", 1.1f }, {"CC", new DvText("text2") } },
             };
             df = new DataFrame(rows2);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -777,17 +776,17 @@ namespace TestMachineLearningExt
 
             su = df.Mean();
             Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
-            text = "AA,BB,CC\n0,1.05,";
+            text = "AA,BB,CC\n0,1.05,\"\"";
             Assert.AreEqual(text, su.ToString());
 
             su = df.Count();
             Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
-            text = "AA,BB,CC\n2,2,";
+            text = "AA,BB,CC\n2,2,\"\"";
             Assert.AreEqual(text, su.ToString());
 
             su = df[new[] { 0 }].Count();
             Assert.AreEqual(su.Shape, new Tuple<int, int>(1, 3));
-            text = "AA,BB,CC\n1,1,";
+            text = "AA,BB,CC\n1,1,\"\"";
             Assert.AreEqual(text, su.ToString());
         }
 
@@ -811,19 +810,19 @@ namespace TestMachineLearningExt
             var df2 = new DataFrame(rows);
             conc = DataFrame.Concat(new[] { df, df2 });
             Assert.AreEqual(conc.Shape, new Tuple<int, int>(4, 3));
-            Assert.AreEqual(conc.iloc[0, 0], (DvInt4)0);
-            Assert.AreEqual(conc.iloc[3, 2], DvText.Empty);
-            Assert.AreEqual(conc.iloc[2, 0], (DvInt4)0);
+            Assert.AreEqual(conc.iloc[0, 0], (int)0);
+            Assert.AreEqual(conc.iloc[3, 2].ToString(), "");
+            Assert.AreEqual(conc.iloc[2, 0], (int)0);
 
             rows = new Dictionary<string, object>[]
             {
                 new Dictionary<string, object>() { {"BB", 1f }, {"CC", new DvText("text") } },
-                new Dictionary<string, object>() { {"AA", (DvInt4)1 }, {"BB", 1.1f } },
+                new Dictionary<string, object>() { {"AA", (int)1 }, {"BB", 1.1f } },
             };
             df2 = new DataFrame(rows);
             conc = DataFrame.Concat(new[] { df, df2 });
             Assert.AreEqual(conc.Shape, new Tuple<int, int>(4, 3));
-            Assert.AreEqual(conc.iloc[2, 0], DvInt4.NA);
+            Assert.AreEqual(conc.iloc[2, 0], 0);
             Assert.AreEqual(conc.iloc[3, 2], DvText.NA);
         }
 
@@ -841,34 +840,34 @@ namespace TestMachineLearningExt
             var df = new DataFrame(rows);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
 
-            var gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Count();
+            var gr = df.TGroupBy<int>(new int[] { 0 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             var text = gr.ToString();
-            var exp = "AA,BB,CC\n0,2,\n1,2,\n2,1,";
+            var exp = "AA,BB,CC\n0,2,\"\"\n1,2,\"\"\n2,1,\"\"";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Sum();
+            gr = df.TGroupBy<int>(new int[] { 0 }).Sum();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,2.1,texttext3\n1,2.2,text2text5\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Min();
+            gr = df.TGroupBy<int>(new int[] { 0 }).Min();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Max();
+            gr = df.TGroupBy<int>(new int[] { 0 }).Max();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1.1,text3\n1,1.1,text5\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4>(new int[] { 0 }).Mean();
+            gr = df.TGroupBy<int>(new int[] { 0 }).Mean();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
-            exp = "AA,BB,CC\n0,1.05,\n1,1.1,\n2,1.1,";
+            exp = "AA,BB,CC\n0,1.05,\"\"\n1,1.1,\"\"\n2,1.1,\"\"";
             Assert.AreEqual(exp, text);
         }
 
@@ -886,34 +885,34 @@ namespace TestMachineLearningExt
             var df = new DataFrame(rows);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
 
-            var gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Count();
+            var gr = df.TGroupBy<int, float>(new int[] { 0, 1 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             var text = gr.ToString();
-            var exp = "AA,BB,CC\n0,1,\n1,1.1,\n2,1.1,";
+            var exp = "AA,BB,CC\n0,1,\"\"\n1,1.1,\"\"\n2,1.1,\"\"";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Sum();
+            gr = df.TGroupBy<int, float>(new int[] { 0, 1 }).Sum();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,texttext3\n1,1.1,text2text5\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Min();
+            gr = df.TGroupBy<int, float>(new int[] { 0, 1 }).Min();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Max();
+            gr = df.TGroupBy<int, float>(new int[] { 0, 1 }).Max();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text3\n1,1.1,text5\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4, float>(new int[] { 0, 1 }).Mean();
+            gr = df.TGroupBy<int, float>(new int[] { 0, 1 }).Mean();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
-            exp = "AA,BB,CC\n0,1,\n1,1.1,\n2,1.1,";
+            exp = "AA,BB,CC\n0,1,\"\"\n1,1.1,\"\"\n2,1.1,\"\"";
             Assert.AreEqual(exp, text);
         }
 
@@ -931,31 +930,31 @@ namespace TestMachineLearningExt
             var df = new DataFrame(rows);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(5, 3));
 
-            var gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Count();
+            var gr = df.TGroupBy<int, float, DvText>(new int[] { 0, 1, 2 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             var text = gr.ToString();
             var exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Sum();
+            gr = df.TGroupBy<int, float, DvText>(new int[] { 0, 1, 2 }).Sum();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Min();
+            gr = df.TGroupBy<int, float, DvText>(new int[] { 0, 1, 2 }).Min();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Max();
+            gr = df.TGroupBy<int, float, DvText>(new int[] { 0, 1, 2 }).Max();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
             Assert.AreEqual(exp, text);
 
-            gr = df.TGroupBy<DvInt4, float, DvText>(new int[] { 0, 1, 2 }).Mean();
+            gr = df.TGroupBy<int, float, DvText>(new int[] { 0, 1, 2 }).Mean();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
             exp = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,1.1,text4";
@@ -979,7 +978,7 @@ namespace TestMachineLearningExt
             var gr = df.GroupBy(new int[] { 0 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             var text = gr.ToString();
-            var exp = "AA,BB,CC\n0,2,\n1,2,\n2,1,";
+            var exp = "AA,BB,CC\n0,2,\"\"\n1,2,\"\"\n2,1,\"\"";
             Assert.AreEqual(exp, text);
 
             gr = df.GroupBy(new int[] { 0 }).Sum();
@@ -1003,7 +1002,7 @@ namespace TestMachineLearningExt
             gr = df.GroupBy(new int[] { 0 }).Mean();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
-            exp = "AA,BB,CC\n0,1.05,\n1,1.1,\n2,1.1,";
+            exp = "AA,BB,CC\n0,1.05,\"\"\n1,1.1,\"\"\n2,1.1,\"\"";
             Assert.AreEqual(exp, text);
         }
 
@@ -1024,7 +1023,7 @@ namespace TestMachineLearningExt
             var gr = df.GroupBy(new int[] { 0, 1 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             var text = gr.ToString();
-            var exp = "AA,BB,CC\n0,1,\n1,1.1,\n2,1.1,";
+            var exp = "AA,BB,CC\n0,1,\"\"\n1,1.1,\"\"\n2,1.1,\"\"";
             Assert.AreEqual(exp, text);
 
             gr = df.GroupBy(new int[] { 0, 1 }).Sum();
@@ -1048,7 +1047,7 @@ namespace TestMachineLearningExt
             gr = df.GroupBy(new int[] { 0, 1 }).Mean();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(3, 3));
             text = gr.ToString();
-            exp = "AA,BB,CC\n0,1,\n1,1.1,\n2,1.1,";
+            exp = "AA,BB,CC\n0,1,\"\"\n1,1.1,\"\"\n2,1.1,\"\"";
             Assert.AreEqual(exp, text);
         }
 
@@ -1114,7 +1113,7 @@ namespace TestMachineLearningExt
             var gr = df.GroupBy(new int[] { 1 }).Count();
             Assert.AreEqual(gr.Shape, new Tuple<int, int>(2, 3));
             var text = gr.ToString();
-            var exp = "BB,AA,CC\n1,2,\n1.1,3,";
+            var exp = "BB,AA,CC\n1,2,\"\"\n1.1,3,\"\"";
             Assert.AreEqual(exp, text);
 
             var view = df[new[] { "AA", "BB" }];
@@ -1166,8 +1165,8 @@ namespace TestMachineLearningExt
             var df1 = new DataFrame(rows);
             rows = new Dictionary<string, object>[]
             {
-                new Dictionary<string, object>() { {"AA2", 2 }, {"BB2", 3f }, {"CC", "TEXT2" }, { "DD", true }, },
-                new Dictionary<string, object>() { {"AA2", 1 }, {"BB2", 4.1f }, {"CC", "TEXT1" }, { "DD", false }, },
+                new Dictionary<string, object>() { {"AA2", 2 }, {"BB2", 3f }, {"CC", "TEXT2" }, { "DD", 1 }, },
+                new Dictionary<string, object>() { {"AA2", 1 }, {"BB2", 4.1f }, {"CC", "TEXT1" }, { "DD", 0 }, },
             };
             var df2 = new DataFrame(rows);
 
@@ -1180,19 +1179,19 @@ namespace TestMachineLearningExt
             res = df1.Join(df2, new[] { 0 }, new[] { 0 }, joinType: JoinStrategy.Left);
             tos = res.ToString();
             Assert.AreEqual(res.Shape, new Tuple<int, int>(2, 7));
-            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n0,1,text0,,,,\n1,1.1,text2,1,4.1,TEXT1,0";
+            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n0,1,text0,-2147483648,?,\"\",-2147483648\n1,1.1,text2,1,4.1,TEXT1,0";
             Assert.AreEqual(exp, tos);
 
             res = df1.Join(df2, new[] { 0 }, new[] { 0 }, joinType: JoinStrategy.Right);
             tos = res.ToString();
             Assert.AreEqual(res.Shape, new Tuple<int, int>(2, 7));
-            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n1,1.1,text2,1,4.1,TEXT1,0\n,,,2,3,TEXT2,1";
+            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n1,1.1,text2,1,4.1,TEXT1,0\n-2147483648,?,\"\",2,3,TEXT2,1";
             Assert.AreEqual(exp, tos);
 
             res = df1.Join(df2, new[] { 0 }, new[] { 0 }, joinType: JoinStrategy.Outer);
             tos = res.ToString();
             Assert.AreEqual(res.Shape, new Tuple<int, int>(3, 7));
-            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n0,1,text0,,,,\n1,1.1,text2,1,4.1,TEXT1,0\n,,,2,3,TEXT2,1";
+            exp = "AA,BB,CC,AA2,BB2,CC_y,DD\n0,1,text0,-2147483648,?,\"\",-2147483648\n1,1.1,text2,1,4.1,TEXT1,0\n-2147483648,?,\"\",2,3,TEXT2,1";
             Assert.AreEqual(exp, tos);
         }
 

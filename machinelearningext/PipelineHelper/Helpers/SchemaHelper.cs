@@ -7,7 +7,8 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data.Conversion;
-using Data = Microsoft.ML.Data;
+using Data = Microsoft.ML.Runtime.Data;
+using DataLegacy = Microsoft.ML.Legacy.Data;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -50,7 +51,7 @@ namespace Scikit.ML.PipelineHelper
                 case DataKind.DateTime:
                     return DateTimeType.Instance;
                 case DataKind.DateTimeZone:
-                    return DateTimeZoneType.Instance;
+                    return DateTimeOffsetType.Instance;
                 default:
                     throw ch != null ? ch.Except("Unknown kind {0}", kind) : Contracts.Except("Unknown kind {0}", kind);
             }
@@ -371,21 +372,26 @@ namespace Scikit.ML.PipelineHelper
             }
         }
 
-        public static Data.DataKind DataKind2DataDataKind(DataKind kind)
+        public static DataLegacy.DataKind DataKind2DataDataKind(Data.DataKind kind)
+        {
+            return (DataLegacy.DataKind)kind;
+        }
+
+        public static Data.DataKind DataKind2DataDataKind(DataLegacy.DataKind kind)
         {
             return (Data.DataKind)kind;
         }
 
-        public static Data.TextLoaderColumn[] ToColumnArgArray(ISchema schema)
+        public static DataLegacy.TextLoaderColumn[] ToColumnArgArray(ISchema schema)
         {
-            var res = new Data.TextLoaderColumn[schema.ColumnCount];
+            var res = new DataLegacy.TextLoaderColumn[schema.ColumnCount];
             for (int i = 0; i < res.Length; ++i)
             {
-                res[i] = new Data.TextLoaderColumn()
+                res[i] = new DataLegacy.TextLoaderColumn()
                 {
                     Name = schema.GetColumnName(i),
                     Type = DataKind2DataDataKind(schema.GetColumnType(i).RawKind),
-                    Source = new[] { new Data.TextLoaderRange(i) }
+                    Source = new[] { new DataLegacy.TextLoaderRange(i) }
                 };
             }
             return res;
@@ -396,7 +402,7 @@ namespace Scikit.ML.PipelineHelper
         /// </summary>
         public static DataKind GetKind<TLabel>()
         {
-            if (typeof(TLabel) == typeof(DvBool) || typeof(TLabel) == typeof(bool))
+            if (typeof(TLabel) == typeof(bool))
                 return DataKind.BL;
             if (typeof(TLabel) == typeof(byte))
                 return DataKind.U1;
@@ -404,15 +410,15 @@ namespace Scikit.ML.PipelineHelper
                 return DataKind.U2;
             if (typeof(TLabel) == typeof(uint))
                 return DataKind.U4;
-            if (typeof(TLabel) == typeof(int) || typeof(TLabel) == typeof(DvInt4))
+            if (typeof(TLabel) == typeof(int))
                 return DataKind.I4;
-            if (typeof(TLabel) == typeof(Int64) || typeof(TLabel) == typeof(DvInt8))
+            if (typeof(TLabel) == typeof(Int64))
                 return DataKind.I8;
             if (typeof(TLabel) == typeof(float))
                 return DataKind.R4;
             if (typeof(TLabel) == typeof(double))
                 return DataKind.R8;
-            if (typeof(TLabel) == typeof(DvText) || typeof(TLabel) == typeof(string))
+            if (typeof(TLabel) == typeof(ReadOnlyMemory<char>) || typeof(TLabel) == typeof(string) || typeof(TLabel) == typeof(DvText))
                 return DataKind.TX;
             throw Contracts.ExceptNotSupp("Unsupported output type {0}.", typeof(TLabel));
         }

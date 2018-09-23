@@ -345,9 +345,9 @@ namespace Scikit.ML.PipelineHelper
             Update(value, 0, r);
         }
 
-        public void Update(DvBool value)
+        public void Update(bool? value)
         {
-            int i = value.IsTrue ? 1 : (value.IsFalse ? 0 : -10);
+            int i = value.HasValue ? (value.Value ? 1 :  0) : -10;
             bool r = Init(i);
             Update(i, 0, r);
         }

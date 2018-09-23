@@ -11,6 +11,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.CommandLine;
 using Scikit.ML.PipelineHelper;
+using Legacy = Microsoft.ML.Legacy;
 
 using _NearestNeighborsTransform = Scikit.ML.NearestNeighbors.NearestNeighborsTransform;
 using EntryPointNearestNeighborsTransform = Scikit.ML.EntryPoints.EntryPointNearestNeighborsTransform;
@@ -97,7 +98,7 @@ namespace Scikit.ML.EntryPoints
     /// <summary>
     /// Retrieve the closest neighbors among a set of points.
     /// </summary>
-    public sealed partial class NearestNeighbors : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
+    public sealed partial class NearestNeighbors : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
         public const string Name = nameof(NearestNeighbors);
 
@@ -202,13 +203,13 @@ namespace Scikit.ML.EntryPoints
         }
         public Var<IDataView> GetInputData() => Data;
 
-        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
+        public Legacy.ILearningPipelineStep ApplyStep(Legacy.ILearningPipelineStep previousStep, Experiment experiment)
         {
             if (previousStep != null)
             {
-                if (!(previousStep is ILearningPipelineDataStep dataStep))
+                if (!(previousStep is Legacy.ILearningPipelineDataStep dataStep))
                 {
-                    throw new InvalidOperationException($"{ nameof(NearestNeighbors)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
+                    throw new InvalidOperationException($"{ nameof(NearestNeighbors)} only supports an { nameof(Legacy.ILearningPipelineDataStep)} as an input.");
                 }
 
                 Data = dataStep.Data;
@@ -217,7 +218,7 @@ namespace Scikit.ML.EntryPoints
             return new NearestNeighborsTransformPipelineStep(output);
         }
 
-        private class NearestNeighborsTransformPipelineStep : ILearningPipelineDataStep
+        private class NearestNeighborsTransformPipelineStep : Legacy.ILearningPipelineDataStep
         {
             public NearestNeighborsTransformPipelineStep(Output output)
             {
