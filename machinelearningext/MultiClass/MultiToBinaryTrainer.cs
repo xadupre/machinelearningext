@@ -83,7 +83,6 @@ namespace Scikit.ML.MultiClass
         {
             Host.CheckValue(args, "args");
             Contracts.CheckValue(args.predictorType, "predictorType", "Must specify a base learner type");
-            Contracts.CheckValue(args.reclassicationPredictor, "reclassicationPredictor", "Must specify a base learner type");
             _args = args;
         }
 
