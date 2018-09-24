@@ -223,8 +223,8 @@ namespace TestMachineLearningExt
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
 
-            var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2}", new MultiFileSource(dataFilePath));
+            var env = EnvHelper.NewTestEnvironment(conc: 1);
+            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}", new MultiFileSource(dataFilePath));
             var xf = env.CreateTransform("DBScan{col=Features}", loader);
 
             string schema = SchemaHelper.ToString(xf.Schema);
@@ -436,7 +436,8 @@ namespace TestMachineLearningExt
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
 
             var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2}", new MultiFileSource(dataFilePath));
+            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}",
+                                          new MultiFileSource(dataFilePath));
             var xf = env.CreateTransform("Optics{col=Features epsilons=0.3 minPoints=6}", loader);
 
             string schema = SchemaHelper.ToString(xf.Schema);
@@ -477,7 +478,8 @@ namespace TestMachineLearningExt
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
 
             var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2}", new MultiFileSource(dataFilePath));
+            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}",
+                                          new MultiFileSource(dataFilePath));
             var xf = env.CreateTransform("OpticsOrd{col=Features epsilon=0.3 minPoints=6}", loader);
 
             string schema = SchemaHelper.ToString(xf.Schema);

@@ -54,8 +54,9 @@ namespace Scikit.ML.MultiClass
             [Argument(ArgumentType.AtMostOnce, HelpText = "Use U4 for the temporary group column instead of U8 (required by model encoding group on 4 bytes).", ShortName = "u4")]
             public bool groupIsU4 = false;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Base predictor", ShortName = "p", SortOrder = 1)]
-            public ISubComponent<TScalarTrainer> predictorType =
+            [Argument(ArgumentType.Multiple, HelpText = "Base predictor", ShortName = "p", SortOrder = 1,
+                SignatureType = typeof(SignatureTrainer))]
+            public IComponentFactory<TScalarTrainer> predictorType =
                 new ScikitSubComponent<TScalarTrainer, SignatureRankerTrainer>("ftrank");
         }
 
@@ -84,7 +85,7 @@ namespace Scikit.ML.MultiClass
             : base(env, args, LoaderSignature)
         {
             Host.CheckValue(args, "args");
-            Host.CheckUserArg(args.predictorType.IsGood(), "predictorType", "Must specify a base learner type");
+            Host.CheckValue(args.predictorType, "predictorType", "Must specify a base learner type");
             _args = args;
             if (_args.algo == MultiToBinaryTransform.MultiplicationAlgorithm.Default)
                 _args.algo = MultiToBinaryTransform.MultiplicationAlgorithm.Ranking;
@@ -118,8 +119,17 @@ namespace Scikit.ML.MultiClass
                 for (int i = 0; i < _predictors.Length; i++)
                 {
                     ch.Info("Training learner {0}", i);
-                    Contracts.CheckUserArg(_args.predictorType.IsGood(), "predictorType", "Must specify a base learner type");
-                    var trainer = _trainer ?? _args.predictorType.CreateInstance(Host);
+                    Contracts.CheckValue(_args.predictorType, "predictorType", "Must specify a base learner type");
+                    TScalarTrainer trainer;
+                    if (_trainer != null)
+                        trainer = _trainer;
+                    else
+                    {
+                        var trSett = ScikitSubComponent<ITrainer, SignatureTrainer>.AsSubComponent(_args.predictorType);
+                        var tr = trSett.CreateInstance(Host);
+                        trainer = tr as TScalarTrainer;
+                        Contracts.AssertValue(trainer);
+                    }
                     _trainer = null;
                     _predictors[i] = TrainPredictor(ch, trainer, data, count);
                 }
@@ -277,7 +287,7 @@ namespace Scikit.ML.MultiClass
             if (_args.reclassicationPredictor != null)
             {
                 var pred = CreateFinalPredictor(ch, data, trans, count, _args, predictors, null);
-                TrainReclassificationPredictor(data0, pred, _args.reclassicationPredictor);
+                TrainReclassificationPredictor(data0, pred, ScikitSubComponent<ITrainer, SignatureTrainer>.AsSubComponent(_args.reclassicationPredictor));
             }
 
             return CreateFinalPredictor(ch, data, trans, count, _args, predictors, _reclassPredictor);

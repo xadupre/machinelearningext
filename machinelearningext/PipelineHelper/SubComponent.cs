@@ -3,15 +3,15 @@
 using System;
 using System.Text;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Internal.Utilities;
-using Microsoft.ML.Runtime.EntryPoints;
 
 
 namespace Scikit.ML.PipelineHelper
 {
-    public interface ISubComponent<out TComponent> : IComponentFactory<TComponent>
+    #region subcomponents
+
+    public interface ISubComponent<out TComponent> : IComponentFactory<TComponent>, ICommandLineComponentFactory
     {
         TComponent CreateInstance(IHostEnvironment env, params object[] extra);
         string Kind { get; }
@@ -23,7 +23,6 @@ namespace Scikit.ML.PipelineHelper
     public class ScikitSubComponent : IEquatable<ScikitSubComponent>
     {
         private static readonly string[] _empty = new string[0];
-
         private string _kind;
         private string[] _settings;
 
@@ -236,6 +235,21 @@ namespace Scikit.ML.PipelineHelper
     public class ScikitSubComponent<TRes, TSig> : ScikitSubComponent, ISubComponent<TRes>
         where TRes : class
     {
+        public Type SignatureType => typeof(TSig);
+        public string Name => Kind;
+        public string GetSettingsString() { return SubComponentSettings; }
+
+        public static ScikitSubComponent<TRes, TSig> AsSubComponent(IComponentFactory<TRes> param)
+        {
+            var cmd = param as ICommandLineComponentFactory;
+            if (cmd != null)
+                return new ScikitSubComponent<TRes, TSig>(cmd.Name, cmd.GetSettingsString());
+            var sub = param as ScikitSubComponent<TRes, TSig>;
+            if (sub != null)
+                return sub;
+            throw new NotImplementedException(string.Format("Unable to create a subcomponent from type '{0}'", param.GetType()));
+        }
+
         public ScikitSubComponent()
             : base()
         {
@@ -273,4 +287,6 @@ namespace Scikit.ML.PipelineHelper
             return src != null && !src.IsEmpty;
         }
     }
+
+    #endregion
 }

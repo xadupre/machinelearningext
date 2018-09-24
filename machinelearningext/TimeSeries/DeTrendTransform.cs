@@ -61,8 +61,9 @@ namespace Scikit.ML.TimeSeries
             [Argument(ArgumentType.Required, HelpText = "Column which contains the time", ShortName = "time")]
             public string timeColumn;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Parameters to use for the linear optimizer.")]
-            public ISubComponent<ITrainer> optim =
+            [Argument(ArgumentType.Multiple, HelpText = "Parameters to use for the linear optimizer.",
+                SignatureType = typeof(SignatureTrainer))]
+            public IComponentFactory<ITrainer> optim =
                 new ScikitSubComponent<ITrainer, SignatureRegressorTrainer>("sasdcar");
 
             public void Write(ModelSaveContext ctx, IHost host)
@@ -271,7 +272,8 @@ namespace Scikit.ML.TimeSeries
             using (var ch = Host.Start("Train"))
             {
                 ch.Trace("Constructing trainer");
-                ITrainer trainer = _args.optim.CreateInstance(Host);
+                var optSett = ScikitSubComponent<ITrainer, SignatureRegressorTrainer>.AsSubComponent(_args.optim);
+                ITrainer trainer = optSett.CreateInstance(Host);
                 _trend = TrainUtils.Train(Host, ch, roles, trainer, null, null, 0, null);
                 ch.Done();
             }

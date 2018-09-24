@@ -9,6 +9,7 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
 using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Runtime.CommandLine;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.PipelineGraphTransforms;
@@ -94,8 +95,9 @@ namespace Scikit.ML.ModelSelection
             [Argument(ArgumentType.MultipleUnique, HelpText = "To tag the split views (one tag per view).", ShortName = "tag")]
             public string[] tag = null;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver")]
-            public ISubComponent<IDataSaver> saverSettings = new ScikitSubComponent<IDataSaver, SignatureDataSaver>("binary");
+            [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver",
+                      SignatureType = typeof(SignatureDataSaver))]
+            public IComponentFactory<IDataSaver> saverSettings = new ScikitSubComponent<IDataSaver, SignatureDataSaver>("binary");
 
             public void PostProcess()
             {
@@ -172,7 +174,10 @@ namespace Scikit.ML.ModelSelection
             _cacheFile = args.cacheFile;
             _reuse = args.reuse;
             _tags = args.tag;
-            _saverSettings = string.Format("{0}{{{1}}}", args.saverSettings.Kind, args.saverSettings.SubComponentSettings);
+
+            var saveSettings = args.saverSettings as ICommandLineComponentFactory;
+            Host.CheckValue(saveSettings, nameof(saveSettings));
+            _saverSettings = string.Format("{0}{{{1}}}", saveSettings.Name, saveSettings.GetSettingsString());
             _saverSettings = _saverSettings.Replace("{}", "");
 
             var saver = ComponentCreation.CreateSaver(Host, _saverSettings);

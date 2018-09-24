@@ -49,8 +49,9 @@ namespace Scikit.ML.MultiClass
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Drop missing labels.", ShortName = "na")]
             public bool dropNALabel = true;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Reclassification using output from the first tree", ShortName = "rp", SortOrder = 1)]
-            public ISubComponent<ITrainer> reclassicationPredictor = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Reclassification using output from the first tree", ShortName = "rp", 
+                SortOrder = 1, SignatureType = typeof(SignatureTrainer))]
+            public IComponentFactory<ITrainer> reclassicationPredictor = null;
 
             #endregion
         }

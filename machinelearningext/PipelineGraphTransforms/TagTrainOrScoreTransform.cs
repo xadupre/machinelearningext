@@ -48,17 +48,19 @@ namespace Scikit.ML.PipelineGraphTransforms
 
         public new class Arguments : TrainAndScoreTransform.ArgumentsBase
         {
-            [Argument(ArgumentType.Multiple, HelpText = "Trainer", ShortName = "tr")]
-            public ISubComponent<ITrainer> trainer = new ScikitSubComponent<ITrainer, SignatureTrainer>("PlattCalibration");
+            [Argument(ArgumentType.Multiple, HelpText = "Trainer", ShortName = "tr", SignatureType = typeof(SignatureTrainer))]
+            public IComponentFactory<ITrainer> trainer = new ScikitSubComponent<ITrainer, SignatureTrainer>("PlattCalibration");
 
-            [Argument(ArgumentType.Multiple, HelpText = "Output calibrator", ShortName = "cali", NullName = "<None>")]
-            public ISubComponent<ICalibratorTrainer> calibrator = new ScikitSubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
+            [Argument(ArgumentType.Multiple, HelpText = "Output calibrator", ShortName = "cali", NullName = "<None>",
+                SignatureType = typeof(SignatureCalibrator))]
+            public IComponentFactory<ICalibratorTrainer> calibrator = new ScikitSubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
 
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Number of instances to train the calibrator", ShortName = "numcali")]
             public int maxCalibrationExamples = 1000000000;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Scorer to use", NullName = "<Auto>")]
-            public ISubComponent<IDataScorerTransform> scorer;
+            [Argument(ArgumentType.Multiple, HelpText = "Scorer to use", NullName = "<Auto>",
+                SignatureType = typeof(SignatureDataScorer))]
+            public IComponentFactory<IDataScorerTransform> scorer;
 
             [Argument(ArgumentType.Required, HelpText = "To tag the predictor if it is trained.", ShortName = "tag")]
             public string tag = "taggedPredictor";
@@ -195,7 +197,7 @@ namespace Scikit.ML.PipelineGraphTransforms
             env.CheckValue(args, "args");
             env.CheckValue(input, "input");
             env.CheckValue(args.tag, "tag is empty");
-            env.CheckUserArg(args.trainer.IsGood(), "trainer",
+            env.CheckValue(args.trainer, "trainer",
                 "Trainer cannot be null. If your model is already trained, please use ScoreTransform instead.");
 
             var views = TagHelper.EnumerateTaggedView(true, input).Where(c => c.Item1 == args.tag);
@@ -207,13 +209,16 @@ namespace Scikit.ML.PipelineGraphTransforms
             using (var ch = host.Start("Train"))
             {
                 ch.Trace("Constructing trainer");
-                ITrainer trainer = args.trainer.CreateInstance(host);
+                var trainerSett = ScikitSubComponent<ITrainer, SignatureTrainer>.AsSubComponent(args.trainer);
+                ITrainer trainer = trainerSett.CreateInstance(host);
                 var customCols = TrainUtils.CheckAndGenerateCustomColumns(env, args.CustomColumn);
 
                 string feat;
                 string group;
                 var data = CreateDataFromArgs(_host, ch, new OpaqueDataView(input), args, out feat, out group);
-                ICalibratorTrainer calibrator = args.calibrator == null ? null : args.calibrator.CreateInstance(host);
+                ICalibratorTrainer calibrator = args.calibrator == null 
+                                    ? null 
+                                    : ScikitSubComponent<ICalibratorTrainer, SignatureCalibrator>.AsSubComponent(args.calibrator).CreateInstance(host);
                 var nameTrainer = args.trainer.ToString().Replace("{", "").Replace("}", "").Replace(" ", "").Replace("=", "").Replace("+", "Y").Replace("-", "N");
                 var extTrainer = new ExtendedTrainer(trainer, nameTrainer);
                 _predictor = extTrainer.Train(host, ch, data, null, calibrator, args.maxCalibrationExamples);
@@ -235,7 +240,8 @@ namespace Scikit.ML.PipelineGraphTransforms
                     var mapper = new SchemaBindablePredictorWrapper(_predictor);
                     var roles = new RoleMappedSchema(input.Schema, null, feat, group: group);
                     var bound = mapper.Bind(_host, roles);
-                    _scorer = _args.scorer.CreateInstance(_host, input, bound, roles);
+                    var scorPars = ScikitSubComponent<IDataScorerTransform, SignatureDataScorer>.AsSubComponent(_args.scorer);
+                    _scorer = scorPars.CreateInstance(_host, input, bound, roles);
                 }
                 else
                     _scorer = PredictorHelper.CreateDefaultScorer(_host, input, feat, group, _predictor);

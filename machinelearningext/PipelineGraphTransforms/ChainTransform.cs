@@ -45,11 +45,13 @@ namespace Scikit.ML.PipelineGraphTransforms
 
         public class Arguments
         {
-            [Argument(ArgumentType.Multiple, HelpText = "First transform", ShortName = "xf1")]
-            public ISubComponent<IDataTransform> transformType1 = null;
+            [Argument(ArgumentType.Multiple, HelpText = "First transform", ShortName = "xf1",
+                SignatureType = typeof(SignatureDataTransform))]
+            public IComponentFactory<IDataTransform> transformType1 = null;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Second transform", ShortName = "xf2")]
-            public ISubComponent<IDataTransform> transformType2 = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Second transform", ShortName = "xf2",
+                SignatureType = typeof(SignatureDataTransform))]
+            public IComponentFactory<IDataTransform> transformType2 = null;
         }
 
         IDataView _input;
@@ -67,11 +69,11 @@ namespace Scikit.ML.PipelineGraphTransforms
             _host.CheckValue(input, "input");
             _input = input;
             _args = args;
-            _host.CheckUserArg(_args.transformType1.IsGood(), "transformType1", "Must specify a first transform.");
-            _host.CheckUserArg(_args.transformType2.IsGood(), "transformType2", "Must specify a second transform.");
+            var tr1 = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.transformType1);
+            var tr2 = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.transformType2);
             _dataTransforms = new IDataTransform[2];
-            _dataTransforms[0] = _args.transformType1.CreateInstance(env, input);
-            _dataTransforms[1] = _args.transformType2.CreateInstance(env, _dataTransforms[0]);
+            _dataTransforms[0] = tr1.CreateInstance(env, input);
+            _dataTransforms[1] = tr2.CreateInstance(env, _dataTransforms[0]);
         }
 
         public static ChainTransform Create(IHostEnvironment env, ModelLoadContext ctx, IDataView input)

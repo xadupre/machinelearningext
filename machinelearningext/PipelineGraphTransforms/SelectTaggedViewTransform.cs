@@ -59,8 +59,9 @@ namespace Scikit.ML.PipelineGraphTransforms
             [Argument(ArgumentType.AtMostOnce, HelpText = "In that case, the selected view is an idv file or a text file.", ShortName = "f")]
             public string filename;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Loader settings if data is loaded from disk (default is binary).", ShortName = "loader")]
-            public ISubComponent<IDataLoader> loaderSettings = new ScikitSubComponent<IDataLoader, SignatureDataLoader>("binary");
+            [Argument(ArgumentType.Multiple, HelpText = "Loader settings if data is loaded from disk (default is binary).", 
+                ShortName = "loader", SignatureType = typeof(SignatureDataLoader))]
+            public IComponentFactory<IDataLoader> loaderSettings = new ScikitSubComponent<IDataLoader, SignatureDataLoader>("binary");
 
             public void Read(ModelLoadContext ctx, IHost host)
             {
@@ -80,7 +81,11 @@ namespace Scikit.ML.PipelineGraphTransforms
                 ctx.Writer.Write(tag);
                 ctx.Writer.Write(selectTag);
                 ctx.Writer.Write(string.IsNullOrEmpty(filename) ? "" : filename);
-                var sloaderSettings = string.Format("{0}{{{1}}}", loaderSettings.Kind, loaderSettings.SubComponentSettings);
+
+                var loadSettings = loaderSettings as ICommandLineComponentFactory;
+                Contracts.CheckValue(loadSettings, nameof(loaderSettings));
+
+                var sloaderSettings = string.Format("{0}{{{1}}}", loadSettings.Name, loadSettings.GetSettingsString());
                 sloaderSettings = sloaderSettings.Replace("{}", "");
                 ctx.Writer.Write(sloaderSettings);
             }
@@ -174,7 +179,8 @@ namespace Scikit.ML.PipelineGraphTransforms
                     throw env.Except("Tag '{0}' was already given. It cannot be assigned to the new file.", args.selectTag);
                 var loaderArgs = new BinaryLoader.Arguments();
                 var file = new MultiFileSource(args.filename);
-                IDataView loader = args.loaderSettings.CreateInstance(env, file);
+                var loadSettings = ScikitSubComponent<IDataLoader, SignatureDataLoader>.AsSubComponent(args.loaderSettings);
+                IDataView loader = loadSettings.CreateInstance(env, file);
 
                 var ag = new TagViewTransform.Arguments { tag = args.selectTag };
                 var newInput = new TagViewTransform(env, ag, loader);

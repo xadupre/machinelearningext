@@ -61,8 +61,9 @@ namespace Scikit.ML.PipelineGraphTraining
 
             public KeyValuePair<string, string>[] customColumnPair;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Scorer to use", NullName = "<Auto>")]
-            public ISubComponent<IDataScorerTransform> scorer;
+            [Argument(ArgumentType.Multiple, HelpText = "Scorer to use", NullName = "<Auto>",
+                SignatureType = typeof(SignatureDataScorer))]
+            public IComponentFactory<IDataScorerTransform> scorer;
 
             public void PostProcess()
             {

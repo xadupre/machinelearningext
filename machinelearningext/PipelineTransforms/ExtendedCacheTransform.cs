@@ -90,8 +90,9 @@ namespace Scikit.ML.PipelineTransforms
             [Argument(ArgumentType.AtMostOnce, HelpText = "Reuse the previous cache.", ShortName = "r")]
             public bool reuse = false;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver")]
-            public ISubComponent<IDataSaver> saverSettings = new ScikitSubComponent<IDataSaver, SignatureDataSaver>("binary");
+            [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver",
+                      SignatureType = typeof(SignatureDataSaver))]
+            public IComponentFactory<IDataSaver> saverSettings = new ScikitSubComponent<IDataSaver, SignatureDataSaver>("binary");
         }
 
         #endregion
@@ -119,7 +120,9 @@ namespace Scikit.ML.PipelineTransforms
             Host.CheckUserArg(args.inDataFrame || !string.IsNullOrEmpty(args.cacheFile), "cacheFile cannot be empty if inDataFrame is false.");
             Host.CheckUserArg(!args.async || args.inDataFrame, "inDataFrame must be true if async is true.");
             Host.CheckUserArg(!args.numTheads.HasValue || args.numTheads > 0, "numThread must be > 0 if specified.");
-            _saverSettings = string.Format("{0}{{{1}}}", args.saverSettings.Kind, args.saverSettings.SubComponentSettings);
+            var saverSettings = args.saverSettings as ICommandLineComponentFactory;
+            Host.CheckValue(saverSettings, nameof(saverSettings));
+            _saverSettings = string.Format("{0}{{{1}}}", saverSettings.Name, saverSettings.GetSettingsString());
             _saverSettings = _saverSettings.Replace("{}", "");
             if (!_saverSettings.ToLower().StartsWith("binary"))
                 throw env.ExceptNotSupp("Only binary format is supported.");

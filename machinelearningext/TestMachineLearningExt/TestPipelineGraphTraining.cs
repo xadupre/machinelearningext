@@ -104,7 +104,6 @@ namespace TestMachineLearningExt
                 throw new Exception("Too much data:" + string.Join("\n", lines));
 
             TestTransformHelper.SerializationTestTransform(env, outModelFilePath, pipe, loader, outData, outData2);
-        }
-  
+        }  
     }
 }

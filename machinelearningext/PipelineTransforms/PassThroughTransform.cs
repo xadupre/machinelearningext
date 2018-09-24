@@ -61,7 +61,7 @@ namespace Scikit.ML.PipelineTransforms
             public string GetSaverSettings()
             {
                 var saver = GetSaverComponent();
-                var res = string.Format("{0}{{{1}}}", saver.Kind, saver.SubComponentSettings);
+                var res = string.Format("{0}{{{1}}}", saver.Name, saver.GetSettingsString());
                 res = res.Replace("{}", "");
                 return res;
             }
