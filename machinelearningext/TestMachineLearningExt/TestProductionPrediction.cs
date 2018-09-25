@@ -10,6 +10,8 @@ using Microsoft.ML.Runtime.Data;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineLambdaTransforms;
 using Scikit.ML.ProductionPrediction;
+using Scikit.ML.DataManipulation;
+using DocHelperMlExt;
 
 
 namespace TestMachineLearningExt
@@ -243,6 +245,26 @@ namespace TestMachineLearningExt
                 feat[0] = i;
                 run.Predict(feat);
             }
+        }
+
+        [TestMethod]
+        public void TestBcLrSameModel()
+        {
+
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var output = FileHelper.GetOutputFile("bc-lr.zip", methodName);
+            var name = FileHelper.GetOutputFile("bc.txt", methodName);
+            var df = DataFrame.ReadStr("Label,X1,X2,X3,X4,X5,X6,X7,X8,X9\n" +
+                                "0,0.1,1.1,2.1,3.1,4.1,5.1,6.2,7.4,-5\n" +
+                                "1,1.1,1.1,2.1,3.1,4.1,5.1,6.2,7.4,-5\n" +
+                                "0,2.1,1.1,3.1,3.1,-4.1,5.1,6.2,7.4,-5\n" +
+                                "1,3.1,1.1,4.1,3.1,4.1,-5.1,6.2,7.4,-5\n" +
+                                "0,4.1,1.1,2.1,3.1,4.1,5.1,6.2,-7.4,-5");
+            df.ToCsv(name);
+            var cmd = string.Format("Train tr=lr data={0} out={1} loader=text{{col=Label:R4:0 col=Features:R4:1-* sep=,}}",
+                                    name, output);
+            var stout = MamlHelper.MamlAll(cmd, true);
+            Assert.IsFalse(string.IsNullOrEmpty(stout));
         }
 
         [TestMethod]
