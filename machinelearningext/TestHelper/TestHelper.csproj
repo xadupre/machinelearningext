@@ -13,20 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Clustering\Clustering.csproj" />
-    <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
-    <ProjectReference Include="..\ModelSelection\ModelSelection.csproj" />
-    <ProjectReference Include="..\MultiClass\MultiClass.csproj" />
-    <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
-    <ProjectReference Include="..\PipelineGraphTraining\PipelineGraphTraining.csproj" />
-    <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
-    <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
-    <ProjectReference Include="..\PipelineTraining\PipelineTraining.csproj" />
-    <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
-    <ProjectReference Include="..\ProductionPrediction\ProductionPrediction.csproj" />
-    <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
-    <ProjectReference Include="..\TimeSeries\TimeSeries.csproj" />
+    <ProjectReference Include="..\ScikitAPI\ScikitAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,26 +30,8 @@
     <Reference Include="Microsoft.ML.Api">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.ML.StandardLearners">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.StandardLearners.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.ML.CpuMath">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.CpuMath.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML.Transforms">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Transforms.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML.KMeansClustering">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.KMeansClustering.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML.Ensemble">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Ensemble.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML.FastTree">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.FastTree.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML.PCA">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.PCA.dll</HintPath>
     </Reference>
   </ItemGroup>
     

@@ -49,6 +49,7 @@ namespace DocHelperMlExt
 
             using (var host = new ConsoleEnvironment(conc: 1))
             {
+                ComponentHelper.AddStandardComponents(host);
                 var data = host.CreateStreamingDataView(inputs);
                 var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host);
                 var predictor = pipe.Train(data, feature: "X");

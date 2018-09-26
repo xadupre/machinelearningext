@@ -3,10 +3,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime;
 using Scikit.ML.PipelineHelper;
+using Scikit.ML.ScikitAPI;
+using DocHelperMlExt;
 using Legacy = Microsoft.ML.Legacy;
 
 
@@ -77,6 +79,7 @@ namespace TestMachineLearningExt
             var outModelFilePath = Scikit.ML.TestHelper.FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
             var env = new ConsoleEnvironment(conc: 1);
+            ComponentHelper.AddStandardComponents(env);
 
             var data = env.CreateLoader("Text{col=Label:R4:0 col=Sepal_length:R4:1 col=Sepal_width:R4:2 col=Petal_length:R4:3 col=Petal_width:R4:4}",
                                         new MultiFileSource(iris));
@@ -137,6 +140,7 @@ namespace TestMachineLearningExt
             var outModelFilePath = Scikit.ML.TestHelper.FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
             var env = new ConsoleEnvironment(conc: 1);
+            ComponentHelper.AddStandardComponents(env);
 
             var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
             var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);

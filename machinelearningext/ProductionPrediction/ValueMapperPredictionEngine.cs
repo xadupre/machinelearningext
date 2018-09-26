@@ -11,6 +11,9 @@ namespace Scikit.ML.ProductionPrediction
 {
     public class FloatVectorInput
     {
+        /// Dummy field with a known dimension.
+        /// Known or unknown dimension is checked at loading time.
+        /// The dimension cannot be checked.
         [VectorType(1)]
         public float[] Features;
     }
@@ -19,10 +22,8 @@ namespace Scikit.ML.ProductionPrediction
     /// Creates a prediction engine which does not create getters each time.
     /// It is much faster as it does not recreate getter for every observation.
     /// </summary>
-    /// <typeparam name="TRowInput">a row</typeparam>
     public class ValueMapperPredictionEngine
     {
-
         readonly IHostEnvironment _env;
         readonly IDataView _transforms;
         readonly Predictor _predictor;

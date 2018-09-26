@@ -140,4 +140,3 @@ namespace Scikit.ML.ProductionPrediction
         }
     }
 }
-
