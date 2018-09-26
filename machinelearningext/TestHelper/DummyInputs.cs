@@ -114,4 +114,18 @@ namespace Scikit.ML.TestHelper
             };
         }
     }
+
+    public class SentimentData
+    {
+        [ColumnName("Label")]
+        public bool Sentiment;
+        public string SentimentText;
+    }
+
+    public class SentimentPrediction
+    {
+        [ColumnName("PredictedLabel")]
+        public bool Sentiment;
+        public float Score;
+    }
 }

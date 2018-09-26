@@ -29,7 +29,8 @@ namespace Scikit.ML.PipelineTraining
                 verWrittenCur: 0x00010001, // Initial
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(PrePostProcessPredictor).Assembly.FullName);
         }
 
         public PredictionKind PredictionKind { get { return _predictor.PredictionKind; } }

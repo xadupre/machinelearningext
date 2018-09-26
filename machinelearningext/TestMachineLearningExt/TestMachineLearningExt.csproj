@@ -64,6 +64,9 @@
     <Reference Include="Microsoft.ML.FastTree">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.FastTree.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ML.Transforms">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Transforms.dll</HintPath>
+    </Reference>
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

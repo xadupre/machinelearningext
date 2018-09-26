@@ -9,13 +9,18 @@ using Microsoft.ML.Runtime.Data;
 
 namespace Scikit.ML.ProductionPrediction
 {
+    public class FloatVectorInput
+    {
+        [VectorType(1)]
+        public float[] Features;
+    }
+
     /// <summary>
     /// Creates a prediction engine which does not create getters each time.
     /// It is much faster as it does not recreate getter for every observation.
     /// </summary>
     /// <typeparam name="TRowInput">a row</typeparam>
-    public class ValueMapperPredictionEngine<TRowInput>
-        where TRowInput : class
+    public class ValueMapperPredictionEngine
     {
 
         readonly IHostEnvironment _env;
@@ -34,13 +39,12 @@ namespace Scikit.ML.ProductionPrediction
         /// </summary>
         /// <param name="env">environment</param>
         /// <param name="modelName">filename</param>
-        /// <param name="features">name of the column features</param>
         /// <param name="output">name of the output column</param>
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, string modelName,
-                string features = "Features", string output = "Probability", bool getterEachTime = false, bool outputIsFloat = true) :
-            this(env, File.OpenRead(modelName), features, output, getterEachTime, outputIsFloat)
+                string output = "Probability", bool getterEachTime = false, bool outputIsFloat = true) :
+            this(env, File.OpenRead(modelName), output, getterEachTime, outputIsFloat)
         {
         }
 
@@ -49,19 +53,18 @@ namespace Scikit.ML.ProductionPrediction
         /// </summary>
         /// <param name="env">environment</param>
         /// <param name="modelStream">stream</param>
-        /// <param name="features">name of the column features</param>
         /// <param name="output">name of the output column</param>
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, Stream modelStream,
-                string features = "Features", string output = "Probability",
+                string output = "Probability",
                 bool getterEachTime = false, bool outputIsFloat = true)
         {
             _env = env;
             if (_env == null)
                 throw Contracts.Except("env must not be null");
-            var inputs = new TRowInput[0];
-            var view = ComponentCreation.CreateStreamingDataView<TRowInput>(_env, inputs);
+            var inputs = new FloatVectorInput[0];
+            var view = ComponentCreation.CreateStreamingDataView<FloatVectorInput>(_env, inputs);
 
             long modelPosition = modelStream.Position;
             _predictor = ComponentCreation.LoadPredictorOrNull(_env, modelStream);
@@ -72,6 +75,7 @@ namespace Scikit.ML.ProductionPrediction
             if (_transforms == null)
                 throw _env.Except("Unable to load a model.");
 
+            var features = "Features";
             var data = _env.CreateExamples(_transforms, features);
             if (data == null)
                 throw _env.Except("Cannot create rows.");

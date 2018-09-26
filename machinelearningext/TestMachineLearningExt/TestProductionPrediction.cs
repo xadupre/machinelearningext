@@ -281,24 +281,20 @@ namespace TestMachineLearningExt
         public void TestValueMapperPredictionEngine()
         {
             var name = FileHelper.GetTestFile("bc-lr.zip");
-            var engine = new ValueMapperPredictionEngine<ValueMapperExample.Input>(EnvHelper.NewTestEnvironment(), name);
+            var engine = new ValueMapperPredictionEngine(EnvHelper.NewTestEnvironment(), name);
             var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
             for (int i = 0; i < 1000; ++i)
             {
                 feat[0] = i;
-                engine.Predict(feat);
+                var res = engine.Predict(feat);
+                Assert.IsFalse(float.IsNaN(res));
+                Assert.IsFalse(float.IsInfinity(res));
             }
         }
 
         public class ValueMapperPredictionEngineExample
         {
-            public class InputRow
-            {
-                [VectorType(9)]
-                public float[] Features;
-            }
-
-            ValueMapperPredictionEngine<InputRow> engine;
+            ValueMapperPredictionEngine engine;
 
             public ValueMapperPredictionEngineExample()
             {
@@ -309,8 +305,7 @@ namespace TestMachineLearningExt
                 try
                 {
                     var env = EnvHelper.NewTestEnvironment();
-                    engine = new ValueMapperPredictionEngine<InputRow>(env,
-                                                modelName, "Features", "Probability", false);
+                    engine = new ValueMapperPredictionEngine(env, modelName, "Probability", false);
                 }
                 catch (Exception e)
                 {
@@ -334,9 +329,9 @@ namespace TestMachineLearningExt
             var res = engine.Predict(new float[] { 8, 10, 10, 8, 7, 10, 9, 7, 1 });
             if (res < 0)
                 throw new Exception("unexpected");
+            Assert.IsFalse(float.IsNaN(res));
+            Assert.IsFalse(float.IsInfinity(res));
         }
-
-
 
         [TestMethod]
         public void TestLambdaColumnPassThroughTransform()

@@ -35,7 +35,8 @@ namespace Scikit.ML.RandomTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(ShakeInputTransform).Assembly.FullName);
         }
 
         #endregion
