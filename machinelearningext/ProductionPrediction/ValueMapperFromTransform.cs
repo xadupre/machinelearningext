@@ -30,7 +30,8 @@ namespace Scikit.ML.ProductionPrediction
         readonly int _inputIndex;
         readonly ColumnType _outputType;
         readonly IRowCursor _currentInputCursor;
-        readonly IHostEnvironment _singleThreadEnv;
+        readonly IHostEnvironment _computeEnv;
+        readonly bool _getterEachTime;
 
         /// <summary>
         /// Constructor.
@@ -41,14 +42,16 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="inputColumn">input column of the mapper</param>
         /// <param name="outputColumn">output column of the mapper</param>
         /// <param name="currentCursor">if you need access to other columns than the input one, an addition cursor must be given</param>
-        /// <param name="singleThread">See documentation of the class.</param>
+        /// <param name="getterEachTime">create the getter for each computation</param>
+        /// <param name="conc">number of concurrency threads</param>
         public ValueMapperFromTransform(IHostEnvironment env, IDataTransform transform, IDataView source,
                                         string inputColumn, string outputColumn, IRowCursor currentCursor,
-                                        bool singleThread = false)
+                                        bool getterEachTime = false, int conc = 1)
         {
             Contracts.AssertValue(env);
             Contracts.AssertValue(transform);
             _env = env;
+            _getterEachTime = getterEachTime;
             _transform = transform;
             if (source == null)
             {
@@ -73,12 +76,12 @@ namespace Scikit.ML.ProductionPrediction
                     outputColumn, SchemaHelper.ToString(transform.Schema));
             _outputType = _transform.Schema.GetColumnType(index);
 
-            _singleThreadEnv = singleThread ? new PassThroughEnvironment(env, conc: 1, verbose: false) : null;
+            _computeEnv = conc > 0 ? new PassThroughEnvironment(env, conc: conc, verbose: false) : env;
         }
 
         public ValueMapper<TSrc, TDst> GetMapper<TSrc, TDst>()
         {
-            if (_singleThreadEnv == null)
+            if (_getterEachTime)
             {
                 return (ref TSrc src, ref TDst dst) =>
                 {
@@ -113,8 +116,8 @@ namespace Scikit.ML.ProductionPrediction
 
                 // This is extremely time consuming as the transform is serialized and deserialized.
                 var outputView = _nbSteps == 1
-                                    ? ApplyTransformUtils.ApplyTransformToData(_singleThreadEnv, _transform, inputView)
-                                    : ApplyTransformUtils.ApplyAllTransformsToData(_singleThreadEnv, _transform, inputView, _source);
+                                    ? ApplyTransformUtils.ApplyTransformToData(_computeEnv, _transform, inputView)
+                                    : ApplyTransformUtils.ApplyAllTransformsToData(_computeEnv, _transform, inputView, _source);
 
                 int index;
                 if (!outputView.Schema.TryGetColumnIndex(_outputColumn, out index))

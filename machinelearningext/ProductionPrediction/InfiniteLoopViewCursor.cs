@@ -57,15 +57,25 @@ namespace Scikit.ML.ProductionPrediction
         public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            consolidator = null;
-            return new IRowCursor[] { cur };
+            consolidator = new Consolidator();
+            if (n >= 2)
+            {
+                // This trick avoids the cursor to be split into multiple later.
+                var res = new IRowCursor[n];
+                var empty = new EmptyCursor(this,
+                                    col => col == _column || needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col)));
+                for (int i = 0; i < n; ++i)
+                    res[i] = i == 0 ? cur : empty;
+                return res;
+            }
+            else
+                return new IRowCursor[] { cur };
         }
 
         class Consolidator : IRowCursorConsolidator
         {
             public IRowCursor CreateCursor(IChannelProvider provider, IRowCursor[] inputs)
             {
-                Contracts.Assert(inputs.Length == 1);
                 return inputs[0];
             }
         }
@@ -139,7 +149,7 @@ namespace Scikit.ML.ProductionPrediction
 
             public bool IsColumnActive(int col)
             {
-                return col == _view._column || (_otherValues != null && _otherValues.IsColumnActive(col));
+                return col == _view._column || _needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col));
             }
 
             public ValueGetter<TValue> GetGetter<TValue>(int col)

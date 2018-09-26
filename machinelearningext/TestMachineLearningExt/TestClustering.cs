@@ -11,7 +11,7 @@ using Scikit.ML.Clustering;
 using Scikit.ML.NearestNeighbors;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;
-
+using DocHelperMlExt;
 
 namespace TestMachineLearningExt
 {
@@ -223,8 +223,15 @@ namespace TestMachineLearningExt
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
 
+            
             var env = EnvHelper.NewTestEnvironment(conc: 1);
-            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}", new MultiFileSource(dataFilePath));
+            //var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}", new MultiFileSource(dataFilePath));
+            var loader = TextLoader.Create(env, new TextLoader.Arguments() {
+                    HasHeader = true,
+                    Column = new[] { TextLoader.Column.Parse("RowId:R4:0"),
+                                     TextLoader.Column.Parse("Features:R4:1-2")}
+                },
+                new MultiFileSource(dataFilePath));
             var xf = env.CreateTransform("DBScan{col=Features}", loader);
 
             string schema = SchemaHelper.ToString(xf.Schema);

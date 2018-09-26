@@ -42,9 +42,11 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="output">name of the output column</param>
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
+        /// <param name="conc">number of concurrency threads</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, string modelName,
-                string output = "Probability", bool getterEachTime = false, bool outputIsFloat = true) :
-            this(env, File.OpenRead(modelName), output, getterEachTime, outputIsFloat)
+                string output = "Probability", bool getterEachTime = false,
+                bool outputIsFloat = true, int conc = 1) :
+            this(env, File.OpenRead(modelName), output, getterEachTime, outputIsFloat, conc)
         {
         }
 
@@ -56,9 +58,10 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="output">name of the output column</param>
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
+        /// <param name="conc">number of concurrency threads</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, Stream modelStream,
-                string output = "Probability",
-                bool getterEachTime = false, bool outputIsFloat = true)
+                string output = "Probability", bool getterEachTime = false,
+                bool outputIsFloat = true, int conc = 1)
         {
             _env = env;
             if (_env == null)
@@ -84,7 +87,7 @@ namespace Scikit.ML.ProductionPrediction
                 throw _env.Except("Cannot create a scorer.");
 
             var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(_env,
-                                scorer, view, features, output, null, !getterEachTime);
+                                scorer, view, features, output, null, getterEachTime, conc);
             if (valueMapper == null)
                 throw _env.Except("Cannot create a mapper.");
             if (outputIsFloat)
