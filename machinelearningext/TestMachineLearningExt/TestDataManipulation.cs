@@ -1283,14 +1283,16 @@ namespace TestMachineLearningExt
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "Concat{col=Z:X,Y}" }, host: host);
-                var predictor = pipe.Train(data);
-                var predictions = pipe.Transform(data);
-                var df = DataFrame.ReadView(predictions, keepVectors: true);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
-                var dfs = df.ToString();
-                var dfs2 = dfs.Replace("\n", ";");
-                Assert.AreEqual(dfs2, "X,Y,\"\",\"\";1,2,1,2;3,4,3,4");
+                using (var pipe = new ScikitPipeline(new[] { "Concat{col=Z:X,Y}" }, host: host))
+                {
+                    var predictor = pipe.Train(data);
+                    var predictions = pipe.Transform(data);
+                    var df = DataFrame.ReadView(predictions, keepVectors: true);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
+                    var dfs = df.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    Assert.AreEqual(dfs2, "X,Y,\"\",\"\";1,2,1,2;3,4,3,4");
+                }
             }
         }
 

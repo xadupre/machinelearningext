@@ -1,5 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.ML.Runtime;
@@ -22,13 +23,14 @@ namespace Scikit.ML.ProductionPrediction
     /// Creates a prediction engine which does not create getters each time.
     /// It is much faster as it does not recreate getter for every observation.
     /// </summary>
-    public class ValueMapperPredictionEngine
+    public class ValueMapperPredictionEngine : IDisposable
     {
         readonly IHostEnvironment _env;
         readonly IDataView _transforms;
         readonly Predictor _predictor;
         readonly ValueMapper<VBuffer<float>, float> _mapper;
         readonly ValueMapper<VBuffer<float>, VBuffer<float>> _mapperVector;
+        ValueMapperFromTransform<VBuffer<float>> _valueMapper;
 
         public ValueMapperPredictionEngine()
         {
@@ -87,20 +89,26 @@ namespace Scikit.ML.ProductionPrediction
             if (scorer == null)
                 throw _env.Except("Cannot create a scorer.");
 
-            var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(_env,
+            _valueMapper = new ValueMapperFromTransform<VBuffer<float>>(_env,
                                 scorer, view, features, output, null, getterEachTime, conc);
-            if (valueMapper == null)
+            if (_valueMapper == null)
                 throw _env.Except("Cannot create a mapper.");
             if (outputIsFloat)
             {
-                _mapper = valueMapper.GetMapper<VBuffer<float>, float>();
+                _mapper = _valueMapper.GetMapper<VBuffer<float>, float>();
                 _mapperVector = null;
             }
             else
             {
                 _mapper = null;
-                _mapperVector = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
+                _mapperVector = _valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
             }
+        }
+
+        public void Dispose()
+        {
+            _valueMapper.Dispose();
+            _valueMapper = null;
         }
 
         /// <summary>

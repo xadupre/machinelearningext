@@ -214,15 +214,17 @@ namespace TestMachineLearningExt
                 var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=-}",
                     new MultiFileSource(dataFilePath));
 
-                var pipe = new ScikitPipeline(new[] {
+                using (var pipe = new ScikitPipeline(new[] {
                         "Concat{col=Feature:Slength,Swidth}",
-                        "TagTrainScore{tr=iova{p=ft{nl=10 iter=1}} lab=Label feat=Feature tag=model}" }, host: env);
-                pipe.Train(loader);
-                var pred = pipe.Predict(loader);
-                var df = DataFrame.ReadView(pred);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 11));
-                var dfs = df.Head().ToString();
-                Assert.IsTrue(dfs.StartsWith("Label,Slength,Swidth,Plength,Pwidth,Feature.0,Feature.1,PredictedLabel,Score.0,Score.1,Score.2"));
+                        "TagTrainScore{tr=iova{p=ft{nl=10 iter=1}} lab=Label feat=Feature tag=model}" }, host: env))
+                {
+                    pipe.Train(loader);
+                    var pred = pipe.Predict(loader);
+                    var df = DataFrame.ReadView(pred);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 11));
+                    var dfs = df.Head().ToString();
+                    Assert.IsTrue(dfs.StartsWith("Label,Slength,Swidth,Plength,Pwidth,Feature.0,Feature.1,PredictedLabel,Score.0,Score.1,Score.2"));
+                }
             }
         }
 
@@ -239,15 +241,17 @@ namespace TestMachineLearningExt
                 var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=-}",
                     new MultiFileSource(dataFilePath));
 
-                var pipe = new ScikitPipeline(new[] {
+                using (var pipe = new ScikitPipeline(new[] {
                         "Concat{col=Feature:Slength,Swidth}",
-                        "TagTrainScore{tr=iova{p=ft{nl=10 iter=1}} lab=Label feat=Feature tag=model scorer=MultiClassClassifierScorer{ex=AA}}" }, host: env);
-                pipe.Train(loader);
-                var pred = pipe.Predict(loader);
-                var df = DataFrame.ReadView(pred);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 11));
-                var dfs = df.Head().ToString();
-                Assert.IsTrue(dfs.StartsWith("Label,Slength,Swidth,Plength,Pwidth,Feature.0,Feature.1,PredictedLabelAA,ScoreAA.0,ScoreAA.1,ScoreAA.2"));
+                        "TagTrainScore{tr=iova{p=ft{nl=10 iter=1}} lab=Label feat=Feature tag=model scorer=MultiClassClassifierScorer{ex=AA}}" }, host: env))
+                {
+                    pipe.Train(loader);
+                    var pred = pipe.Predict(loader);
+                    var df = DataFrame.ReadView(pred);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 11));
+                    var dfs = df.Head().ToString();
+                    Assert.IsTrue(dfs.StartsWith("Label,Slength,Swidth,Plength,Pwidth,Feature.0,Feature.1,PredictedLabelAA,ScoreAA.0,ScoreAA.1,ScoreAA.2"));
+                }
             }
         }
 

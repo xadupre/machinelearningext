@@ -15,7 +15,7 @@ using Scikit.ML.PipelineTransforms;
 
 namespace Scikit.ML.ScikitAPI
 {
-    public class ScikitPipeline
+    public class ScikitPipeline : IDisposable
     {
         public class StepTransform
         {
@@ -31,16 +31,18 @@ namespace Scikit.ML.ScikitAPI
             public RoleMappedData roleMapData;
         }
 
-        private readonly IHostEnvironment _env;
+        private IHostEnvironment _env;
         private StepTransform[] _transforms;
         private StepPredictor _predictor;
         private string _loaderSettings;
         private List<KeyValuePair<RoleMappedSchema.ColumnRole, string>> _roles;
+        private bool _dispose;
 
         public ScikitPipeline(string[] transforms = null,
                               string predictor = null,
                               IHostEnvironment host = null)
         {
+            _dispose = false;
             _env = host ?? ExtendedConsoleEnvironment();
             _transforms = new StepTransform[transforms == null ? 1 : transforms.Length + 1];
             // We add a PassThroughTransform to be able to change the source.
@@ -59,8 +61,18 @@ namespace Scikit.ML.ScikitAPI
             _roles = null;
         }
 
+        public void Dispose()
+        {
+            if (_dispose)
+            {
+                (_env as ConsoleEnvironment).Dispose();
+                _env = null;
+            }
+        }
+
         private IHostEnvironment ExtendedConsoleEnvironment()
         {
+            _dispose = true;
             var env = new ConsoleEnvironment();
             ComponentHelper.AddStandardComponents(env);
             return env;
@@ -68,6 +80,7 @@ namespace Scikit.ML.ScikitAPI
 
         public ScikitPipeline(string filename, IHostEnvironment host = null)
         {
+            _dispose = false;
             _env = host ?? ExtendedConsoleEnvironment();
             using (var st = File.OpenRead(filename))
                 Load(st);
@@ -75,6 +88,7 @@ namespace Scikit.ML.ScikitAPI
 
         public ScikitPipeline(Stream st, IHostEnvironment host = null)
         {
+            _dispose = false;
             _env = host ?? ExtendedConsoleEnvironment();
             Load(st);
         }

@@ -1,5 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
@@ -17,7 +18,7 @@ namespace Scikit.ML.ProductionPrediction
     /// 
     /// To get that, the parameter singleThread must be set to true.
     /// </summary>
-    public class ValueMapperFromTransform<TColValue> : IValueMapper
+    public class ValueMapperFromTransform<TColValue> : IValueMapper, IDisposable
     {
         public ColumnType InputType { get { return _transform.Source.Schema.GetColumnType(_inputIndex); } }
         public ColumnType OutputType { get { return _outputType; } }
@@ -30,8 +31,9 @@ namespace Scikit.ML.ProductionPrediction
         readonly int _inputIndex;
         readonly ColumnType _outputType;
         readonly IRowCursor _currentInputCursor;
-        readonly IHostEnvironment _computeEnv;
+        IHostEnvironment _computeEnv;
         readonly bool _getterEachTime;
+        readonly bool _disposeEnv;
 
         /// <summary>
         /// Constructor.
@@ -76,7 +78,17 @@ namespace Scikit.ML.ProductionPrediction
                     outputColumn, SchemaHelper.ToString(transform.Schema));
             _outputType = _transform.Schema.GetColumnType(index);
 
-            _computeEnv = conc > 0 ? new PassThroughEnvironment(env, conc: conc, verbose: false) : env;
+            _disposeEnv = conc > 0;
+            _computeEnv = _disposeEnv ? new PassThroughEnvironment(env, conc: conc, verbose: false) : env;
+        }
+
+        public void Dispose()
+        {
+            if (_disposeEnv)
+            {
+                (_computeEnv as PassThroughEnvironment).Dispose();
+                _computeEnv = null;
+            }
         }
 
         public ValueMapper<TSrc, TDst> GetMapper<TSrc, TDst>()

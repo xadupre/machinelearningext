@@ -51,19 +51,21 @@ namespace DocHelperMlExt
             {
                 ComponentHelper.AddStandardComponents(host);
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host);
-                var predictor = pipe.Train(data, feature: "X");
-                if (predictor == null)
-                    throw new Exception("Test failed: no predictor.");
-                var data2 = host.CreateStreamingDataView(inputs2);
-                var predictions = pipe.Predict(data2);
-                var df = DataFrame.ReadView(predictions);
-                if (df.Shape.Item1 != 4 || df.Shape.Item2 != 12)
-                    throw new Exception("Test failed: prediction failed.");
-                var dfs = df.ToString();
-                var dfs2 = dfs.Replace("\n", ";");
-                if (!dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"))
-                    throw new Exception("Test failed: prediction failed (header).");
+                using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host))
+                {
+                    var predictor = pipe.Train(data, feature: "X");
+                    if (predictor == null)
+                        throw new Exception("Test failed: no predictor.");
+                    var data2 = host.CreateStreamingDataView(inputs2);
+                    var predictions = pipe.Predict(data2);
+                    var df = DataFrame.ReadView(predictions);
+                    if (df.Shape.Item1 != 4 || df.Shape.Item2 != 12)
+                        throw new Exception("Test failed: prediction failed.");
+                    var dfs = df.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    if (!dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"))
+                        throw new Exception("Test failed: prediction failed (header).");
+                }
             }
         }
 

@@ -43,13 +43,15 @@ namespace TestMachineLearningExt
             using (var host = EnvHelper.NewTestEnvironment())
             {
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "concat{col=xt:time,one}" }, "sasdcar{iter=50}", host);
-                pipe.Train(data, feature: "xt", label: "X");
-                var view = pipe.Predict(data);
-                var df = DataFrame.ReadView(view).Head(4).Copy();
-                df["diff"] = df["Score"] - df["X"];
-                var exp = DataFrame.ReadStr("null\n0\n0\n0\n0");
-                df["diff"].AssertAlmostEqual(exp["null"].AsType(NumberType.R4), precision: 1e-1);
+                using (var pipe = new ScikitPipeline(new[] { "concat{col=xt:time,one}" }, "sasdcar{iter=50}", host))
+                {
+                    pipe.Train(data, feature: "xt", label: "X");
+                    var view = pipe.Predict(data);
+                    var df = DataFrame.ReadView(view).Head(4).Copy();
+                    df["diff"] = df["Score"] - df["X"];
+                    var exp = DataFrame.ReadStr("null\n0\n0\n0\n0");
+                    df["diff"].AssertAlmostEqual(exp["null"].AsType(NumberType.R4), precision: 1e-1);
+                }
             }
         }
 

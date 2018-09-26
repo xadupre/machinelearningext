@@ -24,16 +24,17 @@ namespace TestMachineLearningExt
                 var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
                 var iris = FileHelper.GetTestFile("iris.txt");
                 var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-                var pipe = new ScikitPipeline(new[] { "Concat{col=Feature:Sepal_length,Sepal_width}",
-                                                      "TreeFeat{tr=ft{iter=2} lab=Label feat=Feature}"});
-                pipe.Train(df);
-                var scorer = pipe.Predict(df);
-                var dfout = DataFrame.ReadView(scorer);
-                Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 31));
-                var outfile = FileHelper.GetOutputFile("iris_path.txt", methodName);
-                dfout.ToCsv(outfile);
-                Assert.IsTrue(File.Exists(outfile));
-
+                using (var pipe = new ScikitPipeline(new[] { "Concat{col=Feature:Sepal_length,Sepal_width}",
+                                                             "TreeFeat{tr=ft{iter=2} lab=Label feat=Feature}"}))
+                {
+                    pipe.Train(df);
+                    var scorer = pipe.Predict(df);
+                    var dfout = DataFrame.ReadView(scorer);
+                    Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 31));
+                    var outfile = FileHelper.GetOutputFile("iris_path.txt", methodName);
+                    dfout.ToCsv(outfile);
+                    Assert.IsTrue(File.Exists(outfile));
+                }
             }
         }
 

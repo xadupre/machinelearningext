@@ -36,16 +36,18 @@ namespace TestMachineLearningExt
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host);
-                var predictor = pipe.Train(data);
-                Assert.IsTrue(predictor != null);
-                var data2 = host.CreateStreamingDataView(inputs2);
-                var predictions = pipe.Transform(data2);
-                var df = DataFrame.ReadView(predictions);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
-                var dfs = df.ToString();
-                var dfs2 = dfs.Replace("\n", ";");
-                Assert.AreEqual(dfs2, "X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8;-1,-10,-100,1,10,100,100,1000,10000;-2,-3,-5,4,6,10,9,15,25");
+                using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host))
+                {
+                    var predictor = pipe.Train(data);
+                    Assert.IsTrue(predictor != null);
+                    var data2 = host.CreateStreamingDataView(inputs2);
+                    var predictions = pipe.Transform(data2);
+                    var df = DataFrame.ReadView(predictions);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
+                    var dfs = df.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    Assert.AreEqual(dfs2, "X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8;-1,-10,-100,1,10,100,100,1000,10000;-2,-3,-5,4,6,10,9,15,25");
+                }
             }
         }
 
@@ -68,29 +70,33 @@ namespace TestMachineLearningExt
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host);
-                var predictor = pipe.Train(data);
-                Assert.IsTrue(predictor != null);
-                var data2 = host.CreateStreamingDataView(inputs2);
-                var predictions = pipe.Transform(data2);
-                var df = DataFrame.ReadView(predictions);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
-                var dfs = df.ToString();
-                var dfs2 = dfs.Replace("\n", ";");
-                expected = dfs2;
-                Assert.AreEqual(dfs2, "X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8;-1,-10,-100,1,10,100,100,1000,10000;-2,-3,-5,4,6,10,9,15,25");
-                pipe.Save(output);
+                using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host))
+                {
+                    var predictor = pipe.Train(data);
+                    Assert.IsTrue(predictor != null);
+                    var data2 = host.CreateStreamingDataView(inputs2);
+                    var predictions = pipe.Transform(data2);
+                    var df = DataFrame.ReadView(predictions);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
+                    var dfs = df.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    expected = dfs2;
+                    Assert.AreEqual(dfs2, "X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8;-1,-10,-100,1,10,100,100,1000,10000;-2,-3,-5,4,6,10,9,15,25");
+                    pipe.Save(output);
+                }
             }
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var data2 = host.CreateStreamingDataView(inputs2);
-                var pipe2 = new ScikitPipeline(output, host);
-                var predictions = pipe2.Transform(data2);
-                var df = DataFrame.ReadView(predictions);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
-                var dfs = df.ToString();
-                var dfs2 = dfs.Replace("\n", ";");
-                Assert.AreEqual(expected, dfs2);
+                using (var pipe2 = new ScikitPipeline(output, host))
+                {
+                    var predictions = pipe2.Transform(data2);
+                    var df = DataFrame.ReadView(predictions);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 9));
+                    var dfs = df.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    Assert.AreEqual(expected, dfs2);
+                }
             }
         }
 
@@ -114,16 +120,18 @@ namespace TestMachineLearningExt
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host);
-                var predictor = pipe.Train(data, feature: "X");
-                Assert.IsTrue(predictor != null);
-                var data2 = host.CreateStreamingDataView(inputs2);
-                var predictions = pipe.Predict(data2);
-                var df = DataFrame.ReadView(predictions);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));
-                var dfs = df.ToString();
-                var dfs2 = dfs.Replace("\n", ";");
-                Assert.IsTrue(dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"));
+                using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host))
+                {
+                    var predictor = pipe.Train(data, feature: "X");
+                    Assert.IsTrue(predictor != null);
+                    var data2 = host.CreateStreamingDataView(inputs2);
+                    var predictions = pipe.Predict(data2);
+                    var df = DataFrame.ReadView(predictions);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));
+                    var dfs = df.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    Assert.IsTrue(dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"));
+                }
             }
         }
 
@@ -150,29 +158,33 @@ namespace TestMachineLearningExt
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host);
-                var predictor = pipe.Train(data, feature: "X");
-                Assert.IsTrue(predictor != null);
-                var data2 = host.CreateStreamingDataView(inputs2);
-                var predictions = pipe.Predict(data2);
-                var df = DataFrame.ReadView(predictions);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));
-                var dfs = df.ToString();
-                var dfs2 = dfs.Replace("\n", ";");
-                Assert.IsTrue(dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"));
-                expected = dfs2;
-                pipe.Save(output);
+                using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host))
+                {
+                    var predictor = pipe.Train(data, feature: "X");
+                    Assert.IsTrue(predictor != null);
+                    var data2 = host.CreateStreamingDataView(inputs2);
+                    var predictions = pipe.Predict(data2);
+                    var df = DataFrame.ReadView(predictions);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));
+                    var dfs = df.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    Assert.IsTrue(dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"));
+                    expected = dfs2;
+                    pipe.Save(output);
+                }
             }
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var data2 = host.CreateStreamingDataView(inputs2);
-                var pipe2 = new ScikitPipeline(output, host);
-                var predictions = pipe2.Predict(data2);
-                var df = DataFrame.ReadView(predictions);
-                Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));
-                var dfs = df.ToString();
-                var dfs2 = dfs.Replace("\n", ";");
-                Assert.AreEqual(expected, dfs2);
+                using (var pipe2 = new ScikitPipeline(output, host))
+                {
+                    var predictions = pipe2.Predict(data2);
+                    var df = DataFrame.ReadView(predictions);
+                    Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));
+                    var dfs = df.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    Assert.AreEqual(expected, dfs2);
+                }
             }
         }
 
@@ -198,9 +210,11 @@ namespace TestMachineLearningExt
             {
                 ComponentHelper.AddStandardComponents(host);
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host);
-                var predictor = pipe.Train(data);
-                Assert.IsTrue(predictor != null);
+                using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host))
+                {
+                    var predictor = pipe.Train(data);
+                    Assert.IsTrue(predictor != null);
+                }
             }
             Assert.IsTrue(stdout.Count > 0);
             Assert.AreEqual(stderr.Count, 0);
@@ -228,9 +242,11 @@ namespace TestMachineLearningExt
             {
                 ComponentHelper.AddStandardComponents(host);
                 var data = host.CreateStreamingDataView(inputs);
-                var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host: host);
-                var predictor = pipe.Train(data, feature: "X");
-                Assert.IsTrue(predictor != null);
+                using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host: host))
+                {
+                    var predictor = pipe.Train(data, feature: "X");
+                    Assert.IsTrue(predictor != null);
+                }
             }
             Assert.AreEqual(stdout.Count, 0);
             Assert.AreEqual(stderr.Count, 0);
