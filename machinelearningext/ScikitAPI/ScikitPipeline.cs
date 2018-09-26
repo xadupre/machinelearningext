@@ -1,5 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -118,7 +119,21 @@ namespace Scikit.ML.ScikitAPI
             {
                 for (int i = 0; i < _transforms.Length; ++i)
                 {
-                    trans = _env.CreateTransform(_transforms[i].transformSettings, trans);
+                    try
+                    {
+                        trans = _env.CreateTransform(_transforms[i].transformSettings, trans);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.ToString().Contains("Unknown loadable class"))
+                        {
+                            var nn = _env.ComponentCatalog.GetAllClasses().Length;
+                            var filt = _env.ComponentCatalog.GetAllClasses().Select(c => c.UserName).OrderBy(c => c).Where(c => c.Trim().Length > 2);
+                            var regis = string.Join("\n", filt);
+                            throw Contracts.Except(e, $"Unable to create transform '{_transforms[i].transformSettings}', assembly not registered among {nn}\n{regis}");
+                        }
+                        throw e;
+                    }
                     _transforms[i].transform = trans as IDataTransform;
                 }
                 ch.Done();

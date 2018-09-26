@@ -19,6 +19,7 @@ using Scikit.ML.NearestNeighbors;
 using Scikit.ML.PipelineGraphTraining;
 using Scikit.ML.PipelineGraphTransforms;
 using Scikit.ML.PipelineTraining;
+using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.RandomTransforms;
 
@@ -47,8 +48,10 @@ namespace Scikit.ML.TestHelper
             env.ComponentCatalog.RegisterAssembly(typeof(TaggedPredictTransform).Assembly);
             env.ComponentCatalog.RegisterAssembly(typeof(AppendViewTransform).Assembly);
             env.ComponentCatalog.RegisterAssembly(typeof(PrePostProcessPredictor).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(PassThroughEnvironment).Assembly);
+            env.ComponentCatalog.RegisterAssembly(typeof(PassThroughTransform).Assembly);
             env.ComponentCatalog.RegisterAssembly(typeof(ResampleTransform).Assembly);
+            env.ComponentCatalog.RegisterAssembly(typeof(SplitTrainTestTransform).Assembly);
+            env.ComponentCatalog.RegisterAssembly(typeof(ValueMapperPredictionEngine).Assembly);
         }
 
         /// <summary>
