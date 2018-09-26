@@ -40,15 +40,17 @@ namespace TestMachineLearningExt
                 new InputOutput() { X = 9f, time=2f, one=1f },
                 new InputOutput() { X = 11f, time=3f, one=1f },
             };
-            var host = EnvHelper.NewTestEnvironment();
-            var data = host.CreateStreamingDataView(inputs);
-            var pipe = new ScikitPipeline(new[] { "concat{col=xt:time,one}" }, "sasdcar{iter=50}", host);
-            pipe.Train(data, feature: "xt", label: "X");
-            var view = pipe.Predict(data);
-            var df = DataFrame.ReadView(view).Head(4).Copy();
-            df["diff"] = df["Score"] - df["X"];
-            var exp = DataFrame.ReadStr("null\n0\n0\n0\n0");
-            df["diff"].AssertAlmostEqual(exp["null"].AsType(NumberType.R4), precision: 1e-1);
+            using (var host = EnvHelper.NewTestEnvironment())
+            {
+                var data = host.CreateStreamingDataView(inputs);
+                var pipe = new ScikitPipeline(new[] { "concat{col=xt:time,one}" }, "sasdcar{iter=50}", host);
+                pipe.Train(data, feature: "xt", label: "X");
+                var view = pipe.Predict(data);
+                var df = DataFrame.ReadView(view).Head(4).Copy();
+                df["diff"] = df["Score"] - df["X"];
+                var exp = DataFrame.ReadStr("null\n0\n0\n0\n0");
+                df["diff"].AssertAlmostEqual(exp["null"].AsType(NumberType.R4), precision: 1e-1);
+            }
         }
 
         [TestMethod]
@@ -60,37 +62,39 @@ namespace TestMachineLearningExt
                 new InputOutput() { X = 9f, time=2f },
                 new InputOutput() { X = 11f, time=3f },
             };
-            var host = EnvHelper.NewTestEnvironment();
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new DeTrendTransform.Arguments
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                columns = new[] { new Scikit.ML.PipelineHelper.Column1x1() { Source = "X", Name = "Y" } },
-                timeColumn = "time"
-            };
+                var data = host.CreateStreamingDataView(inputs);
 
-            var scaled = new DeTrendTransform(host, args, data);
-
-            using (var cursor = scaled.GetRowCursor(i => true))
-            {
-                var outValues = new List<float>();
-                int pos;
-                cursor.Schema.TryGetColumnIndex("Y", out pos);
-                var type = cursor.Schema.GetColumnType(pos);
-                if (type != NumberType.R4)
-                    throw new Exception("Unexpected type");
-                var colGetter = cursor.GetGetter<float>(pos);
-                float got = -1f;
-                while (cursor.MoveNext())
+                var args = new DeTrendTransform.Arguments
                 {
-                    colGetter(ref got);
-                    outValues.Add(got);
+                    columns = new[] { new Scikit.ML.PipelineHelper.Column1x1() { Source = "X", Name = "Y" } },
+                    timeColumn = "time"
+                };
+
+                var scaled = new DeTrendTransform(host, args, data);
+
+                using (var cursor = scaled.GetRowCursor(i => true))
+                {
+                    var outValues = new List<float>();
+                    int pos;
+                    cursor.Schema.TryGetColumnIndex("Y", out pos);
+                    var type = cursor.Schema.GetColumnType(pos);
+                    if (type != NumberType.R4)
+                        throw new Exception("Unexpected type");
+                    var colGetter = cursor.GetGetter<float>(pos);
+                    float got = -1f;
+                    while (cursor.MoveNext())
+                    {
+                        colGetter(ref got);
+                        outValues.Add(got);
+                    }
+                    if (outValues.Count != 4)
+                        throw new Exception("expected 4");
+                    for (int i = 0; i < outValues.Count; ++i)
+                        if (Math.Abs(outValues[i]) > 5e-2)
+                            throw new Exception(string.Format("Unexpected value {0}!={1}", outValues[i], 0));
                 }
-                if (outValues.Count != 4)
-                    throw new Exception("expected 4");
-                for (int i = 0; i < outValues.Count; ++i)
-                    if (Math.Abs(outValues[i]) > 5e-2)
-                        throw new Exception(string.Format("Unexpected value {0}!={1}", outValues[i], 0));
             }
         }
 
@@ -104,37 +108,39 @@ namespace TestMachineLearningExt
                 new InputOutput() { X = 9f, time=3f },
                 new InputOutput() { X = 8f, time=4f },
             };
-            var host = EnvHelper.NewTestEnvironment();
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new DeTrendTransform.Arguments
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                columns = new[] { new Scikit.ML.PipelineHelper.Column1x1() { Source = "X", Name = "Y" } },
-                timeColumn = "time"
-            };
+                var data = host.CreateStreamingDataView(inputs);
 
-            var scaled = new DeTrendTransform(host, args, data);
-
-            using (var cursor = scaled.GetRowCursor(i => true))
-            {
-                var outValues = new List<float>();
-                int pos;
-                cursor.Schema.TryGetColumnIndex("Y", out pos);
-                var type = cursor.Schema.GetColumnType(pos);
-                if (type != NumberType.R4)
-                    throw new Exception("Unexpected type");
-                var colGetter = cursor.GetGetter<float>(pos);
-                float got = -1f;
-                while (cursor.MoveNext())
+                var args = new DeTrendTransform.Arguments
                 {
-                    colGetter(ref got);
-                    outValues.Add(got);
+                    columns = new[] { new Scikit.ML.PipelineHelper.Column1x1() { Source = "X", Name = "Y" } },
+                    timeColumn = "time"
+                };
+
+                var scaled = new DeTrendTransform(host, args, data);
+
+                using (var cursor = scaled.GetRowCursor(i => true))
+                {
+                    var outValues = new List<float>();
+                    int pos;
+                    cursor.Schema.TryGetColumnIndex("Y", out pos);
+                    var type = cursor.Schema.GetColumnType(pos);
+                    if (type != NumberType.R4)
+                        throw new Exception("Unexpected type");
+                    var colGetter = cursor.GetGetter<float>(pos);
+                    float got = -1f;
+                    while (cursor.MoveNext())
+                    {
+                        colGetter(ref got);
+                        outValues.Add(got);
+                    }
+                    if (outValues.Count != 5)
+                        throw new Exception("expected 5");
+                    for (int i = 0; i < outValues.Count; ++i)
+                        if (Math.Abs(outValues[i]) > 2)
+                            throw new Exception(string.Format("Unexpected value {0}", outValues[i]));
                 }
-                if (outValues.Count != 5)
-                    throw new Exception("expected 5");
-                for (int i = 0; i < outValues.Count; ++i)
-                    if (Math.Abs(outValues[i]) > 2)
-                        throw new Exception(string.Format("Unexpected value {0}", outValues[i]));
             }
         }
 
@@ -147,37 +153,39 @@ namespace TestMachineLearningExt
                 new InputOutput() { X = 1f, time=2f },
                 new InputOutput() { X = 0f, time=3f },
             };
-            var host = EnvHelper.NewTestEnvironment();
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new DeTrendTransform.Arguments
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                columns = new[] { new Scikit.ML.PipelineHelper.Column1x1() { Source = "X", Name = "Y" } },
-                timeColumn = "time"
-            };
+                var data = host.CreateStreamingDataView(inputs);
 
-            var scaled = new DeTrendTransform(host, args, data);
-
-            using (var cursor = scaled.GetRowCursor(i => true))
-            {
-                var outValues = new List<float>();
-                int pos;
-                cursor.Schema.TryGetColumnIndex("Y", out pos);
-                var type = cursor.Schema.GetColumnType(pos);
-                if (type != NumberType.R4)
-                    throw new Exception("Unexpected type");
-                var colGetter = cursor.GetGetter<float>(pos);
-                float got = -1f;
-                while (cursor.MoveNext())
+                var args = new DeTrendTransform.Arguments
                 {
-                    colGetter(ref got);
-                    outValues.Add(got);
+                    columns = new[] { new Scikit.ML.PipelineHelper.Column1x1() { Source = "X", Name = "Y" } },
+                    timeColumn = "time"
+                };
+
+                var scaled = new DeTrendTransform(host, args, data);
+
+                using (var cursor = scaled.GetRowCursor(i => true))
+                {
+                    var outValues = new List<float>();
+                    int pos;
+                    cursor.Schema.TryGetColumnIndex("Y", out pos);
+                    var type = cursor.Schema.GetColumnType(pos);
+                    if (type != NumberType.R4)
+                        throw new Exception("Unexpected type");
+                    var colGetter = cursor.GetGetter<float>(pos);
+                    float got = -1f;
+                    while (cursor.MoveNext())
+                    {
+                        colGetter(ref got);
+                        outValues.Add(got);
+                    }
+                    if (outValues.Count != 4)
+                        throw new Exception("expected 4");
+                    for (int i = 0; i < outValues.Count; ++i)
+                        if (Math.Abs(outValues[i]) > 1e-2)
+                            throw new Exception(string.Format("Unexpected value {0}", outValues[i]));
                 }
-                if (outValues.Count != 4)
-                    throw new Exception("expected 4");
-                for (int i = 0; i < outValues.Count; ++i)
-                    if (Math.Abs(outValues[i]) > 1e-2)
-                        throw new Exception(string.Format("Unexpected value {0}", outValues[i]));
             }
         }
 
@@ -196,64 +204,67 @@ namespace TestMachineLearningExt
                 new InputOutput() { X = 3800f, time=9f },
                 new InputOutput() { X = 3640f, time=10f },
             };
-            var host = EnvHelper.NewTestEnvironment();
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new DeTrendTransform.Arguments
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                columns = new[] { new Scikit.ML.PipelineHelper.Column1x1() { Source = "X", Name = "Y" } },
-                timeColumn = "time"
-            };
+                var data = host.CreateStreamingDataView(inputs);
 
-            var scaled = new DeTrendTransform(host, args, data);
-
-            using (var cursor = scaled.GetRowCursor(i => true))
-            {
-                var outValues = new List<float>();
-                int pos;
-                cursor.Schema.TryGetColumnIndex("Y", out pos);
-                var type = cursor.Schema.GetColumnType(pos);
-                if (type != NumberType.R4)
-                    throw new Exception("Unexpected type");
-                var colGetter = cursor.GetGetter<float>(pos);
-                float got = -1f;
-                while (cursor.MoveNext())
+                var args = new DeTrendTransform.Arguments
                 {
-                    colGetter(ref got);
-                    outValues.Add(got);
+                    columns = new[] { new Scikit.ML.PipelineHelper.Column1x1() { Source = "X", Name = "Y" } },
+                    timeColumn = "time"
+                };
+
+                var scaled = new DeTrendTransform(host, args, data);
+
+                using (var cursor = scaled.GetRowCursor(i => true))
+                {
+                    var outValues = new List<float>();
+                    int pos;
+                    cursor.Schema.TryGetColumnIndex("Y", out pos);
+                    var type = cursor.Schema.GetColumnType(pos);
+                    if (type != NumberType.R4)
+                        throw new Exception("Unexpected type");
+                    var colGetter = cursor.GetGetter<float>(pos);
+                    float got = -1f;
+                    while (cursor.MoveNext())
+                    {
+                        colGetter(ref got);
+                        outValues.Add(got);
+                    }
+                    if (outValues.Count != inputs.Length)
+                        throw new Exception("unexpected size");
+                    for (int i = 0; i < outValues.Count; ++i)
+                        if (Math.Abs(outValues[i]) > 2000)
+                            throw new Exception(string.Format("Unexpected value {0}", outValues[i]));
                 }
-                if (outValues.Count != inputs.Length)
-                    throw new Exception("unexpected size");
-                for (int i = 0; i < outValues.Count; ++i)
-                    if (Math.Abs(outValues[i]) > 2000)
-                        throw new Exception(string.Format("Unexpected value {0}", outValues[i]));
             }
         }
 
         [TestMethod]
         public void TestTimeSeriesDeTrendSerialize()
         {
-            var host = EnvHelper.NewTestEnvironment();
+            using (var host = EnvHelper.NewTestEnvironment())
+            {
+                var inputs = new[] {
+                    new InputOutput() { X = 7f, time=0f },
+                    new InputOutput() { X = 7f, time=1f },
+                    new InputOutput() { X = 9f, time=2f },
+                    new InputOutput() { X = 9f, time=3f },
+                    new InputOutput() { X = 8f, time=4f },
+                };
 
-            var inputs = new[] {
-                new InputOutput() { X = 7f, time=0f },
-                new InputOutput() { X = 7f, time=1f },
-                new InputOutput() { X = 9f, time=2f },
-                new InputOutput() { X = 9f, time=3f },
-                new InputOutput() { X = 8f, time=4f },
-            };
+                IDataView loader = host.CreateStreamingDataView(inputs);
+                var data = host.CreateTransform("detrend{col=Y:X time=time optim=sasdcar{iter=50}}", loader);
 
-            IDataView loader = host.CreateStreamingDataView(inputs);
-            var data = host.CreateTransform("detrend{col=Y:X time=time optim=sasdcar{iter=50}}", loader);
+                // To train the model.
+                using (var cursor = data.GetRowCursor(i => true)) { }
 
-            // To train the model.
-            using (var cursor = data.GetRowCursor(i => true)) { }
-
-            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
-            var outData = FileHelper.GetOutputFile("outData.txt", methodName);
-            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
-            TestTransformHelper.SerializationTestTransform(host, outModelFilePath, data, loader, outData, outData2);
+                var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
+                var outData = FileHelper.GetOutputFile("outData.txt", methodName);
+                var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+                TestTransformHelper.SerializationTestTransform(host, outModelFilePath, data, loader, outData, outData2);
+            }
         }
     }
 }

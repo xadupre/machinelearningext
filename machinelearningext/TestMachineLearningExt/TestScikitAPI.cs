@@ -196,6 +196,7 @@ namespace TestMachineLearningExt
 
             using (var host = new DelegateEnvironment(conc: 1, outWriter: logout, errWriter: logerr, verbose: 1))
             {
+                ComponentHelper.AddStandardComponents(host);
                 var data = host.CreateStreamingDataView(inputs);
                 var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host);
                 var predictor = pipe.Train(data);
@@ -225,6 +226,7 @@ namespace TestMachineLearningExt
 
             using (var host = new DelegateEnvironment(conc: 1, outWriter: logout, errWriter: logerr, verbose: 0))
             {
+                ComponentHelper.AddStandardComponents(host);
                 var data = host.CreateStreamingDataView(inputs);
                 var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host: host);
                 var predictor = pipe.Train(data, feature: "X");

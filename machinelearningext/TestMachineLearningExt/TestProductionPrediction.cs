@@ -23,126 +23,130 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestTransform2ValueMapperMultiThread()
         {
-            var env = EnvHelper.NewTestEnvironment();
-            var host = env.Register("unittest");
-
-            var inputs = new[] {
-                new InputOutput { X = new float[] { 0, 1 }, Y=10 },
-                new InputOutput { X = new float[] { 2, 3 }, Y=100 }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            var trv = LambdaTransform.CreateMap(host, data,
-                                        (InputOutput src, InputOutput dst) =>
-                                        {
-                                            dst.X = new float[] { src.X[0] + (float)src.Y, src.X[1] - (float)src.Y };
-                                        });
-
-            var ino = new InputOutput { X = new float[] { -5, -5 }, Y = 3 };
-            var inob = new VBuffer<float>(2, ino.X);
-            var ans = new VBuffer<float>();
-
-            var cursor = data.GetRowCursor(i => true);
-            var gety = cursor.GetGetter<int>(1);
-
-            var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(host, trv, null, "X", "X", cursor);
-            var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
-
-            var listy = new List<int>();
-            var listx = new List<float>();
-            int y = 0;
-            while (cursor.MoveNext())
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                mapper(ref inob, ref ans);
-                gety(ref y);
-                if (ans.Count != 2)
+                var host = env.Register("unittest");
+
+                var inputs = new[] {
+                    new InputOutput { X = new float[] { 0, 1 }, Y=10 },
+                    new InputOutput { X = new float[] { 2, 3 }, Y=100 }
+                };
+
+                var data = host.CreateStreamingDataView(inputs);
+
+                var trv = LambdaTransform.CreateMap(host, data,
+                                            (InputOutput src, InputOutput dst) =>
+                                            {
+                                                dst.X = new float[] { src.X[0] + (float)src.Y, src.X[1] - (float)src.Y };
+                                            });
+
+                var ino = new InputOutput { X = new float[] { -5, -5 }, Y = 3 };
+                var inob = new VBuffer<float>(2, ino.X);
+                var ans = new VBuffer<float>();
+
+                var cursor = data.GetRowCursor(i => true);
+                var gety = cursor.GetGetter<int>(1);
+
+                var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(host, trv, null, "X", "X", cursor);
+                var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
+
+                var listy = new List<int>();
+                var listx = new List<float>();
+                int y = 0;
+                while (cursor.MoveNext())
+                {
+                    mapper(ref inob, ref ans);
+                    gety(ref y);
+                    if (ans.Count != 2)
+                        throw new Exception("Issue with dimension.");
+                    listx.AddRange(ans.Values);
+                    listy.Add((int)y);
+                }
+                if (listy.Count != 2)
                     throw new Exception("Issue with dimension.");
-                listx.AddRange(ans.Values);
-                listy.Add((int)y);
+                if (listy[0] != 10 || listy[1] != 100)
+                    throw new Exception("Issue with values.");
+                if (listx.Count != 4)
+                    throw new Exception("Issue with dimension.");
+                if (listx[0] != 5)
+                    throw new Exception("Issue with values.");
+                if (listx[1] != -15)
+                    throw new Exception("Issue with values.");
+                if (listx[2] != 95)
+                    throw new Exception("Issue with values.");
+                if (listx[3] != -105)
+                    throw new Exception("Issue with values.");
+                if (inob.Count != 2)
+                    throw new Exception("Issue with dimension.");
+                if (inob.Values[0] != -5)
+                    throw new Exception("Values were overwritten.");
+                if (inob.Values[0] != -5)
+                    throw new Exception("Values were overwritten.");
             }
-            if (listy.Count != 2)
-                throw new Exception("Issue with dimension.");
-            if (listy[0] != 10 || listy[1] != 100)
-                throw new Exception("Issue with values.");
-            if (listx.Count != 4)
-                throw new Exception("Issue with dimension.");
-            if (listx[0] != 5)
-                throw new Exception("Issue with values.");
-            if (listx[1] != -15)
-                throw new Exception("Issue with values.");
-            if (listx[2] != 95)
-                throw new Exception("Issue with values.");
-            if (listx[3] != -105)
-                throw new Exception("Issue with values.");
-            if (inob.Count != 2)
-                throw new Exception("Issue with dimension.");
-            if (inob.Values[0] != -5)
-                throw new Exception("Values were overwritten.");
-            if (inob.Values[0] != -5)
-                throw new Exception("Values were overwritten.");
         }
 
         [TestMethod]
         public void TestTransform2ValueMapperSingleThread()
         {
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
-            var host = env.Register("unittest");
-
-            var inputs = new[] {
-                new InputOutput { X = new float[] { 0, 1 }, Y=10 },
-                new InputOutput { X = new float[] { 2, 3 }, Y=100 }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            var trv = LambdaTransform.CreateMap(host, data,
-                                        (InputOutput src, InputOutput dst) =>
-                                        {
-                                            dst.X = new float[] { src.X[0] + (float)src.Y, src.X[1] - (float)src.Y };
-                                        });
-
-            var inos = new InputOutput[] {new InputOutput { X = new float[] { -5, -5 }, Y = 3 },
-                new InputOutput { X = new float[] { -6, -6 }, Y = 30 } };
-            var ans = new VBuffer<float>();
-
-            var cursor = data.GetRowCursor(i => true);
-            var gety = cursor.GetGetter<int>(1);
-
-            var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(host, trv, null, "X", "X", cursor, true);
-            var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
-
-            var listy = new List<int>();
-            var listx = new List<float>();
-            int y = 0;
-            int tour = 0;
-            while (cursor.MoveNext())
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
-                var temp = new VBuffer<float>(2, inos[tour++].X);
-                mapper(ref temp, ref ans);
-                gety(ref y);
-                if (ans.Count != 2)
+                var host = env.Register("unittest");
+
+                var inputs = new[] {
+                    new InputOutput { X = new float[] { 0, 1 }, Y=10 },
+                    new InputOutput { X = new float[] { 2, 3 }, Y=100 }
+                };
+
+                var data = host.CreateStreamingDataView(inputs);
+
+                var trv = LambdaTransform.CreateMap(host, data,
+                                            (InputOutput src, InputOutput dst) =>
+                                            {
+                                                dst.X = new float[] { src.X[0] + (float)src.Y, src.X[1] - (float)src.Y };
+                                            });
+
+                var inos = new InputOutput[] {new InputOutput { X = new float[] { -5, -5 }, Y = 3 },
+                new InputOutput { X = new float[] { -6, -6 }, Y = 30 } };
+                var ans = new VBuffer<float>();
+
+                var cursor = data.GetRowCursor(i => true);
+                var gety = cursor.GetGetter<int>(1);
+
+                var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(host, trv, null, "X", "X", cursor, true);
+                var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
+
+                var listy = new List<int>();
+                var listx = new List<float>();
+                int y = 0;
+                int tour = 0;
+                while (cursor.MoveNext())
+                {
+                    var temp = new VBuffer<float>(2, inos[tour++].X);
+                    mapper(ref temp, ref ans);
+                    gety(ref y);
+                    if (ans.Count != 2)
+                        throw new Exception("Issue with dimension.");
+                    listx.AddRange(ans.Values);
+                    listy.Add((int)y);
+                }
+                if (listy.Count != 2)
                     throw new Exception("Issue with dimension.");
-                listx.AddRange(ans.Values);
-                listy.Add((int)y);
+                if (listy[0] != 10 || listy[1] != 100)
+                    throw new Exception("Issue with values.");
+                if (listx.Count != 4)
+                    throw new Exception("Issue with dimension.");
+                if (listx[0] != 5)
+                    throw new Exception("Issue with values.");
+                if (listx[1] != -15)
+                    throw new Exception("Issue with values.");
+                if (listx[2] != 94)
+                    throw new Exception("Issue with values.");
+                if (listx[3] != -106)
+                    throw new Exception("Issue with values.");
             }
-            if (listy.Count != 2)
-                throw new Exception("Issue with dimension.");
-            if (listy[0] != 10 || listy[1] != 100)
-                throw new Exception("Issue with values.");
-            if (listx.Count != 4)
-                throw new Exception("Issue with dimension.");
-            if (listx[0] != 5)
-                throw new Exception("Issue with values.");
-            if (listx[1] != -15)
-                throw new Exception("Issue with values.");
-            if (listx[2] != 94)
-                throw new Exception("Issue with values.");
-            if (listx[3] != -106)
-                throw new Exception("Issue with values.");
         }
 
-        public class ValueMapperExample
+        public class ValueMapperExample : IDisposable
         {
             public class Input
             {
@@ -178,9 +182,15 @@ namespace TestMachineLearningExt
                 _mapper(ref buf, ref res);
                 return res;
             }
+
+            public void Dispose()
+            {
+                (_env as ConsoleEnvironment).Dispose();
+                _env = null;
+            }
         }
 
-        public class PredictionEngineExample
+        public class PredictionEngineExample : IDisposable
         {
             IHostEnvironment _env;
             SimplePredictionEngine _predictor;
@@ -196,36 +206,49 @@ namespace TestMachineLearningExt
                 var res = _predictor.Predict(features);
                 return new Tuple<float, float>(res.Score, res.Probability);
             }
+
+            public void Dispose()
+            {
+                (_env as ConsoleEnvironment).Dispose();
+                _env = null;
+            }
         }
 
         [TestMethod]
         public void TestTransform2ValueMapperSingleThreadSimple()
         {
             var name = FileHelper.GetTestFile("bc-lr.zip");
-            var example = new ValueMapperExample(name, "Features", true);
-            var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
-            var ans = example.Predict(feat);
-            var ans2 = example.Predict(feat);
-            if (ans != ans2)
-                throw new Exception(string.Format("Issue {0} != {1}", ans, ans2));
-            var engine = new PredictionEngineExample(name);
-            var ans6 = engine.Predict(feat);
-            if (ans6.Item2 != ans2)
-                throw new Exception(string.Format("Issue {0} != {1}", ans, ans6.Item2));
+            using (var example = new ValueMapperExample(name, "Features", true))
+            {
+                var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
+                var ans = example.Predict(feat);
+                var ans2 = example.Predict(feat);
+                if (ans != ans2)
+                    throw new Exception(string.Format("Issue {0} != {1}", ans, ans2));
 
-            feat = new float[] { 5, 1, 1, 1, 2, -1, 3, 1, 1 };
-            ans = example.Predict(feat);
-            ans2 = example.Predict(feat);
-            if (ans != ans2)
-                throw new Exception(string.Format("Issue {0} != {1}", ans, ans2));
-            ans6 = engine.Predict(feat);
-            if (ans6.Item2 != ans)
-                throw new Exception(string.Format("Issue {0} != {1}", ans, ans6.Item2));
+                using (var engine = new PredictionEngineExample(name))
+                {
+                    var ans6 = engine.Predict(feat);
+                    if (ans6.Item2 != ans2)
+                        throw new Exception(string.Format("Issue {0} != {1}", ans, ans6.Item2));
 
-            var exampleNo = new ValueMapperExample(name, "Features", false);
-            var ans3 = example.Predict(feat);
-            if (ans != ans3)
-                throw new Exception(string.Format("Issue {0} != {1}", ans, ans3));
+                    feat = new float[] { 5, 1, 1, 1, 2, -1, 3, 1, 1 };
+                    ans = example.Predict(feat);
+                    ans2 = example.Predict(feat);
+                    if (ans != ans2)
+                        throw new Exception(string.Format("Issue {0} != {1}", ans, ans2));
+                    ans6 = engine.Predict(feat);
+                    if (ans6.Item2 != ans)
+                        throw new Exception(string.Format("Issue {0} != {1}", ans, ans6.Item2));
+                }
+
+                using (var exampleNo = new ValueMapperExample(name, "Features", false))
+                {
+                    var ans3 = example.Predict(feat);
+                    if (ans != ans3)
+                        throw new Exception(string.Format("Issue {0} != {1}", ans, ans3));
+                }
+            }
         }
 
         static void RunValueMapperExample(ValueMapperExample run, int n)
@@ -282,14 +305,17 @@ namespace TestMachineLearningExt
         public void TestValueMapperPredictionEngine()
         {
             var name = FileHelper.GetTestFile("bc-lr.zip");
-            var engine = new ValueMapperPredictionEngine(EnvHelper.NewTestEnvironment(), name);
-            var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
-            for (int i = 0; i < 1000; ++i)
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                feat[0] = i;
-                var res = engine.Predict(feat);
-                Assert.IsFalse(float.IsNaN(res));
-                Assert.IsFalse(float.IsInfinity(res));
+                var engine = new ValueMapperPredictionEngine(env, name);
+                var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
+                for (int i = 0; i < 1000; ++i)
+                {
+                    feat[0] = i;
+                    var res = engine.Predict(feat);
+                    Assert.IsFalse(float.IsNaN(res));
+                    Assert.IsFalse(float.IsInfinity(res));
+                }
             }
         }
 
@@ -298,37 +324,40 @@ namespace TestMachineLearningExt
         {
             var name = FileHelper.GetTestFile("bc-lr.zip");
 
-            var engine0 = new ValueMapperPredictionEngine(EnvHelper.NewTestEnvironment(), name, getterEachTime: true, conc: 1);
-            var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
-            var exp = new float[100];
-            for (int i = 0; i < exp.Length; ++i)
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                feat[0] = i;
-                exp[i] = engine0.Predict(feat);
-                Assert.IsFalse(float.IsNaN(exp[i]));
-                Assert.IsFalse(float.IsInfinity(exp[i]));
-            }
-
-            var dico = new Dictionary<Tuple<bool, int>, TimeSpan>();
-
-            foreach (var each in new[] { false, true })
-            {
-                foreach (int th in new int[] { 2, 0, 1, 3 })
+                var engine0 = new ValueMapperPredictionEngine(env, name, getterEachTime: true, conc: 1);
+                var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
+                var exp = new float[100];
+                for (int i = 0; i < exp.Length; ++i)
                 {
-                    var engine = new ValueMapperPredictionEngine(EnvHelper.NewTestEnvironment(), name, getterEachTime: each, conc: th);
-                    var sw = new Stopwatch();
-                    sw.Start();
-                    for (int i = 0; i < exp.Length; ++i)
-                    {
-                        feat[0] = i;
-                        var res = engine.Predict(feat);
-                        Assert.AreEqual(exp[i], res);
-                    }
-                    sw.Stop();
-                    dico[new Tuple<bool, int>(each, th)] = sw.Elapsed;
+                    feat[0] = i;
+                    exp[i] = engine0.Predict(feat);
+                    Assert.IsFalse(float.IsNaN(exp[i]));
+                    Assert.IsFalse(float.IsInfinity(exp[i]));
                 }
+
+                var dico = new Dictionary<Tuple<bool, int>, TimeSpan>();
+
+                foreach (var each in new[] { false, true })
+                {
+                    foreach (int th in new int[] { 2, 0, 1, 3 })
+                    {
+                        var engine = new ValueMapperPredictionEngine(env, name, getterEachTime: each, conc: th);
+                        var sw = new Stopwatch();
+                        sw.Start();
+                        for (int i = 0; i < exp.Length; ++i)
+                        {
+                            feat[0] = i;
+                            var res = engine.Predict(feat);
+                            Assert.AreEqual(exp[i], res);
+                        }
+                        sw.Stop();
+                        dico[new Tuple<bool, int>(each, th)] = sw.Elapsed;
+                    }
+                }
+                Assert.AreEqual(dico.Count, 8);
             }
-            Assert.AreEqual(dico.Count, 8);
         }
 
         public class ValueMapperPredictionEngineExample
@@ -343,8 +372,10 @@ namespace TestMachineLearningExt
             {
                 try
                 {
-                    var env = EnvHelper.NewTestEnvironment();
-                    engine = new ValueMapperPredictionEngine(env, modelName, "Probability", false);
+                    using (var env = EnvHelper.NewTestEnvironment())
+                    {
+                        engine = new ValueMapperPredictionEngine(env, modelName, "Probability", false);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -375,45 +406,46 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestLambdaColumnPassThroughTransform()
         {
-            var host = EnvHelper.NewTestEnvironment();
-
-            var inputs = new InputOutputU[] {
-                new InputOutputU() { X = new float[] { 0.1f, 1.1f }, Y = 0 },
-                new InputOutputU() { X = new float[] { 0.2f, 1.2f }, Y = 1 },
-                new InputOutputU() { X = new float[] { 0.3f, 1.3f }, Y = 2 }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-            var lambdaView = LambdaColumnHelper.Create<VBuffer<float>, VBuffer<float>>(host,
-                            "Lambda", data, "X", "XX", new VectorType(NumberType.R4, 2),
-                            new VectorType(NumberType.R4, 2),
-                            (ref VBuffer<float> src, ref VBuffer<float> dst) =>
-                            {
-                                dst = new VBuffer<float>(2, new float[2]);
-                                dst.Values[0] = src.Values[0] + 1f;
-                                dst.Values[1] = src.Values[1] + 1f;
-                            });
-
-            using (var cursor = lambdaView.GetRowCursor(i => true))
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                var labelGetter = cursor.GetGetter<uint>(1);
-                var floatGetter = cursor.GetGetter<VBuffer<float>>(2);
-                var array = new VBuffer<float>();
-                var cont = new List<Tuple<float, float>>();
-                while (cursor.MoveNext())
-                {
-                    uint got = 0;
-                    labelGetter(ref got);
-                    floatGetter(ref array);
-                    cont.Add(new Tuple<float, float>(array.Values[0], array.Values[1]));
-                }
+                var inputs = new InputOutputU[] {
+                    new InputOutputU() { X = new float[] { 0.1f, 1.1f }, Y = 0 },
+                    new InputOutputU() { X = new float[] { 0.2f, 1.2f }, Y = 1 },
+                    new InputOutputU() { X = new float[] { 0.3f, 1.3f }, Y = 2 }
+                };
 
-                if (cont.Count != 3)
-                    throw new Exception("Should be 3");
-                for (int i = 0; i < cont.Count; ++i)
+                var data = host.CreateStreamingDataView(inputs);
+                var lambdaView = LambdaColumnHelper.Create<VBuffer<float>, VBuffer<float>>(host,
+                                "Lambda", data, "X", "XX", new VectorType(NumberType.R4, 2),
+                                new VectorType(NumberType.R4, 2),
+                                (ref VBuffer<float> src, ref VBuffer<float> dst) =>
+                                {
+                                    dst = new VBuffer<float>(2, new float[2]);
+                                    dst.Values[0] = src.Values[0] + 1f;
+                                    dst.Values[1] = src.Values[1] + 1f;
+                                });
+
+                using (var cursor = lambdaView.GetRowCursor(i => true))
                 {
-                    if (cont[i].Item1 < 1)
-                        throw new Exception("Values should be > 1");
+                    var labelGetter = cursor.GetGetter<uint>(1);
+                    var floatGetter = cursor.GetGetter<VBuffer<float>>(2);
+                    var array = new VBuffer<float>();
+                    var cont = new List<Tuple<float, float>>();
+                    while (cursor.MoveNext())
+                    {
+                        uint got = 0;
+                        labelGetter(ref got);
+                        floatGetter(ref array);
+                        cont.Add(new Tuple<float, float>(array.Values[0], array.Values[1]));
+                    }
+
+                    if (cont.Count != 3)
+                        throw new Exception("Should be 3");
+                    for (int i = 0; i < cont.Count; ++i)
+                    {
+                        if (cont[i].Item1 < 1)
+                            throw new Exception("Values should be > 1");
+                    }
                 }
             }
         }

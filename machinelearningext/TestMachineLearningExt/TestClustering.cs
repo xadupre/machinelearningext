@@ -223,44 +223,46 @@ namespace TestMachineLearningExt
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
 
-            
-            var env = EnvHelper.NewTestEnvironment(conc: 1);
-            //var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}", new MultiFileSource(dataFilePath));
-            var loader = TextLoader.Create(env, new TextLoader.Arguments() {
+            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                //var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}", new MultiFileSource(dataFilePath));
+                var loader = TextLoader.Create(env, new TextLoader.Arguments()
+                {
                     HasHeader = true,
                     Column = new[] { TextLoader.Column.Parse("RowId:R4:0"),
                                      TextLoader.Column.Parse("Features:R4:1-2")}
                 },
-                new MultiFileSource(dataFilePath));
-            var xf = env.CreateTransform("DBScan{col=Features}", loader);
+                    new MultiFileSource(dataFilePath));
+                var xf = env.CreateTransform("DBScan{col=Features}", loader);
 
-            string schema = SchemaHelper.ToString(xf.Schema);
-            if (string.IsNullOrEmpty(schema))
-                throw new Exception("Schema is null.");
-            if (!schema.Contains("Cluster"))
-                throw new Exception("Schema does not contain Cluster.");
-            if (!schema.Contains("Score"))
-                throw new Exception("Schema does not contain Score.");
+                string schema = SchemaHelper.ToString(xf.Schema);
+                if (string.IsNullOrEmpty(schema))
+                    throw new Exception("Schema is null.");
+                if (!schema.Contains("Cluster"))
+                    throw new Exception("Schema does not contain Cluster.");
+                if (!schema.Contains("Score"))
+                    throw new Exception("Schema does not contain Score.");
 
-            StreamHelper.SaveModel(env, xf, outModelFilePath);
+                StreamHelper.SaveModel(env, xf, outModelFilePath);
 
-            var saver = env.CreateSaver("Text{header=- schema=-}");
-            using (var fs2 = File.Create(outputDataFilePath))
-                saver.SaveData(fs2, TestTransformHelper.AddFlatteningTransform(env, xf),
-                                        StreamHelper.GetColumnsIndex(xf.Schema, new[] { "Features", "ClusterId", "Score" }));
+                var saver = env.CreateSaver("Text{header=- schema=-}");
+                using (var fs2 = File.Create(outputDataFilePath))
+                    saver.SaveData(fs2, TestTransformHelper.AddFlatteningTransform(env, xf),
+                                            StreamHelper.GetColumnsIndex(xf.Schema, new[] { "Features", "ClusterId", "Score" }));
 
-            // Checking the values.
-            var lines = File.ReadAllLines(outputDataFilePath).Select(c => c.Split('\t')).Where(c => c.Length == 4);
-            if (!lines.Any())
-                throw new Exception(string.Format("The output file is empty or not containing three columns '{0}'", outputDataFilePath));
-            var clusters = lines.Select(c => c[1]).Distinct();
-            if (clusters.Count() <= 1)
-                throw new Exception("Only one cluster, this is unexpected.");
+                // Checking the values.
+                var lines = File.ReadAllLines(outputDataFilePath).Select(c => c.Split('\t')).Where(c => c.Length == 4);
+                if (!lines.Any())
+                    throw new Exception(string.Format("The output file is empty or not containing three columns '{0}'", outputDataFilePath));
+                var clusters = lines.Select(c => c[1]).Distinct();
+                if (clusters.Count() <= 1)
+                    throw new Exception("Only one cluster, this is unexpected.");
 
-            // Serialization.
-            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
-            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
-            TestTransformHelper.SerializationTestTransform(env, outModelFilePath, xf, loader, outData, outData2);
+                // Serialization.
+                var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+                var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+                TestTransformHelper.SerializationTestTransform(env, outModelFilePath, xf, loader, outData, outData2);
+            }
         }
 
         #endregion
@@ -442,38 +444,40 @@ namespace TestMachineLearningExt
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
 
-            var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}",
-                                          new MultiFileSource(dataFilePath));
-            var xf = env.CreateTransform("Optics{col=Features epsilons=0.3 minPoints=6}", loader);
+            using (var env = EnvHelper.NewTestEnvironment())
+            {
+                var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}",
+                                              new MultiFileSource(dataFilePath));
+                var xf = env.CreateTransform("Optics{col=Features epsilons=0.3 minPoints=6}", loader);
 
-            string schema = SchemaHelper.ToString(xf.Schema);
-            if (string.IsNullOrEmpty(schema))
-                throw new Exception("Schema is null.");
-            if (!schema.Contains("ClusterId"))
-                throw new Exception("Schema does not contain Cluster.");
-            if (!schema.Contains("Score"))
-                throw new Exception("Schema does not contain Score.");
+                string schema = SchemaHelper.ToString(xf.Schema);
+                if (string.IsNullOrEmpty(schema))
+                    throw new Exception("Schema is null.");
+                if (!schema.Contains("ClusterId"))
+                    throw new Exception("Schema does not contain Cluster.");
+                if (!schema.Contains("Score"))
+                    throw new Exception("Schema does not contain Score.");
 
-            StreamHelper.SaveModel(env, xf, outModelFilePath);
+                StreamHelper.SaveModel(env, xf, outModelFilePath);
 
-            var saver = env.CreateSaver("Text{header=- schema=-}");
-            using (var fs2 = File.Create(outputDataFilePath))
-                saver.SaveData(fs2, TestTransformHelper.AddFlatteningTransform(env, xf),
-                                StreamHelper.GetColumnsIndex(xf.Schema, new[] { "Features", "ClusterId", "Score" }));
+                var saver = env.CreateSaver("Text{header=- schema=-}");
+                using (var fs2 = File.Create(outputDataFilePath))
+                    saver.SaveData(fs2, TestTransformHelper.AddFlatteningTransform(env, xf),
+                                    StreamHelper.GetColumnsIndex(xf.Schema, new[] { "Features", "ClusterId", "Score" }));
 
-            // Checking the values.
-            var lines = File.ReadAllLines(outputDataFilePath).Select(c => c.Split('\t')).Where(c => c.Length == 4);
-            if (!lines.Any())
-                throw new Exception(string.Format("The output file is empty or not containing three columns '{0}'", outputDataFilePath));
-            var clusters = lines.Select(c => c[1]).Distinct();
-            if (clusters.Count() <= 1)
-                throw new Exception("Only one cluster, this is unexpected.");
+                // Checking the values.
+                var lines = File.ReadAllLines(outputDataFilePath).Select(c => c.Split('\t')).Where(c => c.Length == 4);
+                if (!lines.Any())
+                    throw new Exception(string.Format("The output file is empty or not containing three columns '{0}'", outputDataFilePath));
+                var clusters = lines.Select(c => c[1]).Distinct();
+                if (clusters.Count() <= 1)
+                    throw new Exception("Only one cluster, this is unexpected.");
 
-            // Serialization.
-            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
-            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
-            TestTransformHelper.SerializationTestTransform(env, outModelFilePath, xf, loader, outData, outData2);
+                // Serialization.
+                var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+                var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+                TestTransformHelper.SerializationTestTransform(env, outModelFilePath, xf, loader, outData, outData2);
+            }
         }
 
         [TestMethod]
@@ -484,38 +488,40 @@ namespace TestMachineLearningExt
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
 
-            var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}",
-                                          new MultiFileSource(dataFilePath));
-            var xf = env.CreateTransform("OpticsOrd{col=Features epsilon=0.3 minPoints=6}", loader);
-
-            string schema = SchemaHelper.ToString(xf.Schema);
-            if (string.IsNullOrEmpty(schema))
-                throw new Exception("Schema is null.");
-            if (!schema.Contains("Ordering"))
-                throw new Exception("Schema does not contain Ordering.");
-            if (!schema.Contains("Reachability"))
-                throw new Exception("Schema does not contain Reachability.");
-            StreamHelper.SaveModel(env, xf, outModelFilePath);
-
-            var saver = env.CreateSaver("Text{header=- schema=-}");
-            using (var fs2 = File.Create(outputDataFilePath))
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                saver.SaveData(fs2, TestTransformHelper.AddFlatteningTransform(env, xf),
-                                StreamHelper.GetColumnsIndex(xf.Schema, new[] { "Features", "Ordering", "Reachability" }));
-            }
-            // Checking the values.
-            var lines = File.ReadAllLines(outputDataFilePath).Select(c => c.Split('\t')).Where(c => c.Length == 4);
-            if (!lines.Any())
-                throw new Exception(string.Format("The output file is empty or not containing three columns '{0}'", outputDataFilePath));
-            var clusters = lines.Select(c => c[1]).Distinct();
-            if (clusters.Count() <= 1)
-                throw new Exception("Only one cluster, this is unexpected.");
+                var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}",
+                                              new MultiFileSource(dataFilePath));
+                var xf = env.CreateTransform("OpticsOrd{col=Features epsilon=0.3 minPoints=6}", loader);
 
-            // Serialization.
-            var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
-            var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
-            TestTransformHelper.SerializationTestTransform(env, outModelFilePath, xf, loader, outData, outData2);
+                string schema = SchemaHelper.ToString(xf.Schema);
+                if (string.IsNullOrEmpty(schema))
+                    throw new Exception("Schema is null.");
+                if (!schema.Contains("Ordering"))
+                    throw new Exception("Schema does not contain Ordering.");
+                if (!schema.Contains("Reachability"))
+                    throw new Exception("Schema does not contain Reachability.");
+                StreamHelper.SaveModel(env, xf, outModelFilePath);
+
+                var saver = env.CreateSaver("Text{header=- schema=-}");
+                using (var fs2 = File.Create(outputDataFilePath))
+                {
+                    saver.SaveData(fs2, TestTransformHelper.AddFlatteningTransform(env, xf),
+                                    StreamHelper.GetColumnsIndex(xf.Schema, new[] { "Features", "Ordering", "Reachability" }));
+                }
+                // Checking the values.
+                var lines = File.ReadAllLines(outputDataFilePath).Select(c => c.Split('\t')).Where(c => c.Length == 4);
+                if (!lines.Any())
+                    throw new Exception(string.Format("The output file is empty or not containing three columns '{0}'", outputDataFilePath));
+                var clusters = lines.Select(c => c[1]).Distinct();
+                if (clusters.Count() <= 1)
+                    throw new Exception("Only one cluster, this is unexpected.");
+
+                // Serialization.
+                var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
+                var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
+                TestTransformHelper.SerializationTestTransform(env, outModelFilePath, xf, loader, outData, outData2);
+            }
         }
 
         #endregion

@@ -22,122 +22,124 @@ namespace TestMachineLearningExt
 
         public static void TestMultiToBinaryTransform(MultiToBinaryTransform.MultiplicationAlgorithm algo, int max)
         {
-            var host = EnvHelper.NewTestEnvironment();
-
-            var inputs = new InputOutputU[] {
-                new InputOutputU() { X = new float[] { 0.1f, 1.1f }, Y = 0 },
-                new InputOutputU() { X = new float[] { 0.2f, 1.2f }, Y = 1 },
-                new InputOutputU() { X = new float[] { 0.3f, 1.3f }, Y = 2 }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new MultiToBinaryTransform.Arguments { label = "Y", algo = algo, maxMulti = max };
-            var multiplied = new MultiToBinaryTransform(host, args, data);
-
-            using (var cursor = multiplied.GetRowCursor(i => true))
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                var labelGetter = cursor.GetGetter<uint>(1);
-                var binGetter = cursor.GetGetter<bool>(2);
-                var cont = new List<Tuple<uint, bool>>();
-                bool bin = false;
-                while (cursor.MoveNext())
-                {
-                    uint got = 0;
-                    labelGetter(ref got);
-                    binGetter(ref bin);
-                    cont.Add(new Tuple<uint, bool>(got, bin));
-                }
+                var inputs = new InputOutputU[] {
+                    new InputOutputU() { X = new float[] { 0.1f, 1.1f }, Y = 0 },
+                    new InputOutputU() { X = new float[] { 0.2f, 1.2f }, Y = 1 },
+                    new InputOutputU() { X = new float[] { 0.3f, 1.3f }, Y = 2 }
+                };
 
-                if (max >= 3)
+                var data = host.CreateStreamingDataView(inputs);
+
+                var args = new MultiToBinaryTransform.Arguments { label = "Y", algo = algo, maxMulti = max };
+                var multiplied = new MultiToBinaryTransform(host, args, data);
+
+                using (var cursor = multiplied.GetRowCursor(i => true))
                 {
-                    if (cont.Count != 9)
-                        throw new Exception("It should be 9.");
-                    if (algo == MultiToBinaryTransform.MultiplicationAlgorithm.Default)
+                    var labelGetter = cursor.GetGetter<uint>(1);
+                    var binGetter = cursor.GetGetter<bool>(2);
+                    var cont = new List<Tuple<uint, bool>>();
+                    bool bin = false;
+                    while (cursor.MoveNext())
                     {
-                        for (int i = 0; i < 3; ++i)
+                        uint got = 0;
+                        labelGetter(ref got);
+                        binGetter(ref bin);
+                        cont.Add(new Tuple<uint, bool>(got, bin));
+                    }
+
+                    if (max >= 3)
+                    {
+                        if (cont.Count != 9)
+                            throw new Exception("It should be 9.");
+                        if (algo == MultiToBinaryTransform.MultiplicationAlgorithm.Default)
                         {
-                            var co = cont.Where(c => c.Item1 == (uint)i && c.Item2);
-                            if (co.Count() != 1)
-                                throw new Exception(string.Format("Unexpected number of true labels for class {0} - algo={1} - max={2}", i, algo, max));
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                var co = cont.Where(c => c.Item1 == (uint)i && c.Item2);
+                                if (co.Count() != 1)
+                                    throw new Exception(string.Format("Unexpected number of true labels for class {0} - algo={1} - max={2}", i, algo, max));
+                            }
                         }
                     }
-                }
-                else
-                {
-                    if (cont.Count != 3 * max)
-                        throw new Exception(string.Format("It should be {0}.", 3 * max));
+                    else
+                    {
+                        if (cont.Count != 3 * max)
+                            throw new Exception(string.Format("It should be {0}.", 3 * max));
+                    }
                 }
             }
         }
 
         public static void TestMultiToBinaryTransformVector(MultiToBinaryTransform.MultiplicationAlgorithm algo, int max)
         {
-            var host = EnvHelper.NewTestEnvironment();
-
-            var inputs = new InputOutputU[] {
-                new InputOutputU() { X = new float[] { 0.1f, 1.1f }, Y = 0 },
-                new InputOutputU() { X = new float[] { 0.2f, 1.2f }, Y = 1 },
-                new InputOutputU() { X = new float[] { 0.3f, 1.3f }, Y = 2 }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new MultiToBinaryTransform.Arguments { label = "Y", algo = algo, maxMulti = max };
-            var multiplied = new MultiToBinaryTransform(host, args, data);
-
-            using (var cursor = multiplied.GetRowCursor(i => true))
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                var labelGetter = cursor.GetGetter<uint>(1);
-                var labelVectorGetter = cursor.GetGetter<VBuffer<bool>>(1);
-                var labelVectorFloatGetter = cursor.GetGetter<VBuffer<float>>(1);
-                var binGetter = cursor.GetGetter<bool>(2);
-                Contracts.CheckValue(binGetter, "Type mismatch.");
-                var cont = new List<Tuple<uint, bool>>();
-                bool bin = false;
-                uint got = 0;
-                var gotv = new VBuffer<bool>();
-                var gotvf = new VBuffer<float>();
-                while (cursor.MoveNext())
-                {
-                    labelGetter(ref got);
-                    labelVectorGetter(ref gotv);
-                    labelVectorFloatGetter(ref gotvf);
-                    binGetter(ref bin);
-                    cont.Add(new Tuple<uint, bool>(got, bin));
-                    if (gotv.Length != 3) throw new Exception("Bad dimension (Length)");
-                    if (gotv.Count != 1) throw new Exception("Bad dimension (Count)");
-                    if (!gotv.Values[0]) throw new Exception("Bad value (Count)");
-                    if (gotv.Indices[0] != got) throw new Exception("Bad index (Count)");
-                    var ar = gotv.DenseValues().ToArray();
-                    if (ar.Length != 3) throw new Exception("Bad dimension (dense)");
+                var inputs = new InputOutputU[] {
+                    new InputOutputU() { X = new float[] { 0.1f, 1.1f }, Y = 0 },
+                    new InputOutputU() { X = new float[] { 0.2f, 1.2f }, Y = 1 },
+                    new InputOutputU() { X = new float[] { 0.3f, 1.3f }, Y = 2 }
+                };
 
-                    if (gotvf.Length != 3) throw new Exception("Bad dimension (Length)f");
-                    if (gotvf.Count != 1) throw new Exception("Bad dimension (Count)f");
-                    if (gotvf.Values[0] != 1) throw new Exception("Bad value (Count)f");
-                    if (gotvf.Indices[0] != got) throw new Exception("Bad index (Count)f");
-                    var ar2 = gotv.DenseValues().ToArray();
-                    if (ar2.Length != 3) throw new Exception("Bad dimension (dense)f");
-                }
+                var data = host.CreateStreamingDataView(inputs);
 
-                if (max >= 3)
+                var args = new MultiToBinaryTransform.Arguments { label = "Y", algo = algo, maxMulti = max };
+                var multiplied = new MultiToBinaryTransform(host, args, data);
+
+                using (var cursor = multiplied.GetRowCursor(i => true))
                 {
-                    if (cont.Count != 9)
-                        throw new Exception("It should be 9.");
-                    if (algo == MultiToBinaryTransform.MultiplicationAlgorithm.Default)
+                    var labelGetter = cursor.GetGetter<uint>(1);
+                    var labelVectorGetter = cursor.GetGetter<VBuffer<bool>>(1);
+                    var labelVectorFloatGetter = cursor.GetGetter<VBuffer<float>>(1);
+                    var binGetter = cursor.GetGetter<bool>(2);
+                    Contracts.CheckValue(binGetter, "Type mismatch.");
+                    var cont = new List<Tuple<uint, bool>>();
+                    bool bin = false;
+                    uint got = 0;
+                    var gotv = new VBuffer<bool>();
+                    var gotvf = new VBuffer<float>();
+                    while (cursor.MoveNext())
                     {
-                        for (int i = 0; i < 3; ++i)
+                        labelGetter(ref got);
+                        labelVectorGetter(ref gotv);
+                        labelVectorFloatGetter(ref gotvf);
+                        binGetter(ref bin);
+                        cont.Add(new Tuple<uint, bool>(got, bin));
+                        if (gotv.Length != 3) throw new Exception("Bad dimension (Length)");
+                        if (gotv.Count != 1) throw new Exception("Bad dimension (Count)");
+                        if (!gotv.Values[0]) throw new Exception("Bad value (Count)");
+                        if (gotv.Indices[0] != got) throw new Exception("Bad index (Count)");
+                        var ar = gotv.DenseValues().ToArray();
+                        if (ar.Length != 3) throw new Exception("Bad dimension (dense)");
+
+                        if (gotvf.Length != 3) throw new Exception("Bad dimension (Length)f");
+                        if (gotvf.Count != 1) throw new Exception("Bad dimension (Count)f");
+                        if (gotvf.Values[0] != 1) throw new Exception("Bad value (Count)f");
+                        if (gotvf.Indices[0] != got) throw new Exception("Bad index (Count)f");
+                        var ar2 = gotv.DenseValues().ToArray();
+                        if (ar2.Length != 3) throw new Exception("Bad dimension (dense)f");
+                    }
+
+                    if (max >= 3)
+                    {
+                        if (cont.Count != 9)
+                            throw new Exception("It should be 9.");
+                        if (algo == MultiToBinaryTransform.MultiplicationAlgorithm.Default)
                         {
-                            var co = cont.Where(c => c.Item1 == (uint)i && c.Item2);
-                            if (co.Count() != 1)
-                                throw new Exception(string.Format("Unexpected number of true labels for class {0} - algo={1} - max={2}", i, algo, max));
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                var co = cont.Where(c => c.Item1 == (uint)i && c.Item2);
+                                if (co.Count() != 1)
+                                    throw new Exception(string.Format("Unexpected number of true labels for class {0} - algo={1} - max={2}", i, algo, max));
+                            }
                         }
                     }
-                }
-                else
-                {
-                    if (cont.Count != 3 * max)
-                        throw new Exception(string.Format("It should be {0}.", 3 * max));
+                    else
+                    {
+                        if (cont.Count != 3 * max)
+                            throw new Exception(string.Format("It should be {0}.", 3 * max));
+                    }
                 }
             }
         }
@@ -181,24 +183,26 @@ namespace TestMachineLearningExt
             var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
-            var env = EnvHelper.NewTestEnvironment(conc: threads == 1 ? 1 : 0);
-            string labelType = useUint ? "U4[0-2]" : "R4";
-            string loadSettings = string.Format("Text{{col=Label:{0}:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}}", labelType);
-            var loader = env.CreateLoader(loadSettings, new MultiFileSource(dataFilePath));
-
-            var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
-            var roles = env.CreateExamples(concat, "Features", "Label");
-            string modelDef = threads <= 0 ? modelName : string.Format("{0}{{t={1}}}", modelName, threads);
-            if (!string.IsNullOrEmpty(reclassPredictor))
-                reclassPredictor = " rp=" + reclassPredictor;
-            string iova = string.Format("iova{{p={0} sc={1}{2}}}", modelDef, singleColumn ? "+" : "-", reclassPredictor);
-            var trainer = env.CreateTrainer(iova);
-            using (var ch = env.Start("train"))
+            using (var env = EnvHelper.NewTestEnvironment(conc: threads == 1 ? 1 : 0))
             {
-                var predictor = trainer.Train(env, ch, roles);
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
-                                                     PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
-                ch.Done();
+                string labelType = useUint ? "U4[0-2]" : "R4";
+                string loadSettings = string.Format("Text{{col=Label:{0}:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}}", labelType);
+                var loader = env.CreateLoader(loadSettings, new MultiFileSource(dataFilePath));
+
+                var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
+                var roles = env.CreateExamples(concat, "Features", "Label");
+                string modelDef = threads <= 0 ? modelName : string.Format("{0}{{t={1}}}", modelName, threads);
+                if (!string.IsNullOrEmpty(reclassPredictor))
+                    reclassPredictor = " rp=" + reclassPredictor;
+                string iova = string.Format("iova{{p={0} sc={1}{2}}}", modelDef, singleColumn ? "+" : "-", reclassPredictor);
+                var trainer = env.CreateTrainer(iova);
+                using (var ch = env.Start("train"))
+                {
+                    var predictor = trainer.Train(env, ch, roles);
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
+                                                         PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
+                    ch.Done();
+                }
             }
         }
 
@@ -216,23 +220,25 @@ namespace TestMachineLearningExt
             var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
-            var env = EnvHelper.NewTestEnvironment(conc: threads == 1 ? 1 : 0);
-            string labelType = useUint ? "U4[0-2]" : "R4";
-            string loadSettings = string.Format("Text{{col=Label:{0}:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}}", labelType);
-            var loader = env.CreateLoader(loadSettings, new MultiFileSource(dataFilePath));
-
-            var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
-            var roles = env.CreateExamples(concat, "Features", "Label");
-            string modelDef = threads <= 0 ? modelName : string.Format("{0}{{t={1}}}", modelName, threads);
-            string additionnal = modelName.Contains("xgbrk") ? " u4=+" : "";
-            string iova = string.Format("iovark{{p={0} sc={1}{2}}}", modelDef, singleColumn ? "+" : "-", additionnal);
-            var trainer = env.CreateTrainer(iova);
-            using (var ch = env.Start("train"))
+            using (var env = EnvHelper.NewTestEnvironment(conc: threads == 1 ? 1 : 0))
             {
-                var predictor = trainer.Train(env, ch, roles);
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
-                                                     PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
-                ch.Done();
+                string labelType = useUint ? "U4[0-2]" : "R4";
+                string loadSettings = string.Format("Text{{col=Label:{0}:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}}", labelType);
+                var loader = env.CreateLoader(loadSettings, new MultiFileSource(dataFilePath));
+
+                var concat = env.CreateTransform("Concat{col=Features:Slength,Swidth}", loader);
+                var roles = env.CreateExamples(concat, "Features", "Label");
+                string modelDef = threads <= 0 ? modelName : string.Format("{0}{{t={1}}}", modelName, threads);
+                string additionnal = modelName.Contains("xgbrk") ? " u4=+" : "";
+                string iova = string.Format("iovark{{p={0} sc={1}{2}}}", modelDef, singleColumn ? "+" : "-", additionnal);
+                var trainer = env.CreateTrainer(iova);
+                using (var ch = env.Start("train"))
+                {
+                    var predictor = trainer.Train(env, ch, roles);
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
+                                                         PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
+                    ch.Done();
+                }
             }
         }
 
@@ -246,18 +252,20 @@ namespace TestMachineLearningExt
             var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
-            var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("Text", new MultiFileSource(trainFile));
-            var roles = env.CreateExamples(loader, "Features", "Label");
-            var iova = string.Format("iova{{p=lr sc={0}}}", singleColumn ? "+" : "-");
-            loader = env.CreateLoader("Text", new MultiFileSource(testFile));
-            var trainer = env.CreateTrainer(iova);
-            using (var ch = env.Start("train"))
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                var predictor = trainer.Train(env, ch, roles);
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
-                                                     PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
-                ch.Done();
+                var loader = env.CreateLoader("Text", new MultiFileSource(trainFile));
+                var roles = env.CreateExamples(loader, "Features", "Label");
+                var iova = string.Format("iova{{p=lr sc={0}}}", singleColumn ? "+" : "-");
+                loader = env.CreateLoader("Text", new MultiFileSource(testFile));
+                var trainer = env.CreateTrainer(iova);
+                using (var ch = env.Start("train"))
+                {
+                    var predictor = trainer.Train(env, ch, roles);
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
+                                                         PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
+                    ch.Done();
+                }
             }
         }
 
@@ -271,18 +279,20 @@ namespace TestMachineLearningExt
             var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
-            var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("Text", new MultiFileSource(trainFile));
-            var roles = env.CreateExamples(loader, "Features", "Label");
-            var iova = string.Format("iovark{{p=ftrank sc={0}}}", singleColumn ? "+" : "-");
-            loader = env.CreateLoader("Text", new MultiFileSource(testFile));
-            var trainer = env.CreateTrainer(iova);
-            using (var ch = env.Start("train"))
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                var predictor = trainer.Train(env, ch, roles);
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
-                                                     PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
-                ch.Done();
+                var loader = env.CreateLoader("Text", new MultiFileSource(trainFile));
+                var roles = env.CreateExamples(loader, "Features", "Label");
+                var iova = string.Format("iovark{{p=ftrank sc={0}}}", singleColumn ? "+" : "-");
+                loader = env.CreateLoader("Text", new MultiFileSource(testFile));
+                var trainer = env.CreateTrainer(iova);
+                using (var ch = env.Start("train"))
+                {
+                    var predictor = trainer.Train(env, ch, roles);
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
+                                                         PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
+                    ch.Done();
+                }
             }
         }
 
@@ -481,34 +491,36 @@ namespace TestMachineLearningExt
             var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
-            var env = EnvHelper.NewTestEnvironment(conc: th == 1 ? 1 : 0);
-            var loaderSettings = "Binary";
-            var loader = env.CreateLoader(loaderSettings, new MultiFileSource(trainFile));
-            var xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", loader);
-            var roles = env.CreateExamples(xf, "Features", "Label");
-            ITrainerExtended trainer;
-            if (model.ToLower() == "ova" || model.ToLower() == "oova")
+            using (var env = EnvHelper.NewTestEnvironment(conc: th == 1 ? 1 : 0))
             {
-                if (th > 0)
-                    trainer = env.CreateTrainer(string.Format("oova{{ p=ft{{t={0}}} }}", th, singleColumn ? "+" : "-"));
+                var loaderSettings = "Binary";
+                var loader = env.CreateLoader(loaderSettings, new MultiFileSource(trainFile));
+                var xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", loader);
+                var roles = env.CreateExamples(xf, "Features", "Label");
+                ITrainerExtended trainer;
+                if (model.ToLower() == "ova" || model.ToLower() == "oova")
+                {
+                    if (th > 0)
+                        trainer = env.CreateTrainer(string.Format("oova{{ p=ft{{t={0}}} }}", th, singleColumn ? "+" : "-"));
+                    else
+                        trainer = env.CreateTrainer(string.Format("oova{{p=ft{t=1} }}", singleColumn ? "+" : "-"));
+                }
                 else
-                    trainer = env.CreateTrainer(string.Format("oova{{p=ft{t=1} }}", singleColumn ? "+" : "-"));
-            }
-            else
-            {
-                if (th > 0)
-                    trainer = env.CreateTrainer(string.Format("iova{{ p=ft{{t={0}}} sc={1} }}", th, singleColumn ? "+" : "-"));
-                else
-                    trainer = env.CreateTrainer(string.Format("iova{{p=ft{t=1} sc={0} }}", singleColumn ? "+" : "-"));
-            }
+                {
+                    if (th > 0)
+                        trainer = env.CreateTrainer(string.Format("iova{{ p=ft{{t={0}}} sc={1} }}", th, singleColumn ? "+" : "-"));
+                    else
+                        trainer = env.CreateTrainer(string.Format("iova{{p=ft{t=1} sc={0} }}", singleColumn ? "+" : "-"));
+                }
 
-            using (var ch = env.Start("Train"))
-            {
-                var pred = trainer.Train(env, ch, roles);
-                loader = env.CreateLoader(loaderSettings, new MultiFileSource(testFile));
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
-                                                     PredictionKind.MultiClassClassification, true,
-                                                     ratio: type.StartsWith("U4") && model.ToLower() == "iova" ? 1f : 0.1f);
+                using (var ch = env.Start("Train"))
+                {
+                    var pred = trainer.Train(env, ch, roles);
+                    loader = env.CreateLoader(loaderSettings, new MultiFileSource(testFile));
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
+                                                         PredictionKind.MultiClassClassification, true,
+                                                         ratio: type.StartsWith("U4") && model.ToLower() == "iova" ? 1f : 0.1f);
+                }
             }
         }
 
@@ -553,20 +565,22 @@ namespace TestMachineLearningExt
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
             StringWriter sout, serr;
-            var env = EnvHelper.NewTestEnvironment(out sout, out serr, verbose: false);
-            var loaderSettings = "Binary";
-            var loader = env.CreateLoader(loaderSettings, new MultiFileSource(trainFile));
-            var xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", loader);
-            var roles = env.CreateExamples(xf, "Features", "Label");
-            var trainer = env.CreateTrainer(string.Format("oova{{p={1} ds={0}}}", downsampling, model));
-            using (var ch = env.Start("Train"))
+            using (var env = EnvHelper.NewTestEnvironment(out sout, out serr, verbose: false))
             {
-                var pred = trainer.Train(env, ch, roles);
-                var sbout = sout.GetStringBuilder().ToString();
-                var sbrr = serr.GetStringBuilder().ToString();
-                loader = env.CreateLoader(loaderSettings, new MultiFileSource(testFile));
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
-                                                            PredictionKind.MultiClassClassification, true, ratio: 0.8f);
+                var loaderSettings = "Binary";
+                var loader = env.CreateLoader(loaderSettings, new MultiFileSource(trainFile));
+                var xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", loader);
+                var roles = env.CreateExamples(xf, "Features", "Label");
+                var trainer = env.CreateTrainer(string.Format("oova{{p={1} ds={0}}}", downsampling, model));
+                using (var ch = env.Start("Train"))
+                {
+                    var pred = trainer.Train(env, ch, roles);
+                    var sbout = sout.GetStringBuilder().ToString();
+                    var sbrr = serr.GetStringBuilder().ToString();
+                    loader = env.CreateLoader(loaderSettings, new MultiFileSource(testFile));
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
+                                                                PredictionKind.MultiClassClassification, true, ratio: 0.8f);
+                }
             }
         }
 
