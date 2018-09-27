@@ -55,7 +55,7 @@ namespace Scikit.ML.PipelineTraining
             _preProcess = preProcess;
             _inputColumn = inputColumn;
             _outputColumn = outputColumn;
-            _transformFromPredictor = new TransformFromValueMapperColumn(env, predictor as IValueMapper, _preProcess, inputColumn, outputColumn);
+            _transformFromPredictor = new TransformFromValueMapper(env, predictor as IValueMapper, _preProcess, inputColumn, outputColumn);
             _postProcess = postProcess;
             _predictor = predictor;
         }
@@ -121,7 +121,7 @@ namespace Scikit.ML.PipelineTraining
                 ctx.LoadModel<IDataTransform, SignatureLoadDataTransform>(_host, out _postProcess, "_postProcess", _transformFromPredictor);
             else
                 _postProcess = null;
-            _transformFromPredictor = new TransformFromValueMapperColumn(_host, _predictor as IValueMapper, _preProcess, _inputColumn, _outputColumn);
+            _transformFromPredictor = new TransformFromValueMapper(_host, _predictor as IValueMapper, _preProcess, _inputColumn, _outputColumn);
         }
 
         public static PrePostProcessPredictor Create(IHostEnvironment env, ModelLoadContext ctx)

@@ -165,7 +165,7 @@ namespace Scikit.ML.PipelineTraining
                 {
                     ch2.Info("Creates a transfrom from a predictor");
                     _inputColumn = td.Schema.Feature.Name;
-                    _predictorAsTransform = new TransformFromValueMapperColumn(Host, _predictor as IValueMapper,
+                    _predictorAsTransform = new TransformFromValueMapper(Host, _predictor as IValueMapper,
                                                         view, td.Schema.Feature.Name, _outputColumn);
                     ch2.Done();
                 }
