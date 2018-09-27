@@ -14,7 +14,7 @@ namespace Scikit.ML.ProductionPrediction
     /// Converts a ValueMapper into a IDataTransform.
     /// Similar to a scorer but in a more explicit way.
     /// </summary>
-    public class TransformFromValueMapper : IDataTransform, IValueMapper
+    public class TransformFromValueMapperColumn : IDataTransform, IValueMapper
     {
         #region members
 
@@ -38,8 +38,8 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="source">source to replace</param>
         /// <param name="inputColumn">name of the input column (the last one sharing the same type)</param>
         /// <param name="outputColumn">name of the output column</param>
-        public TransformFromValueMapper(IHostEnvironment env, IValueMapper mapper, IDataView source,
-                                        string inputColumn, string outputColumn = "output")
+        public TransformFromValueMapperColumn(IHostEnvironment env, IValueMapper mapper, IDataView source,
+                                              string inputColumn, string outputColumn = "output")
         {
             Contracts.AssertValue(env);
             Contracts.AssertValue(mapper);
@@ -167,15 +167,15 @@ namespace Scikit.ML.ProductionPrediction
         class MemoryTransform<TSrc, TDst> : IDataTransform
         {
             readonly IHostEnvironment _host;
-            readonly TransformFromValueMapper _parent;
+            readonly TransformFromValueMapperColumn _parent;
 
-            public MemoryTransform(IHostEnvironment env, TransformFromValueMapper parent)
+            public MemoryTransform(IHostEnvironment env, TransformFromValueMapperColumn parent)
             {
                 _host = env;
                 _parent = parent;
             }
 
-            public TransformFromValueMapper Parent { get { return _parent; } }
+            public TransformFromValueMapperColumn Parent { get { return _parent; } }
             public ColumnType InputType { get { return _parent.InputType; } }
             public ColumnType OutputType { get { return _parent.OutputType; } }
             public ValueMapper<TTSrc, TTDst> GetMapper<TTSrc, TTDst>() { return _parent.GetMapper<TTSrc, TTDst>(); }
