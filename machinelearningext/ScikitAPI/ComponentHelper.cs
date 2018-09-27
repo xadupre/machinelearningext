@@ -54,7 +54,7 @@ namespace Scikit.ML.ScikitAPI
             env.ComponentCatalog.RegisterAssembly(typeof(PassThroughTransform).Assembly);
             env.ComponentCatalog.RegisterAssembly(typeof(ResampleTransform).Assembly);
             env.ComponentCatalog.RegisterAssembly(typeof(SplitTrainTestTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(ValueMapperPredictionEngine).Assembly);
+            env.ComponentCatalog.RegisterAssembly(typeof(ValueMapperPredictionEngineFloat).Assembly);
         }
     }
 }

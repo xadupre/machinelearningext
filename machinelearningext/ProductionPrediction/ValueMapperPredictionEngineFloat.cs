@@ -23,16 +23,16 @@ namespace Scikit.ML.ProductionPrediction
     /// Creates a prediction engine which does not create getters each time.
     /// It is much faster as it does not recreate getter for every observation.
     /// </summary>
-    public class ValueMapperPredictionEngine : IDisposable
+    public class ValueMapperPredictionEngineFloat : IDisposable
     {
         readonly IHostEnvironment _env;
         readonly IDataView _transforms;
         readonly Predictor _predictor;
         readonly ValueMapper<VBuffer<float>, float> _mapper;
         readonly ValueMapper<VBuffer<float>, VBuffer<float>> _mapperVector;
-        ValueMapperFromTransform<VBuffer<float>> _valueMapper;
+        ValueMapperFromTransformFloat<VBuffer<float>> _valueMapper;
 
-        public ValueMapperPredictionEngine()
+        public ValueMapperPredictionEngineFloat()
         {
             throw Contracts.Except("Use arguments.");
         }
@@ -46,7 +46,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
-        public ValueMapperPredictionEngine(IHostEnvironment env, string modelName,
+        public ValueMapperPredictionEngineFloat(IHostEnvironment env, string modelName,
                 string output = "Probability", bool getterEachTime = false,
                 bool outputIsFloat = true, int conc = 1) :
             this(env, File.OpenRead(modelName), output, getterEachTime, outputIsFloat, conc)
@@ -62,7 +62,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
-        public ValueMapperPredictionEngine(IHostEnvironment env, Stream modelStream,
+        public ValueMapperPredictionEngineFloat(IHostEnvironment env, Stream modelStream,
                 string output = "Probability", bool getterEachTime = false,
                 bool outputIsFloat = true, int conc = 1)
         {
@@ -89,7 +89,7 @@ namespace Scikit.ML.ProductionPrediction
             if (scorer == null)
                 throw _env.Except("Cannot create a scorer.");
 
-            _valueMapper = new ValueMapperFromTransform<VBuffer<float>>(_env,
+            _valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(_env,
                                 scorer, view, features, output, null, getterEachTime, conc);
             if (_valueMapper == null)
                 throw _env.Except("Cannot create a mapper.");

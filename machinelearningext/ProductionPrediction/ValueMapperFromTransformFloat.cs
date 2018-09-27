@@ -13,12 +13,8 @@ namespace Scikit.ML.ProductionPrediction
     /// This mapper is far from being efficient (execution time).
     /// The mapper creates a new view, a new iterator, serializes and deserializes the transform for each row.
     /// The serialization can be avoided by exposing a setter on _source.
-    /// The creation of a new view and a new iterator can be avoided if the function GetRowCursor
-    /// ensures it returns a iterator in the same thread (no parallelization).
-    /// 
-    /// To get that, the parameter singleThread must be set to true.
     /// </summary>
-    public class ValueMapperFromTransform<TColValue> : IValueMapper, IDisposable
+    public class ValueMapperFromTransformFloat<TColValue> : IValueMapper, IDisposable
     {
         public ColumnType InputType { get { return _transform.Source.Schema.GetColumnType(_inputIndex); } }
         public ColumnType OutputType { get { return _outputType; } }
@@ -46,9 +42,9 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="currentCursor">if you need access to other columns than the input one, an addition cursor must be given</param>
         /// <param name="getterEachTime">create the getter for each computation</param>
         /// <param name="conc">number of concurrency threads</param>
-        public ValueMapperFromTransform(IHostEnvironment env, IDataTransform transform, IDataView source,
-                                        string inputColumn, string outputColumn, IRowCursor currentCursor,
-                                        bool getterEachTime = false, int conc = 1)
+        public ValueMapperFromTransformFloat(IHostEnvironment env, IDataTransform transform, IDataView source,
+                                             string inputColumn, string outputColumn, IRowCursor currentCursor,
+                                             bool getterEachTime = false, int conc = 1)
         {
             Contracts.AssertValue(env);
             Contracts.AssertValue(transform);

@@ -47,7 +47,7 @@ namespace TestMachineLearningExt
                 var cursor = data.GetRowCursor(i => true);
                 var gety = cursor.GetGetter<int>(1);
 
-                using (var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(host, trv, null, "X", "X", cursor))
+                using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, null, "X", "X", cursor))
                 {
                     var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
 
@@ -114,7 +114,7 @@ namespace TestMachineLearningExt
                 var cursor = data.GetRowCursor(i => true);
                 var gety = cursor.GetGetter<int>(1);
 
-                using (var valueMapper = new ValueMapperFromTransform<VBuffer<float>>(host, trv, null, "X", "X", cursor, true))
+                using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, null, "X", "X", cursor, true))
                 {
                     var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
 
@@ -162,7 +162,7 @@ namespace TestMachineLearningExt
             IDataView _transforms;
             Predictor _predictor;
             ValueMapper<VBuffer<float>, float> _mapper;
-            ValueMapperFromTransform<VBuffer<float>> _valueMapper;
+            ValueMapperFromTransformFloat<VBuffer<float>> _valueMapper;
 
             public ValueMapperExample(string modelName, string features, bool getterEachTime)
             {
@@ -175,7 +175,7 @@ namespace TestMachineLearningExt
                 var data = _env.CreateExamples(_transforms, features);
                 var scorer = _env.CreateDefaultScorer(data, _predictor);
 
-                _valueMapper = new ValueMapperFromTransform<VBuffer<float>>(_env,
+                _valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(_env,
                                     scorer, view, "Features", "Probability", null, getterEachTime);
                 _mapper = _valueMapper.GetMapper<VBuffer<float>, float>();
             }
@@ -319,7 +319,7 @@ namespace TestMachineLearningExt
             var name = FileHelper.GetTestFile("bc-lr.zip");
             using (var env = EnvHelper.NewTestEnvironment())
             {
-                using (var engine = new ValueMapperPredictionEngine(env, name))
+                using (var engine = new ValueMapperPredictionEngineFloat(env, name))
                 {
                     var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
                     for (int i = 0; i < 1000; ++i)
@@ -340,7 +340,7 @@ namespace TestMachineLearningExt
 
             using (var env = EnvHelper.NewTestEnvironment())
             {
-                using (var engine0 = new ValueMapperPredictionEngine(env, name, getterEachTime: true, conc: 1))
+                using (var engine0 = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: true, conc: 1))
                 {
                     var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
                     var exp = new float[100];
@@ -358,7 +358,7 @@ namespace TestMachineLearningExt
                     {
                         foreach (int th in new int[] { 2, 0, 1, 3 })
                         {
-                            var engine = new ValueMapperPredictionEngine(env, name, getterEachTime: each, conc: th);
+                            var engine = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: each, conc: th);
                             var sw = new Stopwatch();
                             sw.Start();
                             for (int i = 0; i < exp.Length; ++i)
@@ -378,7 +378,7 @@ namespace TestMachineLearningExt
 
         public class ValueMapperPredictionEngineExample : IDisposable
         {
-            ValueMapperPredictionEngine engine;
+            ValueMapperPredictionEngineFloat engine;
 
             public ValueMapperPredictionEngineExample()
             {
@@ -390,7 +390,7 @@ namespace TestMachineLearningExt
                 {
                     using (var env = EnvHelper.NewTestEnvironment())
                     {
-                        engine = new ValueMapperPredictionEngine(env, modelName, "Probability", false);
+                        engine = new ValueMapperPredictionEngineFloat(env, modelName, "Probability", false);
                     }
                 }
                 catch (Exception e)
