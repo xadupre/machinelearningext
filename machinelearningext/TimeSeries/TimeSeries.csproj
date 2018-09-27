@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Scikit.ML.TimeSeries</AssemblyName>
     <RootNamespace>Scikit.ML.TimeSeries</RootNamespace>
-    <Version>0.6.0</Version>
+    <Version>0.7.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 

@@ -5,7 +5,7 @@
     <AssemblyName>Scikit.ML.PipelineHelper</AssemblyName>
     <RootNamespace>Scikit.ML.PipelineHelper</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.6.0</Version>
+    <Version>0.7.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
