@@ -402,25 +402,117 @@ namespace Scikit.ML.PipelineHelper
         /// </summary>
         public static DataKind GetKind<TLabel>()
         {
-            if (typeof(TLabel) == typeof(bool))
+            return GetKind(typeof(TLabel));
+        }
+
+        /// <summary>
+        /// Returns the data kind based on a type.
+        /// </summary>
+        public static DataKind GetKind(Type type)
+        {
+            if (type == typeof(bool))
                 return DataKind.BL;
-            if (typeof(TLabel) == typeof(byte))
+            if (type == typeof(byte))
                 return DataKind.U1;
-            if (typeof(TLabel) == typeof(ushort))
+            if (type == typeof(ushort))
                 return DataKind.U2;
-            if (typeof(TLabel) == typeof(uint))
+            if (type == typeof(uint))
                 return DataKind.U4;
-            if (typeof(TLabel) == typeof(int))
+            if (type == typeof(int))
                 return DataKind.I4;
-            if (typeof(TLabel) == typeof(Int64))
+            if (type == typeof(Int64))
                 return DataKind.I8;
-            if (typeof(TLabel) == typeof(float))
+            if (type == typeof(float))
                 return DataKind.R4;
-            if (typeof(TLabel) == typeof(double))
+            if (type == typeof(double))
                 return DataKind.R8;
-            if (typeof(TLabel) == typeof(ReadOnlyMemory<char>) || typeof(TLabel) == typeof(string) || typeof(TLabel) == typeof(DvText))
+            if (type == typeof(ReadOnlyMemory<char>) || type == typeof(string) || type == typeof(DvText))
                 return DataKind.TX;
-            throw Contracts.ExceptNotSupp("Unsupported output type {0}.", typeof(TLabel));
+            throw Contracts.ExceptNotSupp("Unsupported output type {0}.", type);
+        }
+
+        public enum ArrayKind
+        {
+            None = 0,
+            Array = 1,
+            VBuffer = 2
+        }
+
+        public static Tuple<DataKind, ArrayKind> GetKindArray(ColumnType type)
+        {
+            if (type.IsVector)
+            {
+                int dc = type.AsVector.DimCount;
+                return new Tuple<DataKind, ArrayKind>(type.ItemType.RawKind, dc == 1 && 
+                                                      type.AsVector.GetDim(0) > 0 ? ArrayKind.Array : ArrayKind.VBuffer);
+            }
+            else
+                return new Tuple<DataKind, ArrayKind>(type.RawKind, ArrayKind.None);
+        }
+
+        /// <summary>
+        /// Returns the data kind based on a type.
+        /// </summary>
+        public static Tuple<DataKind, ArrayKind> GetKindArray(Type type)
+        {
+            if (type == typeof(bool))
+                return new Tuple<DataKind, ArrayKind>(DataKind.BL, ArrayKind.None);
+            if (type == typeof(byte))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U1, ArrayKind.None);
+            if (type == typeof(ushort))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U2, ArrayKind.None);
+            if (type == typeof(uint))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U4, ArrayKind.None);
+            if (type == typeof(int))
+                return new Tuple<DataKind, ArrayKind>(DataKind.I4, ArrayKind.None);
+            if (type == typeof(Int64))
+                return new Tuple<DataKind, ArrayKind>(DataKind.I8, ArrayKind.None);
+            if (type == typeof(float))
+                return new Tuple<DataKind, ArrayKind>(DataKind.R4, ArrayKind.None);
+            if (type == typeof(double))
+                return new Tuple<DataKind, ArrayKind>(DataKind.R8, ArrayKind.None);
+            if (type == typeof(ReadOnlyMemory<char>) || type == typeof(string) || type == typeof(DvText))
+                return new Tuple<DataKind, ArrayKind>(DataKind.TX, ArrayKind.None);
+
+            if (type == typeof(VBuffer<bool>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.BL, ArrayKind.VBuffer);
+            if (type == typeof(VBuffer<byte>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U1, ArrayKind.VBuffer);
+            if (type == typeof(VBuffer<ushort>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U2, ArrayKind.VBuffer);
+            if (type == typeof(VBuffer<uint>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U4, ArrayKind.VBuffer);
+            if (type == typeof(VBuffer<int>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.I4, ArrayKind.VBuffer);
+            if (type == typeof(VBuffer<Int64>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.I8, ArrayKind.VBuffer);
+            if (type == typeof(VBuffer<float>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.R4, ArrayKind.VBuffer);
+            if (type == typeof(VBuffer<double>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.R8, ArrayKind.VBuffer);
+            if (type == typeof(VBuffer<ReadOnlyMemory<char>>) || type == typeof(VBuffer<string>) || type == typeof(VBuffer<DvText>))
+                return new Tuple<DataKind, ArrayKind>(DataKind.TX, ArrayKind.VBuffer);
+
+            if (type == typeof(bool[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.BL, ArrayKind.Array);
+            if (type == typeof(byte[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U1, ArrayKind.Array);
+            if (type == typeof(ushort[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U2, ArrayKind.Array);
+            if (type == typeof(uint[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.U4, ArrayKind.Array);
+            if (type == typeof(int[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.I4, ArrayKind.Array);
+            if (type == typeof(Int64[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.I8, ArrayKind.Array);
+            if (type == typeof(float[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.R4, ArrayKind.Array);
+            if (type == typeof(double[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.R8, ArrayKind.Array);
+            if (type == typeof(ReadOnlyMemory<char>[]) || type == typeof(string[]) || type == typeof(DvText[]))
+                return new Tuple<DataKind, ArrayKind>(DataKind.TX, ArrayKind.Array);
+
+            throw Contracts.ExceptNotSupp("Unsupported output type {0}.", type);
         }
 
         public static ColumnType GetColumnType<TLabel>()

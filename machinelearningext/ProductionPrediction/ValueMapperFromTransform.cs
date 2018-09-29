@@ -1,7 +1,10 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
@@ -14,35 +17,31 @@ namespace Scikit.ML.ProductionPrediction
     /// The mapper creates a new view, a new iterator, serializes and deserializes the transform for each row.
     /// The serialization can be avoided by exposing a setter on _source.
     /// </summary>
-    public class ValueMapperFromTransformFloat<TColValue> : IValueMapper, IDisposable
+    public class ValueMapperFromTransform<TRowInput, TRowOutput> : IValueMapper, IDisposable
+        where TRowInput : class, IClassWithGetter<TRowInput>, new()
+        where TRowOutput : class, IClassWithSetter<TRowOutput>, new()
     {
-        public ColumnType InputType { get { return _transform.Source.Schema.GetColumnType(_inputIndex); } }
-        public ColumnType OutputType { get { return _outputType; } }
-
         readonly IDataTransform _transform;
         readonly IDataView _sourceToReplace;
         readonly IHostEnvironment _env;
-        readonly string _outputColumn;
-        readonly int _inputIndex;
-        readonly ColumnType _outputType;
         IHostEnvironment _computeEnv;
         readonly bool _getterEachTime;
         readonly bool _disposeEnv;
+
+        public ColumnType InputType => null;
+        public ColumnType OutputType => null;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="env">TLC</param>
         /// <param name="transform">transform to convert</param>
-        /// <param name="inputColumn">input column of the mapper</param>
-        /// <param name="outputColumn">output column of the mapper</param>
         /// <param name="sourceToReplace">source to replace</param>
         /// <param name="getterEachTime">create the getter for each computation</param>
         /// <param name="conc">number of concurrency threads</param>
-        public ValueMapperFromTransformFloat(IHostEnvironment env, IDataTransform transform,
-                                             string inputColumn, string outputColumn,
-                                             IDataView sourceToReplace = null,
-                                             bool getterEachTime = false, int conc = 1)
+        public ValueMapperFromTransform(IHostEnvironment env, IDataTransform transform,
+                                        IDataView sourceToReplace = null,
+                                        bool getterEachTime = false, int conc = 1)
         {
             Contracts.AssertValue(env);
             Contracts.AssertValue(transform);
@@ -50,20 +49,6 @@ namespace Scikit.ML.ProductionPrediction
             _getterEachTime = getterEachTime;
             _transform = transform;
             _sourceToReplace = sourceToReplace;
-            _outputColumn = outputColumn;
-
-            var firstView = _sourceToReplace ?? DataViewHelper.GetFirstView(transform);
-
-            int index;
-            if (!firstView.Schema.TryGetColumnIndex(inputColumn, out index))
-                throw env.Except("Unable to find column '{0}' in input schema '{1}'.",
-                    inputColumn, SchemaHelper.ToString(firstView.Schema));
-            _inputIndex = index;
-            if (!transform.Schema.TryGetColumnIndex(outputColumn, out index))
-                throw env.Except("Unable to find column '{0}' in output schema '{1}'.",
-                    outputColumn, SchemaHelper.ToString(transform.Schema));
-            _outputType = _transform.Schema.GetColumnType(index);
-
             _disposeEnv = conc > 0;
             _computeEnv = _disposeEnv ? new PassThroughEnvironment(env, conc: conc, verbose: false) : env;
         }
@@ -77,61 +62,83 @@ namespace Scikit.ML.ProductionPrediction
             }
         }
 
+        delegate void DelegateSetterRow<TDst, TValue>(ref TDst row, ref TValue value);
+
         public ValueMapper<TSrc, TDst> GetMapper<TSrc, TDst>()
         {
+            if (typeof(TSrc) != typeof(TRowInput))
+                throw _env.Except($"Cannot create a mapper with input type {typeof(TSrc)} != {typeof(TRowInput)} (expected).");
+
+            ValueMapper<TSrc, TDst> res;
+            if (typeof(TDst) == typeof(TRowOutput))
+                res = GetMapperRow() as ValueMapper<TSrc, TDst>;
+            else
+                res = GetMapperColumn<TDst>() as ValueMapper<TSrc, TDst>;
+            if (res == null)
+                throw _env.ExceptNotSupp($"Unable to create mapper from ${typeof(TSrc)} to ${typeof(TDst)}.");
+            return res;
+        }
+
+        /// <summary>
+        /// Returns a getter on particuler column.
+        /// </summary>
+        /// <typeparam name="TDst"></typeparam>
+        /// <returns></returns>
+        ValueMapper<TRowInput, TDst> GetMapperColumn<TDst>()
+        {
+            throw _env.ExceptNotImpl("Not implemented yet as it is missing the column index.");
+        }
+
+        ValueMapper<TRowInput, TRowOutput> GetMapperRow()
+        {
             var firstView = _sourceToReplace ?? DataViewHelper.GetFirstView(_transform);
+            var schema = SchemaDefinition.Create(typeof(TRowOutput), SchemaDefinition.Direction.Read);
+            var indexes = new HashSet<int>(schema.Select(c => c.ColumnName).Select(c =>
+            {
+                int ind; firstView.Schema.TryGetColumnIndex(c, out ind); return ind;
+            }));
+
             if (_getterEachTime)
             {
-                return (ref TSrc src, ref TDst dst) =>
+                return (ref TRowInput src, ref TRowOutput dst) =>
                 {
-                    var inputView = new TemporaryViewCursorColumn<TSrc>(src, _inputIndex, firstView.Schema);
-                    using (var inputCursor = inputView.GetRowCursor(i => i == _inputIndex))
+                    var inputView = new TemporaryViewCursorRow<TRowInput>(src, null, firstView.Schema, overwriteRowGetter: GetterSetterHelper.GetGetter<TRowInput>());
+                    using (var inputCursor = inputView.GetRowCursor(i => true))
                     {
                         _env.AssertValue(inputCursor);
+
+                        var dels = dst.GetCursorGetter(inputCursor);
 
                         // This is extremely time consuming as the transform is serialized and deserialized.
                         var outputView = _sourceToReplace == _transform.Source
                                             ? ApplyTransformUtils.ApplyTransformToData(_env, _transform, inputView)
                                             : ApplyTransformUtils.ApplyAllTransformsToData(_env, _transform, inputView, _sourceToReplace);
-
-                        int index;
-                        if (!outputView.Schema.TryGetColumnIndex(_outputColumn, out index))
-                            throw _env.Except("Unable to find column '{0}' in output schema.", _outputColumn);
-                        int newOutputIndex = index;
-
-                        using (var cur = outputView.GetRowCursor(i => i == newOutputIndex))
+                        using (var cur = outputView.GetRowCursor(i => indexes.Contains(i)))
                         {
                             cur.MoveNext();
-                            var getter = cur.GetGetter<TDst>(newOutputIndex);
-                            getter(ref dst);
+                            dst.Set(dels);
                         }
                     }
                 };
             }
             else
             {
-                var inputView = new InfiniteLoopViewCursorColumn<TSrc>(_inputIndex, firstView.Schema);
+                var inputView = new InfiniteLoopViewCursorRow<TRowInput>(null, firstView.Schema, overwriteRowGetter: GetterSetterHelper.GetGetter<TRowInput>());
 
                 // This is extremely time consuming as the transform is serialized and deserialized.
                 var outputView = _sourceToReplace == _transform.Source
                                     ? ApplyTransformUtils.ApplyTransformToData(_computeEnv, _transform, inputView)
                                     : ApplyTransformUtils.ApplyAllTransformsToData(_computeEnv, _transform, inputView, _sourceToReplace);
 
-                int index;
-                if (!outputView.Schema.TryGetColumnIndex(_outputColumn, out index))
-                    throw _env.Except("Unable to find column '{0}' in output schema.", _outputColumn);
-                int newOutputIndex = index;
-
-                using (var cur = outputView.GetRowCursor(i => i == newOutputIndex))
+                using (var cur = outputView.GetRowCursor(i => indexes.Contains(i)))
                 {
-                    var getter = cur.GetGetter<TDst>(newOutputIndex);
-                    if (getter == null)
-                        throw _env.Except("Unable to get a getter on the transform for type {0}", default(TDst).GetType());
-                    return (ref TSrc src, ref TDst dst) =>
+                    var dels = new TRowOutput().GetCursorGetter(cur);
+
+                    return (ref TRowInput src, ref TRowOutput dst) =>
                     {
                         inputView.Set(ref src);
                         cur.MoveNext();
-                        getter(ref dst);
+                        dst.Set(dels);
                     };
                 }
             }

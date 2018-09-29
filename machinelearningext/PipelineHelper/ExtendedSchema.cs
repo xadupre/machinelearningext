@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
 
@@ -34,6 +35,20 @@ namespace Scikit.ML.PipelineHelper
                 throw Contracts.Except("names and types must have the same length.");
             _names = names;
             _types = types;
+            _maprev = new Dictionary<string, int>();
+            for (int i = 0; i < _names.Length; ++i)
+            {
+                if (_maprev.ContainsKey(_names[i]))
+                    throw Contracts.Except("Column '{0}' was added twice. This is not allowed.", _names[i]);
+                _maprev[_names[i]] = i;
+            }
+        }
+
+        public ExtendedSchema(ISchema inputSchema, SchemaDefinition sdef)
+        {
+            _schemaInput = inputSchema;
+            _names = sdef.Select(c => c.ColumnName).ToArray();
+            _types = sdef.Select(c => c.ColumnType).ToArray();
             _maprev = new Dictionary<string, int>();
             for (int i = 0; i < _names.Length; ++i)
             {

@@ -90,7 +90,8 @@ namespace Scikit.ML.ProductionPrediction
                 throw _env.Except("Cannot create a scorer.");
 
             _valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(_env,
-                                scorer, view, features, output, null, getterEachTime, conc);
+                                scorer, features, output, getterEachTime: getterEachTime,
+                                conc: conc);
             if (_valueMapper == null)
                 throw _env.Except("Cannot create a mapper.");
             if (outputIsFloat)

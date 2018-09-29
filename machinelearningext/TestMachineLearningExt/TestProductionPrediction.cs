@@ -10,6 +10,8 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineLambdaTransforms;
+using Scikit.ML.PipelineHelper;
+using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.DataManipulation;
 using DocHelperMlExt;
@@ -44,20 +46,17 @@ namespace TestMachineLearningExt
                 var inob = new VBuffer<float>(2, ino.X);
                 var ans = new VBuffer<float>();
 
-                var cursor = data.GetRowCursor(i => true);
-                var gety = cursor.GetGetter<int>(1);
-
-                using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, null, "X", "X", cursor))
+                using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, "X", "X"))
                 {
                     var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
 
                     var listy = new List<int>();
                     var listx = new List<float>();
                     int y = 0;
-                    while (cursor.MoveNext())
+                    for (int i = 0; i < inputs.Length; ++i)
                     {
                         mapper(ref inob, ref ans);
-                        gety(ref y);
+                        y = inputs[i].Y;
                         if (ans.Count != 2)
                             throw new Exception("Issue with dimension.");
                         listx.AddRange(ans.Values);
@@ -111,41 +110,41 @@ namespace TestMachineLearningExt
                 new InputOutput { X = new float[] { -6, -6 }, Y = 30 } };
                 var ans = new VBuffer<float>();
 
-                var cursor = data.GetRowCursor(i => true);
-                var gety = cursor.GetGetter<int>(1);
-
-                using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, null, "X", "X", cursor, true))
+                foreach (var each in new[] { false, true })
                 {
-                    var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
-
-                    var listy = new List<int>();
-                    var listx = new List<float>();
-                    int y = 0;
-                    int tour = 0;
-                    while (cursor.MoveNext())
+                    using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, "X", "X", getterEachTime: each))
                     {
-                        var temp = new VBuffer<float>(2, inos[tour++].X);
-                        mapper(ref temp, ref ans);
-                        gety(ref y);
-                        if (ans.Count != 2)
+                        var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
+
+                        var listy = new List<int>();
+                        var listx = new List<float>();
+                        int y = 0;
+                        int tour = 0;
+                        for (int i = 0; i < inputs.Length; ++i)
+                        {
+                            var temp = new VBuffer<float>(2, inos[tour++].X);
+                            mapper(ref temp, ref ans);
+                            i = inputs[i].Y;
+                            if (ans.Count != 2)
+                                throw new Exception("Issue with dimension.");
+                            listx.AddRange(ans.Values);
+                            listy.Add((int)y);
+                        }
+                        if (listy.Count != 2)
                             throw new Exception("Issue with dimension.");
-                        listx.AddRange(ans.Values);
-                        listy.Add((int)y);
+                        if (listy[0] != 10 || listy[1] != 100)
+                            throw new Exception("Issue with values.");
+                        if (listx.Count != 4)
+                            throw new Exception("Issue with dimension.");
+                        if (listx[0] != 5)
+                            throw new Exception("Issue with values.");
+                        if (listx[1] != -15)
+                            throw new Exception("Issue with values.");
+                        if (listx[2] != 94)
+                            throw new Exception("Issue with values.");
+                        if (listx[3] != -106)
+                            throw new Exception("Issue with values.");
                     }
-                    if (listy.Count != 2)
-                        throw new Exception("Issue with dimension.");
-                    if (listy[0] != 10 || listy[1] != 100)
-                        throw new Exception("Issue with values.");
-                    if (listx.Count != 4)
-                        throw new Exception("Issue with dimension.");
-                    if (listx[0] != 5)
-                        throw new Exception("Issue with values.");
-                    if (listx[1] != -15)
-                        throw new Exception("Issue with values.");
-                    if (listx[2] != 94)
-                        throw new Exception("Issue with values.");
-                    if (listx[3] != -106)
-                        throw new Exception("Issue with values.");
                 }
             }
         }
@@ -176,7 +175,7 @@ namespace TestMachineLearningExt
                 var scorer = _env.CreateDefaultScorer(data, _predictor);
 
                 _valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(_env,
-                                    scorer, view, "Features", "Probability", null, getterEachTime);
+                                    scorer, "Features", "Probability", getterEachTime: getterEachTime);
                 _mapper = _valueMapper.GetMapper<VBuffer<float>, float>();
             }
 
@@ -468,6 +467,50 @@ namespace TestMachineLearningExt
                     {
                         if (cont[i].Item1 < 1)
                             throw new Exception("Values should be > 1");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestValueMapperFromTransform()
+        {
+            foreach (var each in new[] { false, true })
+            {
+                using (var host = EnvHelper.NewTestEnvironment())
+                {
+                    var inputs = new InputOutputU[] {
+                    new InputOutputU() { X = new float[] { 0.1f, 1.1f }, Y = 0 },
+                    new InputOutputU() { X = new float[] { 0.2f, 1.2f }, Y = 1 },
+                    new InputOutputU() { X = new float[] { 0.3f, 1.3f }, Y = 2 }
+                };
+                    var inputs_unsued = new InputOutputU[] {
+                    new InputOutputU() { X = new float[] { -0.1f, -1.1f }, Y = 1000 },
+                };
+                    var outputs = new InputOutputU[inputs.Length];
+                    for (int i = 0; i < outputs.Length; ++i)
+                        outputs[i] = new InputOutputU();
+
+                    var data_unused = host.CreateStreamingDataView(inputs_unsued);
+                    var data = host.CreateStreamingDataView(inputs);
+                    using (var env = EnvHelper.NewTestEnvironment())
+                    {
+                        var tr = new PassThroughTransform(env, new PassThroughTransform.Arguments() { }, data_unused);
+                        var mapperClass = new ValueMapperFromTransform<InputOutputU, InputOutputU>(env, tr, getterEachTime: each);
+                        var mapper = mapperClass.GetMapper<InputOutputU, InputOutputU>();
+                        using (var cur = data.GetRowCursor(i => true))
+                        {
+                            for (int i = 0; i < inputs.Length; ++i)
+                                mapper(ref inputs[i], ref outputs[i]);
+                        }
+                    }
+
+                    for (int i = 0; i < inputs.Length; ++i)
+                    {
+                        Assert.AreEqual(inputs[i].Y, outputs[i].Y);
+                        Assert.AreEqual(inputs[i].X.Length, outputs[i].X.Length);
+                        Assert.AreEqual(inputs[i].X[0], outputs[i].X[0]);
+                        Assert.AreEqual(inputs[i].X[1], outputs[i].X[1]);
                     }
                 }
             }
