@@ -19,47 +19,48 @@ namespace TestMachineLearningExt
     [TestClass]
     public class Test_Benchmarks
     {
-
         [TestMethod]
         public void TestValueMapperPredictionEngineMultiThread()
         {
             var name = FileHelper.GetTestFile("bc-lr.zip");
 
             using (var env = EnvHelper.NewTestEnvironment())
+            using (var engine0 = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: true, conc: 1))
             {
-                using (var engine0 = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: true, conc: 1))
+                var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
+                var exp = new float[100];
+                for (int i = 0; i < exp.Length; ++i)
                 {
-                    var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
-                    var exp = new float[100];
-                    for (int i = 0; i < exp.Length; ++i)
-                    {
-                        feat[0] = i;
-                        exp[i] = engine0.Predict(feat);
-                        Assert.IsFalse(float.IsNaN(exp[i]));
-                        Assert.IsFalse(float.IsInfinity(exp[i]));
-                    }
-
-                    var dico = new Dictionary<Tuple<bool, int>, TimeSpan>();
-
-                    foreach (var each in new[] { false, true })
-                    {
-                        foreach (int th in new int[] { 2, 0, 1, 3 })
-                        {
-                            var engine = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: each, conc: th);
-                            var sw = new Stopwatch();
-                            sw.Start();
-                            for (int i = 0; i < exp.Length; ++i)
-                            {
-                                feat[0] = i;
-                                var res = engine.Predict(feat);
-                                Assert.AreEqual(exp[i], res);
-                            }
-                            sw.Stop();
-                            dico[new Tuple<bool, int>(each, th)] = sw.Elapsed;
-                        }
-                    }
-                    Assert.AreEqual(dico.Count, 8);
+                    feat[0] = i;
+                    exp[i] = engine0.Predict(feat);
+                    Assert.IsFalse(float.IsNaN(exp[i]));
+                    Assert.IsFalse(float.IsInfinity(exp[i]));
                 }
+
+                var dico = new Dictionary<Tuple<int, bool, int>, double>();
+
+                foreach (var each in new[] { false, true })
+                {
+                    foreach (int th in new int[] { 2, 0, 1, 3 })
+                    {
+                        var engine = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: each, conc: th);
+                        var sw = new Stopwatch();
+                        sw.Start();
+                        for (int i = 0; i < exp.Length; ++i)
+                        {
+                            feat[0] = i;
+                            var res = engine.Predict(feat);
+                            Assert.AreEqual(exp[i], res);
+                        }
+                        sw.Stop();
+                        dico[new Tuple<int, bool, int>(exp.Length, each, th)] = sw.Elapsed.TotalSeconds;
+                    }
+                }
+                Assert.AreEqual(dico.Count, 8);
+                var df = DataFrameIO.Convert(dico, "N", "getterEachTime", "number of threads", "time(s)");
+                var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+                var filename = FileHelper.GetOutputFile("benchmark_ValueMapperPredictionEngineMultiThread.txt", methodName);
+                df.ToCsv(filename);
             }
         }
 
@@ -119,7 +120,7 @@ namespace TestMachineLearningExt
             }
         }
 
-        private TimeSpan _MeasureTime(int conc, int engine, IDataScorerTransform scorer)
+        private List<Tuple<int, TimeSpan, int>> _MeasureTime(int conc, bool getterEachTime, string engine, IDataScorerTransform scorer)
         {
             var args = new TextLoader.Arguments()
             {
@@ -133,6 +134,7 @@ namespace TestMachineLearningExt
             };
 
             var testFilename = FileHelper.GetTestFile("wikipedia-detox-250-line-test.tsv");
+            var times = new List<Tuple<int, TimeSpan, int>>();
 
             using (var env = EnvHelper.NewTestEnvironment(seed: 1, conc: conc))
             {
@@ -141,49 +143,69 @@ namespace TestMachineLearningExt
                 var testLoader = TextLoader.ReadFile(env, args, new MultiFileSource(testFilename));
                 var testData = testLoader.AsEnumerable<SentimentData>(env, false);
 
-                if (engine == 1)
+#if(DEBUG)
+                int N = 1;
+#else
+                int N = getterEachTime ? 1 : 100;
+#endif
+
+                if (engine == "mlnet")
                 {
                     var model = env.CreatePredictionEngine<SentimentData, SentimentPrediction>(scorer);
                     var sw = new Stopwatch();
-                    sw.Start();
-#if(DEBUG)
-                    int N = 1;
-#else
-                    int N = 100;
-#endif
-                    for (int i = 0; i < N; ++i)
-                        foreach (var input in testData)
-                            model.Predict(input);
-                    sw.Stop();
-                    return sw.Elapsed;
+                    for (int call = 1; call <= 3; ++call)
+                    {
+                        if (getterEachTime && call >= 2)
+                            break;
+                        sw.Reset();
+                        sw.Start();
+                        for (int i = 0; i < N; ++i)
+                            foreach (var input in testData)
+                                model.Predict(input);
+                        sw.Stop();
+                        times.Add(new Tuple<int, TimeSpan, int>(N, sw.Elapsed, call));
+                    }
                 }
-                else if (engine == 2)
+                else if (engine == "scikit")
                 {
-                    /*
-                    var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer);
+                    var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, getterEachTime: getterEachTime, conc: conc);
                     var sw = new Stopwatch();
-                    sw.Start();
-                    for (int i = 0; i < 100; ++i)
-                        foreach (var input in testData)
-                            model.Predict(input);
-                    sw.Stop();
-                    return sw.Elapsed;
-                    */
+                    for (int call = 1; call <= 3; ++call)
+                    {
+                        if (getterEachTime && call >= 2)
+                            break;
+                        sw.Reset();
+                        sw.Start();
+                        for (int i = 0; i < N; ++i)
+                            foreach (var input in testData)
+                                model.Predict(input);
+                        sw.Stop();
+                        times.Add(new Tuple<int, TimeSpan, int>(N, sw.Elapsed, call));
+                    }
                 }
+                else
+                    throw new NotImplementedException($"Unknown engine '{engine}'.");
             }
-            throw new NotImplementedException();
+            return times;
         }
 
         [TestMethod]
         public void TestScikitAPI_EngineSimpleTrainAndPredict()
         {
+            var dico = new Dictionary<Tuple<int, string, bool, int, int>, double>();
             var scorer = _TrainSentiment();
-            var time1 = new TimeSpan[4];
-            var time2 = new TimeSpan[4];
-            for (int i = 1; i <= 4; ++i)
-            {
-                time1[i - 1] = _MeasureTime(i, 1, scorer);
-            }
+            foreach (var each in new[] { false, true })
+                for (int i = 1; i <= 4; ++i)
+                    foreach (var engine in new[] { "mlnet", "scikit" })
+                    {
+                        foreach (var res in _MeasureTime(i, each, engine, scorer))
+                            dico[new Tuple<int, string, bool, int, int>(res.Item1, engine, each, i, res.Item3)] = res.Item2.TotalSeconds;
+                    }
+            var df = DataFrameIO.Convert(dico, "N", "engine", "getterEachTime", "number of threads", "call", "time(s)");
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var filename = FileHelper.GetOutputFile("benchmark_ValueMapperPredictionEngineMultiThread.txt", methodName);
+            df.ToCsv(filename);
+            Assert.AreEqual(dico.Count, 32);
         }
     }
 }

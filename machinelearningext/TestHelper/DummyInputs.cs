@@ -28,7 +28,7 @@ namespace Scikit.ML.TestHelper
         }
     }
 
-    public class InputOutputU: IClassWithGetter<InputOutputU>, IClassWithSetter<InputOutputU>
+    public class InputOutputU : IClassWithGetter<InputOutputU>, IClassWithSetter<InputOutputU>
     {
         [VectorType(2)]
         public float[] X;
@@ -36,7 +36,7 @@ namespace Scikit.ML.TestHelper
 
         public Delegate GetGetter(int col)
         {
-            switch(col)
+            switch (col)
             {
                 case 0:
                     {
@@ -154,11 +154,30 @@ namespace Scikit.ML.TestHelper
         }
     }
 
-    public class SentimentData
+    public class SentimentData : IClassWithGetter<SentimentData>
     {
         [ColumnName("Label")]
         public bool Sentiment;
         public string SentimentText;
+
+        public Delegate GetGetter(int col)
+        {
+            switch (col)
+            {
+                case 0:
+                    {
+                        ValueGetterInstance<SentimentData, float> dele = (ref SentimentData self, ref float x) => { x = self.Sentiment ? 1f : 0f; };
+                        return dele;
+                    }
+                case 1:
+                    {
+                        ValueGetterInstance<SentimentData, string> dele = (ref SentimentData self, ref string x) => { x = self.SentimentText; };
+                        return dele;
+                    }
+                default:
+                    throw new Exception($"No available column for index {col}.");
+            }
+        }
     }
 
     public class SentimentPrediction

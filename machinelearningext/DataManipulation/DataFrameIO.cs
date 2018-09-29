@@ -425,5 +425,170 @@ namespace Scikit.ML.DataManipulation
         }
 
         #endregion
+
+        #region data to dataframe
+
+        /// <summary>
+        /// Adds one column into a dataframe.
+        /// </summary>
+        public static void AddColumn<ValueType>(DataFrame df, string name, ValueType[] values)
+        {
+            if (typeof(ValueType) == typeof(float))
+                df.AddColumn(name, values as float[]);
+            else if (typeof(ValueType) == typeof(double))
+                df.AddColumn(name, values as double[]);
+            else if (typeof(ValueType) == typeof(int))
+                df.AddColumn(name, values as int[]);
+            else if (typeof(ValueType) == typeof(uint))
+                df.AddColumn(name, values as uint[]);
+            else if (typeof(ValueType) == typeof(string))
+                df.AddColumn(name, values as string[]);
+            else if (typeof(ValueType) == typeof(bool))
+                df.AddColumn(name, values as bool[]);
+            else
+                throw Contracts.ExceptNotImpl($"DataFrame do not support type {typeof(ValueType)}.");
+        }
+
+        /// <summary>
+        /// Converts a dictionary into a dataframe with two columns,
+        /// one for the keys (needs ToString()), one for the values.
+        /// Data is sorted by key.
+        /// </summary>
+        public static DataFrame Convert<KeyType, ValueType>(Dictionary<KeyType, ValueType> data,
+                                                            string columnKey = "key", string columnValue = "value")
+        {
+            var keys = new List<string>();
+            var values = new List<ValueType>();
+            foreach (var pair in data.OrderBy(c => c.Key))
+            {
+                keys.Add(pair.Key.ToString());
+                values.Add(pair.Value);
+            }
+
+            var df = new DataFrame();
+            df.AddColumn(columnKey, keys.ToArray());
+            AddColumn(df, columnValue, values.ToArray());
+            return df;
+        }
+
+        /// <summary>
+        /// Converts a dictionary into a dataframe with two columns,
+        /// one for the keys (needs ToString()), one for the values.
+        /// Data is sorted by key.
+        /// </summary>
+        public static DataFrame Convert<KeyType1, KeyType2, ValueType>(Dictionary<Tuple<KeyType1, KeyType2>, ValueType> data,
+                                                                       string columnKey1 = "key1", string columnKey2 = "key2", string columnValue = "value")
+        {
+            var keys1 = new List<KeyType1>();
+            var keys2 = new List<KeyType2>();
+            var values = new List<ValueType>();
+            foreach (var pair in data.OrderBy(c => c.Key))
+            {
+                keys1.Add(pair.Key.Item1);
+                keys2.Add(pair.Key.Item2);
+                values.Add(pair.Value);
+            }
+
+            var df = new DataFrame();
+            AddColumn(df, columnKey1, keys1.ToArray());
+            AddColumn(df, columnKey2, keys2.ToArray());
+            AddColumn(df, columnValue, values.ToArray());
+            return df;
+        }
+
+        /// <summary>
+        /// Converts a dictionary into a dataframe with two columns,
+        /// one for the keys (needs ToString()), one for the values.
+        /// Data is sorted by key.
+        /// </summary>
+        public static DataFrame Convert<KeyType1, KeyType2, KeyType3, ValueType>(Dictionary<Tuple<KeyType1, KeyType2, KeyType3>, ValueType> data,
+                                                             string columnKey1 = "key1", string columnKey2 = "key2", string columnKey3 = "key3", string columnValue = "value")
+        {
+            var keys1 = new List<KeyType1>();
+            var keys2 = new List<KeyType2>();
+            var keys3 = new List<KeyType3>();
+            var values = new List<ValueType>();
+            foreach (var pair in data.OrderBy(c => c.Key))
+            {
+                keys1.Add(pair.Key.Item1);
+                keys2.Add(pair.Key.Item2);
+                keys3.Add(pair.Key.Item3);
+                values.Add(pair.Value);
+            }
+
+            var df = new DataFrame();
+            AddColumn(df, columnKey1, keys1.ToArray());
+            AddColumn(df, columnKey2, keys2.ToArray());
+            AddColumn(df, columnKey3, keys3.ToArray());
+            AddColumn(df, columnValue, values.ToArray());
+            return df;
+        }
+
+        /// <summary>
+        /// Converts a dictionary into a dataframe with two columns,
+        /// one for the keys (needs ToString()), one for the values.
+        /// Data is sorted by key.
+        /// </summary>
+        public static DataFrame Convert<KeyType1, KeyType2, KeyType3, KeyType4, ValueType>(Dictionary<Tuple<KeyType1, KeyType2, KeyType3, KeyType4>, ValueType> data,
+                                                             string columnKey1 = "key1", string columnKey2 = "key2", string columnKey3 = "key3", string columnKey4 = "key4", string columnValue = "value")
+        {
+            var keys1 = new List<KeyType1>();
+            var keys2 = new List<KeyType2>();
+            var keys3 = new List<KeyType3>();
+            var keys4 = new List<KeyType4>();
+            var values = new List<ValueType>();
+            foreach (var pair in data.OrderBy(c => c.Key))
+            {
+                keys1.Add(pair.Key.Item1);
+                keys2.Add(pair.Key.Item2);
+                keys3.Add(pair.Key.Item3);
+                keys4.Add(pair.Key.Item4);
+                values.Add(pair.Value);
+            }
+
+            var df = new DataFrame();
+            AddColumn(df, columnKey1, keys1.ToArray());
+            AddColumn(df, columnKey2, keys2.ToArray());
+            AddColumn(df, columnKey3, keys3.ToArray());
+            AddColumn(df, columnKey4, keys4.ToArray());
+            AddColumn(df, columnValue, values.ToArray());
+            return df;
+        }
+
+        /// <summary>
+        /// Converts a dictionary into a dataframe with two columns,
+        /// one for the keys (needs ToString()), one for the values.
+        /// Data is sorted by key.
+        /// </summary>
+        public static DataFrame Convert<KeyType1, KeyType2, KeyType3, KeyType4, KeyType5, ValueType>(Dictionary<Tuple<KeyType1, KeyType2, KeyType3, KeyType4, KeyType5>, ValueType> data,
+                                                             string columnKey1 = "key1", string columnKey2 = "key2", string columnKey3 = "key3", string columnKey4 = "key4", string columnKey5 = "key5", string columnValue = "value")
+        {
+            var keys1 = new List<KeyType1>();
+            var keys2 = new List<KeyType2>();
+            var keys3 = new List<KeyType3>();
+            var keys4 = new List<KeyType4>();
+            var keys5 = new List<KeyType5>();
+            var values = new List<ValueType>();
+            foreach (var pair in data.OrderBy(c => c.Key))
+            {
+                keys1.Add(pair.Key.Item1);
+                keys2.Add(pair.Key.Item2);
+                keys3.Add(pair.Key.Item3);
+                keys4.Add(pair.Key.Item4);
+                keys5.Add(pair.Key.Item5);
+                values.Add(pair.Value);
+            }
+
+            var df = new DataFrame();
+            AddColumn(df, columnKey1, keys1.ToArray());
+            AddColumn(df, columnKey2, keys2.ToArray());
+            AddColumn(df, columnKey3, keys3.ToArray());
+            AddColumn(df, columnKey4, keys4.ToArray());
+            AddColumn(df, columnKey5, keys5.ToArray());
+            AddColumn(df, columnValue, values.ToArray());
+            return df;
+        }
+
+        #endregion
     }
 }
