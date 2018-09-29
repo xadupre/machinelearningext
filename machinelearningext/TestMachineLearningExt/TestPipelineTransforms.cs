@@ -111,7 +111,7 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = FileHelper.GetTestFile("iris.txt");
             var outPass = FileHelper.GetOutputFile("data.idv", methodName);
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -122,7 +122,7 @@ namespace TestMachineLearningExt
             learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
             Assert.IsTrue(File.Exists(outPass));
         }
@@ -165,7 +165,7 @@ namespace TestMachineLearningExt
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -176,7 +176,7 @@ namespace TestMachineLearningExt
             learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
         }
 

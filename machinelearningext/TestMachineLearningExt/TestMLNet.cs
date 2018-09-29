@@ -23,13 +23,13 @@ namespace TestMachineLearningExt
             {
                 var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 using (var pipe = new ScikitPipeline(new[] { "Concat{col=Feature:Sepal_length,Sepal_width}",
                                                              "TreeFeat{tr=ft{iter=2} lab=Label feat=Feature}"}))
                 {
                     pipe.Train(df);
                     var scorer = pipe.Predict(df);
-                    var dfout = DataFrame.ReadView(scorer);
+                    var dfout = DataFrameIO.ReadView(scorer);
                     Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 31));
                     var outfile = FileHelper.GetOutputFile("iris_path.txt", methodName);
                     dfout.ToCsv(outfile);
@@ -45,7 +45,7 @@ namespace TestMachineLearningExt
             {
                 var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
                 var learningPipeline = new GenericLearningPipeline();
                 learningPipeline.Add(importData);
@@ -53,7 +53,7 @@ namespace TestMachineLearningExt
                 learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor() { MaxIterations = 2 });
                 var predictor = learningPipeline.Train();
                 var predictions = predictor.Predict(df);
-                var dfout = DataFrame.ReadView(predictions);
+                var dfout = DataFrameIO.ReadView(predictions);
                 Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
                 var outfile = FileHelper.GetOutputFile("iris_path.txt", methodName);
                 dfout.ToCsv(outfile);

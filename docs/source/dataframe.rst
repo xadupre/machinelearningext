@@ -17,7 +17,7 @@ on columns:
 .. code-block:: CSharp
 
     var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-    var df = DataFrame.ReadStr(text);
+    var df = DataFrameIO.ReadStr(text);
     df["AA+BB"] = df["AA"] + df["BB"];
     Console.WriteLine(df.ToString());
 

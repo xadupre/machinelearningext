@@ -31,7 +31,7 @@ namespace TestMachineLearningExt
         public void TestReadCsvSimple()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t');
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t');
             Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
             var sch = df.Schema;
             Assert.AreEqual(sch.GetColumnName(0), "Label");
@@ -63,8 +63,8 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var loader = DataFrame.ReadCsvToTextLoader(iris, sep: '\t', host: env.Register("TextLoader"));
-                var df = DataFrame.ReadView(loader);
+                var loader = DataFrameIO.ReadCsvToTextLoader(iris, sep: '\t', host: env.Register("TextLoader"));
+                var df = DataFrameIO.ReadView(loader);
                 Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
                 var sch = df.Schema;
                 Assert.AreEqual(sch.GetColumnName(0), "Label");
@@ -81,9 +81,9 @@ namespace TestMachineLearningExt
         public void TestReadViewEqual()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var loader = DataFrame.ReadCsvToTextLoader(iris, sep: '\t');
-            var df1 = DataFrame.ReadCsv(iris, sep: '\t');
-            var df2 = DataFrame.ReadView(loader);
+            var loader = DataFrameIO.ReadCsvToTextLoader(iris, sep: '\t');
+            var df1 = DataFrameIO.ReadCsv(iris, sep: '\t');
+            var df2 = DataFrameIO.ReadView(loader);
             Assert.IsTrue(df1 == df2);
             df2.iloc[1, 0] = (int)10;
             Assert.IsTrue(df1 != df2);
@@ -93,7 +93,7 @@ namespace TestMachineLearningExt
         public void TestReadTextLoaderSimple()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var loader = DataFrame.ReadCsvToTextLoader(iris, sep: '\t');
+            var loader = DataFrameIO.ReadCsvToTextLoader(iris, sep: '\t');
             var sch = loader.Schema;
             Assert.AreEqual(sch.ColumnCount, 5);
             Assert.AreEqual(sch.GetColumnName(0), "Label");
@@ -105,7 +105,7 @@ namespace TestMachineLearningExt
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t');
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t');
             var outfile = FileHelper.GetOutputFile("iris_copy.txt", methodName);
             df.ToCsv(outfile);
             Assert.IsTrue(File.Exists(outfile));
@@ -115,9 +115,9 @@ namespace TestMachineLearningExt
         public void TestReadStr()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df1 = DataFrame.ReadCsv(iris, sep: '\t');
+            var df1 = DataFrameIO.ReadCsv(iris, sep: '\t');
             var content = File.ReadAllText(iris);
-            var df2 = DataFrame.ReadStr(content, sep: '\t');
+            var df2 = DataFrameIO.ReadStr(content, sep: '\t');
             Assert.IsTrue(df1 == df2);
         }
 
@@ -125,7 +125,7 @@ namespace TestMachineLearningExt
         public void TestReadStrIndex()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text, index: true);
+            var df = DataFrameIO.ReadStr(text, index: true);
             var tos = df.ToString();
             var exp = "index,AA,BB,CC\n0,0,1,text\n1,1,1.1,text2";
             Assert.AreEqual(exp, tos);
@@ -141,7 +141,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var conc = env.CreateTransform("Concat{col=Features:Sepal_length,Sepal_width}", df);
                 var trainingData = env.CreateExamples(conc, "Features", label: "Label");
                 var trainer = env.CreateTrainer("ova{p=ap}");
@@ -149,7 +149,7 @@ namespace TestMachineLearningExt
                 {
                     var pred = trainer.Train(env, ch, trainingData);
                     var scorer = ScoreUtils.GetScorer(pred, trainingData, env, null);
-                    var predictions = DataFrame.ReadView(scorer);
+                    var predictions = DataFrameIO.ReadView(scorer);
                     var v = predictions.iloc[0, 7];
                     Assert.AreEqual(v, (uint)1);
                     Assert.AreEqual(predictions.Schema.GetColumnName(5), "Features.0");
@@ -167,7 +167,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
                 var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
                 var trainer = env.CreateTrainer("lr");
@@ -175,7 +175,7 @@ namespace TestMachineLearningExt
                 {
                     var pred = trainer.Train(env, ch, trainingData);
                     var scorer = PredictorHelper.Predict(env, pred, trainingData);
-                    var predictions = DataFrame.ReadView(scorer);
+                    var predictions = DataFrameIO.ReadView(scorer);
                     var v = predictions.iloc[0, 7];
                     Assert.AreEqual(v, false);
                     Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
@@ -193,7 +193,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
                 var trainingData = env.CreateExamples(conc, "Feature", label: "Label");
                 ITrainerExtended trainer = env.CreateTrainer("lr");
@@ -201,7 +201,7 @@ namespace TestMachineLearningExt
                 {
                     var pred = trainer.Train(env, ch, trainingData);
                     var viewpred = PredictorHelper.Predict(env, pred, trainingData);
-                    var predictions = DataFrame.ReadView(viewpred);
+                    var predictions = DataFrameIO.ReadView(viewpred);
                     var v = predictions.iloc[0, 7];
                     Assert.AreEqual(v, false);
                     Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
@@ -217,7 +217,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameScoringMultiEntryPoints2()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -226,7 +226,7 @@ namespace TestMachineLearningExt
             learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
         }
 
@@ -238,7 +238,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOperation()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -268,7 +268,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpMult()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -288,7 +288,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpMinus()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -308,7 +308,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpEqual()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -336,7 +336,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpDiv()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -356,7 +356,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpSup()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -371,7 +371,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpSupEqual()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -386,7 +386,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpInf()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -401,7 +401,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpInfEqual()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -416,7 +416,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpMinusUni()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -431,7 +431,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpNotUni()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -446,7 +446,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpPlusEqual()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -461,7 +461,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpAnd()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -476,7 +476,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOpOr()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -495,7 +495,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOperationSet()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -507,7 +507,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOperationIEnumerable()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             Assert.AreEqual(text, tos);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
@@ -521,7 +521,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameOperationCopy()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var tos = df.ToString();
             var copy = df.Copy();
             var tos2 = copy.ToString();
@@ -535,7 +535,7 @@ namespace TestMachineLearningExt
         public void TestDataViewFrame()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n2,2.1,text3";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             var view = df[new int[] { 0, 2 }, new int[] { 0, 2 }];
             var tv = view.ToString();
             Assert.AreEqual("AA,CC\n0,text\n2,text3", tv);
@@ -571,7 +571,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameColumnApply()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
 
             df["fAA"] = df["AA"].Apply((ref int vin, ref float vout) => { vout = (float)vin; });
@@ -584,7 +584,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameColumnDrop()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
 
             var view = df.Drop(new[] { "AA" });
@@ -597,7 +597,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameSortColumn()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
 
             var order = df["AA"].Sort(false, false);
@@ -615,7 +615,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameEnumerateItems()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
 
             var el1 = df.EnumerateItems<int>(new[] { "AA" }).Select(c => c.ToTuple()).ToArray();
@@ -648,7 +648,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameSort()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
 
             df.TSort<int, float>(new[] { 0, 1 });
@@ -672,7 +672,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameSortUnTyped()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
 
             df.Sort(new[] { "AA" });
@@ -685,7 +685,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameSort2Untyped()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
 
             df.Sort(new[] { "AA", "BB" });
@@ -709,7 +709,7 @@ namespace TestMachineLearningExt
         public void TestDataFrameSortView()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";
-            var df = DataFrame.ReadStr(text);
+            var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(3, 3));
             var view = df[new int[] { 1, 2 }];
             Assert.AreEqual(view.Length, 2);
@@ -1287,7 +1287,7 @@ namespace TestMachineLearningExt
                 {
                     var predictor = pipe.Train(data);
                     var predictions = pipe.Transform(data);
-                    var df = DataFrame.ReadView(predictions, keepVectors: true);
+                    var df = DataFrameIO.ReadView(predictions, keepVectors: true);
                     Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
                     var dfs = df.ToString();
                     var dfs2 = dfs.Replace("\n", ";");

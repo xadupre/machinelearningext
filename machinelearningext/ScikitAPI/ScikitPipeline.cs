@@ -192,7 +192,7 @@ namespace Scikit.ML.ScikitAPI
                 // We predict one to make sure everything works fine.
                 using (var ch = _env.Start("Compute one prediction."))
                 {
-                    var df = DataFrame.ReadView(trans, 1, keepVectors: true);
+                    var df = DataFrameIO.ReadView(trans, 1, keepVectors: true);
                     if (df.Length == 0)
                         throw _env.ExceptEmpty("Something went wrong. The pipeline does not produce any output.");
                     ch.Done();

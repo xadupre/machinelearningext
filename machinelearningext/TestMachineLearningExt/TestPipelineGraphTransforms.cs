@@ -220,7 +220,7 @@ namespace TestMachineLearningExt
                 {
                     pipe.Train(loader);
                     var pred = pipe.Predict(loader);
-                    var df = DataFrame.ReadView(pred);
+                    var df = DataFrameIO.ReadView(pred);
                     Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 11));
                     var dfs = df.Head().ToString();
                     Assert.IsTrue(dfs.StartsWith("Label,Slength,Swidth,Plength,Pwidth,Feature.0,Feature.1,PredictedLabel,Score.0,Score.1,Score.2"));
@@ -247,7 +247,7 @@ namespace TestMachineLearningExt
                 {
                     pipe.Train(loader);
                     var pred = pipe.Predict(loader);
-                    var df = DataFrame.ReadView(pred);
+                    var df = DataFrameIO.ReadView(pred);
                     Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 11));
                     var dfs = df.Head().ToString();
                     Assert.IsTrue(dfs.StartsWith("Label,Slength,Swidth,Plength,Pwidth,Feature.0,Feature.1,PredictedLabelAA,ScoreAA.0,ScoreAA.1,ScoreAA.2"));

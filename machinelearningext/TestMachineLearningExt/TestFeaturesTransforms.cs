@@ -159,15 +159,15 @@ namespace TestMachineLearningExt
         {
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
-                var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
+                var raw = DataFrameIO.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
                 raw.SetShuffle(false);
                 var loader = host.CreateTransform("concat{col=X:A,B}", raw);
                 var data = host.CreateTransform("Poly{col=X}", loader);
-                var res = DataFrame.ReadView(data);
+                var res = DataFrameIO.ReadView(data);
                 var txt = res.ToString();
                 Assert.IsFalse(string.IsNullOrEmpty(txt));
                 var exp = "A,B,X.0,X.1,X.2,X.3,X.4\n1.0,2.0,1.0,2.0,1.0,2.0,4.0\n2.0,3.0,2.0,3.0,4.0,6.0,9.0\n10.0,11.0,10.0,11.0,100.0,110.0,121.0";
-                var dfexp = DataFrame.ReadStr(exp);
+                var dfexp = DataFrameIO.ReadStr(exp);
                 Assert.AreEqual(0, dfexp.AlmostEquals(res, exc: true, printDf: true));
             }
         }
@@ -176,7 +176,7 @@ namespace TestMachineLearningExt
         public void TestEP_PolynomialTransform()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -186,7 +186,7 @@ namespace TestMachineLearningExt
             learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(new Tuple<int, int>(150, 11), dfout.Shape);
         }
 
@@ -338,16 +338,16 @@ namespace TestMachineLearningExt
         {
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
-                var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
+                var raw = DataFrameIO.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
                 raw.SetShuffle(false);
                 var loader = host.CreateTransform("concat{col=X:A,B}", raw);
                 var data = host.CreateTransform("Scaler{col=X}", loader);
                 (data as ITrainableTransform).Estimate();
-                var res = DataFrame.ReadView(data);
+                var res = DataFrameIO.ReadView(data);
                 var txt = res.ToString();
                 Assert.IsNotNull(txt);
                 var exp = "A,B,X.0,X.1\n1.0,2.0,-0.827605963,-0.827605963\n2.0,3.0,-0.5793242,-0.5793242\n10.0,11.0,1.40693,1.40693";
-                var dfexp = DataFrame.ReadStr(exp);
+                var dfexp = DataFrameIO.ReadStr(exp);
                 Assert.AreEqual(0, dfexp.AlmostEquals(res, exc: true, printDf: true));
             }
         }
@@ -357,15 +357,15 @@ namespace TestMachineLearningExt
         {
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
             {
-                var raw = DataFrame.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
+                var raw = DataFrameIO.ReadStr("A,B\n1.0,2.0\n2.0,3.0\n10.0,11.0");
                 raw.SetShuffle(false);
                 var loader = host.CreateTransform("concat{col=X:A,B}", raw);
                 var data = host.CreateTransform("Scaler{col=X scale=minMax}", loader);
                 (data as ITrainableTransform).Estimate();
-                var res = DataFrame.ReadView(data);
+                var res = DataFrameIO.ReadView(data);
                 var txt = res.ToString();
                 var exp = "A,B,X.0,X.1\n1.0,2.0,0.0,0.0\n2.0,3.0,0.11111111,0.11111111\n10.0,11.0,1.0,1.0";
-                var dfexp = DataFrame.ReadStr(exp);
+                var dfexp = DataFrameIO.ReadStr(exp);
                 Assert.AreEqual(0, dfexp.AlmostEquals(res, exc: true, printDf: true));
             }
         }
@@ -374,7 +374,7 @@ namespace TestMachineLearningExt
         public void TestEP_ScalerTransform()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
@@ -384,7 +384,7 @@ namespace TestMachineLearningExt
             learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
         }
 

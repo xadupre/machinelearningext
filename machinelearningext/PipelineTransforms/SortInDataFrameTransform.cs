@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Runtime;
+using Scikit.ML.DataManipulation;
 
 // This indicates where to find objects in ML.net assemblies.
 using ArgumentAttribute = Microsoft.ML.Runtime.CommandLine.ArgumentAttribute;
@@ -21,7 +22,6 @@ using ModelLoadContext = Microsoft.ML.Runtime.Model.ModelLoadContext;
 using ModelSaveContext = Microsoft.ML.Runtime.Model.ModelSaveContext;
 using VersionInfo = Microsoft.ML.Runtime.Model.VersionInfo;
 
-using DataFrame = Scikit.ML.DataManipulation.DataFrame;
 using DvText = Scikit.ML.PipelineHelper.DvText;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
@@ -339,7 +339,7 @@ namespace Scikit.ML.PipelineTransforms
                     if (!(_autoView is null))
                         return;
 
-                    _autoView = DataFrame.ReadView(_source, keepVectors: true, numThreads: _numThreads);
+                    _autoView = DataFrameIO.ReadView(_source, keepVectors: true, numThreads: _numThreads);
 
                     if (_sortColumn >= 0)
                     {

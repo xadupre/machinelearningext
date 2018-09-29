@@ -283,7 +283,7 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var output = FileHelper.GetOutputFile("bc-lr.zip", methodName);
             var name = FileHelper.GetOutputFile("bc.txt", methodName);
-            var df = DataFrame.ReadStr("Label,X1,X2,X3,X4,X5,X6,X7,X8,X9\n" +
+            var df = DataFrameIO.ReadStr("Label,X1,X2,X3,X4,X5,X6,X7,X8,X9\n" +
                                 "0,0.1,1.1,2.1,3.1,4.1,5.1,6.2,7.4,-5\n" +
                                 "1,1.1,1.1,2.1,3.1,4.1,5.1,6.2,7.4,-5\n" +
                                 "0,2.1,1.1,3.1,3.1,-4.1,5.1,6.2,7.4,-5\n" +
@@ -328,49 +328,6 @@ namespace TestMachineLearningExt
                         Assert.IsFalse(float.IsNaN(res));
                         Assert.IsFalse(float.IsInfinity(res));
                     }
-                }
-            }
-        }
-
-        [TestMethod]
-        public void TestValueMapperPredictionEngineMultiThread()
-        {
-            var name = FileHelper.GetTestFile("bc-lr.zip");
-
-            using (var env = EnvHelper.NewTestEnvironment())
-            {
-                using (var engine0 = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: true, conc: 1))
-                {
-                    var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
-                    var exp = new float[100];
-                    for (int i = 0; i < exp.Length; ++i)
-                    {
-                        feat[0] = i;
-                        exp[i] = engine0.Predict(feat);
-                        Assert.IsFalse(float.IsNaN(exp[i]));
-                        Assert.IsFalse(float.IsInfinity(exp[i]));
-                    }
-
-                    var dico = new Dictionary<Tuple<bool, int>, TimeSpan>();
-
-                    foreach (var each in new[] { false, true })
-                    {
-                        foreach (int th in new int[] { 2, 0, 1, 3 })
-                        {
-                            var engine = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: each, conc: th);
-                            var sw = new Stopwatch();
-                            sw.Start();
-                            for (int i = 0; i < exp.Length; ++i)
-                            {
-                                feat[0] = i;
-                                var res = engine.Predict(feat);
-                                Assert.AreEqual(exp[i], res);
-                            }
-                            sw.Stop();
-                            dico[new Tuple<bool, int>(each, th)] = sw.Elapsed;
-                        }
-                    }
-                    Assert.AreEqual(dico.Count, 8);
                 }
             }
         }

@@ -120,7 +120,7 @@ namespace TestMachineLearningExt
         public void TestEP_Q_KMeansEntryPointAPIWithDataFrame()
         {
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
-            var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = Scikit.ML.DataManipulation.DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new Scikit.ML.PipelineHelper.GenericLearningPipeline(conc: 1);
@@ -129,7 +129,7 @@ namespace TestMachineLearningExt
             learningPipeline.Add(new Legacy.Trainers.KMeansPlusPlusClusterer());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(predictions);
+            var dfout = Scikit.ML.DataManipulation.DataFrameIO.ReadView(predictions);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
         }
 
@@ -142,7 +142,7 @@ namespace TestMachineLearningExt
             var env = new ConsoleEnvironment(conc: 1);
             ComponentHelper.AddStandardComponents(env);
 
-            var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = Scikit.ML.DataManipulation.DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
             var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
             var roleMap = env.CreateExamples(conc, "Feature", label: "Label");
             var trainer = CreateTrainer(env, "km");
@@ -167,7 +167,7 @@ namespace TestMachineLearningExt
 #pragma warning disable CS0618
             var scorer = ScoreUtils.GetScorer(pred.GetPredictorObject() as IPredictor, roleMap, env, null);
 #pragma warning restore CS0618
-            var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(scorer);
+            var dfout = Scikit.ML.DataManipulation.DataFrameIO.ReadView(scorer);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
         }
     }

@@ -58,7 +58,7 @@ namespace DocHelperMlExt
                         throw new Exception("Test failed: no predictor.");
                     var data2 = host.CreateStreamingDataView(inputs2);
                     var predictions = pipe.Predict(data2);
-                    var df = DataFrame.ReadView(predictions);
+                    var df = DataFrameIO.ReadView(predictions);
                     if (df.Shape.Item1 != 4 || df.Shape.Item2 != 12)
                         throw new Exception("Test failed: prediction failed.");
                     var dfs = df.ToString();

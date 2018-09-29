@@ -47,9 +47,9 @@ namespace TestMachineLearningExt
                 {
                     pipe.Train(data, feature: "xt", label: "X");
                     var view = pipe.Predict(data);
-                    var df = DataFrame.ReadView(view).Head(4).Copy();
+                    var df = DataFrameIO.ReadView(view).Head(4).Copy();
                     df["diff"] = df["Score"] - df["X"];
-                    var exp = DataFrame.ReadStr("null\n0\n0\n0\n0");
+                    var exp = DataFrameIO.ReadStr("null\n0\n0\n0\n0");
                     df["diff"].AssertAlmostEqual(exp["null"].AsType(NumberType.R4), precision: 1e-1);
                 }
             }
