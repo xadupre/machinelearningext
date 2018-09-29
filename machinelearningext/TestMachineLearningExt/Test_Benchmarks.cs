@@ -120,7 +120,7 @@ namespace TestMachineLearningExt
             }
         }
 
-        private List<Tuple<int, TimeSpan, int>> _MeasureTime(int conc, bool getterEachTime, string engine, IDataScorerTransform scorer)
+        private List<Tuple<int, TimeSpan, int, float[]>> _MeasureTime(int conc, bool getterEachTime, string engine, IDataScorerTransform scorer)
         {
             var args = new TextLoader.Arguments()
             {
@@ -134,14 +134,15 @@ namespace TestMachineLearningExt
             };
 
             var testFilename = FileHelper.GetTestFile("wikipedia-detox-250-line-test.tsv");
-            var times = new List<Tuple<int, TimeSpan, int>>();
+            var times = new List<Tuple<int, TimeSpan, int, float[]>>();
 
             using (var env = EnvHelper.NewTestEnvironment(seed: 1, conc: conc))
             {
 
                 // Take a couple examples out of the test data and run predictions on top.
                 var testLoader = TextLoader.ReadFile(env, args, new MultiFileSource(testFilename));
-                var testData = testLoader.AsEnumerable<SentimentData>(env, false);
+                var cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
+                var testData = cache.AsEnumerable<SentimentData>(env, false);
 
 #if(DEBUG)
                 int N = 1;
@@ -158,12 +159,13 @@ namespace TestMachineLearningExt
                         if (getterEachTime && call >= 2)
                             break;
                         sw.Reset();
+                        var pred = new List<float>();
                         sw.Start();
                         for (int i = 0; i < N; ++i)
                             foreach (var input in testData)
-                                model.Predict(input);
+                                pred.Add(model.Predict(input).Score);
                         sw.Stop();
-                        times.Add(new Tuple<int, TimeSpan, int>(N, sw.Elapsed, call));
+                        times.Add(new Tuple<int, TimeSpan, int, float[]>(N, sw.Elapsed, call, pred.ToArray()));
                     }
                 }
                 else if (engine == "scikit")
@@ -174,13 +176,14 @@ namespace TestMachineLearningExt
                     {
                         if (getterEachTime && call >= 2)
                             break;
+                        var pred = new List<float>();
                         sw.Reset();
                         sw.Start();
                         for (int i = 0; i < N; ++i)
                             foreach (var input in testData)
-                                model.Predict(input);
+                                pred.Add(model.Predict(input));
                         sw.Stop();
-                        times.Add(new Tuple<int, TimeSpan, int>(N, sw.Elapsed, call));
+                        times.Add(new Tuple<int, TimeSpan, int, float[]>(N, sw.Elapsed, call, pred.ToArray()));
                     }
                 }
                 else
@@ -195,12 +198,22 @@ namespace TestMachineLearningExt
             var dico = new Dictionary<Tuple<int, string, bool, int, int>, double>();
             var scorer = _TrainSentiment();
             foreach (var each in new[] { false, true })
+            {
                 for (int i = 1; i <= 4; ++i)
+                {
+                    var memo = new Dictionary<string, float[]>();
                     foreach (var engine in new[] { "mlnet", "scikit" })
                     {
                         foreach (var res in _MeasureTime(i, each, engine, scorer))
+                        {
                             dico[new Tuple<int, string, bool, int, int>(res.Item1, engine, each, i, res.Item3)] = res.Item2.TotalSeconds;
+                            if (res.Item3 == 1)
+                                memo[engine] = res.Item4;
+                        }
                     }
+                    Assert.AreEqual(memo["scikit"], memo["mlnet"]);
+                }
+            }
             var df = DataFrameIO.Convert(dico, "N", "engine", "getterEachTime", "number of threads", "call", "time(s)");
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var filename = FileHelper.GetOutputFile("benchmark_ValueMapperPredictionEngineMultiThread.txt", methodName);

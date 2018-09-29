@@ -41,7 +41,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PipelineGraphTraining", "Pi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Clustering", "Clustering\Clustering.csproj", "{E9EDEAE8-8657-46B4-AE14-69F502E26BD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocHelperMlExt", "DocHelperMlExt\DocHelperMlExt.csproj", "{36776123-F207-446B-BDAF-59AF1D7DF97A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocHelperMlExt", "DocHelperMlExt\DocHelperMlExt.csproj", "{36776123-F207-446B-BDAF-59AF1D7DF97A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProfileBenchmark", "TestProfileBenchmark\TestProfileBenchmark.csproj", "{B723EAA8-3EC4-46ED-BA17-F520E7729EA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +131,10 @@ Global
 		{36776123-F207-446B-BDAF-59AF1D7DF97A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36776123-F207-446B-BDAF-59AF1D7DF97A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36776123-F207-446B-BDAF-59AF1D7DF97A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B723EAA8-3EC4-46ED-BA17-F520E7729EA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B723EAA8-3EC4-46ED-BA17-F520E7729EA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B723EAA8-3EC4-46ED-BA17-F520E7729EA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B723EAA8-3EC4-46ED-BA17-F520E7729EA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
