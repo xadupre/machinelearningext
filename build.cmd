@@ -2,16 +2,22 @@
 
 @echo [build.cmd] build machinelearning
 cd machinelearning
+if "%1"=="ml" goto compileml:
 if exist bin\x64.Release goto mldeb:
+:compileml:
 cmd /C build.cmd -release
 :mldeb:
+if "%1"=="ml" goto compilemld:
 if exist bin\x64.Debug goto mlrel:
+:compilemld:
 cmd /C build.cmd -debug
 :mlrel:
 cd ..
 
+if "%1"=="ml" goto docopy:
 if not exist machinelearning\bin\x64.Debug goto end:
 
+:docopy:
 @echo [build.cmd] Publish Release
 if not exist machinelearning\dist\Release mkdir machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Release
