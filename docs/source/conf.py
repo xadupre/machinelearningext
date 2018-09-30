@@ -15,7 +15,7 @@ import csharpy
 project = 'Custom Extensions to ML.net'
 copyright = '2018'
 author = 'Xavier Dupré'
-version = '0.6.0'
+version = '0.7.0'
 release = version
 
 

@@ -4,5 +4,8 @@ _tests
 .vs
 dist
 build
-
 *.pyc
+machinelearningext/DocHelperMlExt/DocHelperMlExt.csproj.user
+machinelearningext/DocHelperMlExt/Properties/PublishProfiles
+docs/doctrees
+

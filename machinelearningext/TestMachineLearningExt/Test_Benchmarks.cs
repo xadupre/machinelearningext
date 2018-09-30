@@ -216,7 +216,7 @@ namespace TestMachineLearningExt
             {
                 foreach (var cache in new[] { false, true })
                 {
-                    for (int th = 1; th <= 2; ++th)
+                    for (int th = 1; th <= 3; ++th)
                     {
                         var memo = new Dictionary<string, float[]>();
                         foreach (var engine in new[] { "mlnet", "scikit" })

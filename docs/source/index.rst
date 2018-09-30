@@ -15,6 +15,7 @@ written in :epkg:`C#` and implemented by :epkg:`Microsoft`.
     introduction
     dataframe
     concepts
+    objects
 
 You can also navigate through the documentation
 with the :ref:`genindex` or the :ref:`search`.
