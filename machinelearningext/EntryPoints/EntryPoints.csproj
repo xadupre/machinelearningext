@@ -35,6 +35,9 @@
     <Reference Include="Microsoft.ML.Api">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ML.PipelineInference">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.PipelineInference.dll</HintPath>
+    </Reference>
   </ItemGroup>
   
 </Project>

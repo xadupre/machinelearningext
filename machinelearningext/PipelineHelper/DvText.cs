@@ -16,5 +16,7 @@ namespace Scikit.ML.PipelineHelper
         public override string ToString() { return str.IsEmpty ? string.Empty : str.ToString(); }
         public bool Equals(DvText other) { return ToString() == other.ToString(); }
         public int CompareTo(DvText other) { return ToString().CompareTo(other.ToString()); }
+        public void Set(ReadOnlyMemory<char> value) { str = value; }
+        public void Set(DvText value) { str = value.str; }
     }
 }

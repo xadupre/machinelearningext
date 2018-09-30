@@ -9,6 +9,8 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Learners;
 using Microsoft.ML.Runtime.TextAnalytics;
+using Scikit.ML.PipelineHelper;
+using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.DataManipulation;
@@ -120,7 +122,8 @@ namespace TestMachineLearningExt
             }
         }
 
-        private List<Tuple<int, TimeSpan, int, float[]>> _MeasureTime(int conc, bool getterEachTime, string engine, IDataScorerTransform scorer)
+        private List<Tuple<int, TimeSpan, int, float[]>> _MeasureTime(int conc,
+            bool getterEachTime, string engine, IDataScorerTransform scorer, bool cacheScikit)
         {
             var args = new TextLoader.Arguments()
             {
@@ -141,7 +144,11 @@ namespace TestMachineLearningExt
 
                 // Take a couple examples out of the test data and run predictions on top.
                 var testLoader = TextLoader.ReadFile(env, args, new MultiFileSource(testFilename));
-                var cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
+                IDataView cache;
+                if (cacheScikit)
+                    cache = new ExtendedCacheTransform(env, new ExtendedCacheTransform.Arguments(), testLoader);
+                else
+                    cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
                 var testData = cache.AsEnumerable<SentimentData>(env, false);
 
 #if(DEBUG)
@@ -170,7 +177,10 @@ namespace TestMachineLearningExt
                 }
                 else if (engine == "scikit")
                 {
+                    string allSchema = SchemaHelper.ToString(scorer.Schema);
+                    Assert.IsTrue(allSchema.Contains("PredictedLabel:Bool:4; Score:R4:5; Probability:R4:6"));
                     var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, getterEachTime: getterEachTime, conc: conc);
+                    var output = new ValueMapperPredictionEngine<SentimentData>.PredictionTypeForBinaryClassification();
                     var sw = new Stopwatch();
                     for (int call = 1; call <= 3; ++call)
                     {
@@ -180,8 +190,13 @@ namespace TestMachineLearningExt
                         sw.Reset();
                         sw.Start();
                         for (int i = 0; i < N; ++i)
+                        {
                             foreach (var input in testData)
-                                pred.Add(model.Predict(input));
+                            {
+                                model.Predict(input, ref output);
+                                pred.Add(output.Score);
+                            }
+                        }
                         sw.Stop();
                         times.Add(new Tuple<int, TimeSpan, int, float[]>(N, sw.Elapsed, call, pred.ToArray()));
                     }
@@ -195,26 +210,33 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestScikitAPI_EngineSimpleTrainAndPredict()
         {
-            var dico = new Dictionary<Tuple<int, string, bool, int, int>, double>();
+            var dico = new Dictionary<Tuple<int, string, bool, bool, int, int>, double>();
             var scorer = _TrainSentiment();
             foreach (var each in new[] { false, true })
             {
-                for (int i = 1; i <= 4; ++i)
+                foreach (var cache in new[] { false, true })
                 {
-                    var memo = new Dictionary<string, float[]>();
-                    foreach (var engine in new[] { "mlnet", "scikit" })
+                    for (int th = 1; th <= 2; ++th)
                     {
-                        foreach (var res in _MeasureTime(i, each, engine, scorer))
+                        var memo = new Dictionary<string, float[]>();
+                        foreach (var engine in new[] { "mlnet", "scikit" })
                         {
-                            dico[new Tuple<int, string, bool, int, int>(res.Item1, engine, each, i, res.Item3)] = res.Item2.TotalSeconds;
-                            if (res.Item3 == 1)
-                                memo[engine] = res.Item4;
+                            foreach (var res in _MeasureTime(th, each, engine, scorer, cache))
+                            {
+                                dico[new Tuple<int, string, bool, bool, int, int>(res.Item1, engine, each, cache, th, res.Item3)] = res.Item2.TotalSeconds;
+                                if (res.Item3 == 1)
+                                    memo[engine] = res.Item4;
+                            }
                         }
+                        var p1 = memo["mlnet"];
+                        var p2 = memo["scikit"];
+                        Assert.AreEqual(p1.Length, p2.Length);
+                        for (int ii = 0; ii < p1.Length; ++ii)
+                            Assert.AreEqual(p1[ii], p2[ii]);
                     }
-                    Assert.AreEqual(memo["scikit"], memo["mlnet"]);
                 }
             }
-            var df = DataFrameIO.Convert(dico, "N", "engine", "getterEachTime", "number of threads", "call", "time(s)");
+            var df = DataFrameIO.Convert(dico, "N", "engine", "getterEachTime", "cache", "number of threads", "call", "time(s)");
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var filename = FileHelper.GetOutputFile("benchmark_ValueMapperPredictionEngineMultiThread.txt", methodName);
             df.ToCsv(filename);

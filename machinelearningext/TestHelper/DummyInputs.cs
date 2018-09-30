@@ -28,6 +28,12 @@ namespace Scikit.ML.TestHelper
         }
     }
 
+    public class InputOutput2
+    {
+        [VectorType(2)]
+        public float[] X2;
+    }
+
     public class InputOutputU : IClassWithGetter<InputOutputU>, IClassWithSetter<InputOutputU>
     {
         [VectorType(2)]
@@ -166,12 +172,14 @@ namespace Scikit.ML.TestHelper
             {
                 case 0:
                     {
-                        ValueGetterInstance<SentimentData, float> dele = (ref SentimentData self, ref float x) => { x = self.Sentiment ? 1f : 0f; };
+                        ValueGetterInstance<SentimentData, float> dele = 
+                            (ref SentimentData self, ref float x) => { x = self.Sentiment ? 1f : 0f; };
                         return dele;
                     }
                 case 1:
                     {
-                        ValueGetterInstance<SentimentData, string> dele = (ref SentimentData self, ref string x) => { x = self.SentimentText; };
+                        ValueGetterInstance<SentimentData, ReadOnlyMemory<char>> dele = 
+                            (ref SentimentData self, ref ReadOnlyMemory<char> x) => { x = new ReadOnlyMemory<char>(self.SentimentText.ToCharArray()); };
                         return dele;
                     }
                 default:

@@ -21,6 +21,7 @@ namespace Scikit.ML.ProductionPrediction
         readonly TRepValue _value;
         readonly ISchema _schema;
         readonly IRowCursor _otherValues;
+        readonly bool _ignoreOtherColumn;
 
         public TRepValue Constant => _value;
         public int ConstantCol => _column;
@@ -32,12 +33,13 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="column">column to be replaced</param>
         /// <param name="otherValues">cursor which contains the others values</param>
         /// <param name="schema">schema to replace if otherValues is null</param>
-        public TemporaryViewCursorColumn(TRepValue value, int column, ISchema schema = null, IRowCursor otherValues = null)
+        public TemporaryViewCursorColumn(TRepValue value, int column, ISchema schema = null, IRowCursor otherValues = null, bool ignoreOtherColumn = false)
         {
             _column = column;
             _otherValues = otherValues;
             _schema = otherValues == null ? schema : otherValues.Schema;
             _value = value;
+            _ignoreOtherColumn = ignoreOtherColumn;
             Contracts.AssertValue(_schema);
         }
 
@@ -59,7 +61,7 @@ namespace Scikit.ML.ProductionPrediction
                 // This trick avoids the cursor to be split into multiple later.
                 var res = new IRowCursor[n];
                 var empty = new EmptyCursor(this,
-                                    col => col == _column || needCol(col) || 
+                                    col => col == _column || needCol(col) ||
                                                   (_otherValues != null && _otherValues.IsColumnActive(col)));
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
@@ -83,6 +85,7 @@ namespace Scikit.ML.ProductionPrediction
             TemporaryViewCursorColumn<TRepValue> _view;
             CursorState _state;
             IRowCursor _otherValues;
+            bool _ignoreOtherColumn;
 
             public CursorType(TemporaryViewCursorColumn<TRepValue> view, Func<int, bool> needCol, IRowCursor otherValues)
             {
@@ -90,6 +93,7 @@ namespace Scikit.ML.ProductionPrediction
                 _view = view;
                 _state = CursorState.NotStarted;
                 _otherValues = otherValues;
+                _ignoreOtherColumn = view._ignoreOtherColumn;
             }
 
             public CursorState State { get { return _state; } }
@@ -142,11 +146,16 @@ namespace Scikit.ML.ProductionPrediction
                     return GetGetterPrivate(col) as ValueGetter<TValue>;
                 else if (_otherValues != null)
                     return _otherValues.GetGetter<TValue>(col);
+                else if (_ignoreOtherColumn)
+                    return (ref TValue value) =>
+                    {
+                        value = default(TValue);
+                    };
                 else
                     throw Contracts.Except("otherValues is null, unable to access other columns.");
             }
 
-            public ValueGetter<TRepValue> GetGetterPrivate(int col)
+            private ValueGetter<TRepValue> GetGetterPrivate(int col)
             {
                 if (col == _view.ConstantCol)
                 {
@@ -173,7 +182,7 @@ namespace Scikit.ML.ProductionPrediction
                     throw Contracts.ExceptNotSupp();
             }
 
-            public ValueGetter<VBuffer<TRepValueItem>> GetGetterPrivateVector<TRepValueItem>(int col)
+            private ValueGetter<VBuffer<TRepValueItem>> GetGetterPrivateVector<TRepValueItem>(int col)
             {
                 if (col == _view.ConstantCol)
                 {
@@ -366,7 +375,7 @@ namespace Scikit.ML.ProductionPrediction
                         throw Contracts.Except($"Irreconcilable types {_overwriteRowGetter[name].GetType()} != {typeof(ValueGetterInstance<TRowValue, TValue>)}.");
                     return (ref TValue value) =>
                     {
-                            getter(ref _view._value, ref value);
+                        getter(ref _view._value, ref value);
                     };
                 }
                 else

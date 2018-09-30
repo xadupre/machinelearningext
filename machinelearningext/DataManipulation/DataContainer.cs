@@ -314,7 +314,7 @@ namespace Scikit.ML.DataManipulation
             foreach (var pair in kinds)
             {
                 var values = array.Select(c => c.ContainsKey(pair.Key)
-                                                ? c[pair.Key] 
+                                                ? c[pair.Key]
                                                 : DataFrameMissingValue.GetMissingOrDefaultValue(pair.Value, array.Where(d => d.ContainsKey(pair.Key))
                                                                        .Select(e => e[pair.Key]).First()))
                                                                        .ToArray();
@@ -968,7 +968,16 @@ namespace Scikit.ML.DataManipulation
             var dt = cursor.Schema.GetColumnType(col);
             if (dt.IsVector)
             {
-                var getter = cursor.GetGetter<VBuffer<DType>>(col);
+                ValueGetter<VBuffer<DType>> getter;
+                try
+                {
+                    getter = cursor.GetGetter<VBuffer<DType>>(col);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Unable to extract getter for column {col} and type {typeof(DType)}, schema:\n{SchemaHelper.ToString(Schema)}", e);
+                }
+
                 var temp = new VBuffer<DType>();
                 return (ref DType value) =>
                 {
@@ -990,7 +999,40 @@ namespace Scikit.ML.DataManipulation
                 };
             }
             else
-                return cursor.GetGetter<DType>(col);
+            {
+                try
+                {
+                    return cursor.GetGetter<DType>(col);
+                }
+                catch (InvalidOperationException e)
+                {
+                    // DvText does not exist in ml.net world.
+                    ValueGetter<ReadOnlyMemory<char>> getter;
+                    try
+                    {
+                        getter = cursor.GetGetter<ReadOnlyMemory<char>>(col);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        throw new InvalidOperationException($"Unable to extract getter for column {col} and type {typeof(DType)}, schema:\n{SchemaHelper.ToString(Schema)}", e);
+                    }
+
+                    var getter2 = ConvGetter(getter) as ValueGetter<DType>;
+                    if (getter2 == null)
+                        throw new InvalidOperationException($"Unable to extract getter for column {col} and type {typeof(DType)}, schema:\n{SchemaHelper.ToString(Schema)}");
+                    return getter2;
+                }
+            }
+        }
+
+        private static ValueGetter<DvText> ConvGetter(ValueGetter<ReadOnlyMemory<char>> getter)
+        {
+            return (ref DvText value) =>
+            {
+                ReadOnlyMemory<char> buffer = null;
+                getter(ref buffer);
+                value.Set(buffer);
+            };
         }
 
         /// <summary>

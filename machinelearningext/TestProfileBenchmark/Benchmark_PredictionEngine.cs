@@ -11,6 +11,7 @@ using Microsoft.ML.Runtime.TextAnalytics;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.DataManipulation;
+using Scikit.ML.PipelineTransforms;
 
 
 namespace TestProfileBenchmark
@@ -73,7 +74,8 @@ namespace TestProfileBenchmark
             }
         }
 
-        private static List<Tuple<int, TimeSpan, int>> _MeasureTime(int conc, bool getterEachTime, string engine, IDataScorerTransform scorer)
+        private static List<Tuple<int, TimeSpan, int>> _MeasureTime(int conc, 
+            bool getterEachTime, string engine, IDataScorerTransform scorer, int N, int ncall, bool cacheScikit)
         {
             var args = new TextLoader.Arguments()
             {
@@ -94,23 +96,20 @@ namespace TestProfileBenchmark
 
                 // Take a couple examples out of the test data and run predictions on top.
                 var testLoader = TextLoader.ReadFile(env, args, new MultiFileSource(testFilename));
-                var cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
+                IDataView cache;
+                if (cacheScikit)
+                    cache = new ExtendedCacheTransform(env, new ExtendedCacheTransform.Arguments(), testLoader);
+                else
+                    cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
                 var testData = cache.AsEnumerable<SentimentData>(env, false);
-
-#if(DEBUG)
-                int N = 1;
-#else
-                int N = getterEachTime ? 1 : 10000;
-#endif
 
                 if (engine == "mlnet")
                 {
+                    Console.WriteLine("engine={0} N={1} ncall={2} each={3} cacheScikit={4}", engine, N, ncall, getterEachTime, cacheScikit);
                     var model = env.CreatePredictionEngine<SentimentData, SentimentPrediction>(scorer);
                     var sw = new Stopwatch();
-                    for (int call = 1; call <= 3; ++call)
+                    for (int call = 1; call <= ncall; ++call)
                     {
-                        if (getterEachTime && call >= 2)
-                            break;
                         sw.Reset();
                         sw.Start();
                         for (int i = 0; i < N; ++i)
@@ -122,9 +121,11 @@ namespace TestProfileBenchmark
                 }
                 else if (engine == "scikit")
                 {
+                    Console.WriteLine("engine={0} N={1} ncall={2} each={3} cacheScikit={4}", engine, N, ncall, getterEachTime, cacheScikit);
                     var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, getterEachTime: getterEachTime, conc: conc);
+                    var output = new ValueMapperPredictionEngine<SentimentData>.PredictionTypeForBinaryClassification();
                     var sw = new Stopwatch();
-                    for (int call = 1; call <= 3; ++call)
+                    for (int call = 1; call <= ncall; ++call)
                     {
                         if (getterEachTime && call >= 2)
                             break;
@@ -132,7 +133,7 @@ namespace TestProfileBenchmark
                         sw.Start();
                         for (int i = 0; i < N; ++i)
                             foreach (var input in testData)
-                                model.Predict(input);
+                                model.Predict(input, ref output);
                         sw.Stop();
                         times.Add(new Tuple<int, TimeSpan, int>(N, sw.Elapsed, call));
                     }
@@ -143,12 +144,12 @@ namespace TestProfileBenchmark
             return times;
         }
 
-        public static DataFrame TestScikitAPI_EngineSimpleTrainAndPredict(string engine, int th)
+        public static DataFrame TestScikitAPI_EngineSimpleTrainAndPredict(string engine, int th, int N, int ncall, bool cacheScikit)
         {
             var dico = new Dictionary<Tuple<int, string, bool, int, int>, double>();
             var scorer = _TrainSentiment();
             foreach (var each in new[] { false })
-                foreach (var res in _MeasureTime(th, each, engine, scorer))
+                foreach (var res in _MeasureTime(th, each, engine, scorer, N, ncall, cacheScikit))
                     dico[new Tuple<int, string, bool, int, int>(res.Item1, engine, each, th, res.Item3)] = res.Item2.TotalSeconds;
             var df = DataFrameIO.Convert(dico, "N", "engine", "getterEachTime", "number of threads", "call", "time(s)");
             return df;

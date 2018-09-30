@@ -28,6 +28,7 @@ namespace Scikit.ML.ProductionPrediction
         IHostEnvironment _computeEnv;
         readonly bool _getterEachTime;
         readonly bool _disposeEnv;
+        readonly bool _ignoreOtherColumn;
 
         /// <summary>
         /// Constructor.
@@ -39,10 +40,12 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="sourceToReplace">source to replace</param>
         /// <param name="getterEachTime">create the getter for each computation</param>
         /// <param name="conc">number of concurrency threads</param>
+        /// <param name="ignoreOtherColumn">ignore other columns instead of raising an exception if they are requested</param>
         public ValueMapperFromTransformFloat(IHostEnvironment env, IDataTransform transform,
                                              string inputColumn, string outputColumn,
                                              IDataView sourceToReplace = null,
-                                             bool getterEachTime = false, int conc = 1)
+                                             bool getterEachTime = false, int conc = 1,
+                                             bool ignoreOtherColumn = false)
         {
             Contracts.AssertValue(env);
             Contracts.AssertValue(transform);
@@ -51,6 +54,7 @@ namespace Scikit.ML.ProductionPrediction
             _transform = transform;
             _sourceToReplace = sourceToReplace;
             _outputColumn = outputColumn;
+            _ignoreOtherColumn = ignoreOtherColumn;
 
             var firstView = _sourceToReplace ?? DataViewHelper.GetFirstView(transform);
 
@@ -84,7 +88,7 @@ namespace Scikit.ML.ProductionPrediction
             {
                 return (ref TSrc src, ref TDst dst) =>
                 {
-                    var inputView = new TemporaryViewCursorColumn<TSrc>(src, _inputIndex, firstView.Schema);
+                    var inputView = new TemporaryViewCursorColumn<TSrc>(src, _inputIndex, firstView.Schema, ignoreOtherColumn: _ignoreOtherColumn);
                     using (var inputCursor = inputView.GetRowCursor(i => i == _inputIndex))
                     {
                         _env.AssertValue(inputCursor);
@@ -110,7 +114,7 @@ namespace Scikit.ML.ProductionPrediction
             }
             else
             {
-                var inputView = new InfiniteLoopViewCursorColumn<TSrc>(_inputIndex, firstView.Schema);
+                var inputView = new InfiniteLoopViewCursorColumn<TSrc>(_inputIndex, firstView.Schema, ignoreOtherColumn: _ignoreOtherColumn);
 
                 // This is extremely time consuming as the transform is serialized and deserialized.
                 var outputView = _sourceToReplace == _transform.Source

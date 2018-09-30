@@ -48,9 +48,15 @@ namespace Scikit.ML.ProductionPrediction
             return _needCol(col);
         }
 
+        /// <summary>
+        /// The getter return the default value. A null getter usually fails the pipeline.
+        /// </summary>
         public ValueGetter<TValue> GetGetter<TValue>(int col)
         {
-            return null;
+            return (ref TValue value) =>
+            {
+                value = default(TValue);
+            };
         }
     }
 }

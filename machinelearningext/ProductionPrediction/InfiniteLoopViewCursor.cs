@@ -29,6 +29,7 @@ namespace Scikit.ML.ProductionPrediction
         readonly int _column;
         readonly ISchema _schema;
         readonly IRowCursor _otherValues;
+        readonly bool _ignoreOtherColumn;
         CursorType _ownCursor;
 
         public int ReplacedCol { get { return _column; } }
@@ -39,12 +40,14 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="column">column to be replaced</param>
         /// <param name="schema">schema of the view</param>
         /// <param name="otherValues">cursor which contains the others values</param>
-        public InfiniteLoopViewCursorColumn(int column, ISchema schema = null, IRowCursor otherValues = null)
+        /// <param name="ignoreOtherColumn">ignore other column if they are being requested</param>
+        public InfiniteLoopViewCursorColumn(int column, ISchema schema = null, IRowCursor otherValues = null, bool ignoreOtherColumn = false)
         {
             _column = column;
             _otherValues = otherValues;
             _schema = otherValues == null ? schema : otherValues.Schema;
             _ownCursor = null;
+            _ignoreOtherColumn = ignoreOtherColumn;
             Contracts.AssertValue(_schema);
         }
 
@@ -103,6 +106,7 @@ namespace Scikit.ML.ProductionPrediction
             bool _wait;
             long _position;
             long _batch;
+            bool _ignoreOtherColumn;
 
             public CursorType(InfiniteLoopViewCursorColumn<TRepValue> view, Func<int, bool> needCol, IRowCursor otherValues)
             {
@@ -114,6 +118,7 @@ namespace Scikit.ML.ProductionPrediction
                 _wait = true;
                 _position = 0;
                 _batch = 1;
+                _ignoreOtherColumn = view._ignoreOtherColumn;
             }
 
             public CursorState State { get { return _state; } }
@@ -179,6 +184,11 @@ namespace Scikit.ML.ProductionPrediction
                     return GetGetterPrivate(col) as ValueGetter<TValue>;
                 else if (_otherValues != null)
                     return _otherValues.GetGetter<TValue>(col);
+                else if (_ignoreOtherColumn)
+                    return (ref TValue value) =>
+                    {
+                        value = default(TValue);
+                    };
                 else
                     throw Contracts.Except("otherValues is null, unable to access other columns." +
                         "If you are using PrePostTransformPredictor, it means the preprossing transform cannot be " +

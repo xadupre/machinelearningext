@@ -589,6 +589,44 @@ namespace Scikit.ML.DataManipulation
             return df;
         }
 
+        /// <summary>
+        /// Converts a dictionary into a dataframe with two columns,
+        /// one for the keys (needs ToString()), one for the values.
+        /// Data is sorted by key.
+        /// </summary>
+        public static DataFrame Convert<KeyType1, KeyType2, KeyType3, KeyType4, KeyType5, KeyType6, ValueType>(Dictionary<Tuple<KeyType1, KeyType2, KeyType3, KeyType4, KeyType5, KeyType6>, ValueType> data,
+                                                             string columnKey1 = "key1", string columnKey2 = "key2", string columnKey3 = "key3", string columnKey4 = "key4", 
+                                                             string columnKey5 = "key5", string columnKey6 = "key6", string columnValue = "value")
+        {
+            var keys1 = new List<KeyType1>();
+            var keys2 = new List<KeyType2>();
+            var keys3 = new List<KeyType3>();
+            var keys4 = new List<KeyType4>();
+            var keys5 = new List<KeyType5>();
+            var keys6 = new List<KeyType6>();
+            var values = new List<ValueType>();
+            foreach (var pair in data.OrderBy(c => c.Key))
+            {
+                keys1.Add(pair.Key.Item1);
+                keys2.Add(pair.Key.Item2);
+                keys3.Add(pair.Key.Item3);
+                keys4.Add(pair.Key.Item4);
+                keys5.Add(pair.Key.Item5);
+                keys6.Add(pair.Key.Item6);
+                values.Add(pair.Value);
+            }
+
+            var df = new DataFrame();
+            AddColumn(df, columnKey1, keys1.ToArray());
+            AddColumn(df, columnKey2, keys2.ToArray());
+            AddColumn(df, columnKey3, keys3.ToArray());
+            AddColumn(df, columnKey4, keys4.ToArray());
+            AddColumn(df, columnKey5, keys5.ToArray());
+            AddColumn(df, columnKey6, keys6.ToArray());
+            AddColumn(df, columnValue, values.ToArray());
+            return df;
+        }
+
         #endregion
     }
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.ProductionPrediction
@@ -19,41 +20,39 @@ namespace Scikit.ML.ProductionPrediction
     {
         #region result type
 
-        public class VectorPrediction : IClassWithSetter<VectorPrediction>
+        public class PredictionTypeForBinaryClassification : IClassWithSetter<PredictionTypeForBinaryClassification>
         {
-            public VBuffer<float> Probability;
-
-            public Delegate[] GetCursorGetter(IRowCursor cursor)
-            {
-                return new Delegate[]
-                {
-                cursor.GetGetter<VBuffer<float>>(0)
-                };
-            }
-
-            public void Set(Delegate[] delegates)
-            {
-                var del1 = delegates[0] as ValueGetter<VBuffer<float>>;
-                del1(ref Probability);
-            }
-        }
-
-        public class SinglePrediction : IClassWithSetter<SinglePrediction>
-        {
+            public bool PredictedLabel;
             public float Score;
+            public float Probability;
 
             public Delegate[] GetCursorGetter(IRowCursor cursor)
             {
+                int indexL;
+                if (!cursor.Schema.TryGetColumnIndex("PredictedLabel", out indexL))
+                    throw Contracts.Except($"Cannot find column 'PredictedLabel' in\n{SchemaHelper.ToString(cursor.Schema)}.");
+                int indexS;
+                if (!cursor.Schema.TryGetColumnIndex("Score", out indexS))
+                    throw Contracts.Except($"Cannot find column 'Score' in\n{SchemaHelper.ToString(cursor.Schema)}.");
+                int indexP;
+                if (!cursor.Schema.TryGetColumnIndex("Probability", out indexP))
+                    throw Contracts.Except($"Cannot find column 'Probability' in\n{SchemaHelper.ToString(cursor.Schema)}.");
                 return new Delegate[]
                 {
-                cursor.GetGetter<float>(0)
+                    cursor.GetGetter<bool>(indexL),
+                    cursor.GetGetter<float>(indexS),
+                    cursor.GetGetter<float>(indexP),
                 };
             }
 
             public void Set(Delegate[] delegates)
             {
-                var del1 = delegates[0] as ValueGetter<float>;
-                del1(ref Score);
+                var del1 = delegates[0] as ValueGetter<bool>;
+                del1(ref PredictedLabel);
+                var del2 = delegates[1] as ValueGetter<float>;
+                del2(ref Score);
+                var del3 = delegates[2] as ValueGetter<float>;
+                del3(ref Probability);
             }
         }
 
@@ -63,8 +62,7 @@ namespace Scikit.ML.ProductionPrediction
         readonly IDataView _transforms;
         readonly Predictor _predictor;
 
-        ValueMapper<TRowValue, SinglePrediction> _mapper;
-        ValueMapper<TRowValue, VectorPrediction> _mapperVector;
+        ValueMapper<TRowValue, PredictionTypeForBinaryClassification> _mapperBinaryClassification;
         IDisposable _valueMapper;
 
         public ValueMapperPredictionEngine()
@@ -77,15 +75,13 @@ namespace Scikit.ML.ProductionPrediction
         /// </summary>
         /// <param name="env">environment</param>
         /// <param name="modelName">filename</param>
-        /// <param name="output">name of the output column</param>
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
-        /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
         /// <param name="features">features name</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, string modelName,
-                string output = "Probability", bool getterEachTime = false,
+                bool getterEachTime = false,
                 bool outputIsFloat = true, int conc = 1, string features = "Features") :
-            this(env, File.OpenRead(modelName), output, getterEachTime, outputIsFloat, conc, features)
+            this(env, File.OpenRead(modelName), getterEachTime, conc, features)
         {
         }
 
@@ -94,14 +90,11 @@ namespace Scikit.ML.ProductionPrediction
         /// </summary>
         /// <param name="env">environment</param>
         /// <param name="modelStream">stream</param>
-        /// <param name="output">name of the output column</param>
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
-        /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
-        /// <param name="features">features name</param>
+        /// <param name="features">features column</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, Stream modelStream,
-                string output = "Probability", bool getterEachTime = false,
-                bool outputIsFloat = true, int conc = 1, string features = "Features")
+                                           bool getterEachTime = false, int conc = 1, string features = "Features")
         {
             _env = env;
             if (_env == null)
@@ -124,8 +117,8 @@ namespace Scikit.ML.ProductionPrediction
             var scorer = _env.CreateDefaultScorer(data, _predictor);
             if (scorer == null)
                 throw _env.Except("Cannot create a scorer.");
-            _CreateMapper(scorer, outputIsFloat, getterEachTime, conc);
-        } 
+            _CreateMapper(scorer, getterEachTime, conc);
+        }
 
         /// <summary>
         /// Constructor
@@ -136,35 +129,30 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
-        /// <param name="features">features name</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, IDataScorerTransform scorer,
-                string output = "Probability", bool getterEachTime = false,
-                bool outputIsFloat = true, int conc = 1, string features = "Features")
+                bool getterEachTime = false, int conc = 1)
         {
             _env = env;
             if (_env == null)
                 throw Contracts.Except("env must not be null");
-            _CreateMapper(scorer, outputIsFloat, getterEachTime, conc);
+            _CreateMapper(scorer, getterEachTime, conc);
         }
 
-        void _CreateMapper(IDataScorerTransform scorer, bool outputIsFloat, bool getterEachTime, int conc)
+        void _CreateMapper(IDataScorerTransform scorer, bool getterEachTime, int conc)
         {
-            if (outputIsFloat)
+            _mapperBinaryClassification = null;
+            var schema = scorer.Schema;
+            int i1, i2, i3;
+            if (schema.TryGetColumnIndex("PredictedLabel", out i1) && schema.TryGetColumnIndex("Score", out i2) &&
+                schema.TryGetColumnIndex("Probability", out i3))
             {
-                var map = new ValueMapperFromTransform<TRowValue, SinglePrediction>(_env,
+                var map = new ValueMapperFromTransform<TRowValue, PredictionTypeForBinaryClassification>(_env,
                                     scorer, getterEachTime: getterEachTime, conc: conc);
-                _mapper = map.GetMapper<TRowValue, SinglePrediction>();
-                _mapperVector = null;
+                _mapperBinaryClassification = map.GetMapper<TRowValue, PredictionTypeForBinaryClassification>();
                 _valueMapper = map;
             }
             else
-            {
-                var map = new ValueMapperFromTransform<TRowValue, VectorPrediction>(_env,
-                                    scorer, getterEachTime: getterEachTime, conc: conc);
-                _mapper = null;
-                _mapperVector = map.GetMapper<TRowValue, VectorPrediction>();
-                _valueMapper = map;
-            }
+                throw Contracts.Except($"Unable to guess the prediction task from schema '{SchemaHelper.ToString(schema)}'.");
         }
 
         public void Dispose()
@@ -174,33 +162,16 @@ namespace Scikit.ML.ProductionPrediction
         }
 
         /// <summary>
-        /// Produces prediction assuming the input accepts a features vectors as inputs.
+        /// Produces prediction for a binary classification.
         /// </summary>
-        /// <param name="features"></param>
-        /// <returns></returns>
-        public float Predict(TRowValue features)
+        /// <param name="features">features</param>
+        /// <param name="res">prediction</param>
+        public void Predict(TRowValue features, ref PredictionTypeForBinaryClassification res)
         {
-            if (_mapper == null)
-                throw _env.Except("The mapper is outputting a vector not a float.");
-            var res = new SinglePrediction();
-            _mapper(ref features, ref res);
-            return res.Score;
-        }
-
-        /// <summary>
-        /// Produces prediction assuming the input accepts a features vectors as inputs.
-        /// </summary>
-        /// <param name="features"></param>
-        /// <returns></returns>
-        public float[] PredictVector(TRowValue features)
-        {
-            if (_mapperVector == null)
-                throw _env.Except("The mapper is outputting a float not a vector.");
-            var res = new VectorPrediction();
-            _mapperVector(ref features, ref res);
-            if (!res.Probability.IsDense)
-                throw _env.Except("The output of the predictor or transform must be dense.");
-            return res.Probability.DenseValues().ToArray();
+            if (_mapperBinaryClassification != null)
+                _mapperBinaryClassification(ref features, ref res);
+            else
+                throw _env.Except("Unrecognized machine learn problem.");
         }
     }
 }

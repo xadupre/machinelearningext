@@ -67,6 +67,9 @@
     <Reference Include="Microsoft.ML.Transforms">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Transforms.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ML.PipelineInference">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.PipelineInference.dll</HintPath>
+    </Reference>
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

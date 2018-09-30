@@ -198,8 +198,9 @@ namespace Scikit.ML.PipelineTransforms
         {
             Host.Check(string.IsNullOrEmpty(_sortColumn) || rand == null, "Random access is not allowed on sorted data. (5)");
             Host.AssertValue(_transform, "_transform");
-            int sortColumn;
-            Source.Schema.TryGetColumnIndex(_sortColumn, out sortColumn);
+            int sortColumn = -1;
+            if (!string.IsNullOrEmpty(_sortColumn))
+                Source.Schema.TryGetColumnIndex(_sortColumn, out sortColumn);
             return _transform.GetRowCursor(i => i == sortColumn || needCol(i), rand);
         }
 

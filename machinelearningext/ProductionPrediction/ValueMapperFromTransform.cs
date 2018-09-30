@@ -93,28 +93,34 @@ namespace Scikit.ML.ProductionPrediction
         {
             var firstView = _sourceToReplace ?? DataViewHelper.GetFirstView(_transform);
             var schema = SchemaDefinition.Create(typeof(TRowOutput), SchemaDefinition.Direction.Read);
-            var indexes = new HashSet<int>(schema.Select(c => c.ColumnName).Select(c =>
-            {
-                int ind; firstView.Schema.TryGetColumnIndex(c, out ind); return ind;
-            }));
 
             if (_getterEachTime)
             {
                 return (ref TRowInput src, ref TRowOutput dst) =>
                 {
                     var inputView = new TemporaryViewCursorRow<TRowInput>(src, null, firstView.Schema, overwriteRowGetter: GetterSetterHelper.GetGetter<TRowInput>());
+                    // We assume all columns are needed, otherwise they should be removed.
                     using (var inputCursor = inputView.GetRowCursor(i => true))
                     {
                         _env.AssertValue(inputCursor);
-
-                        var dels = dst.GetCursorGetter(inputCursor);
 
                         // This is extremely time consuming as the transform is serialized and deserialized.
                         var outputView = _sourceToReplace == _transform.Source
                                             ? ApplyTransformUtils.ApplyTransformToData(_env, _transform, inputView)
                                             : ApplyTransformUtils.ApplyAllTransformsToData(_env, _transform, inputView, _sourceToReplace);
-                        using (var cur = outputView.GetRowCursor(i => indexes.Contains(i)))
+
+                        using (var cur = outputView.GetRowCursor(i => true))
                         {
+                            Delegate[] dels;
+                            try
+                            {
+                                dels = new TRowOutput().GetCursorGetter(cur);
+                            }
+                            catch (InvalidOperationException e)
+                            {
+                                throw new InvalidOperationException($"Unable to create getter for the schema\n{SchemaHelper.ToString(cur.Schema)}", e);
+                            }
+
                             cur.MoveNext();
                             dst.Set(dels);
                         }
@@ -130,9 +136,18 @@ namespace Scikit.ML.ProductionPrediction
                                     ? ApplyTransformUtils.ApplyTransformToData(_computeEnv, _transform, inputView)
                                     : ApplyTransformUtils.ApplyAllTransformsToData(_computeEnv, _transform, inputView, _sourceToReplace);
 
-                using (var cur = outputView.GetRowCursor(i => indexes.Contains(i)))
+                // We assume all columns are needed, otherwise they should be removed.
+                using (var cur = outputView.GetRowCursor(i => true))
                 {
-                    var dels = new TRowOutput().GetCursorGetter(cur);
+                    Delegate[] dels;
+                    try
+                    {
+                        dels = new TRowOutput().GetCursorGetter(cur);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        throw new InvalidOperationException($"Unable to create getter for the schema\n{SchemaHelper.ToString(cur.Schema)}", e);
+                    }
 
                     return (ref TRowInput src, ref TRowOutput dst) =>
                     {

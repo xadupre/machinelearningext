@@ -39,14 +39,14 @@ namespace TestMachineLearningExt
                 var trv = LambdaTransform.CreateMap(host, data,
                                             (InputOutput src, InputOutput dst) =>
                                             {
-                                                dst.X = new float[] { src.X[0] + (float)src.Y, src.X[1] - (float)src.Y };
+                                                dst.X = new float[] { src.X[0] + 1f, src.X[1] - 1f };
                                             });
 
                 var ino = new InputOutput { X = new float[] { -5, -5 }, Y = 3 };
                 var inob = new VBuffer<float>(2, ino.X);
                 var ans = new VBuffer<float>();
 
-                using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, "X", "X"))
+                using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, "X", "X", ignoreOtherColumn: true))
                 {
                     var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
 
@@ -68,13 +68,13 @@ namespace TestMachineLearningExt
                         throw new Exception("Issue with values.");
                     if (listx.Count != 4)
                         throw new Exception("Issue with dimension.");
-                    if (listx[0] != 5)
+                    if (listx[0] != -4)
                         throw new Exception("Issue with values.");
-                    if (listx[1] != -15)
+                    if (listx[1] != -6)
                         throw new Exception("Issue with values.");
-                    if (listx[2] != 95)
+                    if (listx[2] != -4)
                         throw new Exception("Issue with values.");
-                    if (listx[3] != -105)
+                    if (listx[3] != -6)
                         throw new Exception("Issue with values.");
                     if (inob.Count != 2)
                         throw new Exception("Issue with dimension.");
@@ -101,9 +101,9 @@ namespace TestMachineLearningExt
                 var data = host.CreateStreamingDataView(inputs);
 
                 var trv = LambdaTransform.CreateMap(host, data,
-                                            (InputOutput src, InputOutput dst) =>
+                                            (InputOutput src, InputOutput2 dst) =>
                                             {
-                                                dst.X = new float[] { src.X[0] + (float)src.Y, src.X[1] - (float)src.Y };
+                                                dst.X2 = new float[] { src.X[0] + 1f, src.X[1] - 1f };
                                             });
 
                 var inos = new InputOutput[] {new InputOutput { X = new float[] { -5, -5 }, Y = 3 },
@@ -112,7 +112,8 @@ namespace TestMachineLearningExt
 
                 foreach (var each in new[] { false, true })
                 {
-                    using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, "X", "X", getterEachTime: each))
+                    using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, "X", "X2", getterEachTime: each,
+                                                                                               ignoreOtherColumn: true))
                     {
                         var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
 
@@ -124,7 +125,7 @@ namespace TestMachineLearningExt
                         {
                             var temp = new VBuffer<float>(2, inos[tour++].X);
                             mapper(ref temp, ref ans);
-                            i = inputs[i].Y;
+                            y = inputs[i].Y;
                             if (ans.Count != 2)
                                 throw new Exception("Issue with dimension.");
                             listx.AddRange(ans.Values);
@@ -136,13 +137,13 @@ namespace TestMachineLearningExt
                             throw new Exception("Issue with values.");
                         if (listx.Count != 4)
                             throw new Exception("Issue with dimension.");
-                        if (listx[0] != 5)
+                        if (listx[0] != -4)
                             throw new Exception("Issue with values.");
-                        if (listx[1] != -15)
+                        if (listx[1] != -6)
                             throw new Exception("Issue with values.");
-                        if (listx[2] != 94)
+                        if (listx[2] != -5)
                             throw new Exception("Issue with values.");
-                        if (listx[3] != -106)
+                        if (listx[3] != -7)
                             throw new Exception("Issue with values.");
                     }
                 }
