@@ -2,7 +2,8 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using DocHelperMlExt;
+using System.Linq;
+using Scikit.ML.DocHelperMlExt;
 
 namespace TestMachineLearningExt
 {
@@ -21,6 +22,24 @@ namespace TestMachineLearningExt
         public void TestMamlHelperTest()
         {
             MamlHelper.TestScikitAPI();
+        }
+
+        [TestMethod]
+        public void TestMamlHelperKinds()
+        {
+            var kinds = MamlHelper.GetAllKinds();
+            Assert.IsTrue(kinds.Length > 0);
+            Assert.IsTrue(kinds.Where(c => c == "trainer").Any());
+            Assert.IsTrue(kinds.Where(c => c == "datatransform").Any());
+        }
+
+        [TestMethod]
+        public void TestMamlHelperTrainer()
+        {
+            var trainers = MamlHelper.EnumerateComponents("trainer").ToArray();
+            Assert.IsTrue(trainers.Length > 0);
+            var df = trainers.First().ArgsAsDataFrame;
+            Assert.AreEqual(df.Shape.Item2, 4);
         }
     }
 }

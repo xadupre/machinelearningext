@@ -8,7 +8,6 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.ScikitAPI;
-using DocHelperMlExt;
 using Legacy = Microsoft.ML.Legacy;
 
 

@@ -4,17 +4,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineLambdaTransforms;
-using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.DataManipulation;
-using DocHelperMlExt;
+using Scikit.ML.DocHelperMlExt;
 
 
 namespace TestMachineLearningExt

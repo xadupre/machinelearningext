@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 
 
-namespace DocHelperMlExt
+namespace Scikit.ML.DocHelperMlExt
 {
     /// <summary>
     /// Captures standard output and error.

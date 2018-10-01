@@ -1,14 +1,19 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.ML.Runtime.Data;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Tools;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.ScikitAPI;
 
 
-namespace DocHelperMlExt
+namespace Scikit.ML.DocHelperMlExt
 {
     /// <summary>
     /// Raised when a script cannot be executed.
@@ -31,6 +36,9 @@ namespace DocHelperMlExt
     /// </summary>
     public static class MamlHelper
     {
+        /// <summary>
+        /// Runs a simple test.
+        /// </summary>
         public static void TestScikitAPI()
         {
             var inputs = new[] {
@@ -69,6 +77,12 @@ namespace DocHelperMlExt
             }
         }
 
+        /// <summary>
+        /// Runs a command line with ML.Net.
+        /// </summary>
+        /// <param name="script">script to run</param>
+        /// <param name="catch_output">capture output</param>
+        /// <returns>output and error if captured</returns>
         public static string MamlAll(string script, bool catch_output)
         {
             int errCode;
@@ -94,6 +108,108 @@ namespace DocHelperMlExt
             if (errCode != 0)
                 throw new MamlException($"Unable to run script, error code={errCode}\n{script}\n{res}");
             return res;
+        }
+
+        /// <summary>
+        /// Returns all kinds of models.
+        /// </summary>
+        public static string[] GetAllKinds()
+        {
+            using (var env = new ConsoleEnvironment())
+            {
+                ComponentHelper.AddStandardComponents(env);
+                var sigs = env.ComponentCatalog.GetAllSignatureTypes();
+                var typeSig = sigs.Select(t => ComponentCatalog.SignatureToString(t).ToLowerInvariant());
+                return new HashSet<string>(typeSig.OrderBy(c => c)).ToArray();
+            }
+        }
+
+        public class ComponentDescription
+        {
+            public class Argument
+            {
+                public string Name;
+                public string Help;
+                public string ShortName;
+                public string DefaultValue;
+                public CmdParser.ArgInfo.Arg Arg;
+            }
+
+            public string Name;
+            public object Args;
+            public string Description;
+            public string[] Aliases;
+            public ComponentCatalog.LoadableClassInfo Info;
+            public Assembly Assembly;
+            public string AssemblyName;
+            public Argument[] Arguments;
+
+            public DataFrame ArgsAsDataFrame
+            {
+                get
+                {
+                    var df = new DataFrame();
+                    df.AddColumn("Name", Arguments.Select(c => c.Name).ToArray());
+                    df.AddColumn("ShortName", Arguments.Select(c => c.ShortName).ToArray());
+                    df.AddColumn("DefaultValue", Arguments.Select(c => c.DefaultValue).ToArray());
+                    df.AddColumn("Help", Arguments.Select(c => c.Help).ToArray());
+                    return df;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns all kinds of models.
+        /// </summary>
+        public static IEnumerable<ComponentDescription> EnumerateComponents(string kind)
+        {
+            var kinds = GetAllKinds();
+            if (!kinds.Where(c => c == kind).Any())
+                throw new ArgumentException($"Unable to find kind '{kind}' in\n{string.Join("\n", kinds)}.");
+
+            using (var env = new ConsoleEnvironment())
+            {
+                ComponentHelper.AddStandardComponents(env);
+                var sigs = env.ComponentCatalog.GetAllSignatureTypes();
+                var typeSig = sigs.FirstOrDefault(t => ComponentCatalog.SignatureToString(t).ToLowerInvariant() == kind);
+                var typeRes = typeof(object);
+                var infos = env.ComponentCatalog.GetAllDerivedClasses(typeRes, typeSig)
+                    .Where(x => !x.IsHidden)
+                    .OrderBy(x => x.LoadNames[0].ToLowerInvariant());
+                foreach (var info in infos)
+                {
+                    var args = info.CreateArguments();
+                    var asse = args.GetType().Assembly;
+
+                    var parsedArgs = CmdParser.GetArgInfo(args.GetType(), args).Args;
+                    var arguments = new List<ComponentDescription.Argument>();
+                    foreach (var arg in parsedArgs)
+                    {
+                        var a = new ComponentDescription.Argument()
+                        {
+                            Name = arg.LongName,
+                            ShortName = arg.ShortNames == null || !arg.ShortNames.Any() ? null : arg.ShortNames.First(),
+                            DefaultValue = arg.DefaultValue == null ? null : arg.DefaultValue.ToString(),
+                            Help = arg.HelpText,
+                            Arg = arg,
+                        };
+                        arguments.Add(a);
+                    }
+
+                    var cmp = new ComponentDescription()
+                    {
+                        Args = args,
+                        Name = info.UserName,
+                        Description = info.Summary,
+                        Info = info,
+                        Aliases = info.LoadNames.ToArray(),
+                        Assembly = asse,
+                        AssemblyName = asse.ManifestModule.Name,
+                        Arguments = arguments.OrderBy(c => c.Name).ToArray(),
+                    };
+                    yield return cmp;
+                }
+            }
         }
     }
 }
