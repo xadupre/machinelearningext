@@ -9,30 +9,40 @@ import os
 import sys
 import shutil
 this = os.path.abspath(os.path.dirname(__file__))
-dll = os.path.join(this, "..", "..", "machinelearningext", "DocHelperMlExt", "bin", "Release")
+dll = os.path.normpath(os.path.join(this, "..", "..", "machinelearningext", "bin",
+                                    "AnyCPU.Release", "DocHelperMlExt"))
+if not os.path.exists(dll):
+    raise FileNotFoundError("Unable to find '{0}'.".format(dll))
 folds = [_ for _ in os.listdir(dll) if 'nupkg' not in _]
 if len(folds) != 1:
-    raise FileNotFoundError("Unable to guess where the DLL is in '{0}'".format(dll))
+    raise FileNotFoundError("Unable to guess where the DLL is in '{0}' (1)".format(dll))
 dll = os.path.join(dll, folds[0])
 if not os.path.exists(dll):
-    raise FileNotFoundError("Unable to guess where the DLL is in '{0}'".format(dll))
-mldll = os.path.join(dll, "DocHelperMlExt.dll")
+    raise FileNotFoundError("Unable to guess where the DLL is in '{0}' (2)".format(dll))
+mldll = os.path.join(dll, "Scikit.ML.DocHelperMlExt.dll")
 if not os.path.exists(mldll):
     raise FileNotFoundError("Unable to find '{0}'".format(mldll))
 sys.path.append(dll)
 
 from clr import AddReference
 
-AddReference('DocHelperMlExt')
+AddReference('Scikit.ML.DocHelperMlExt')
 
-from DocHelperMlExt import MamlHelper
+from System.IO import IOException
+
+from Scikit.ML.DocHelperMlExt import MamlHelper
 
 def copy_missing_dll():
     """
     Copies missing DLL.
     """
+    rootpkg = os.path.normpath(os.path.join(this, "..", "..", "machinelearning", "packages"))
     misses = [os.path.join(this, "..", "..", "machinelearning", "dist", "Release"),
-              os.path.join(this, "..", "..", "machinelearning", "packages", "newtonsoft.json", "10.0.3", "lib", "netstandard1.3")]
+              os.path.join(rootpkg, "newtonsoft.json", "10.0.3", "lib", "netstandard1.3"),
+              os.path.join(rootpkg, "system.memory", "4.5.1", "lib", "netstandard2.0"),
+              os.path.join(rootpkg, "system.runtime.compilerservices.unsafe", "4.5.0", "lib", "netstandard2.0"),
+              ]
+
     for miss in misses:
         for dl in os.listdir(miss):
             src = os.path.join(miss, dl)
@@ -40,13 +50,13 @@ def copy_missing_dll():
                 continue
             dst = os.path.join(dll, dl)
             if not os.path.exists(dst):
-                print("copy '{0}' to '{1}'".format(dl, dll))
+                print("copy '{0}' from '{1}'".format(dl, miss))
                 shutil.copy(os.path.join(miss, dl), dll)
 
 
 def maml_pythonnet(script, chdir=False):
     """
-    Runs a maml_script through :epkg:`ML.net`.
+    Runs a *maml script* through :epkg:`ML.net`.
 
     @param      script          script
     @return                     stdout, stderr
@@ -65,6 +75,7 @@ def maml_test():
     Tests the assembly.
     """
     MamlHelper.TestScikitAPI()
+    MamlHelper.TestScikitAPI2()
 
 
 class MlCmdDirective(RunPythonDirective):
@@ -109,7 +120,7 @@ if __name__ == "__main__":
     .. mamlcmd::
         :showcode:
     
-        ?
+        ? ap
     """)
     out = rst2html(rst, layout="sphinx", writer="rst",
                    directives=[("mamlcmd", MlCmdDirective)])

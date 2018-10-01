@@ -78,6 +78,36 @@ namespace Scikit.ML.DocHelperMlExt
         }
 
         /// <summary>
+        /// Runs a simple test.
+        /// </summary>
+        public static void TestScikitAPI2()
+        {
+            var res = MamlHelper.MamlAll("? ap", true);
+            if (string.IsNullOrEmpty(res))
+                throw new Exception("Empty output.");
+        }
+
+        private static string InfoAssembly(Assembly ass)
+        {
+            string name = ass.FullName;
+            try
+            {
+                return name + " - " + ass.Location;
+            }
+            catch (Exception e)
+            {
+                return name + " - " + e.ToString();
+            }
+        }
+
+        public static string[] GetLoadedAssemblies()
+        {
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => InfoAssembly(x)).OrderBy(c => c);
+            return assemblies.ToArray();
+        }
+
+        /// <summary>
         /// Runs a command line with ML.Net.
         /// </summary>
         /// <param name="script">script to run</param>

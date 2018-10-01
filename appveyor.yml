@@ -75,6 +75,7 @@ after_test:
   - python -u copy_binaries.py Release dist\Release
   - python -u copy_binaries.py Debug dist\Debug
   - copy _tests\1.0.0.0\Release\TestScikitAPI_EngineSimpleTrainAndPredict\*.txt dist
+  - copy _tests\1.0.0.0\Release\TestMamlHelperTest2\*.txt dist
 
 artifacts:
   - path: dist

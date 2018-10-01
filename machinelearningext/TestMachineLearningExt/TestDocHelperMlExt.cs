@@ -2,8 +2,10 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.IO;
 using System.Linq;
 using Scikit.ML.DocHelperMlExt;
+using Scikit.ML.TestHelper;
 
 namespace TestMachineLearningExt
 {
@@ -22,6 +24,17 @@ namespace TestMachineLearningExt
         public void TestMamlHelperTest()
         {
             MamlHelper.TestScikitAPI();
+        }
+
+        [TestMethod]
+        public void TestMamlHelperTest2()
+        {
+            MamlHelper.TestScikitAPI2();
+            var ass = MamlHelper.GetLoadedAssemblies();
+            Assert.IsTrue(ass.Length > 0);
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var outData = FileHelper.GetOutputFile("loaded_assemblies.txt", methodName);
+            File.WriteAllText(outData, string.Join("\n", ass));
         }
 
         [TestMethod]

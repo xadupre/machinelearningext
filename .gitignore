@@ -8,4 +8,5 @@ build
 machinelearningext/DocHelperMlExt/DocHelperMlExt.csproj.user
 machinelearningext/DocHelperMlExt/Properties/PublishProfiles
 docs/doctrees
-
+docs/source/logistic_regression.zip
+machinelearningext/packages

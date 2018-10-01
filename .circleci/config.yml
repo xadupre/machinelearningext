@@ -236,6 +236,7 @@ jobs:
             python -c "from sphinx.cmd.build import build_main;build_main(['-j2','-v','-T','-b','html','-d','docs/doctrees','docs/source','docs/build'])"
             zip -r -9 test-reports/doc/documentation_html.zip docs/build
             cp _tests/1.0.0.0/Release/TestScikitAPI_EngineSimpleTrainAndPredict/*.txt test-reports
+            cp _tests/1.0.0.0/Release/TestMamlHelperTest2/*.txt test-reports
             
       - store_artifacts:
           path: test-reports
