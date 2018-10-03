@@ -145,8 +145,11 @@ namespace Scikit.ML.ScikitAPI
             private void WriteHeader(ILogWriter wr, PipeBase<ChannelMessage> commChannel)
             {
                 Contracts.Assert(commChannel.Verbose);
-                wr.Write(new string(' ', commChannel.Depth * 2));
-                WriteName(wr, commChannel);
+                if (_verbose > 2)
+                {
+                    wr.Write(new string(' ', commChannel.Depth * 2));
+                    WriteName(wr, commChannel);
+                }
             }
 
             private void WriteName(ILogWriter wr, ChannelProviderBase provider)
@@ -166,8 +169,11 @@ namespace Scikit.ML.ScikitAPI
                 {
                     EnsureNewLine();
                     WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
-                    WriteHeader(_out, channel);
-                    _out.WriteLine("Started.");
+                    if (_verbose > 2)
+                    {
+                        WriteHeader(_out, channel);
+                        _out.WriteLine("Started.");
+                    }
                 }
             }
 
@@ -180,8 +186,11 @@ namespace Scikit.ML.ScikitAPI
                 {
                     EnsureNewLine();
                     WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
-                    WriteHeader(_out, channel);
-                    _out.WriteLine("Finished.");
+                    if (_verbose > 2)
+                    {
+                        WriteHeader(_out, channel);
+                        _out.WriteLine("Finished.");
+                    }
                 }
             }
 
@@ -199,8 +208,11 @@ namespace Scikit.ML.ScikitAPI
                             new ChannelMessage(ChannelMessageKind.Error, MessageSensitivity.None, "The channel was not properly closed."));
                     }
                     WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
-                    WriteHeader(_out, channel);
-                    _out.WriteLine(string.Format("Elapsed {0:c}.", channel.Watch.Elapsed));
+                    if (_verbose > 2)
+                    {
+                        WriteHeader(_out, channel);
+                        _out.WriteLine(string.Format("Elapsed {0:c}.", channel.Watch.Elapsed));
+                    }
                 }
             }
 

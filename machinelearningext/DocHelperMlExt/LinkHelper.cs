@@ -10,8 +10,8 @@ namespace Scikit.ML.DocHelperMlExt
     {
         public static void _Immutable()
         {
-            var res = new ImmutableArray<float>();
-            if (res == null)
+            var res = ImmutableArray.Create<float>(0f);
+            if (res.Length == 0)
                 throw new Exception("No immutable");
         }
     }

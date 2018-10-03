@@ -240,7 +240,7 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public static void Testl_ShakeInputTransformVectorAdd()
+        public void Testl_ShakeInputTransformVectorAdd()
         {
             using (var host = EnvHelper.NewTestEnvironment())
             {

@@ -13,6 +13,7 @@ using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.DocHelperMlExt;
+using Scikit.ML.ScikitAPI;
 
 
 namespace TestMachineLearningExt
@@ -291,7 +292,12 @@ namespace TestMachineLearningExt
             df.ToCsv(name);
             var cmd = string.Format("Train tr=lr data={0} out={1} loader=text{{col=Label:R4:0 col=Features:R4:1-* sep=,}}",
                                     name, output);
-            var stout = MamlHelper.MamlAll(cmd, true);
+
+            ILogWriter logout = new LogWriter((string s) => { });
+            ILogWriter logerr = new LogWriter((string s) => { });
+            string stout;
+            using (var env = new DelegateEnvironment(verbose: 2, outWriter: logout, errWriter: logerr))
+                stout = MamlHelper.MamlScript(cmd, false, env);
             Assert.IsFalse(string.IsNullOrEmpty(stout));
         }
 

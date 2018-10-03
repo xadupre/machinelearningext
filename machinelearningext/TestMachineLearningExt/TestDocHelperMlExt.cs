@@ -15,7 +15,7 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestMamlHelperHelp()
         {
-            var sout = MamlHelper.MamlAll("?", true);
+            var sout = MamlHelper.MamlScript("?", true);
             if (!sout.Contains("Train"))
                 throw new Exception(sout);
         }
@@ -27,9 +27,10 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestMamlHelperTest2()
+        public void TestMamlHelperTest2_AssemblyList()
         {
             MamlHelper.TestScikitAPI2();
+            LinkHelper._Immutable();
             var ass = MamlHelper.GetLoadedAssemblies();
             Assert.IsTrue(ass.Length > 0);
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;

@@ -8,7 +8,6 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Tools;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.ScikitAPI;
 
@@ -36,6 +35,71 @@ namespace Scikit.ML.DocHelperMlExt
     /// </summary>
     public static class MamlHelper
     {
+        #region command line
+
+        /// <summary>
+        /// Runs a script. Can change the level of desired information.
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="catch_output"></param>
+        /// <param name="verbose">2 is default</param>
+        /// <returns></returns>
+        public static string MamlScriptConsole(string script, bool catch_output, int verbose = 2)
+        {
+            ILogWriter logout = new LogWriter((string s) =>
+            {
+                if (s.Contains("Elapsed"))
+                    throw new Exception(s);
+                Console.Write(s);
+            });
+            ILogWriter logerr = new LogWriter((string s) =>
+            {
+                if (s.Contains("Elapsed"))
+                    throw new Exception(s);
+                Console.Error.Write(s);
+            });
+            using (var env = new DelegateEnvironment(verbose: 2, outWriter: logout, errWriter: logerr))
+                return MamlScript(script, catch_output, env);
+        }
+
+        /// <summary>
+        /// Runs a command line with ML.Net.
+        /// </summary>
+        /// <param name="script">script to run</param>
+        /// <param name="catch_output">capture output</param>
+        /// <param name="env">delegate environment</param>
+        /// <returns>output and error if captured</returns>
+        public static string MamlScript(string script, bool catch_output, DelegateEnvironment env = null)
+        {
+            int errCode;
+            string res;
+            if (catch_output)
+            {
+                using (var capture = new StdCapture())
+                {
+                    errCode = DocumentationEnvironmentHelper.MainWithProgress(script, env);
+                    var sout = capture.StdOut;
+                    var serr = capture.StdErr;
+                    if (string.IsNullOrEmpty(serr))
+                        res = sout;
+                    else
+                        res = $"--OUT--\n{sout}\n--ERR--\n{serr}";
+                }
+            }
+            else
+            {
+                errCode = DocumentationEnvironmentHelper.MainWithProgress(script, env);
+                res = string.Empty;
+            }
+            if (errCode != 0)
+                throw new MamlException($"Unable to run script, error code={errCode}\n{script}\n{res}");
+            return res;
+        }
+
+        #endregion
+
+        #region tests
+
         /// <summary>
         /// Runs a simple test.
         /// </summary>
@@ -82,10 +146,14 @@ namespace Scikit.ML.DocHelperMlExt
         /// </summary>
         public static void TestScikitAPI2()
         {
-            var res = MamlHelper.MamlAll("? ap", true);
+            var res = MamlScript("? ap", true);
             if (string.IsNullOrEmpty(res))
                 throw new Exception("Empty output.");
         }
+
+        #endregion
+
+        #region inspect
 
         private static string InfoAssembly(Assembly ass)
         {
@@ -102,42 +170,8 @@ namespace Scikit.ML.DocHelperMlExt
 
         public static string[] GetLoadedAssemblies()
         {
-
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => InfoAssembly(x)).OrderBy(c => c);
             return assemblies.ToArray();
-        }
-
-        /// <summary>
-        /// Runs a command line with ML.Net.
-        /// </summary>
-        /// <param name="script">script to run</param>
-        /// <param name="catch_output">capture output</param>
-        /// <returns>output and error if captured</returns>
-        public static string MamlAll(string script, bool catch_output)
-        {
-            int errCode;
-            string res;
-            if (catch_output)
-            {
-                using (var capture = new StdCapture())
-                {
-                    errCode = Maml.MainAll(script);
-                    var sout = capture.StdOut;
-                    var serr = capture.StdErr;
-                    if (string.IsNullOrEmpty(serr))
-                        res = sout;
-                    else
-                        res = $"--OUT--\n{sout}\n--ERR--\n{serr}";
-                }
-            }
-            else
-            {
-                errCode = Maml.MainAll(script);
-                res = string.Empty;
-            }
-            if (errCode != 0)
-                throw new MamlException($"Unable to run script, error code={errCode}\n{script}\n{res}");
-            return res;
         }
 
         /// <summary>
@@ -241,5 +275,7 @@ namespace Scikit.ML.DocHelperMlExt
                 }
             }
         }
+
+        #endregion
     }
 }
