@@ -426,7 +426,8 @@ namespace Scikit.ML.DocHelperMlExt
                 ch.Error(e.Sensitivity(), "({0}) Unexpected exception: {1}, '{2}'", index, e.Message, e.GetType());
                 PrintExceptionData(ch, e, true);
                 // While the message can be sensitive, we suppose the stack trace itself is not.
-                ch.Error(MessageSensitivity.None, e.StackTrace);
+                if (e.StackTrace != null && e.StackTrace.Length > 0)
+                    ch.Error(MessageSensitivity.None, e.StackTrace);
             }
         }
 

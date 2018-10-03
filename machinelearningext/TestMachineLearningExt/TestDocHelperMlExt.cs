@@ -27,6 +27,18 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
+        public void TestScikitAPITrain()
+        {
+            MamlHelper.TestScikitAPITrain();
+            LinkHelper._Immutable();
+            var ass = MamlHelper.GetLoadedAssemblies();
+            Assert.IsTrue(ass.Length > 0);
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var outData = FileHelper.GetOutputFile("loaded_assemblies.txt", methodName);
+            File.WriteAllText(outData, string.Join("\n", ass));
+        }
+
+        [TestMethod]
         public void TestMamlHelperTest2_AssemblyList()
         {
             MamlHelper.TestScikitAPI2();
@@ -54,6 +66,13 @@ namespace TestMachineLearningExt
             Assert.IsTrue(trainers.Length > 0);
             var df = trainers.First().ArgsAsDataFrame;
             Assert.AreEqual(df.Shape.Item2, 4);
+        }
+
+        [TestMethod]
+        public void TestMamlHelperCalibrator()
+        {
+            var cal = MamlHelper.EnumerateComponents("calibrator").ToArray();
+            Assert.IsTrue(cal.Length > 0);
         }
     }
 }

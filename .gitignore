@@ -10,3 +10,5 @@ machinelearningext/DocHelperMlExt/Properties/PublishProfiles
 docs/doctrees
 docs/source/logistic_regression.zip
 machinelearningext/packages
+docs/source/components
+

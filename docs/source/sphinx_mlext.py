@@ -8,6 +8,7 @@ from pyquickhelper.sphinxext.sphinx_runpython_extension import RunPythonDirectiv
 import os
 import sys
 import shutil
+import jinja2
 this = os.path.abspath(os.path.dirname(__file__))
 dll = os.path.normpath(os.path.join(this, "..", "..", "machinelearningext", "bin",
                                     "AnyCPU.Debug", "DocHelperMlExt"))
@@ -47,7 +48,7 @@ def copy_missing_dll():
     """
     rootpkg = os.path.normpath(os.path.join(this, "..", "..", "machinelearning", "packages"))
               
-    source = os.path.normpath(os.path.join(rootpkg, '..', '..', '_tests', '1.0.0.0', 'Debug', 'TestMamlHelperTest2_AssemblyList', 'loaded_assemblies.txt'))
+    source = os.path.normpath(os.path.join(rootpkg, '..', '..', '_tests', '1.0.0.0', 'Debug', 'TestScikitAPITrain', 'loaded_assemblies.txt'))
     if not os.path.exists(source):
         raise FileNotFoundError("Unable to find '{0}'.\nYou should run test 'TestMamlHelperTest2_AssemblyList'.".format(source))
 
@@ -100,6 +101,14 @@ def maml_test():
     """
     MamlHelper.TestScikitAPI()
     MamlHelper.TestScikitAPI2()
+    iris = os.path.abspath(os.path.join(os.path.dirname(__file__), "iris.txt"))
+    if not os.path.exists(iris):
+        raise FileNotFoundError("Unable to find '{0}'.".format(iris))
+    print(dll)
+    cwd = os.getcwd()
+    os.chdir(dll)    
+    MamlHelper.TestScikitAPITrain(iris)
+    os.chdir(cwd)
 
 
 class MlCmdDirective(RunPythonDirective):
@@ -123,12 +132,114 @@ class MlCmdDirective(RunPythonDirective):
         return "\n".join(script)
 
 
+def mlnet_components_kinds():
+    """
+    Retrieves all kinds.
+    """
+    from Scikit.ML.DocHelperMlExt import MamlHelper
+
+    kinds = list(MamlHelper.GetAllKinds())
+    titles = {
+        'anomalydetectortrainer': 'Anomaly Detection', 
+        'binaryclassifiertrainer': 'Binary Classification', 
+        'clusteringtrainer': 'Clustering', 
+        'dataloader': 'Data Loader', 
+        'datasaver': 'Data Loader', 
+        'datascorer': 'Score (= compute the predictions)', 
+        'datatransform': 'Transforms', 
+        'ensembledataselector': 'Data Selection', 
+        'evaluator': 'Evaluation', 
+        'featurescorertrainer': 'Feature Selection (2)', 
+        'fourierdistributionsampler': 'Fourrier Sampling', 
+        'multiclassclassifiertrainer': 'Multiclass Classification',
+        'ngramextractorfactory': 'N-Grams',
+        'rankertrainer': 'Ranking',
+        'regressortrainer': 'Regression', 
+        'tokenizetransform': 'Tokenization'
+    }
+    return {k: titles[k] for k in kinds if k in titles}
+        
+    
+def builds_components_pages():
+    """
+    Returns components pages.
+    """
+    try:
+        from .sphinx_mlext_templates import index_template, kind_template, component_template
+    except (ModuleNotFoundError, ImportError):
+        from sphinx_mlext_templates import index_template, kind_template, component_template
+    
+    kinds = mlnet_components_kinds()
+    pages = {}
+    
+    # index
+    sorted_kinds = list(sorted((v, k) for k, v in kinds.items()))
+    template = jinja2.Template(index_template)
+    pages["index"] = template.render(sorted_kinds=sorted_kinds)
+    
+    kind_tpl = jinja2.Template(kind_template)
+    comp_tpl = jinja2.Template(component_template)
+    
+    # kinds and components
+    for v, k in sorted_kinds:
+        enumc = MamlHelper.EnumerateComponents(k)
+        try:
+            comps = list(enumc)
+        except Exception as e:
+            print("Issue with kind {0}\n{1}".format(k, e))
+            continue
+        if len(comps) == 0:
+            continue
+            
+        comp_names = list(sorted(c.Name.replace(" ", "_") for c in comps))
+        kind_name = v
+        pages[k] = kind_tpl.render(title=kind_name, fnames=comp_names, len=len)
+        
+        for comp in comps:
+            
+            if comp.Arguments is None:
+                print(k, comp.Name, comp.Description)
+            else:
+                args = {}
+                for arg in comp.Arguments:
+                    args[arg.Name] = dict(Name=arg.Name, ShortName=arg.ShortName or '',
+                                          Default=arg.DefaultValue or '',
+                                          Description=arg.Help)
+                sorted_params = [v for k, v in sorted(args.items())]
+                aliases = ", ".join(comp.Aliases)
+                
+                comp_name = comp.Name.replace(" ", "_")
+                pages[comp_name] = comp_tpl.render(title=comp.Name,
+                                        aliases=aliases, 
+                                        summary=comp.Description,
+                                        kind=kind_name, 
+                                        sorted_params=sorted_params, 
+                                        len=len)
+    
+    return pages
+    
+
+def write_components_pages(app, env, docnames):
+    """
+    Writes documentation pages.
+    """
+    pages = builds_components_pages()
+    docdir = env.srcdir
+    dest = os.path.join(docdir, "components")
+    if not os.path.exists(dest):
+        os.mkdir(dest)
+    for k, v in pages.items():
+        d = os.path.join(dest, k) + ".rst"
+        with open(d, "w", encoding="utf-8") as f:
+            f.write(v)
+
 def setup(app):
     """
     Adds the custom directive.
     """
     copy_missing_dll()
     app.add_directive('mlcmd', MlCmdDirective)
+    app.connect("env-before-read-docs", write_components_pages)
     return {'version': sphinx.__display_version__, 'parallel_read_safe': True}
 
 
@@ -137,6 +248,7 @@ if __name__ == "__main__":
     from clr import AddReference
     AddReference('Scikit.ML.DocHelperMlExt')
     from Scikit.ML.DocHelperMlExt import MamlHelper
+    pages = builds_components_pages()
     # Test 1
     maml_test()
     # print(maml_pythonnet("?"))

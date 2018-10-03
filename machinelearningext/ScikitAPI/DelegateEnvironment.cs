@@ -205,7 +205,7 @@ namespace Scikit.ML.ScikitAPI
                     if (active)
                     {
                         PrintMessage(channel,
-                            new ChannelMessage(ChannelMessageKind.Error, MessageSensitivity.None, "The channel was not properly closed."));
+                            new ChannelMessage(ChannelMessageKind.Error, MessageSensitivity.None, "The channel was not properly closed (*)."));
                     }
                     WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
                     if (_verbose > 2)

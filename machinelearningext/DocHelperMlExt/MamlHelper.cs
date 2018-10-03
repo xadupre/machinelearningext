@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -99,6 +100,22 @@ namespace Scikit.ML.DocHelperMlExt
         #endregion
 
         #region tests
+
+        public static void TestScikitAPITrain(string name = null)
+        {
+            var script = "train data=__NAME__ loader=text{col=Label:R4:0 col=Features:R4:1-4} tr=mlr{maxiter=5} out=logistic_regression.zip";
+            name = name ?? Path.Combine("..", "..", "..", "..", "..", "docs", "source", "iris.txt");
+            name = Path.GetFullPath(name);
+            if (!File.Exists(name))
+            {
+                TestScikitAPI2();
+                return;
+            }
+            script = script.Replace("__NAME__", name);
+            var res = MamlScript(script, true);
+            if (string.IsNullOrEmpty(res))
+                throw new Exception("Empty output.");
+        }
 
         /// <summary>
         /// Runs a simple test.
@@ -243,35 +260,53 @@ namespace Scikit.ML.DocHelperMlExt
                 foreach (var info in infos)
                 {
                     var args = info.CreateArguments();
-                    var asse = args.GetType().Assembly;
-
-                    var parsedArgs = CmdParser.GetArgInfo(args.GetType(), args).Args;
-                    var arguments = new List<ComponentDescription.Argument>();
-                    foreach (var arg in parsedArgs)
+                    if (args == null)
                     {
-                        var a = new ComponentDescription.Argument()
+                        var cmp = new ComponentDescription()
                         {
-                            Name = arg.LongName,
-                            ShortName = arg.ShortNames == null || !arg.ShortNames.Any() ? null : arg.ShortNames.First(),
-                            DefaultValue = arg.DefaultValue == null ? null : arg.DefaultValue.ToString(),
-                            Help = arg.HelpText,
-                            Arg = arg,
+                            Args = args,
+                            Name = info.UserName,
+                            Description = info.Summary,
+                            Info = info,
+                            Aliases = info.LoadNames.ToArray(),
+                            Assembly = null,
+                            AssemblyName = "?",
+                            Arguments = null,
                         };
-                        arguments.Add(a);
+                        yield return cmp;
                     }
-
-                    var cmp = new ComponentDescription()
+                    else
                     {
-                        Args = args,
-                        Name = info.UserName,
-                        Description = info.Summary,
-                        Info = info,
-                        Aliases = info.LoadNames.ToArray(),
-                        Assembly = asse,
-                        AssemblyName = asse.ManifestModule.Name,
-                        Arguments = arguments.OrderBy(c => c.Name).ToArray(),
-                    };
-                    yield return cmp;
+                        var asse = args.GetType().Assembly;
+
+                        var parsedArgs = CmdParser.GetArgInfo(args.GetType(), args).Args;
+                        var arguments = new List<ComponentDescription.Argument>();
+                        foreach (var arg in parsedArgs)
+                        {
+                            var a = new ComponentDescription.Argument()
+                            {
+                                Name = arg.LongName,
+                                ShortName = arg.ShortNames == null || !arg.ShortNames.Any() ? null : arg.ShortNames.First(),
+                                DefaultValue = arg.DefaultValue == null ? null : arg.DefaultValue.ToString(),
+                                Help = arg.HelpText,
+                                Arg = arg,
+                            };
+                            arguments.Add(a);
+                        }
+
+                        var cmp = new ComponentDescription()
+                        {
+                            Args = args,
+                            Name = info.UserName,
+                            Description = info.Summary,
+                            Info = info,
+                            Aliases = info.LoadNames.ToArray(),
+                            Assembly = asse,
+                            AssemblyName = asse.ManifestModule.Name,
+                            Arguments = arguments.OrderBy(c => c.Name).ToArray(),
+                        };
+                        yield return cmp;
+                    }
                 }
             }
         }
