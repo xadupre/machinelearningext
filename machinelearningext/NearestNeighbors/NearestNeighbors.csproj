@@ -4,8 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Scikit.ML.NearestNeighbors</AssemblyName>
     <RootNamespace>Scikit.ML.NearestNeighbors</RootNamespace>
-    <Version>0.7.0</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

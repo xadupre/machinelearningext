@@ -4,8 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Scikit.ML.PipelineTraining</AssemblyName>
     <RootNamespace>Scikit.ML.PipelineTraining</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.7.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

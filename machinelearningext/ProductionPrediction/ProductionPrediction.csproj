@@ -4,8 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Scikit.ML.ProductionPrediction</AssemblyName>
     <RootNamespace>Scikit.ML.ProductionPrediction</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.7.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

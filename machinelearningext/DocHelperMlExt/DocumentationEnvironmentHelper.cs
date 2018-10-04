@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -380,6 +381,10 @@ namespace Scikit.ML.DocHelperMlExt
                     {
                         ch.Error(MessageSensitivity.None, "===== Begin detailed dump =====");
                         PrintFullExceptionDetails(ch, ex);
+                        ch.Error("= LoadedAssemblies =");
+                        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => InfoAssembly(x)).OrderBy(c => c);
+                        foreach (var a in assemblies)
+                            ch.Error(a);
                         ch.Error(MessageSensitivity.None, "====== End detailed dump =====");
                     }
 
@@ -391,6 +396,19 @@ namespace Scikit.ML.DocHelperMlExt
                 }
                 ch.Done();
                 return result;
+            }
+        }
+
+        private static string InfoAssembly(Assembly ass)
+        {
+            string name = ass.FullName;
+            try
+            {
+                return name + " - " + ass.Location;
+            }
+            catch (Exception e)
+            {
+                return name + " - " + e.ToString();
             }
         }
 

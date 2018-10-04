@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.7.0</Version>
     <RootNamespace>Scikit.ML.DocHelperMlExt</RootNamespace>
     <AssemblyName>Scikit.ML.DocHelperMlExt</AssemblyName>
   </PropertyGroup>

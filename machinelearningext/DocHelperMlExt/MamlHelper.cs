@@ -103,7 +103,7 @@ namespace Scikit.ML.DocHelperMlExt
 
         public static void TestScikitAPITrain(string name = null)
         {
-            var script = "train data=__NAME__ loader=text{col=Label:R4:0 col=Features:R4:1-4} tr=mlr{maxiter=5} out=logistic_regression.zip";
+            var script = "train data=__NAME__ loader=text{col=Label:R4:0 col=Features:R4:1-4 header=+} tr=mlr{maxiter=5} out=logistic_regression.zip";
             name = name ?? Path.Combine("..", "..", "..", "..", "..", "docs", "source", "iris.txt");
             name = Path.GetFullPath(name);
             if (!File.Exists(name))

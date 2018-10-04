@@ -4,8 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Scikit.ML.ModelSelection</AssemblyName>
     <RootNamespace>Scikit.ML.ModelSelection</RootNamespace>
-    <Version>0.7.0</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
