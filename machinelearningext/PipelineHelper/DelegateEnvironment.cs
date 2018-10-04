@@ -10,7 +10,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
 
-namespace Scikit.ML.ScikitAPI
+namespace Scikit.ML.PipelineHelper
 {
     using Stopwatch = System.Diagnostics.Stopwatch;
 

@@ -280,7 +280,7 @@ namespace Scikit.ML.DataManipulation
         public double AssertAlmostEqual(IDataFrameView df, double precision = 1e-5, bool exc = true)
         {
             if (Shape != df.Shape)
-                throw new DataValueError(string.Format("Shapes are different ({0}, {1}) != ({2}, {3})", 
+                throw new DataValueError(string.Format("Shapes are different ({0}, {1}) != ({2}, {3})",
                             Shape.Item1, Shape.Item2, df.Shape.Item1, df.Shape.Item2));
             double max = 0;
             for (int i = 0; i < df.Shape.Item2; ++i)
@@ -327,14 +327,15 @@ namespace Scikit.ML.DataManipulation
         /// <param name="encoding">encoding</param>
         /// <param name="silent">Suppress any info output (not warnings or errors)</param>
         public void ToCsv(string filename, string sep = ",", bool header = true,
-                          Encoding encoding = null, bool silent = false)
+                          Encoding encoding = null, bool silent = false, IHost host = null)
         {
-            DataFrameIO.ViewToCsv(this, filename, sep: sep, header: header, encoding: encoding, silent: silent);
+            DataFrameIO.ViewToCsv(this, filename, sep: sep, header: header, encoding: encoding, silent: silent, host: host);
         }
 
-        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1)
+        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1,
+                               IHostEnvironment env = null)
         {
-            _data.FillValues(view, nrows: nrows, keepVectors: keepVectors, numThreads: numThreads);
+            _data.FillValues(view, nrows: nrows, keepVectors: keepVectors, numThreads: numThreads, env: env);
         }
 
         /// <summary>

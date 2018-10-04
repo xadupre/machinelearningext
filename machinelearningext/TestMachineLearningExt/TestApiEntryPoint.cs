@@ -1,9 +1,13 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Text;
 using System.IO;
 using Microsoft.ML.Runtime.Tools;
 using Scikit.ML.TestHelper;
+using Scikit.ML.PipelineHelper;
+using Scikit.ML.DocHelperMlExt;
+
 
 namespace TestMachineLearningExt
 {
@@ -14,21 +18,26 @@ namespace TestMachineLearningExt
         public void TestCSGeneratorHelp()
         {
             var cmd = "? CSGenerator";
-            using (var std = new StdCapture())
+            using (var std = new Scikit.ML.DocHelperMlExt.StdCapture())
             {
                 Maml.MainAll(cmd);
-                Assert.IsTrue(std.StdOut.Length > 0);
+                if (std.StdOut.Length == 0)
+                    Assert.Inconclusive("Not accurate on a remote machine.");
             }
         }
 
         [TestMethod]
         public void TestHelpScorer()
         {
-            var cmd = "? MultiClassClassifierScorer";
-            using (var std = new StdCapture())
+            var bout = new StringBuilder();
+            var berr = new StringBuilder();
+            ILogWriter stout = new LogWriter(s => bout.Append(s));
+            ILogWriter sderr = new LogWriter(s => berr.Append(s));
+            using (var env = new DelegateEnvironment(outWriter: stout, errWriter: sderr, verbose: 3))
             {
-                Maml.MainAll(cmd);
-                var sout = std.StdOut.ToString();
+                var cmd = "? MultiClassClassifierScorer";
+                MamlHelper.MamlScript(cmd, false, env);
+                var sout = bout.ToString();
                 Assert.IsTrue(sout.Length > 0);
                 Assert.IsTrue(!sout.Contains("Unknown"));
             }
@@ -39,12 +48,16 @@ namespace TestMachineLearningExt
         {
             foreach (var name in new[] { "Resample" })
             {
-                var cmd = $"? {name}";
-                using (var std = new StdCapture())
+                var bout = new StringBuilder();
+                var berr = new StringBuilder();
+                ILogWriter stout = new LogWriter(s => bout.Append(s));
+                ILogWriter sderr = new LogWriter(s => berr.Append(s));
+                using (var env = new DelegateEnvironment(outWriter: stout, errWriter: sderr, verbose: 3))
                 {
-                    Maml.MainAll(cmd);
-                    var sout = std.StdOut.ToString();
-                    var serr = std.StdErr.ToString();
+                    var cmd = $"? {name}";
+                    MamlHelper.MamlScript(cmd, false, env: env);
+                    var sout = bout.ToString();
+                    var serr = berr.ToString();
                     Assert.IsTrue(!serr.Contains("Can't instantiate"));
                     Assert.IsTrue(sout.Length > 0);
                     Assert.IsTrue(!sout.Contains("Unknown"));
@@ -58,12 +71,18 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var basePath = FileHelper.GetOutputFile("CSharpApiExt.cs", methodName);
             var cmd = $"? generator=cs{{csFilename={basePath} exclude=System.CodeDom.dll}}";
-            using (var std = new StdCapture())
+            var bout = new StringBuilder();
+            var berr = new StringBuilder();
+            ILogWriter stout = new LogWriter(s => bout.Append(s));
+            ILogWriter sderr = new LogWriter(s => berr.Append(s));
+            using (var env = new DelegateEnvironment(outWriter: stout, errWriter: sderr, verbose: 3))
             {
-                Maml.Main(new[] { cmd });
-                Assert.IsTrue(std.StdOut.Length > 0);
-                Assert.IsTrue(std.StdErr.Length == 0);
-                Assert.IsFalse(std.StdOut.ToLower().Contains("usage"));
+                MamlHelper.MamlScript(cmd, false, env: env);
+                var sout = bout.ToString();
+                var serr = berr.ToString();
+                Assert.IsTrue(sout.Length > 0);
+                Assert.IsTrue(serr.Length == 0);
+                Assert.IsFalse(sout.ToLower().Contains("usage"));
             }
             var text = File.ReadAllText(basePath);
             Assert.IsTrue(text.ToLower().Contains("nearest"));

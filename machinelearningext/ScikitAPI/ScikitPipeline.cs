@@ -149,7 +149,10 @@ namespace Scikit.ML.ScikitAPI
                         if (e.ToString().Contains("Unknown loadable class"))
                         {
                             var nn = _env.ComponentCatalog.GetAllClasses().Length;
-                            var filt = _env.ComponentCatalog.GetAllClasses().Select(c => c.UserName).OrderBy(c => c).Where(c => c.Trim().Length > 2);
+                            var filt = _env.ComponentCatalog.GetAllClasses()
+                                                            .Select(c => c.UserName)
+                                                            .OrderBy(c => c)
+                                                            .Where(c => c.Trim().Length > 2);
                             var regis = string.Join("\n", filt);
                             throw Contracts.Except(e, $"Unable to create transform '{_transforms[i].transformSettings}', assembly not registered among {nn}\n{regis}");
                         }
@@ -192,7 +195,7 @@ namespace Scikit.ML.ScikitAPI
                 // We predict one to make sure everything works fine.
                 using (var ch = _env.Start("Compute one prediction."))
                 {
-                    var df = DataFrameIO.ReadView(trans, 1, keepVectors: true);
+                    var df = DataFrameIO.ReadView(trans, 1, keepVectors: true, env: _env);
                     if (df.Length == 0)
                         throw _env.ExceptEmpty("Something went wrong. The pipeline does not produce any output.");
                     ch.Done();

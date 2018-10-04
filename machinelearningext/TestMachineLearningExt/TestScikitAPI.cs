@@ -3,10 +3,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ScikitAPI;
 using Scikit.ML.DataManipulation;
+using Scikit.ML.PipelineHelper;
 
 
 namespace TestMachineLearningExt
@@ -162,7 +164,8 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));
                     var dfs = df.ToString();
                     var dfs2 = dfs.Replace("\n", ";");
-                    Assert.IsTrue(dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"));
+                    if (!dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"))
+                        throw new Exception($"Wrong starts\n{dfs2}");
                     expected = dfs2;
                     pipe.Save(output);
                 }
@@ -197,21 +200,33 @@ namespace TestMachineLearningExt
 
             var stdout = new List<string>();
             var stderr = new List<string>();
-            ILogWriter logout = new LogWriter(s => stdout.Add(s));
-            ILogWriter logerr = new LogWriter(s => stderr.Add(s));
+            ILogWriter logout = new LogWriter((string s) =>
+            {
+                stdout.Add(s);
+            });
+            ILogWriter logerr = new LogWriter((string s) =>
+            {
+                stderr.Add(s);
+            });
 
-            using (var host = new DelegateEnvironment(conc: 1, outWriter: logout, errWriter: logerr, verbose: 1))
+            using (var host = new DelegateEnvironment(conc: 1, outWriter: logout, errWriter: logerr, verbose: 3))
+            using (var ch = host.Start("Train Pipeline"))
             {
                 ComponentHelper.AddStandardComponents(host);
+                ch.Info(MessageSensitivity.All, "Polynomial");
                 var data = host.CreateStreamingDataView(inputs);
                 using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, host: host))
                 {
                     var predictor = pipe.Train(data);
-                    Assert.IsTrue(predictor != null);
+                    if (predictor == null)
+                        throw new Exception("Predictor is null");
                 }
+                ch.Done();
             }
-            Assert.IsTrue(stdout.Count > 0);
-            Assert.AreEqual(stderr.Count, 0);
+            if (stdout.Count == 0)
+                throw new Exception("stdout is empty.");
+            if (stderr.Count != 0)
+                throw new Exception($"stderr not empty\n{string.Join("\n", stderr)}");
         }
 
         [TestMethod]

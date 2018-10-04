@@ -11,6 +11,7 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.ScikitAPI;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.DocHelperMlExt

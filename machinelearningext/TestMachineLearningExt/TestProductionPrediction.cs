@@ -3,6 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Text;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
@@ -13,7 +14,7 @@ using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.DocHelperMlExt;
-using Scikit.ML.ScikitAPI;
+using Scikit.ML.PipelineHelper;
 
 
 namespace TestMachineLearningExt
@@ -290,15 +291,17 @@ namespace TestMachineLearningExt
                                 "1,3.1,1.1,4.1,3.1,4.1,-5.1,6.2,7.4,-5\n" +
                                 "0,4.1,1.1,2.1,3.1,4.1,5.1,6.2,-7.4,-5");
             df.ToCsv(name);
-            var cmd = string.Format("Train tr=lr data={0} out={1} loader=text{{col=Label:R4:0 col=Features:R4:1-* sep=,}}",
+            var cmd = string.Format("Train tr=lr data={0} out={1} loader=text{{col=Label:R4:0 col=Features:R4:1-* sep=, header=+}}",
                                     name, output);
 
-            ILogWriter logout = new LogWriter((string s) => { });
-            ILogWriter logerr = new LogWriter((string s) => { });
-            string stout;
+            var stdout = new StringBuilder();
+            ILogWriter logout = new LogWriter((string s) => { stdout.Append(s); });
+            ILogWriter logerr = new LogWriter((string s) => { stdout.Append(s); });
             using (var env = new DelegateEnvironment(verbose: 2, outWriter: logout, errWriter: logerr))
-                stout = MamlHelper.MamlScript(cmd, false, env);
-            Assert.IsFalse(string.IsNullOrEmpty(stout));
+                MamlHelper.MamlScript(cmd, false, env);
+            var stout = stdout.ToString();
+            if (string.IsNullOrEmpty(stout))
+                throw new Exception(stout);
         }
 
         [TestMethod]

@@ -180,10 +180,11 @@ namespace Scikit.ML.DataManipulation
         /// <param name="encoding">encoding</param>
         /// <param name="silent">Suppress any info output (not warnings or errors)</param>
         public static void ViewToCsv(IDataView view, string filename, string sep = ",",
-                                     bool header = true, Encoding encoding = null, bool silent = false)
+                                     bool header = true, Encoding encoding = null, bool silent = false,
+                                     IHost host = null)
         {
             using (var fs = new StreamWriter(filename, false, encoding ?? Encoding.ASCII))
-                ViewToCsv(view, fs.BaseStream, sep: sep, header: header, silent: silent);
+                ViewToCsv(view, fs.BaseStream, sep: sep, header: header, silent: silent, host: host);
         }
 
         /// <summary>
@@ -417,10 +418,11 @@ namespace Scikit.ML.DataManipulation
         /// <param name="keepVectors">keep vectors as they are</param>
         /// <param name="numThreads">number of threads to use to fill the dataframe</param>
         /// <returns>DataFrame</returns>
-        public static DataFrame ReadView(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1)
+        public static DataFrame ReadView(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1,
+                                         IHostEnvironment env = null)
         {
             var df = new DataFrame();
-            df.FillValues(view, nrows: nrows, keepVectors: keepVectors, numThreads: numThreads);
+            df.FillValues(view, nrows: nrows, keepVectors: keepVectors, numThreads: numThreads, env: env);
             return df;
         }
 
@@ -595,7 +597,7 @@ namespace Scikit.ML.DataManipulation
         /// Data is sorted by key.
         /// </summary>
         public static DataFrame Convert<KeyType1, KeyType2, KeyType3, KeyType4, KeyType5, KeyType6, ValueType>(Dictionary<Tuple<KeyType1, KeyType2, KeyType3, KeyType4, KeyType5, KeyType6>, ValueType> data,
-                                                             string columnKey1 = "key1", string columnKey2 = "key2", string columnKey3 = "key3", string columnKey4 = "key4", 
+                                                             string columnKey1 = "key1", string columnKey2 = "key2", string columnKey3 = "key3", string columnKey4 = "key4",
                                                              string columnKey5 = "key5", string columnKey6 = "key6", string columnValue = "value")
         {
             var keys1 = new List<KeyType1>();

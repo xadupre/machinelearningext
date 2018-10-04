@@ -709,7 +709,7 @@ namespace Scikit.ML.DataManipulation
         /// nrow must be specified for the first column.
         /// The method checks that all column have the same number of elements.
         /// </summary>
-        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1)
+        public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1, IHostEnvironment env = null)
         {
             long? numRows = view.GetRowCount(false);
             if (!numRows.HasValue)
@@ -742,8 +742,15 @@ namespace Scikit.ML.DataManipulation
                 }
             }
 
-            var host = new ConsoleEnvironment().Register("Estimate n threads");
-            var nth = numThreads.HasValue ? numThreads.Value : DataViewUtils.GetThreadCount(host, 0, true);
+            ILogWriter logout = new LogWriter((string s) => { });
+            ILogWriter logerr = new LogWriter((string s) => { });
+            int nth;
+            bool dispose = env == null;
+            IHostEnvironment host = env ?? new DelegateEnvironment(conc: 1, outWriter: logout, errWriter: logerr, verbose: 1);
+            var ch = host.Register("Estimate n threads");
+            nth = numThreads.HasValue ? numThreads.Value : DataViewUtils.GetThreadCount(ch, 0, true);
+            if (dispose)
+                (host as DelegateEnvironment).Dispose();
 
             // Fills values.
             if (nth == 1)
@@ -844,7 +851,6 @@ namespace Scikit.ML.DataManipulation
                     }
                 }
             }
-
 
             var valueBL = new bool();
             var valueI4 = new int();
