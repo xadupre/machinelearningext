@@ -71,6 +71,18 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
+        public void TestMamlHelperDataTransform()
+        {
+            var dt = MamlHelper.EnumerateComponents("datatransform").ToArray();
+            var names = dt.Select(c => c.Name).ToArray();
+            Assert.IsTrue(dt.Length > 0);
+            Assert.IsTrue(names.Length > 0);
+            var df = dt.First().ArgsAsDataFrame;
+            Assert.AreEqual(df.Shape.Item2, 4);
+            Assert.IsTrue(names.Where(c => c.Contains("Sliding")).Any());
+        }
+
+        [TestMethod]
         public void TestMamlHelperCalibrator()
         {
             var cal = MamlHelper.EnumerateComponents("calibrator").ToArray();

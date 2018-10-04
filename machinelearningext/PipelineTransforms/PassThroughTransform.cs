@@ -33,7 +33,7 @@ namespace Scikit.ML.PipelineTransforms
     public class PassThroughTransform : IDataTransform
     {
         public const string LoaderSignature = "PassThroughTransform";  // Not more than 24 letters.
-        public const string Summary = "Insert a transform which does nothing just to get a transform pointer. It can be used to dump a view on disk.";
+        public const string Summary = "Inserts a transform which does nothing just to get a transform pointer. It can be used to dump a view on disk.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()

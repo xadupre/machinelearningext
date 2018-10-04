@@ -55,7 +55,7 @@ namespace Scikit.ML.PipelineTransforms
         #region identification
 
         public const string LoaderSignature = "ExtendedCacheTransform";
-        public const string Summary = "Cache data in memory or on disk. If async is true, the cache is asynchronous (different thread). " +
+        public const string Summary = "Caches data in memory or on disk. If async is true, the cache is asynchronous (different thread). " +
                                       "The transform can be used to overwrite some values in the middle of a pipeline while doing predictions.";
         public const string RegistrationName = LoaderSignature;
 

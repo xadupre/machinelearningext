@@ -219,6 +219,8 @@ def builds_components_pages(epkg):
         if len(default_value) > 28:
             if len(default_value.split(".")) > 2:
                 default_value = default_value.replace(".", ". ")
+            elif len(default_value.split(",")) > 2:
+                default_value = default_value.replace(",", ", ")
             else:
                 raise ValueError("Unable to shorten default value '{0}' len={1}.".format(default_value, len(default_value)))
         return default_value

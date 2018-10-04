@@ -30,7 +30,7 @@ namespace Scikit.ML.PipelineGraphTransforms
     public class ChainTransform : IDataTransform
     {
         public const string LoaderSignature = "ChainTransform";  // Not more than 24 letters.
-        public const string Summary = "Chain multiple transforms into a single one.";
+        public const string Summary = "Chains multiple transforms into a single one.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()

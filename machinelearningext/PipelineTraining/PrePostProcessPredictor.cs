@@ -19,7 +19,7 @@ namespace Scikit.ML.PipelineTraining
     {
         public const string LoaderSignature = "PrePostProcessPredictor";
         public const string RegistrationName = "PrePostProcessPredictor";
-        public const string Summary = "Append optional transforms to preprocess and/or postprocess a trainer. " +
+        public const string Summary = "Appends optional transforms to preprocess and/or postprocess a trainer. " +
                                       "The pipeline will execute the following pipeline pre-predictor-score-post.";
 
         private static VersionInfo GetVersionInfo()

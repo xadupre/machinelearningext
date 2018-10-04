@@ -31,7 +31,7 @@ namespace Scikit.ML.PipelineTransforms
     public class DescribeTransform : IDataTransform
     {
         public const string LoaderSignature = "DescribeTransform";  // Not more than 24 letters.
-        public const string Summary = "Compute various statistics on a list of columns.";
+        public const string Summary = "Computes various statistics on a list of columns.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()

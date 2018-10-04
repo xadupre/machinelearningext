@@ -227,8 +227,7 @@ jobs:
             mkdir -p test-reports/doc
             python -u copy_binaries.py Release test-reports/dist/Release
             python -u copy_binaries.py Debug test-reports/dist/Release
-            cp _tests/1.0.0.0/Release/TestScikitAPI_EngineSimpleTrainAndPredict/*.txt test-reports
-            cp _tests/1.0.0.0/Release/TestMamlHelperTest2/*.txt test-reports
+            cp _tests/1.0.0.0/Release/TestScikitAPITrain/*.txt test-reports
 
       - run:
           name: documentation compilation

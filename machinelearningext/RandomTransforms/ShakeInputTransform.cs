@@ -21,7 +21,7 @@ namespace Scikit.ML.RandomTransforms
         #region identification
 
         public const string LoaderSignature = "ShakeInputTransform";  // Not more than 24 letters.
-        public const string Summary = "Shake one input of a predictor and merges all outputs. This can be used to measure the sensitivity to one input.";
+        public const string Summary = "Shakes one input of a predictor and merges all outputs. This can be used to measure the sensitivity to one input.";
         public const string RegistrationName = LoaderSignature;
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace Scikit.ML.MultiClass
         #region identification
 
         public const string LoaderSignature = "MultiToRanker";  // Not more than 24 letters.
-        public const string Summary = "Convert a multi-class classification problem into a ranking problem.";
+        public const string Summary = "Converts a multi-class classification problem into a ranking problem.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()

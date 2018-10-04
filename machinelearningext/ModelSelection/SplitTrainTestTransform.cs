@@ -41,7 +41,7 @@ namespace Scikit.ML.ModelSelection
         #region identification
 
         public const string LoaderSignature = "SplitTrainTestTransform";
-        public const string Summary = "Split a datasets into train / test.";
+        public const string Summary = "Splits a datasets into train / test.";
         public const string RegistrationName = LoaderSignature;
 
         private static VersionInfo GetVersionInfo()

@@ -61,7 +61,7 @@ namespace Scikit.ML.PipelineTransforms
         #region identification
 
         public const string LoaderSignature = "SortInDataFrameTransform";
-        public const string Summary = "Sort a data view in memory (all the data must hold in memory).";
+        public const string Summary = "Sorts a data view in memory (all the data must hold in memory).";
         public const string RegistrationName = LoaderSignature;
 
         private static VersionInfo GetVersionInfo()

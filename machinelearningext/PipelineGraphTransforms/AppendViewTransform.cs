@@ -32,7 +32,7 @@ namespace Scikit.ML.PipelineGraphTransforms
         #region identification
 
         public const string LoaderSignature = "AppendViewTransform";  // Not more than 24 letters.
-        public const string Summary = "Append tagged views.";
+        public const string Summary = "Appends tagged views.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()

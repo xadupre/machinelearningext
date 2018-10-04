@@ -4,14 +4,14 @@ using System;
 using System.Reflection;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.Tools;
-using Scikit.ML.DataManipulation;
 using Microsoft.ML.Runtime.PCA;
 using Microsoft.ML.Runtime.Learners;
 using Microsoft.ML.Runtime.FastTree;
 using Microsoft.ML.Runtime.KMeans;
 using Microsoft.ML.Runtime.Ensemble;
+using Microsoft.ML.Runtime.HalLearners;
+using Microsoft.ML.Runtime.LightGBM;
+using Microsoft.ML.Runtime.TimeSeriesProcessing;
 using Scikit.ML.Clustering;
 using Scikit.ML.TimeSeries;
 using Scikit.ML.FeaturesTransforms;
@@ -25,7 +25,8 @@ using Scikit.ML.PipelineTraining;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.RandomTransforms;
-using Scikit.ML.ScikitAPI;
+
+using TensorFlowTransform = Microsoft.ML.Transforms.TensorFlowTransform;
 
 
 namespace Scikit.ML.ScikitAPI
@@ -52,8 +53,12 @@ namespace Scikit.ML.ScikitAPI
             AddComponent(env, typeof(FastTreeBinaryPredictor).Assembly);
             AddComponent(env, typeof(EnsemblePredictor).Assembly);
             AddComponent(env, typeof(KMeansPredictor).Assembly);
+            AddComponent(env, typeof(LightGbm).Assembly);
+            AddComponent(env, typeof(OlsLinearRegressionPredictor).Assembly);
             AddComponent(env, typeof(PcaPredictor).Assembly);
+            AddComponent(env, typeof(SlidingWindowTransform).Assembly);
             AddComponent(env, typeof(TextTransform).Assembly);
+            AddComponent(env, typeof(TensorFlowTransform).Assembly);
             // ext
             AddComponent(env, typeof(DBScan).Assembly);
             AddComponent(env, typeof(DeTrendTransform).Assembly);

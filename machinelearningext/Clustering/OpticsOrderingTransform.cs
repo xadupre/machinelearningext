@@ -37,7 +37,7 @@ namespace Scikit.ML.Clustering
         #region identification
 
         public const string LoaderSignature = "OpticsOrderingTransform";
-        public const string Summary = "Order data using OPTICS algorithm.";
+        public const string Summary = "Orders data using OPTICS algorithm.";
         public const string RegistrationName = LoaderSignature;
 
         private static VersionInfo GetVersionInfo()
