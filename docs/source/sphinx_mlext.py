@@ -25,22 +25,10 @@ if not os.path.exists(mldll):
     raise FileNotFoundError("Unable to find '{0}'".format(mldll))
 sys.path.append(dll)
 
+docs = os.path.normpath(os.path.join(this, "..", "..", "machinelearning", "docs"))
+if not os.path.exists(docs):
+    raise FileNotFoundError("Unable to guess where the documentation is in '{0}' (2)".format(docs))
 
-def read_assemblies_to_copy(filename):
-    with open(filename, "r") as f:
-        lines = [_.split(" - ") for _ in f.readlines()]
-    res = []
-    for line in lines:
-        if len(line) != 2:
-            continue
-        ass = line[1].strip("\n\r ")
-        if "TestMachineLearningExt.dll" in ass:
-            continue
-        if "testhost" in ass:
-            continue
-        if os.path.exists(ass):
-            res.append(ass)
-    return res
 
 def copy_missing_dll():
     """
@@ -48,18 +36,29 @@ def copy_missing_dll():
     """
     rootpkg = os.path.normpath(os.path.join(this, "..", "..", "machinelearning", "packages"))
               
-    source = os.path.normpath(os.path.join(rootpkg, '..', '..', '_tests', '1.0.0.0', 'Debug', 'TestScikitAPITrain', 'loaded_assemblies.txt'))
-    if not os.path.exists(source):
-        raise FileNotFoundError("Unable to find '{0}'.\nYou should run test 'TestMamlHelperTest2_AssemblyList'.".format(source))
+    misses = []
 
-    misses = [os.path.join(this, "..", "..", "machinelearning", "dist", "Debug"),
-              os.path.join(rootpkg, "newtonsoft.json", "10.0.3", "lib", "netstandard1.3"),
-              os.path.join(rootpkg, "system.memory", "4.5.1", "lib", "netstandard2.0"),
-              os.path.join(rootpkg, "system.runtime.compilerservices.unsafe", "4.5.0", "lib", "netstandard2.0"),
-              ]
-    misses += read_assemblies_to_copy(source)
-
+    # ML.net
+    misses += [os.path.join(this, "..", "..", "machinelearning", "dist", "Debug")]
+    
+    # dependencies
+    misses += [os.path.join(rootpkg, "newtonsoft.json", "10.0.3", "lib", "netstandard1.3")]
+    misses += [os.path.join(rootpkg, "system.memory", "4.5.1", "lib", "netstandard2.0")]
+    misses += [os.path.join(rootpkg, "system.runtime.compilerservices.unsafe", "4.5.0", "lib", "netstandard2.0")]
+    misses += [os.path.join(rootpkg, "system.collections.immutable", "1.5.0", "lib", "netstandard2.0")]
+    misses += [os.path.join(rootpkg, "system.collections.immutable", "1.5.0", "lib", "netstandard2.0")]
+    misses += [os.path.join(rootpkg, "system.numerics.vectors", "4.4.0", "lib", "netstandard2.0")]
+    
+    skipif = ['testhost', 'TestPlatform']
     for miss in misses:
+        cont = True
+        for skip in skipif:
+            if skip.lower() in miss.lower():
+                cont = False
+                break
+        if not cont:
+            continue
+        
         if os.path.isfile(miss):
             miss, dl = os.path.split(miss)
             dst = os.path.join(dll, dl)
@@ -72,9 +71,53 @@ def copy_missing_dll():
                 if not os.path.isfile(src):
                     continue
                 dst = os.path.join(dll, dl)
+                if "TestPlatform" in dl:
+                    continue
                 if not os.path.exists(dst):
                     print("2>copy '{0}' from '{1}'".format(dl, miss))
                     shutil.copy(os.path.join(miss, dl), dll)
+
+def copy_missing_md_docs(source):
+    """
+    Copies missing markdown documentation.
+    """
+    try:
+        from .sphinx_mlext_templates import mddocs_index_template
+    except (ModuleNotFoundError, ImportError):
+        from sphinx_mlext_templates import mddocs_index_template
+    
+    dest = os.path.join(os.path.dirname(__file__), "mlnetdocs")
+    if not os.path.exists(dest):
+        os.mkdir(dest)
+    rel = os.path.join(dest, "releases")
+    if not os.path.exists(rel):
+        os.mkdir(rel)
+            
+    # code
+    docs = []
+    code = os.path.join(source, "code")    
+    for name_ in os.listdir(code):
+        name = name_.lower()
+        docs.append(os.path.splitext(name)[0])
+        print("3> copy '{0}'".format(name))
+        dst = os.path.join(dest, name)
+        shutil.copy(os.path.join(code, name), dst)
+    
+    # release notes
+    releases = []
+    rele = os.path.join(source, "release-notes")
+    for sub in os.listdir(rele):
+        for name_ in os.listdir(os.path.join(rele, sub)):
+            name = name_.lower().replace(".md", "").replace(".", "").replace("-", "") + ".md"
+            releases.append(os.path.splitext(name)[0])
+            print("3> copy '{0}'".format(name))
+            dst = os.path.join(rel, name)
+            shutil.copy(os.path.join(rele, sub, name_), dst)
+    
+    tpl = jinja2.Template(mddocs_index_template)
+    page = tpl.render(docs=docs, releases=releases)
+    with open(os.path.join(dest, "index.rst"), "w", encoding="utf-8") as f:
+        f.write(page)    
 
 
 def maml_pythonnet(script, chdir=False, verbose=2):
@@ -104,11 +147,7 @@ def maml_test():
     iris = os.path.abspath(os.path.join(os.path.dirname(__file__), "iris.txt"))
     if not os.path.exists(iris):
         raise FileNotFoundError("Unable to find '{0}'.".format(iris))
-    print(dll)
-    cwd = os.getcwd()
-    os.chdir(dll)    
     MamlHelper.TestScikitAPITrain(iris)
-    os.chdir(cwd)
 
 
 class MlCmdDirective(RunPythonDirective):
@@ -145,12 +184,10 @@ def mlnet_components_kinds():
         'clusteringtrainer': 'Clustering', 
         'dataloader': 'Data Loader', 
         'datasaver': 'Data Loader', 
-        'datascorer': 'Score (= compute the predictions)', 
-        'datatransform': 'Transforms', 
-        'ensembledataselector': 'Data Selection', 
-        'evaluator': 'Evaluation', 
-        'featurescorertrainer': 'Feature Selection (2)', 
-        'fourierdistributionsampler': 'Fourrier Sampling', 
+        'datascorer': 'Scoring',
+        'datatransform': 'Transforms (all)',
+        'ensembledataselector': 'Data Selection',
+        'evaluator': 'Evaluation',
         'multiclassclassifiertrainer': 'Multiclass Classification',
         'ngramextractorfactory': 'N-Grams',
         'rankertrainer': 'Ranking',
@@ -158,9 +195,9 @@ def mlnet_components_kinds():
         'tokenizetransform': 'Tokenization'
     }
     return {k: titles[k] for k in kinds if k in titles}
-        
-    
-def builds_components_pages():
+
+
+def builds_components_pages(epkg):
     """
     Returns components pages.
     """
@@ -168,6 +205,30 @@ def builds_components_pages():
         from .sphinx_mlext_templates import index_template, kind_template, component_template
     except (ModuleNotFoundError, ImportError):
         from sphinx_mlext_templates import index_template, kind_template, component_template
+    try:
+        from pyquickhelper.texthelper import add_rst_links
+    except ImportError:
+        warnings.warn("Update pyquickhelper to a newer version.")
+    
+    if "OPTICS" not in epkg:
+        raise KeyErro("OPTICS not found in epkg")
+    
+    def process_default(default_value):
+        if not default_value:
+            return ''
+        if len(default_value) > 28:
+            if len(default_value.split(".")) > 2:
+                default_value = default_value.replace(".", ". ")
+            else:
+                raise ValueError("Unable to shorten default value '{0}' len={1}.".format(default_value, len(default_value)))
+        return default_value
+        
+    def process_description(desc):
+        if desc is None:
+            return ''
+        if not isinstance(desc, str):
+            raise TypeError("desc must be a string not {0}".format(type(desc)))
+        return add_rst_links(desc, epkg)
     
     kinds = mlnet_components_kinds()
     pages = {}
@@ -193,17 +254,19 @@ def builds_components_pages():
             
         comp_names = list(sorted(c.Name.replace(" ", "_") for c in comps))
         kind_name = v
+        kind_kind = k
         pages[k] = kind_tpl.render(title=kind_name, fnames=comp_names, len=len)
         
         for comp in comps:
             
             if comp.Arguments is None:
-                print(k, comp.Name, comp.Description)
+                print("---- SKIP ----", k, comp.Name, comp.Description)
             else:
+                assembly_name = comp.AssemblyName
                 args = {}
                 for arg in comp.Arguments:
                     args[arg.Name] = dict(Name=arg.Name, ShortName=arg.ShortName or '',
-                                          Default=arg.DefaultValue or '',
+                                          Default=process_default(arg.DefaultValue),
                                           Description=arg.Help)
                 sorted_params = [v for k, v in sorted(args.items())]
                 aliases = ", ".join(comp.Aliases)
@@ -211,9 +274,10 @@ def builds_components_pages():
                 comp_name = comp.Name.replace(" ", "_")
                 pages[comp_name] = comp_tpl.render(title=comp.Name,
                                         aliases=aliases, 
-                                        summary=comp.Description,
-                                        kind=kind_name, 
-                                        sorted_params=sorted_params, 
+                                        summary=process_description(comp.Description),
+                                        kind=kind_kind, 
+                                        sorted_params=sorted_params,
+                                        assembly=assembly_name,
                                         len=len)
     
     return pages
@@ -223,7 +287,7 @@ def write_components_pages(app, env, docnames):
     """
     Writes documentation pages.
     """
-    pages = builds_components_pages()
+    pages = builds_components_pages(app.config.epkg_dictionary)
     docdir = env.srcdir
     dest = os.path.join(docdir, "components")
     if not os.path.exists(dest):
@@ -237,6 +301,7 @@ def setup(app):
     """
     Adds the custom directive.
     """
+    copy_missing_md_docs(docs)
     copy_missing_dll()
     app.add_directive('mlcmd', MlCmdDirective)
     app.connect("env-before-read-docs", write_components_pages)
@@ -244,11 +309,12 @@ def setup(app):
 
 
 if __name__ == "__main__":
+    copy_missing_md_docs(docs)
     copy_missing_dll()
     from clr import AddReference
     AddReference('Scikit.ML.DocHelperMlExt')
     from Scikit.ML.DocHelperMlExt import MamlHelper
-    pages = builds_components_pages()
+    pages = builds_components_pages({"OPTICS": "http://OPTICS"})
     # Test 1
     maml_test()
     # print(maml_pythonnet("?"))

@@ -21,7 +21,7 @@ namespace TestMachineLearningExt
     {
         #region ResampleTransform
 
-        private static void TestResampleTransform(float ratio)
+        private void TestResampleTransform(float ratio)
         {
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {

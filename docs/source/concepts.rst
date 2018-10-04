@@ -1,6 +1,6 @@
-=============
-Some concepts
-=============
+=================
+Scikit.ML details
+=================
 
 .. contents::
     :local:

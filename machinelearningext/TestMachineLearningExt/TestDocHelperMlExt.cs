@@ -31,6 +31,8 @@ namespace TestMachineLearningExt
         {
             MamlHelper.TestScikitAPITrain();
             LinkHelper._Immutable();
+            LinkHelper._Normalize();
+            LinkHelper._Memory();
             var ass = MamlHelper.GetLoadedAssemblies();
             Assert.IsTrue(ass.Length > 0);
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;

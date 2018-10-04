@@ -6,6 +6,9 @@
     <MinorVersion>7</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseLabel>preview</PreReleaseLabel>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.7.0</Version>
+    <DefineConstants>CORECLR</DefineConstants>
   </PropertyGroup>
 
   <Import Project="Dependencies.props" />

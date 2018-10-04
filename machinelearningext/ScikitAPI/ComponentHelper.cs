@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Reflection;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Api;
@@ -31,30 +32,42 @@ namespace Scikit.ML.ScikitAPI
 {
     public static class ComponentHelper
     {
+        private static void AddComponent(IHostEnvironment env, Assembly a)
+        {
+            try
+            {
+                env.ComponentCatalog.RegisterAssembly(a);
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"Unable to register assembly {a.FullName} due to ${e}.");
+            }
+        }
+
         public static void AddStandardComponents(IHostEnvironment env)
         {
-            env.ComponentCatalog.RegisterAssembly(typeof(TextLoader).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(LinearPredictor).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(CategoricalTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(FastTreeBinaryPredictor).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(EnsemblePredictor).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(KMeansPredictor).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(PcaPredictor).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(TextTransform).Assembly);
+            AddComponent(env, typeof(TextLoader).Assembly);
+            AddComponent(env, typeof(LinearPredictor).Assembly);
+            AddComponent(env, typeof(CategoricalTransform).Assembly);
+            AddComponent(env, typeof(FastTreeBinaryPredictor).Assembly);
+            AddComponent(env, typeof(EnsemblePredictor).Assembly);
+            AddComponent(env, typeof(KMeansPredictor).Assembly);
+            AddComponent(env, typeof(PcaPredictor).Assembly);
+            AddComponent(env, typeof(TextTransform).Assembly);
             // ext
-            env.ComponentCatalog.RegisterAssembly(typeof(DBScan).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(DeTrendTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(PolynomialTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(PredictTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(NearestNeighborsBinaryClassificationTrainer).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(MultiToBinaryPredictor).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(TaggedPredictTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(AppendViewTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(PrePostProcessPredictor).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(PassThroughTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(ResampleTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(SplitTrainTestTransform).Assembly);
-            env.ComponentCatalog.RegisterAssembly(typeof(ValueMapperPredictionEngineFloat).Assembly);
+            AddComponent(env, typeof(DBScan).Assembly);
+            AddComponent(env, typeof(DeTrendTransform).Assembly);
+            AddComponent(env, typeof(PolynomialTransform).Assembly);
+            AddComponent(env, typeof(PredictTransform).Assembly);
+            AddComponent(env, typeof(NearestNeighborsBinaryClassificationTrainer).Assembly);
+            AddComponent(env, typeof(MultiToBinaryPredictor).Assembly);
+            AddComponent(env, typeof(TaggedPredictTransform).Assembly);
+            AddComponent(env, typeof(AppendViewTransform).Assembly);
+            AddComponent(env, typeof(PrePostProcessPredictor).Assembly);
+            AddComponent(env, typeof(PassThroughTransform).Assembly);
+            AddComponent(env, typeof(ResampleTransform).Assembly);
+            AddComponent(env, typeof(SplitTrainTestTransform).Assembly);
+            AddComponent(env, typeof(ValueMapperPredictionEngineFloat).Assembly);
         }
     }
 }
