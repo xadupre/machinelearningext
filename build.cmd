@@ -63,8 +63,8 @@ cmd /C dotnet build -c Release
 cd ..
 
 :finalcopy:
-copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\TestProfileBenchmark\bin\Release\netcoreapp2.1
-copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\TestProfileBenchmark\bin\Debug\netcoreapp2.1
+copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\TestProfileBenchmark\netcoreapp2.1
+copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\TestProfileBenchmark\netcoreapp2.1
 
 :end:
 if not exist machinelearning\bin\x64.Debug @echo [build.cmd] Cannot build.

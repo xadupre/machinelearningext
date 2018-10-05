@@ -12,3 +12,4 @@ docs/source/logistic_regression.zip
 machinelearningext/packages
 docs/source/components
 docs/source/mlnetdocs
+*.vspx

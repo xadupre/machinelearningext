@@ -62,6 +62,21 @@
     <Reference Include="Microsoft.ML.Transforms">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Transforms.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ML.HalLearners">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.HalLearners.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.LightGBM">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.LightGBM.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.OnnxTransform">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.OnnxTransform.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.TensorFlow">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.TensorFlow.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.TimeSeries">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.TimeSeries.dll</HintPath>
+    </Reference>
   </ItemGroup>  
 
 </Project>
