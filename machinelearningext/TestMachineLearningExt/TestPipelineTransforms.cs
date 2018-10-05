@@ -7,12 +7,11 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Trainers;
-using Microsoft.ML.Transforms;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
@@ -35,10 +34,10 @@ namespace TestMachineLearningExt
                 var values = new List<int>();
                 using (var cursor = tr.GetRowCursor(i => true))
                 {
-                    var columnGetter = cursor.GetGetter<DvInt4>(1);
+                    var columnGetter = cursor.GetGetter<int>(1);
                     while (cursor.MoveNext())
                     {
-                        DvInt4 got = 0;
+                        int got = 0;
                         columnGetter(ref got);
                         values.Add((int)got);
                     }
@@ -112,18 +111,18 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = FileHelper.GetTestFile("iris.txt");
             var outPass = FileHelper.GetOutputFile("data.idv", methodName);
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.PassThrough() { Filename = outPass, SaveOnDisk = true });
-            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
             Assert.IsTrue(File.Exists(outPass));
         }
@@ -166,18 +165,18 @@ namespace TestMachineLearningExt
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.ULabelToR4Label("Label"));
-            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
         }
 
@@ -188,113 +187,115 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestSortInDataFrameTransformSimple()
         {
-            var host = EnvHelper.NewTestEnvironment();
-
-            var inputs = new InputOutput[] {
-                new InputOutput() { X = new float[] { 0, 1 }, Y = 1 },
-                new InputOutput() { X = new float[] { 0, 1 }, Y = 0 }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            using (var cursor = data.GetRowCursor(i => true))
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                var sortedValues = new List<int>();
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
-                while (cursor.MoveNext())
-                {
-                    DvInt4 got = 0;
-                    sortColumnGetter(ref got);
-                    sortedValues.Add((int)got);
-                }
-                if (sortedValues.Count != 2)
-                    throw new Exception();
-                if (sortedValues[0] != 1)
-                    throw new Exception();
-                if (sortedValues[1] != 0)
-                    throw new Exception();
-            }
+                var inputs = new InputOutput[] {
+                    new InputOutput() { X = new float[] { 0, 1 }, Y = 1 },
+                    new InputOutput() { X = new float[] { 0, 1 }, Y = 0 }
+                };
 
-            var args = new SortInDataFrameTransform.Arguments { sortColumn = "Y" };
-            var transformedData = new SortInDataFrameTransform(host, args, data);
-            var sorted = transformedData;
-            LambdaTransform.CreateMap<InputOutput, InputOutput>(host, data,
-                (input, output) =>
-                {
-                    output.X = input.X;
-                    output.Y = input.Y;
-                });
+                var data = host.CreateStreamingDataView(inputs);
 
-            using (var cursor = sorted.GetRowCursor(i => true))
-            {
-                var sortedValues = new List<int>();
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
-                while (cursor.MoveNext())
+                using (var cursor = data.GetRowCursor(i => true))
                 {
-                    DvInt4 got = 0;
-                    sortColumnGetter(ref got);
-                    sortedValues.Add((int)got);
+                    var sortedValues = new List<int>();
+                    var sortColumnGetter = cursor.GetGetter<int>(1);
+                    while (cursor.MoveNext())
+                    {
+                        int got = 0;
+                        sortColumnGetter(ref got);
+                        sortedValues.Add((int)got);
+                    }
+                    if (sortedValues.Count != 2)
+                        throw new Exception();
+                    if (sortedValues[0] != 1)
+                        throw new Exception();
+                    if (sortedValues[1] != 0)
+                        throw new Exception();
                 }
-                if (sortedValues.Count != 2)
-                    throw new Exception();
-                if (sortedValues[0] != 0)
-                    throw new Exception();
-                if (sortedValues[1] != 1)
-                    throw new Exception();
+
+                var args = new SortInDataFrameTransform.Arguments { sortColumn = "Y" };
+                var transformedData = new SortInDataFrameTransform(host, args, data);
+                var sorted = transformedData;
+                LambdaTransform.CreateMap<InputOutput, InputOutput>(host, data,
+                    (input, output) =>
+                    {
+                        output.X = input.X;
+                        output.Y = input.Y;
+                    });
+
+                using (var cursor = sorted.GetRowCursor(i => true))
+                {
+                    var sortedValues = new List<int>();
+                    var sortColumnGetter = cursor.GetGetter<int>(1);
+                    while (cursor.MoveNext())
+                    {
+                        int got = 0;
+                        sortColumnGetter(ref got);
+                        sortedValues.Add((int)got);
+                    }
+                    if (sortedValues.Count != 2)
+                        throw new Exception();
+                    if (sortedValues[0] != 0)
+                        throw new Exception();
+                    if (sortedValues[1] != 1)
+                        throw new Exception();
+                }
             }
         }
 
         static void TestCacheTransformSimple(int nt, bool async)
         {
-            var host = EnvHelper.NewTestEnvironment(conc: nt == 1 ? 1 : 0);
-
-            var inputs = new InputOutput[] {
-                new InputOutput() { X = new float[] { 0, 1 }, Y = 1 },
-                new InputOutput() { X = new float[] { 0, 1 }, Y = 0 }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            using (var cursor = data.GetRowCursor(i => true))
+            using (var host = EnvHelper.NewTestEnvironment(conc: nt == 1 ? 1 : 0))
             {
-                var sortedValues = new List<int>();
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
-                while (cursor.MoveNext())
-                {
-                    DvInt4 got = 0;
-                    sortColumnGetter(ref got);
-                    sortedValues.Add((int)got);
-                }
-                if (sortedValues.Count != 2)
-                    throw new Exception();
-                if (sortedValues[0] != 1)
-                    throw new Exception();
-                if (sortedValues[1] != 0)
-                    throw new Exception();
-            }
+                var inputs = new InputOutput[] {
+                    new InputOutput() { X = new float[] { 0, 1 }, Y = 1 },
+                    new InputOutput() { X = new float[] { 0, 1 }, Y = 0 }
+                };
 
-            var args = new ExtendedCacheTransform.Arguments { numTheads = nt, async = async };
-            var transformedData = new ExtendedCacheTransform(host, args, data);
-            var lastTransform = transformedData;
-            LambdaTransform.CreateMap<InputOutput, InputOutput>(host, data,
-                (input, output) =>
-                {
-                    output.X = input.X;
-                    output.Y = input.Y;
-                });
+                var data = host.CreateStreamingDataView(inputs);
 
-            using (var cursor = lastTransform.GetRowCursor(i => true))
-            {
-                var sortedValues = new List<int>();
-                var sortColumnGetter = cursor.GetGetter<DvInt4>(1);
-                while (cursor.MoveNext())
+                using (var cursor = data.GetRowCursor(i => true))
                 {
-                    DvInt4 got = 0;
-                    sortColumnGetter(ref got);
-                    sortedValues.Add((int)got);
+                    var sortedValues = new List<int>();
+                    var sortColumnGetter = cursor.GetGetter<int>(1);
+                    while (cursor.MoveNext())
+                    {
+                        int got = 0;
+                        sortColumnGetter(ref got);
+                        sortedValues.Add((int)got);
+                    }
+                    if (sortedValues.Count != 2)
+                        throw new Exception();
+                    if (sortedValues[0] != 1)
+                        throw new Exception();
+                    if (sortedValues[1] != 0)
+                        throw new Exception();
                 }
-                if (sortedValues.Count != 2)
-                    throw new Exception();
+
+                var args = new ExtendedCacheTransform.Arguments { numTheads = nt, async = async };
+                var transformedData = new ExtendedCacheTransform(host, args, data);
+                var lastTransform = transformedData;
+                LambdaTransform.CreateMap<InputOutput, InputOutput>(host, data,
+                    (input, output) =>
+                    {
+                        output.X = input.X;
+                        output.Y = input.Y;
+                    });
+
+                using (var cursor = lastTransform.GetRowCursor(i => true))
+                {
+                    var sortedValues = new List<int>();
+                    var sortColumnGetter = cursor.GetGetter<int>(1);
+                    while (cursor.MoveNext())
+                    {
+                        int got = 0;
+                        sortColumnGetter(ref got);
+                        sortedValues.Add((int)got);
+                    }
+                    if (sortedValues.Count != 2)
+                        throw new Exception();
+                }
             }
         }
 
@@ -326,20 +327,22 @@ namespace TestMachineLearningExt
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
 
-            var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
-                new MultiFileSource(dataFilePath));
-            var sorted = env.CreateTransform("cachedf", loader);
-            StreamHelper.SaveModel(env, sorted, outModelFilePath);
-
-            using (var fs = File.OpenRead(outModelFilePath))
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                var deserializedData = env.LoadTransforms(fs, loader);
-                var saver = env.CreateSaver("Text");
-                using (var fs2 = File.Create(outputDataFilePath))
-                    saver.SaveData(fs2, deserializedData,
-                                   StreamHelper.GetColumnsIndex(deserializedData.Schema,
-                                                                new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                    new MultiFileSource(dataFilePath));
+                var sorted = env.CreateTransform("cachedf", loader);
+                StreamHelper.SaveModel(env, sorted, outModelFilePath);
+
+                using (var fs = File.OpenRead(outModelFilePath))
+                {
+                    var deserializedData = env.LoadTransforms(fs, loader);
+                    var saver = env.CreateSaver("Text");
+                    using (var fs2 = File.Create(outputDataFilePath))
+                        saver.SaveData(fs2, deserializedData,
+                                       StreamHelper.GetColumnsIndex(deserializedData.Schema,
+                                                                    new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
+                }
             }
         }
 
@@ -350,28 +353,30 @@ namespace TestMachineLearningExt
             var dataFilePath = FileHelper.GetTestFile("shuffled_iris.txt");
             var outputDataFilePath = FileHelper.GetOutputFile("outputDataFilePath.txt", methodName);
 
-            var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=- sep=,}",
-                new MultiFileSource(dataFilePath));
-            var sorted = env.CreateTransform("sortmem{col=Label}", loader);
-
-            var saver = env.CreateSaver("Text");
-            using (var fs2 = File.Create(outputDataFilePath))
-                saver.SaveData(fs2, sorted, StreamHelper.GetColumnsIndex(sorted.Schema, new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
-
-            var lines = File.ReadAllLines(outputDataFilePath);
-            int begin = 0;
-            for (; begin < lines.Length; ++begin)
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                if (lines[begin].StartsWith("Label"))
-                    break;
-            }
-            lines = lines.Skip(begin).ToArray();
-            var linesSorted = lines.OrderBy(c => c).ToArray();
-            for (int i = 1; i < linesSorted.Length; ++i)
-            {
-                if (linesSorted[i - 1][0] > linesSorted[i][0])
-                    throw new Exception("The output is not sorted.");
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=- sep=,}",
+                    new MultiFileSource(dataFilePath));
+                var sorted = env.CreateTransform("sortmem{col=Label}", loader);
+
+                var saver = env.CreateSaver("Text");
+                using (var fs2 = File.Create(outputDataFilePath))
+                    saver.SaveData(fs2, sorted, StreamHelper.GetColumnsIndex(sorted.Schema, new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
+
+                var lines = File.ReadAllLines(outputDataFilePath);
+                int begin = 0;
+                for (; begin < lines.Length; ++begin)
+                {
+                    if (lines[begin].StartsWith("Label"))
+                        break;
+                }
+                lines = lines.Skip(begin).ToArray();
+                var linesSorted = lines.OrderBy(c => c).ToArray();
+                for (int i = 1; i < linesSorted.Length; ++i)
+                {
+                    if (linesSorted[i - 1][0] > linesSorted[i][0])
+                        throw new Exception("The output is not sorted.");
+                }
             }
         }
 
@@ -384,23 +389,25 @@ namespace TestMachineLearningExt
             var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
             var cacheFile = FileHelper.GetOutputFile("cacheFile.idv", methodName);
 
-            var env = EnvHelper.NewTestEnvironment();
-            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
-                new MultiFileSource(dataFilePath));
-            var sorted = env.CreateTransform(string.Format("cachedf{{r=+ df=- f={0}}}", cacheFile), loader);
-            StreamHelper.SaveModel(env, sorted, outModelFilePath);
-
-            using (var fs = File.OpenRead(outModelFilePath))
+            using (var env = EnvHelper.NewTestEnvironment())
             {
-                var deserializedData = env.LoadTransforms(fs, loader);
-                var saver = env.CreateSaver("Text");
-                using (var fs2 = File.Create(outputDataFilePath))
-                    saver.SaveData(fs2, deserializedData,
-                                   StreamHelper.GetColumnsIndex(deserializedData.Schema, new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
-            }
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                    new MultiFileSource(dataFilePath));
+                var sorted = env.CreateTransform(string.Format("cachedf{{r=+ df=- f={0}}}", cacheFile), loader);
+                StreamHelper.SaveModel(env, sorted, outModelFilePath);
 
-            if (!File.Exists(cacheFile))
-                throw new FileNotFoundException(cacheFile);
+                using (var fs = File.OpenRead(outModelFilePath))
+                {
+                    var deserializedData = env.LoadTransforms(fs, loader);
+                    var saver = env.CreateSaver("Text");
+                    using (var fs2 = File.Create(outputDataFilePath))
+                        saver.SaveData(fs2, deserializedData,
+                                       StreamHelper.GetColumnsIndex(deserializedData.Schema, new[] { "Label", "Slength", "Swidth", "Plength", "Pwidth" }));
+                }
+
+                if (!File.Exists(cacheFile))
+                    throw new FileNotFoundException(cacheFile);
+            }
         }
 
         #endregion

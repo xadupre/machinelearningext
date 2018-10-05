@@ -46,7 +46,8 @@ namespace Scikit.ML.TimeSeries
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(DeTrendTransform).Assembly.FullName);
         }
 
         #endregion
@@ -61,9 +62,10 @@ namespace Scikit.ML.TimeSeries
             [Argument(ArgumentType.Required, HelpText = "Column which contains the time", ShortName = "time")]
             public string timeColumn;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Parameters to use for the linear optimizer.")]
-            public SubComponent<ITrainer, SignatureRegressorTrainer> optim =
-                new SubComponent<ITrainer, SignatureRegressorTrainer>("sasdcar");
+            [Argument(ArgumentType.Multiple, HelpText = "Parameters to use for the linear optimizer.",
+                SignatureType = typeof(SignatureTrainer))]
+            public IComponentFactory<ITrainer> optim =
+                new ScikitSubComponent<ITrainer, SignatureRegressorTrainer>("sasdcar");
 
             public void Write(ModelSaveContext ctx, IHost host)
             {
@@ -78,7 +80,7 @@ namespace Scikit.ML.TimeSeries
                 columns = Column1x1.ParseMulti(sr);
                 timeColumn = ctx.Reader.ReadString();
                 var opt = ctx.Reader.ReadString();
-                optim = new SubComponent<ITrainer, SignatureRegressorTrainer>(opt);
+                optim = new ScikitSubComponent<ITrainer, SignatureRegressorTrainer>(opt);
             }
         }
 
@@ -271,7 +273,8 @@ namespace Scikit.ML.TimeSeries
             using (var ch = Host.Start("Train"))
             {
                 ch.Trace("Constructing trainer");
-                ITrainer trainer = _args.optim.CreateInstance(Host);
+                var optSett = ScikitSubComponent<ITrainer, SignatureRegressorTrainer>.AsSubComponent(_args.optim);
+                ITrainer trainer = optSett.CreateInstance(Host);
                 _trend = TrainUtils.Train(Host, ch, roles, trainer, null, null, 0, null);
                 ch.Done();
             }
@@ -295,7 +298,7 @@ namespace Scikit.ML.TimeSeries
                     ConcatTransform.Column.Parse(string.Format("{0}:{1},{2}", tempColumn, slotName, newName)),
                }
             };
-            var concat = new ConcatTransform(Host, cargs, predict);
+            var concat = ConcatTransform.Create(Host, cargs, predict);
 
             var lambdaView = LambdaColumnHelper.Create(Host,
                 "DeTrendTransform", concat, tempColumn, _args.columns[0].Name, new VectorType(NumberType.R4, 2),

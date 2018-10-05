@@ -37,7 +37,7 @@ namespace Scikit.ML.Clustering
         #region identification
 
         public const string LoaderSignature = "OpticsOrderingTransform";
-        public const string Summary = "Order data using OPTICS algorithm.";
+        public const string Summary = "Orders data using OPTICS algorithm.";
         public const string RegistrationName = LoaderSignature;
 
         private static VersionInfo GetVersionInfo()
@@ -47,7 +47,8 @@ namespace Scikit.ML.Clustering
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(OpticsOrderingTransform).Assembly.FullName);
         }
 
         #endregion
@@ -510,9 +511,9 @@ namespace Scikit.ML.Clustering
                     throw new IndexOutOfRangeException();
             }
 
-            ValueGetter<DvInt8> GetGetterOrdering()
+            ValueGetter<long> GetGetterOrdering()
             {
-                return (ref DvInt8 orderingId) =>
+                return (ref long orderingId) =>
                 {
                     orderingId = _view.GetMappedIndex(_inputCursor.Position);
                 };

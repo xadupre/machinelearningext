@@ -11,6 +11,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.CommandLine;
 using Scikit.ML.PipelineHelper;
+using Legacy = Microsoft.ML.Legacy;
 
 using NearestNeighborsMultiClassClassificationTrainer = Scikit.ML.NearestNeighbors.NearestNeighborsMultiClassClassificationTrainer;
 using EntryPointNearestNeighborsMultiClass = Scikit.ML.EntryPoints.EntryPointNearestNeighborsMultiClass;
@@ -85,7 +86,7 @@ namespace Scikit.ML.EntryPoints
     /// <summary>
     /// k-Nearest Neighbors trainer for Multi-Class Classification
     /// </summary>
-    public sealed partial class NearestNeighborsMultiClass : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITrainerInput, Microsoft.ML.ILearningPipelineItem
+    public sealed partial class NearestNeighborsMultiClass : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITrainerInput, Legacy.ILearningPipelineItem
     {
         public const string Name = nameof(NearestNeighborsMultiClass);
 
@@ -186,13 +187,13 @@ namespace Scikit.ML.EntryPoints
         }
         public Var<IDataView> GetInputData() => TrainingData;
 
-        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
+        public Legacy.ILearningPipelineStep ApplyStep(Legacy.ILearningPipelineStep previousStep, Experiment experiment)
         {
             if (previousStep != null)
             {
-                if (!(previousStep is ILearningPipelineDataStep dataStep))
+                if (!(previousStep is Legacy.ILearningPipelineDataStep dataStep))
                 {
-                    throw new InvalidOperationException($"{ nameof(NearestNeighborsMultiClass)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
+                    throw new InvalidOperationException($"{ nameof(NearestNeighborsMultiClass)} only supports an { nameof(Legacy.ILearningPipelineDataStep)} as an input.");
                 }
 
                 TrainingData = dataStep.Data;
@@ -201,7 +202,7 @@ namespace Scikit.ML.EntryPoints
             return new NearestNeighborsMultiClassPipelineStep(output);
         }
 
-        private class NearestNeighborsMultiClassPipelineStep : ILearningPipelinePredictorStep
+        private class NearestNeighborsMultiClassPipelineStep : Legacy.ILearningPipelinePredictorStep
         {
             public NearestNeighborsMultiClassPipelineStep(Output output)
             {

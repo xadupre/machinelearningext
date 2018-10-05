@@ -2,6 +2,8 @@
 
 using System;
 using Microsoft.ML.Runtime.Data;
+using DvText = Scikit.ML.PipelineHelper.DvText;
+
 
 namespace Scikit.ML.DataManipulation
 {
@@ -27,11 +29,6 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, int value)
         {
-            return Operation(c1, (DvInt4)value);
-        }
-
-        public static NumericColumn Operation(NumericColumn c1, DvInt4 value)
-        {
             if (c1.Kind.IsVector)
                 throw new NotImplementedException();
             else
@@ -40,8 +37,8 @@ namespace Scikit.ML.DataManipulation
                 {
                     case DataKind.I4:
                         {
-                            DvInt4[] a;
-                            DataColumn<DvInt4> res;
+                            int[] a;
+                            DataColumn<int> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
                                 res.Set(i, a[i] + value);
@@ -49,8 +46,8 @@ namespace Scikit.ML.DataManipulation
                         }
                     case DataKind.I8:
                         {
-                            DvInt8[] a;
-                            DataColumn<DvInt8> res;
+                            long[] a;
+                            DataColumn<long> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
                                 res.Set(i, a[i] + value);
@@ -80,12 +77,7 @@ namespace Scikit.ML.DataManipulation
             }
         }
 
-        public static NumericColumn Operation(NumericColumn c1, Int64 value)
-        {
-            return Operation(c1, (DvInt8)value);
-        }
-
-        public static NumericColumn Operation(NumericColumn c1, DvInt8 value)
+        public static NumericColumn Operation(NumericColumn c1, long value)
         {
             if (c1.Kind.IsVector)
                 throw new NotImplementedException();
@@ -95,8 +87,8 @@ namespace Scikit.ML.DataManipulation
                 {
                     case DataKind.I4:
                         {
-                            DvInt8[] a;
-                            DataColumn<DvInt8> res;
+                            long[] a;
+                            DataColumn<long> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
                                 res.Set(i, a[i] + value);
@@ -104,8 +96,8 @@ namespace Scikit.ML.DataManipulation
                         }
                     case DataKind.I8:
                         {
-                            DvInt8[] a;
-                            DataColumn<DvInt8> res;
+                            long[] a;
+                            DataColumn<long> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
                                 res.Set(i, a[i] + value);
@@ -145,7 +137,7 @@ namespace Scikit.ML.DataManipulation
                 {
                     case DataKind.I4:
                         {
-                            DvInt4[] a;
+                            int[] a;
                             DataColumn<float> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
@@ -154,7 +146,7 @@ namespace Scikit.ML.DataManipulation
                         }
                     case DataKind.I8:
                         {
-                            DvInt8[] a;
+                            long[] a;
                             DataColumn<float> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
@@ -195,7 +187,7 @@ namespace Scikit.ML.DataManipulation
                 {
                     case DataKind.I4:
                         {
-                            DvInt4[] a;
+                            int[] a;
                             DataColumn<double> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
@@ -227,6 +219,11 @@ namespace Scikit.ML.DataManipulation
         }
 
         public static NumericColumn Operation(NumericColumn c1, string value)
+        {
+            return Operation(c1, new DvText(value));
+        }
+
+        public static NumericColumn Operation(NumericColumn c1, ReadOnlyMemory<char> value)
         {
             return Operation(c1, new DvText(value));
         }
@@ -290,9 +287,9 @@ namespace Scikit.ML.DataManipulation
                             {
                                 case DataKind.I4:
                                     {
-                                        DvInt4[] a;
-                                        DvInt4[] b;
-                                        DataColumn<DvInt4> res;
+                                        int[] a;
+                                        int[] b;
+                                        DataColumn<int> res;
                                         Operation(c1, c2, out a, out b, out res);
                                         for (int i = 0; i < res.Length; ++i)
                                             res.Set(i, a[i] + b[i]);
@@ -300,7 +297,7 @@ namespace Scikit.ML.DataManipulation
                                     }
                                 case DataKind.R4:
                                     {
-                                        DvInt4[] a;
+                                        int[] a;
                                         float[] b;
                                         DataColumn<float> res;
                                         Operation(c1, c2, out a, out b, out res);
@@ -322,7 +319,7 @@ namespace Scikit.ML.DataManipulation
                                 case DataKind.I4:
                                     {
                                         float[] a;
-                                        DvInt4[] b;
+                                        int[] b;
                                         DataColumn<float> res;
                                         Operation(c1, c2, out a, out b, out res);
                                         for (int i = 0; i < res.Length; ++i)
@@ -354,7 +351,7 @@ namespace Scikit.ML.DataManipulation
                                     {
                                         DvText[] a;
                                         DvText[] b;
-                                        DataColumn<DvBool> res;
+                                        DataColumn<bool> res;
                                         Operation(c1, c2, out a, out b, out res);
                                         for (int i = 0; i < res.Length; ++i)
                                             res.Set(i, new DvText(a[i].ToString() + b[i].ToString()));

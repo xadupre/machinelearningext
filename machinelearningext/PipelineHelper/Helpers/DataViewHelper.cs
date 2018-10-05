@@ -1,7 +1,11 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
+using System.Reflection;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
@@ -75,6 +79,22 @@ namespace Scikit.ML.PipelineHelper
                     DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
                 ch.Done();
             }
+        }
+
+        /// <summary>
+        /// Retrieves the first view of a pipeline.
+        /// </summary>
+        /// <param name="view"></param>
+        /// <returns>IDataView</returns>
+        public static IDataView GetFirstView(IDataView view)
+        {
+            var tr = view as IDataTransform;
+            while (tr != null)
+            {
+                view = tr.Source;
+                tr = view as IDataTransform;
+            }
+            return view;
         }
     }
 }

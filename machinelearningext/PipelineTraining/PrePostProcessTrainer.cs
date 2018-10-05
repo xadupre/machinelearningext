@@ -35,20 +35,24 @@ namespace Scikit.ML.PipelineTraining
         /// </summary>
         public sealed class Arguments
         {
-            [Argument(ArgumentType.Multiple, HelpText = "Transform which preprocesses the data (can be null)", ShortName = "pre")]
-            public SubComponent<IDataTransform, SignatureDataTransform> preType = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Transform which preprocesses the data (can be null)", ShortName = "pre",
+                SignatureType = typeof(SignatureDataTransform))]
+            public IComponentFactory<IDataTransform> preType = null;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Transform which preprocesses the data before training and only before training (can be null)", ShortName = "pret")]
-            public SubComponent<IDataTransform, SignatureDataTransform> preTrainType = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Transform which preprocesses the data before training and only before training (can be null)", 
+                ShortName = "pret", SignatureType = typeof(SignatureDataTransform))]
+            public IComponentFactory<IDataTransform> preTrainType = null;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Cache the data preprocessed only for training (", ShortName = "c")]
             public bool cache = false;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Transform which postprocesses the data (can be null)", ShortName = "post")]
-            public SubComponent<IDataTransform, SignatureDataTransform> postType = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Transform which postprocesses the data (can be null)", ShortName = "post",
+                SignatureType = typeof(SignatureDataTransform))]
+            public IComponentFactory<IDataTransform> postType = null;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Predictor", ShortName = "p")]
-            public SubComponent<ITrainer, SignatureTrainer> predictorType = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Predictor", ShortName = "p",
+                SignatureType = typeof(SignatureTrainer))]
+            public IComponentFactory<ITrainer> predictorType = null;
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Output column for the predictor", ShortName = "col")]
             public string outputColumn = "output";
@@ -68,9 +72,10 @@ namespace Scikit.ML.PipelineTraining
         public PrePostProcessTrainer(IHostEnvironment env, Arguments args) : base(env, LoadNameValue)
         {
             _args = args = args ?? new Arguments();
-            Contracts.CheckUserArg(_args.predictorType.IsGood(), "predictorType", "Must specify a base learner type");
-            Contracts.CheckUserArg(!string.IsNullOrEmpty(args.outputColumn), "outputColumn", "outputColumn cannot be empty");
-            var temp = _args.predictorType.CreateInstance(env);
+            Contracts.CheckValue(_args.predictorType, "predictorType", "Must specify a base learner type");
+            Contracts.CheckValue(args.outputColumn, "outputColumn", "outputColumn cannot be empty");
+            var tempSett = ScikitSubComponent<ITrainer, SignatureTrainer>.AsSubComponent(_args.predictorType);
+            var temp = tempSett.CreateInstance(env);
             _trainer = temp as ITrainer;
             if (_trainer == null)
                 env.Except(temp == null ? "Trainer cannot be cast: {0}." : "Trainer cannot be instantiated: {0}.", _args.predictorType);
@@ -100,7 +105,8 @@ namespace Scikit.ML.PipelineTraining
                 using (var ch2 = Host.Start("PreProcessTraining"))
                 {
                     ch2.Info("Applies a preprocess only for training: {0}", _args.preTrainType);
-                    _preTrainProcess = _args.preTrainType.CreateInstance(Host, view);
+                    var trSett = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.preTrainType);
+                    _preTrainProcess = trSett.CreateInstance(Host, view);
                     ch2.Done();
                 }
                 view = _preTrainProcess;
@@ -112,7 +118,8 @@ namespace Scikit.ML.PipelineTraining
                 using (var ch2 = Host.Start("PreProcess"))
                 {
                     ch2.Info("Applies a preprocess: {0}", _args.preType);
-                    _preProcess = _args.preType.CreateInstance(Host, view);
+                    var trSett = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.preType);
+                    _preProcess = trSett.CreateInstance(Host, view);
                     ch2.Done();
                 }
             }
@@ -171,7 +178,8 @@ namespace Scikit.ML.PipelineTraining
                 using (var ch2 = Host.Start("PostProcess"))
                 {
                     ch2.Info("Applies a postprocess: {0}", _args.postType);
-                    _postProcess = _args.postType.CreateInstance(Host, view);
+                    var postSett = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.postType);
+                    _postProcess = postSett.CreateInstance(Host, view);
                     ch2.Done();
                 }
             }

@@ -26,21 +26,23 @@ namespace TestMachineLearningExt
             var outData = FileHelper.GetOutputFile("outData1.txt", methodName);
             var outData2 = FileHelper.GetOutputFile("outData2.txt", methodName);
 
-            var env = EnvHelper.NewTestEnvironment(conc: threads == 1 ? 1 : 0);
-            var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
-                new MultiFileSource(dataFilePath));
-            var xf = env.CreateTransform("shuffle{force=+}", loader); // We shuffle because Iris is order by label.
-            xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", xf);
-            var roles = env.CreateExamples(xf, "Features", "Label");
-
-            string pred = addpre ? "PrePost{pre=poly{col=Features} p=___ pret=Take{n=80}}" : "PrePost{p=___ pret=Take{n=80}}";
-            pred = pred.Replace("___", modelName);
-            var trainer = env.CreateTrainer(pred);
-            using (var ch = env.Start("Train"))
+            using (var env = EnvHelper.NewTestEnvironment(conc: threads == 1 ? 1 : 0))
             {
-                var predictor = trainer.Train(env, ch, roles);
-                TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
-                                                            PredictionKind.MultiClassClassification, checkError, ratio: 0.15f);
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
+                    new MultiFileSource(dataFilePath));
+                var xf = env.CreateTransform("shuffle{force=+}", loader); // We shuffle because Iris is order by label.
+                xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", xf);
+                var roles = env.CreateExamples(xf, "Features", "Label");
+
+                string pred = addpre ? "PrePost{pre=poly{col=Features} p=___ pret=Take{n=80}}" : "PrePost{p=___ pret=Take{n=80}}";
+                pred = pred.Replace("___", modelName);
+                var trainer = env.CreateTrainer(pred);
+                using (var ch = env.Start("Train"))
+                {
+                    var predictor = trainer.Train(env, ch, roles);
+                    TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
+                                                                PredictionKind.MultiClassClassification, checkError, ratio: 0.15f);
+                }
             }
         }
 

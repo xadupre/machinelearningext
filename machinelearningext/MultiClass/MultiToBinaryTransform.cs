@@ -36,7 +36,7 @@ namespace Scikit.ML.MultiClass
         #region identification
 
         public const string LoaderSignature = "MultiToBinaryTransform";  // Not more than 24 letters.
-        public const string Summary = "Convert a multi-class classification problem into a binary classification problem.";
+        public const string Summary = "Converts a multi-class classification problem into a binary classification problem.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()
@@ -46,7 +46,8 @@ namespace Scikit.ML.MultiClass
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(MultiToBinaryTransform).Assembly.FullName);
         }
 
         #endregion
@@ -237,7 +238,7 @@ namespace Scikit.ML.MultiClass
                 case DataKind.R4:
                     return new MultiToBinaryState<float, float>(_host, _input, _args);
                 case DataKind.BL:
-                    return new MultiToBinaryState<DvBool, DvBool>(_host, _input, _args);
+                    return new MultiToBinaryState<bool, bool>(_host, _input, _args);
                 case DataKind.U1:
                     return new MultiToBinaryState<byte, byte>(_host, _input, _args);
                 case DataKind.U2:
@@ -261,7 +262,7 @@ namespace Scikit.ML.MultiClass
                 case DataKind.R4:
                     return new MultiToBinaryState<float, float>(ctx, _host, _input, _args);
                 case DataKind.BL:
-                    return new MultiToBinaryState<DvBool, DvBool>(ctx, _host, _input, _args);
+                    return new MultiToBinaryState<bool, bool>(ctx, _host, _input, _args);
                 case DataKind.U1:
                     return new MultiToBinaryState<byte, byte>(ctx, _host, _input, _args);
                 case DataKind.U2:
@@ -290,7 +291,7 @@ namespace Scikit.ML.MultiClass
             var p1 = _transform as MultiToBinaryState<float, float>;
             if (p1 != null)
                 return p1.Steal(toSteal._transform);
-            var p2 = _transform as MultiToBinaryState<DvBool, DvBool>;
+            var p2 = _transform as MultiToBinaryState<bool, bool>;
             if (p2 != null)
                 return p2.Steal(toSteal._transform);
             var p3 = _transform as MultiToBinaryState<byte, byte>;
@@ -683,7 +684,7 @@ namespace Scikit.ML.MultiClass
                 {
                     case MultiplicationAlgorithm.Default:
                     case MultiplicationAlgorithm.Reweight:
-                        return new MultiToBinaryCursor<TLabelC, TLabel, DvBool>(this, cursor, _colLabel, _colWeight, _maxReplica, _args.algo, _args.seed);
+                        return new MultiToBinaryCursor<TLabelC, TLabel, bool>(this, cursor, _colLabel, _colWeight, _maxReplica, _args.algo, _args.seed);
                     case MultiplicationAlgorithm.Ranking:
                         return new MultiToBinaryCursor<TLabelC, TLabel, uint>(this, cursor, _colLabel, _colWeight, _maxReplica, _args.algo, _args.seed);
                     default:
@@ -700,7 +701,7 @@ namespace Scikit.ML.MultiClass
                 {
                     case MultiplicationAlgorithm.Default:
                     case MultiplicationAlgorithm.Reweight:
-                        return cursors.Select(c => new MultiToBinaryCursor<TLabelC, TLabel, DvBool>(this, c, _colLabel, _colWeight, _maxReplica, _args.algo, _args.seed)).ToArray();
+                        return cursors.Select(c => new MultiToBinaryCursor<TLabelC, TLabel, bool>(this, c, _colLabel, _colWeight, _maxReplica, _args.algo, _args.seed)).ToArray();
                     case MultiplicationAlgorithm.Ranking:
                         return cursors.Select(c => new MultiToBinaryCursor<TLabelC, TLabel, uint>(this, c, _colLabel, _colWeight, _maxReplica, _args.algo, _args.seed)).ToArray();
                     default:
@@ -860,14 +861,14 @@ namespace Scikit.ML.MultiClass
                 }
             }
 
-            Tuple<TLabel, DvBool>[] GetMultiplicatorBool()
+            Tuple<TLabel, bool>[] GetMultiplicatorBool()
             {
                 int nb;
                 switch (_algo)
                 {
                     case MultiplicationAlgorithm.Default:
                         if (_labels.Length <= _maxReplica)
-                            return _view.LabelDistribution.Select(c => new Tuple<TLabel, DvBool>(c.Key, c.Key.Equals(_label)))
+                            return _view.LabelDistribution.Select(c => new Tuple<TLabel, bool>(c.Key, c.Key.Equals(_label)))
                                                                  .ToArray();
                         else
                         {
@@ -884,29 +885,29 @@ namespace Scikit.ML.MultiClass
 
                 // REVIEW: think about sampling around difficult borders...
                 if (nb <= 0)
-                    return new Tuple<TLabel, DvBool>[0];
+                    return new Tuple<TLabel, bool>[0];
                 else if (nb <= 1)
                 {
                     var h = _rand.Next() % 2;
                     if (h == 0)
-                        return new Tuple<TLabel, DvBool>[1] { new Tuple<TLabel, DvBool>(_label, DvBool.True) };
+                        return new Tuple<TLabel, bool>[1] { new Tuple<TLabel, bool>(_label, true) };
                     else
                     {
                         h = _rand.Next() % _labels.Length;
-                        return new Tuple<TLabel, DvBool>[1] { new Tuple<TLabel, DvBool>(_label, _labels[h].Equals(_label)) };
+                        return new Tuple<TLabel, bool>[1] { new Tuple<TLabel, bool>(_label, _labels[h].Equals(_label)) };
                     }
                 }
                 else
                 {
                     nb = Math.Min(nb, _maxReplica);
-                    var res = new Tuple<TLabel, DvBool>[nb];
+                    var res = new Tuple<TLabel, bool>[nb];
                     var h = _rand.Next() % 2;
                     if (h == 1)
-                        res[0] = new Tuple<TLabel, DvBool>(_label, DvBool.True);
+                        res[0] = new Tuple<TLabel, bool>(_label, true);
                     for (int i = h; i < nb; ++i)
                     {
                         h = _rand.Next() % _labels.Length;
-                        res[i] = new Tuple<TLabel, DvBool>(_labels[h], _labels[h].Equals(_label));
+                        res[i] = new Tuple<TLabel, bool>(_labels[h], _labels[h].Equals(_label));
                     }
                     return res;
                 }
@@ -1007,10 +1008,10 @@ namespace Scikit.ML.MultiClass
                     }
                     else
                     {
-                        ValueGetter<VBuffer<DvBool>> getter = (ref VBuffer<DvBool> value) =>
+                        ValueGetter<VBuffer<bool>> getter = (ref VBuffer<bool> value) =>
                         {
                             if (value.Length != 1 || value.Count != nb)
-                                value = new VBuffer<DvBool>(nb, 1, new DvBool[1], new int[1]);
+                                value = new VBuffer<bool>(nb, 1, new bool[1], new int[1]);
                             value.Values[0] = true;
                             value.Indices[0] = lablc(_copies[_copy].Item1);
                         };
@@ -1027,7 +1028,7 @@ namespace Scikit.ML.MultiClass
                 {
                     if (((new TValue[0]) as VBuffer<float>[]) != null)
                         return GetGetterLabelAsVector<TValue>(col, true);
-                    else if (((new TValue[0]) as VBuffer<DvBool>[]) != null)
+                    else if (((new TValue[0]) as VBuffer<bool>[]) != null)
                         return GetGetterLabelAsVector<TValue>(col, false);
                     else if (new TLabel[0] as float[] != null)
                     {

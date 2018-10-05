@@ -49,8 +49,9 @@ namespace Scikit.ML.MultiClass
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Drop missing labels.", ShortName = "na")]
             public bool dropNALabel = true;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Reclassification using output from the first tree", ShortName = "rp", SortOrder = 1)]
-            public SubComponent<ITrainer, SignatureMultiClassClassifierTrainer> reclassicationPredictor = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Reclassification using output from the first tree", ShortName = "rp", 
+                SortOrder = 1, SignatureType = typeof(SignatureTrainer))]
+            public IComponentFactory<ITrainer> reclassicationPredictor = null;
 
             #endregion
         }
@@ -348,12 +349,12 @@ namespace Scikit.ML.MultiClass
                 else
                 {
                     cursor.Schema.TryGetColumnIndex("PredictedLabel", out ipred);
-                    var getter = cursor.GetGetter<DvBool>(ilab);
-                    var pgetter = cursor.GetGetter<DvBool>(ipred);
-                    var counts = new Dictionary<DvBool, int>();
-                    var counts_pred = new Dictionary<DvBool, int>();
-                    DvBool lab = DvBool.False;
-                    DvBool pre = DvBool.False;
+                    var getter = cursor.GetGetter<bool>(ilab);
+                    var pgetter = cursor.GetGetter<bool>(ipred);
+                    var counts = new Dictionary<bool, int>();
+                    var counts_pred = new Dictionary<bool, int>();
+                    bool lab = false;
+                    bool pre = false;
                     int nbrows = 0;
                     int err = 0;
                     while (cursor.MoveNext())
@@ -456,7 +457,7 @@ namespace Scikit.ML.MultiClass
         #endregion
 
         protected void TrainReclassificationPredictor(RoleMappedData trainer_input, IPredictor predictor,
-                            SubComponent<ITrainer, SignatureMultiClassClassifierTrainer> argsPred)
+                            ISubComponent<ITrainer> argsPred)
         {
             if (argsPred == null)
             {

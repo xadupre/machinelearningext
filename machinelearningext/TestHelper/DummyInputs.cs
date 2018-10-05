@@ -1,8 +1,11 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System;
+using System.Reflection;
 using System.Linq;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.ProductionPrediction;
 
 
 namespace Scikit.ML.TestHelper
@@ -11,7 +14,7 @@ namespace Scikit.ML.TestHelper
     {
         [VectorType(2)]
         public float[] X;
-        public DvInt4 Y;
+        public int Y;
 
         public static InputOutput[] CreateInputs()
         {
@@ -25,11 +28,53 @@ namespace Scikit.ML.TestHelper
         }
     }
 
-    public class InputOutputU
+    public class InputOutput2
+    {
+        [VectorType(2)]
+        public float[] X2;
+    }
+
+    public class InputOutputU : IClassWithGetter<InputOutputU>, IClassWithSetter<InputOutputU>
     {
         [VectorType(2)]
         public float[] X;
         public uint Y;
+
+        public Delegate GetGetter(int col)
+        {
+            switch (col)
+            {
+                case 0:
+                    {
+                        ValueGetterInstance<InputOutputU, float[]> dele = (ref InputOutputU self, ref float[] x) => { x = self.X; };
+                        return dele;
+                    }
+                case 1:
+                    {
+                        ValueGetterInstance<InputOutputU, uint> dele = (ref InputOutputU self, ref uint y) => { y = self.Y; };
+                        return dele;
+                    }
+                default:
+                    throw new System.Exception($"No field number {col}.");
+            }
+        }
+
+        public Delegate[] GetCursorGetter(IRowCursor cursor)
+        {
+            return new Delegate[]
+            {
+                cursor.GetGetter<float[]>(0),
+                cursor.GetGetter<uint>(1),
+            };
+        }
+
+        public void Set(Delegate[] delegates)
+        {
+            var del1 = delegates[0] as ValueGetter<float[]>;
+            del1(ref X);
+            var del2 = delegates[1] as ValueGetter<uint>;
+            del2(ref Y);
+        }
     }
 
     public class ExampleA0
@@ -113,5 +158,40 @@ namespace Scikit.ML.TestHelper
                 y = new VBuffer<float>(X.Length, X.Values.Select(c => c).ToArray());
             };
         }
+    }
+
+    public class SentimentData : IClassWithGetter<SentimentData>
+    {
+        [ColumnName("Label")]
+        public bool Sentiment;
+        public string SentimentText;
+
+        public Delegate GetGetter(int col)
+        {
+            switch (col)
+            {
+                case 0:
+                    {
+                        ValueGetterInstance<SentimentData, float> dele = 
+                            (ref SentimentData self, ref float x) => { x = self.Sentiment ? 1f : 0f; };
+                        return dele;
+                    }
+                case 1:
+                    {
+                        ValueGetterInstance<SentimentData, ReadOnlyMemory<char>> dele = 
+                            (ref SentimentData self, ref ReadOnlyMemory<char> x) => { x = new ReadOnlyMemory<char>(self.SentimentText.ToCharArray()); };
+                        return dele;
+                    }
+                default:
+                    throw new Exception($"No available column for index {col}.");
+            }
+        }
+    }
+
+    public class SentimentPrediction
+    {
+        [ColumnName("PredictedLabel")]
+        public bool Sentiment;
+        public float Score;
     }
 }

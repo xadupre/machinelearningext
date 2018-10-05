@@ -4,20 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Runtime;
+using Scikit.ML.DataManipulation;
 
 // This indicates where to find objects in ML.net assemblies.
 using ArgumentAttribute = Microsoft.ML.Runtime.CommandLine.ArgumentAttribute;
 using ArgumentType = Microsoft.ML.Runtime.CommandLine.ArgumentType;
 
 using DataKind = Microsoft.ML.Runtime.Data.DataKind;
-using DvBool = Microsoft.ML.Runtime.Data.DvBool;
-using DvInt1 = Microsoft.ML.Runtime.Data.DvInt1;
-using DvInt2 = Microsoft.ML.Runtime.Data.DvInt2;
-using DvInt4 = Microsoft.ML.Runtime.Data.DvInt4;
-using DvInt8 = Microsoft.ML.Runtime.Data.DvInt8;
-using DvText = Microsoft.ML.Runtime.Data.DvText;
-using DvDateTime = Microsoft.ML.Runtime.Data.DvDateTime;
-using DvTimeSpan = Microsoft.ML.Runtime.Data.DvTimeSpan;
 using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
 using IDataView = Microsoft.ML.Runtime.Data.IDataView;
 using IRowCursor = Microsoft.ML.Runtime.Data.IRowCursor;
@@ -29,7 +22,7 @@ using ModelLoadContext = Microsoft.ML.Runtime.Model.ModelLoadContext;
 using ModelSaveContext = Microsoft.ML.Runtime.Model.ModelSaveContext;
 using VersionInfo = Microsoft.ML.Runtime.Model.VersionInfo;
 
-using DataFrame = Scikit.ML.DataManipulation.DataFrame;
+using DvText = Scikit.ML.PipelineHelper.DvText;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
@@ -68,7 +61,7 @@ namespace Scikit.ML.PipelineTransforms
         #region identification
 
         public const string LoaderSignature = "SortInDataFrameTransform";
-        public const string Summary = "Sort a data view in memory (all the data must hold in memory).";
+        public const string Summary = "Sorts a data view in memory (all the data must hold in memory).";
         public const string RegistrationName = LoaderSignature;
 
         private static VersionInfo GetVersionInfo()
@@ -78,7 +71,8 @@ namespace Scikit.ML.PipelineTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(SortInDataFrameTransform).Assembly.FullName);
         }
 
         #endregion
@@ -204,8 +198,9 @@ namespace Scikit.ML.PipelineTransforms
         {
             Host.Check(string.IsNullOrEmpty(_sortColumn) || rand == null, "Random access is not allowed on sorted data. (5)");
             Host.AssertValue(_transform, "_transform");
-            int sortColumn;
-            Source.Schema.TryGetColumnIndex(_sortColumn, out sortColumn);
+            int sortColumn = -1;
+            if (!string.IsNullOrEmpty(_sortColumn))
+                Source.Schema.TryGetColumnIndex(_sortColumn, out sortColumn);
             return _transform.GetRowCursor(i => i == sortColumn || needCol(i), rand);
         }
 
@@ -259,25 +254,25 @@ namespace Scikit.ML.PipelineTransforms
                     case DataKind.U8:
                         return CreateTransform<UInt64>();
                     case DataKind.I1:
-                        return CreateTransform<DvInt1>();
+                        return CreateTransform<char>();
                     case DataKind.I2:
-                        return CreateTransform<DvInt2>();
+                        return CreateTransform<short>();
                     case DataKind.I4:
-                        return CreateTransform<DvInt4>();
+                        return CreateTransform<int>();
                     case DataKind.I8:
-                        return CreateTransform<DvInt8>();
+                        return CreateTransform<long>();
                     case DataKind.R4:
                         return CreateTransform<float>();
                     case DataKind.R8:
                         return CreateTransform<double>();
                     case DataKind.BL:
-                        return CreateTransform<DvBool>();
+                        return CreateTransform<bool>();
                     case DataKind.Text:
                         return CreateTransform<DvText>();
                     case DataKind.DT:
-                        return CreateTransform<DvDateTime>();
+                        return CreateTransform<DateTime>();
                     case DataKind.TS:
-                        return CreateTransform<DvTimeSpan>();
+                        return CreateTransform<TimeSpan>();
                     default:
                         throw Host.Except("Unexpected raw type for a sortColumn. It cannot be an array.");
                 }
@@ -345,7 +340,7 @@ namespace Scikit.ML.PipelineTransforms
                     if (!(_autoView is null))
                         return;
 
-                    _autoView = DataFrame.ReadView(_source, keepVectors: true, numThreads: _numThreads);
+                    _autoView = DataFrameIO.ReadView(_source, keepVectors: true, numThreads: _numThreads);
 
                     if (_sortColumn >= 0)
                     {

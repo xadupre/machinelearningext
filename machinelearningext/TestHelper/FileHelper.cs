@@ -50,11 +50,16 @@ namespace Scikit.ML.TestHelper
         public static string GetTestFile(string name)
         {
             var root = GetRoot();
-            var full = Path.Combine(root, "data", name);
-            if (!File.Exists(full))
-                throw new FileNotFoundException(string.Format("Unable to find '{0}'\nFull='{1}'\nroot='{2}'\ncurrent='{3}'.",
-                                    name, full, root, Path.GetFullPath(Directory.GetCurrentDirectory())));
-            return full;
+            var fulls = new[] {
+                Path.Combine(root, "data", name),
+                Path.Combine(root, "machinelearning", "test", "data", name),
+            };
+
+            foreach (var full in fulls)
+                if (File.Exists(full))
+                    return full;
+            throw new FileNotFoundException(string.Format("Unable to find '{0}'\nroot='{2}'\ncurrent='{3}'.\nFull=\n{1}",
+                                name, string.Join("\n", fulls), root, Path.GetFullPath(Directory.GetCurrentDirectory())));
         }
 
         /// <summary>

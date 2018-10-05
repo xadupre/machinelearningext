@@ -15,7 +15,7 @@ import csharpy
 project = 'Custom Extensions to ML.net'
 copyright = '2018'
 author = 'Xavier Dupré'
-version = '0.4.0'
+version = '0.7.0'
 release = version
 
 
@@ -46,6 +46,7 @@ language = None
 master_doc = 'index'
 pygments_style = 'sphinx'
 templates_path = ['_templates']
+html_logo = "project_ico.png"
 
 # -- Shortcuts ---------------------------------------------------------------
 
@@ -53,10 +54,13 @@ owner = "xadupre"
 
 epkg_dictionary = {
     'DataFrame': 'https://github.com/%s/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs' % owner,
+    'DBSCAN': 'https://fr.wikipedia.org/wiki/DBSCAN',
     'C#': 'https://en.wikipedia.org/wiki/C_Sharp_(programming_language)',
     'Iris': 'http://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html',
     'Microsoft': 'https://www.microsoft.com/',
     'ML.net': 'https://github.com/dotnet/machinelearning',
+    'OPTICS': 'https://fr.wikipedia.org/wiki/OPTICS',
+    'PCA': 'https://en.wikipedia.org/wiki/Principal_component_analysis',
     'Python': 'https://www.python.org/',
     'R': 'https://www.r-project.org/',
 }
@@ -71,3 +75,6 @@ html_theme_path = [sphinx_materialdesign_theme.get_path()]
 
 # html_sidebars = {}
 
+from recommonmark.parser import CommonMarkParser
+source_parsers = {'.md': CommonMarkParser}
+source_suffix = ['.rst', '.md']

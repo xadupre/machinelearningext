@@ -27,11 +27,6 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, bool value)
         {
-            return Operation(c1, (DvBool)value);
-        }
-
-        public static NumericColumn Operation(NumericColumn c1, DvBool value)
-        {
             if (c1.Kind.IsVector)
                 throw new NotImplementedException();
             else
@@ -40,8 +35,8 @@ namespace Scikit.ML.DataManipulation
                 {
                     case DataKind.BL:
                         {
-                            DvBool[] a;
-                            DataColumn<DvBool> res;
+                            bool[] a;
+                            DataColumn<bool> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
                                 res.Set(i, a[i] /**/ & value);
@@ -89,9 +84,9 @@ namespace Scikit.ML.DataManipulation
                             {
                                 case DataKind.BL:
                                     {
-                                        DvBool[] a;
-                                        DvBool[] b;
-                                        DataColumn<DvBool> res;
+                                        bool[] a;
+                                        bool[] b;
+                                        DataColumn<bool> res;
                                         Operation(c1, c2, out a, out b, out res);
                                         for (int i = 0; i < res.Length; ++i)
                                             res.Set(i, a[i] /**/ & b[i]);

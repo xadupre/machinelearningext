@@ -1,5 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ using Scikit.ML.PipelineTransforms;
 
 namespace Scikit.ML.ScikitAPI
 {
-    public class ScikitPipeline
+    public class ScikitPipeline : IDisposable
     {
         public class StepTransform
         {
@@ -30,17 +31,19 @@ namespace Scikit.ML.ScikitAPI
             public RoleMappedData roleMapData;
         }
 
-        private readonly IHostEnvironment _env;
+        private IHostEnvironment _env;
         private StepTransform[] _transforms;
         private StepPredictor _predictor;
         private string _loaderSettings;
         private List<KeyValuePair<RoleMappedSchema.ColumnRole, string>> _roles;
+        private bool _dispose;
 
         public ScikitPipeline(string[] transforms = null,
                               string predictor = null,
                               IHostEnvironment host = null)
         {
-            _env = host ?? new TlcEnvironment();
+            _dispose = false;
+            _env = host ?? ExtendedConsoleEnvironment();
             _transforms = new StepTransform[transforms == null ? 1 : transforms.Length + 1];
             // We add a PassThroughTransform to be able to change the source.
             _transforms[0] = new StepTransform() { transformSettings = "pass", transform = null };
@@ -58,16 +61,35 @@ namespace Scikit.ML.ScikitAPI
             _roles = null;
         }
 
+        public void Dispose()
+        {
+            if (_dispose)
+            {
+                (_env as ConsoleEnvironment).Dispose();
+                _env = null;
+            }
+        }
+
+        private IHostEnvironment ExtendedConsoleEnvironment()
+        {
+            _dispose = true;
+            var env = new ConsoleEnvironment();
+            ComponentHelper.AddStandardComponents(env);
+            return env;
+        }
+
         public ScikitPipeline(string filename, IHostEnvironment host = null)
         {
-            _env = host ?? new TlcEnvironment();
+            _dispose = false;
+            _env = host ?? ExtendedConsoleEnvironment();
             using (var st = File.OpenRead(filename))
                 Load(st);
         }
 
         public ScikitPipeline(Stream st, IHostEnvironment host = null)
         {
-            _env = host ?? new TlcEnvironment();
+            _dispose = false;
+            _env = host ?? ExtendedConsoleEnvironment();
             Load(st);
         }
 
@@ -118,7 +140,24 @@ namespace Scikit.ML.ScikitAPI
             {
                 for (int i = 0; i < _transforms.Length; ++i)
                 {
-                    trans = _env.CreateTransform(_transforms[i].transformSettings, trans);
+                    try
+                    {
+                        trans = _env.CreateTransform(_transforms[i].transformSettings, trans);
+                    }
+                    catch (Exception e)
+                    {
+                        if (e.ToString().Contains("Unknown loadable class"))
+                        {
+                            var nn = _env.ComponentCatalog.GetAllClasses().Length;
+                            var filt = _env.ComponentCatalog.GetAllClasses()
+                                                            .Select(c => c.UserName)
+                                                            .OrderBy(c => c)
+                                                            .Where(c => c.Trim().Length > 2);
+                            var regis = string.Join("\n", filt);
+                            throw Contracts.Except(e, $"Unable to create transform '{_transforms[i].transformSettings}', assembly not registered among {nn}\n{regis}");
+                        }
+                        throw e;
+                    }
                     _transforms[i].transform = trans as IDataTransform;
                 }
                 ch.Done();
@@ -156,7 +195,7 @@ namespace Scikit.ML.ScikitAPI
                 // We predict one to make sure everything works fine.
                 using (var ch = _env.Start("Compute one prediction."))
                 {
-                    var df = DataFrame.ReadView(trans, 1, keepVectors: true);
+                    var df = DataFrameIO.ReadView(trans, 1, keepVectors: true, env: _env);
                     if (df.Length == 0)
                         throw _env.ExceptEmpty("Something went wrong. The pipeline does not produce any output.");
                     ch.Done();

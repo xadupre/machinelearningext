@@ -10,6 +10,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.CommandLine;
+using Legacy = Microsoft.ML.Legacy;
 using PassThroughTransform = Scikit.ML.PipelineTransforms.PassThroughTransform;
 using EntryPointPassThrough = Scikit.ML.EntryPoints.EntryPointPassThrough;
 using EP_PassThrough = Scikit.ML.EntryPoints.PassThrough;
@@ -76,7 +77,7 @@ namespace Scikit.ML.EntryPoints
     /// <summary>
     /// Insert a transform which does nothing just to get a transform pointer. It can be used to dump a view on disk.
     /// </summary>
-    public sealed partial class PassThrough : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Microsoft.ML.ILearningPipelineItem
+    public sealed partial class PassThrough : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
         public const string Name = nameof(PassThrough);
 
@@ -119,13 +120,13 @@ namespace Scikit.ML.EntryPoints
         }
         public Var<IDataView> GetInputData() => Data;
 
-        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
+        public Legacy.ILearningPipelineStep ApplyStep(Legacy.ILearningPipelineStep previousStep, Experiment experiment)
         {
             if (previousStep != null)
             {
-                if (!(previousStep is ILearningPipelineDataStep dataStep))
+                if (!(previousStep is Legacy.ILearningPipelineDataStep dataStep))
                 {
-                    throw new InvalidOperationException($"{ nameof(PassThrough)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
+                    throw new InvalidOperationException($"{ nameof(PassThrough)} only supports an { nameof(Legacy.ILearningPipelineDataStep)} as an input.");
                 }
 
                 Data = dataStep.Data;
@@ -134,7 +135,7 @@ namespace Scikit.ML.EntryPoints
             return new PassThroughPipelineStep(output);
         }
 
-        private class PassThroughPipelineStep : ILearningPipelineDataStep
+        private class PassThroughPipelineStep : Legacy.ILearningPipelineDataStep
         {
             public PassThroughPipelineStep(Output output)
             {

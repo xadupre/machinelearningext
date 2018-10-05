@@ -132,7 +132,7 @@ namespace Scikit.ML.DataManipulation
         {
             using (var stream = new MemoryStream())
             {
-                DataFrame.ViewToCsv(this, stream);
+                DataFrameIO.ViewToCsv(this, stream);
                 stream.Position = 0;
                 using (var reader = new StreamReader(stream))
                     return reader.ReadToEnd().Replace("\r", "").TrimEnd(new char[] { '\n' });

@@ -8,6 +8,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Training;
 using Microsoft.ML.Runtime.Internal.Calibration;
 using Scikit.ML.RandomTransforms;
+using Scikit.ML.PipelineHelper;
 
 using OptimizedOVATrainer = Scikit.ML.MultiClass.OptimizedOVATrainer;
 
@@ -37,11 +38,13 @@ namespace Scikit.ML.MultiClass
             [Argument(ArgumentType.AtMostOnce, HelpText = "Use probability or margins to determine max", ShortName = "useprob")]
             public bool useProbabilities = true;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Base predictor", ShortName = "p", SortOrder = 1)]
-            public SubComponent<TScalarTrainer, SignatureBinaryClassifierTrainer> predictorType = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Base predictor", ShortName = "p", SortOrder = 1,
+                SignatureType = typeof(SignatureTrainer))]
+            public IComponentFactory<TScalarTrainer> predictorType = null;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Output calibrator", ShortName = "cali", NullName = "<None>")]
-            public SubComponent<ICalibratorTrainer, SignatureCalibrator> calibratorType = new SubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
+            [Argument(ArgumentType.Multiple, HelpText = "Output calibrator", ShortName = "cali", NullName = "<None>",
+                SignatureType = typeof(SignatureCalibrator))]
+            public IComponentFactory<ICalibratorTrainer> calibratorType = new ScikitSubComponent<ICalibratorTrainer, SignatureCalibrator>("PlattCalibration");
 
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Number of instances to train the calibrator", ShortName = "numcali")]
             public int maxCalibrationExamples = 1000000000;
@@ -52,8 +55,9 @@ namespace Scikit.ML.MultiClass
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Drop missing labels.", ShortName = "na")]
             public bool dropNALabel = true;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Add a cache transform before training. That might required if cursor happen to be in an unstable state", ShortName = "cache", NullName = "<None>")]
-            public SubComponent<IDataTransform, SignatureDataTransform> cacheTransform = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Add a cache transform before training. That might required if cursor happen to be in an unstable state", 
+                ShortName = "cache", NullName = "<None>", SignatureType = typeof(SignatureDataTransform))]
+            public IComponentFactory<IDataTransform> cacheTransform = null;
         }
 
         private readonly Arguments _args;
@@ -64,8 +68,11 @@ namespace Scikit.ML.MultiClass
         public OptimizedOVATrainer(IHostEnvironment env, Arguments args) : base(env, LoadNameValue)
         {
             _args = args = args ?? new Arguments();
-            Contracts.CheckUserArg(_args.predictorType.IsGood(), "predictorType", "Must specify a base learner type");
-            _trainer = _args.predictorType.CreateInstance(env);
+            Contracts.CheckValue(_args.predictorType, "predictorType", "Must specify a base learner type");
+            var predSett = ScikitSubComponent<ITrainer, SignatureBinaryClassifierTrainer>.AsSubComponent(_args.predictorType);
+            var trainer = predSett.CreateInstance(env);
+            _trainer = trainer as TScalarTrainer;
+            Contracts.CheckValue(_trainer, nameof(_trainer));
             _needNorm = _trainer.Info.NeedNormalization;
         }
 
@@ -95,7 +102,14 @@ namespace Scikit.ML.MultiClass
 
                     // We may have instantiated the first trainer to use already. If so capture it;
                     // otherwise create a new one.
-                    var trainer = _trainer ?? _args.predictorType.CreateInstance(Host);
+                    TScalarTrainer trainer;
+                    if (_trainer != null)
+                        trainer = _trainer;
+                    else
+                    {
+                        var temp = ScikitSubComponent<ITrainer, SignatureBinaryClassifierTrainer>.AsSubComponent(_args.predictorType);
+                        trainer = temp.CreateInstance(Host) as TScalarTrainer;
+                    }
                     _trainer = null;
                     _predictors[i] = TrainOne(ch, trainer, data, i);
                 }
@@ -111,7 +125,10 @@ namespace Scikit.ML.MultiClass
             var view = MapLabels(data, cls, out dstName, ch);
 
             if (_args.cacheTransform != null)
-                view = _args.cacheTransform.CreateInstance(Host, view);
+            {
+                var sub = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.cacheTransform);
+                view = sub.CreateInstance(Host, view);
+            } 
 
             var roles = data.Schema.GetColumnRoleNames()
                 .Where(kvp => kvp.Key.Value != CR.Label.Value)
@@ -122,7 +139,8 @@ namespace Scikit.ML.MultiClass
 
             if (_args.useProbabilities)
             {
-                var calibrator = _args.calibratorType.CreateInstance(Host);
+                var calSett = ScikitSubComponent<ICalibratorTrainer, SignatureCalibrator>.AsSubComponent(_args.calibratorType);
+                var calibrator = calSett.CreateInstance(Host);
                 var res = CalibratorUtils.TrainCalibratorIfNeeded(Host, ch,
                                         calibrator, _args.maxCalibrationExamples,
                                         trainer, predictor, td);

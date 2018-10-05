@@ -8,6 +8,7 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Data.IO;
+using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
@@ -44,7 +45,8 @@ namespace Scikit.ML.PipelineGraphTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(SelectTaggedViewTransform).Assembly.FullName);
         }
 
         public new class Arguments
@@ -58,8 +60,9 @@ namespace Scikit.ML.PipelineGraphTransforms
             [Argument(ArgumentType.AtMostOnce, HelpText = "In that case, the selected view is an idv file or a text file.", ShortName = "f")]
             public string filename;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Loader settings if data is loaded from disk (default is binary).", ShortName = "loader")]
-            public SubComponent<IDataLoader, SignatureDataLoader> loaderSettings = new SubComponent<IDataLoader, SignatureDataLoader>("binary");
+            [Argument(ArgumentType.Multiple, HelpText = "Loader settings if data is loaded from disk (default is binary).", 
+                ShortName = "loader", SignatureType = typeof(SignatureDataLoader))]
+            public IComponentFactory<IDataLoader> loaderSettings = new ScikitSubComponent<IDataLoader, SignatureDataLoader>("binary");
 
             public void Read(ModelLoadContext ctx, IHost host)
             {
@@ -71,7 +74,7 @@ namespace Scikit.ML.PipelineGraphTransforms
                 var sloader = ctx.Reader.ReadString();
                 if (string.IsNullOrEmpty(sloader))
                     sloader = "binary";
-                loaderSettings = new SubComponent<IDataLoader, SignatureDataLoader>(sloader);
+                loaderSettings = new ScikitSubComponent<IDataLoader, SignatureDataLoader>(sloader);
             }
 
             public void Write(ModelSaveContext ctx, IHost host)
@@ -79,7 +82,11 @@ namespace Scikit.ML.PipelineGraphTransforms
                 ctx.Writer.Write(tag);
                 ctx.Writer.Write(selectTag);
                 ctx.Writer.Write(string.IsNullOrEmpty(filename) ? "" : filename);
-                var sloaderSettings = string.Format("{0}{{{1}}}", loaderSettings.Kind, loaderSettings.SubComponentSettings);
+
+                var loadSettings = loaderSettings as ICommandLineComponentFactory;
+                Contracts.CheckValue(loadSettings, nameof(loaderSettings));
+
+                var sloaderSettings = string.Format("{0}{{{1}}}", loadSettings.Name, loadSettings.GetSettingsString());
                 sloaderSettings = sloaderSettings.Replace("{}", "");
                 ctx.Writer.Write(sloaderSettings);
             }
@@ -173,7 +180,8 @@ namespace Scikit.ML.PipelineGraphTransforms
                     throw env.Except("Tag '{0}' was already given. It cannot be assigned to the new file.", args.selectTag);
                 var loaderArgs = new BinaryLoader.Arguments();
                 var file = new MultiFileSource(args.filename);
-                IDataView loader = args.loaderSettings.CreateInstance(env, file);
+                var loadSettings = ScikitSubComponent<IDataLoader, SignatureDataLoader>.AsSubComponent(args.loaderSettings);
+                IDataView loader = loadSettings.CreateInstance(env, file);
 
                 var ag = new TagViewTransform.Arguments { tag = args.selectTag };
                 var newInput = new TagViewTransform(env, ag, loader);

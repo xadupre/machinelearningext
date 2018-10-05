@@ -7,12 +7,11 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Trainers;
-using Microsoft.ML.Transforms;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.RandomTransforms;
 using Scikit.ML.TestHelper;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
@@ -22,7 +21,7 @@ namespace TestMachineLearningExt
     {
         #region ResampleTransform
 
-        private static void TestResampleTransform(float ratio)
+        private void TestResampleTransform(float ratio)
         {
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
@@ -39,10 +38,10 @@ namespace TestMachineLearningExt
                 var values = new List<int>();
                 using (var cursor = tr.GetRowCursor(i => true))
                 {
-                    var columnGetter = cursor.GetGetter<DvInt4>(1);
+                    var columnGetter = cursor.GetGetter<int>(1);
                     while (cursor.MoveNext())
                     {
-                        DvInt4 got = 0;
+                        int got = 0;
                         columnGetter(ref got);
                         values.Add((int)got);
                     }
@@ -97,18 +96,18 @@ namespace TestMachineLearningExt
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.Resample() { Lambda = 1f });
-            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(new Tuple<int, int>(150, 8).Item2, dfout.Shape.Item2);
         }
 
@@ -119,162 +118,166 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void Testl_ShakeInputTransform()
         {
-            var host = EnvHelper.NewTestEnvironment();
-
-            var inputs = new[] {
-                new SHExampleA() { X = new float[] { 0, 1 } },
-                new SHExampleA() { X = new float[] { 2, 3 } }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new ShakeInputTransform.Arguments
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                inputColumn = "X",
-                inputFeaturesInt = new[] { 0, 1 },
-                outputColumns = new[] { "yo" },
-                values = "-10,10;-100,100"
-            };
+                var inputs = new[] {
+                    new SHExampleA() { X = new float[] { 0, 1 } },
+                    new SHExampleA() { X = new float[] { 2, 3 } }
+                };
 
-            var trv = new SHExampleValueMapper();
-            if (trv == null)
-                throw new Exception("Invalid");
-            var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+                var data = host.CreateStreamingDataView(inputs);
 
-            using (var cursor = shake.GetRowCursor(i => true))
-            {
-                var outValues = new List<float>();
-                var colGetter = cursor.GetGetter<VBuffer<float>>(1);
-                while (cursor.MoveNext())
+                var args = new ShakeInputTransform.Arguments
                 {
-                    VBuffer<float> got = new VBuffer<float>();
-                    colGetter(ref got);
-                    outValues.AddRange(got.DenseValues());
+                    inputColumn = "X",
+                    inputFeaturesInt = new[] { 0, 1 },
+                    outputColumns = new[] { "yo" },
+                    values = "-10,10;-100,100"
+                };
+
+                var trv = new SHExampleValueMapper();
+                if (trv == null)
+                    throw new Exception("Invalid");
+                var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+
+                using (var cursor = shake.GetRowCursor(i => true))
+                {
+                    var outValues = new List<float>();
+                    var colGetter = cursor.GetGetter<VBuffer<float>>(1);
+                    while (cursor.MoveNext())
+                    {
+                        VBuffer<float> got = new VBuffer<float>();
+                        colGetter(ref got);
+                        outValues.AddRange(got.DenseValues());
+                    }
+                    if (outValues.Count != 8)
+                        throw new Exception("expected 8");
                 }
-                if (outValues.Count != 8)
-                    throw new Exception("expected 8");
             }
         }
 
         [TestMethod]
         public void Testl_ShakeInputTransformAdd()
         {
-            var host = EnvHelper.NewTestEnvironment();
-
-            var inputs = new[] {
-                new SHExampleA() { X = new float[] { 0, 1 } },
-                new SHExampleA() { X = new float[] { 2, 3 } }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new ShakeInputTransform.Arguments
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                inputColumn = "X",
-                inputFeaturesInt = new[] { 0, 1 },
-                outputColumns = new[] { "yo" },
-                values = "-10,10;-100,100",
-                aggregation = ShakeInputTransform.ShakeAggregation.add
-            };
+                var inputs = new[] {
+                    new SHExampleA() { X = new float[] { 0, 1 } },
+                    new SHExampleA() { X = new float[] { 2, 3 } }
+                };
 
-            var trv = new SHExampleValueMapper();
-            if (trv == null)
-                throw new Exception("Invalid");
-            var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+                var data = host.CreateStreamingDataView(inputs);
 
-            using (var cursor = shake.GetRowCursor(i => true))
-            {
-                var outValues = new List<float>();
-                var colGetter = cursor.GetGetter<VBuffer<float>>(1);
-                while (cursor.MoveNext())
+                var args = new ShakeInputTransform.Arguments
                 {
-                    VBuffer<float> got = new VBuffer<float>();
-                    colGetter(ref got);
-                    outValues.AddRange(got.DenseValues());
+                    inputColumn = "X",
+                    inputFeaturesInt = new[] { 0, 1 },
+                    outputColumns = new[] { "yo" },
+                    values = "-10,10;-100,100",
+                    aggregation = ShakeInputTransform.ShakeAggregation.add
+                };
+
+                var trv = new SHExampleValueMapper();
+                if (trv == null)
+                    throw new Exception("Invalid");
+                var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+
+                using (var cursor = shake.GetRowCursor(i => true))
+                {
+                    var outValues = new List<float>();
+                    var colGetter = cursor.GetGetter<VBuffer<float>>(1);
+                    while (cursor.MoveNext())
+                    {
+                        VBuffer<float> got = new VBuffer<float>();
+                        colGetter(ref got);
+                        outValues.AddRange(got.DenseValues());
+                    }
+                    if (outValues.Count != 2)
+                        throw new Exception("expected 2");
                 }
-                if (outValues.Count != 2)
-                    throw new Exception("expected 2");
             }
         }
 
         [TestMethod]
         public void Testl_ShakeInputTransformVector()
         {
-            var host = EnvHelper.NewTestEnvironment();
-
-            var inputs = new[] {
-                new SHExampleA() { X = new float[] { 0, 1 } },
-                new SHExampleA() { X = new float[] { 2, 3 } }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new ShakeInputTransform.Arguments
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                inputColumn = "X",
-                inputFeaturesInt = new[] { 0, 1 },
-                outputColumns = new[] { "yo" },
-                values = "-10,10;-100,100"
-            };
+                var inputs = new[] {
+                    new SHExampleA() { X = new float[] { 0, 1 } },
+                    new SHExampleA() { X = new float[] { 2, 3 } }
+                };
 
-            var trv = new ExampleValueMapperVector();
-            if (trv == null)
-                throw new Exception("Invalid");
-            var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+                var data = host.CreateStreamingDataView(inputs);
 
-            using (var cursor = shake.GetRowCursor(i => true))
-            {
-                var outValues = new List<float>();
-                var colGetter = cursor.GetGetter<VBuffer<float>>(1);
-                while (cursor.MoveNext())
+                var args = new ShakeInputTransform.Arguments
                 {
-                    VBuffer<float> got = new VBuffer<float>();
-                    colGetter(ref got);
-                    outValues.AddRange(got.DenseValues());
+                    inputColumn = "X",
+                    inputFeaturesInt = new[] { 0, 1 },
+                    outputColumns = new[] { "yo" },
+                    values = "-10,10;-100,100"
+                };
+
+                var trv = new ExampleValueMapperVector();
+                if (trv == null)
+                    throw new Exception("Invalid");
+                var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+
+                using (var cursor = shake.GetRowCursor(i => true))
+                {
+                    var outValues = new List<float>();
+                    var colGetter = cursor.GetGetter<VBuffer<float>>(1);
+                    while (cursor.MoveNext())
+                    {
+                        VBuffer<float> got = new VBuffer<float>();
+                        colGetter(ref got);
+                        outValues.AddRange(got.DenseValues());
+                    }
+                    if (outValues.Count != 16)
+                        throw new Exception("expected 16");
                 }
-                if (outValues.Count != 16)
-                    throw new Exception("expected 16");
             }
         }
 
         [TestMethod]
-        public static void Testl_ShakeInputTransformVectorAdd()
+        public void Testl_ShakeInputTransformVectorAdd()
         {
-            var host = EnvHelper.NewTestEnvironment();
-
-            var inputs = new[] {
-                new SHExampleA() { X = new float[] { 0, 1 } },
-                new SHExampleA() { X = new float[] { 2, 3 } }
-            };
-
-            var data = host.CreateStreamingDataView(inputs);
-
-            var args = new ShakeInputTransform.Arguments
+            using (var host = EnvHelper.NewTestEnvironment())
             {
-                inputColumn = "X",
-                inputFeaturesInt = new[] { 0, 1 },
-                outputColumns = new[] { "yo" },
-                values = "-10,10;-100,100",
-                aggregation = ShakeInputTransform.ShakeAggregation.add
-            };
+                var inputs = new[] {
+                    new SHExampleA() { X = new float[] { 0, 1 } },
+                    new SHExampleA() { X = new float[] { 2, 3 } }
+                };
 
-            var trv = new ExampleValueMapperVector();
-            if (trv == null)
-                throw new Exception("Invalid");
-            var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+                var data = host.CreateStreamingDataView(inputs);
 
-            using (var cursor = shake.GetRowCursor(i => true))
-            {
-                var outValues = new List<float>();
-                var colGetter = cursor.GetGetter<VBuffer<float>>(1);
-                while (cursor.MoveNext())
+                var args = new ShakeInputTransform.Arguments
                 {
-                    VBuffer<float> got = new VBuffer<float>();
-                    colGetter(ref got);
-                    outValues.AddRange(got.DenseValues());
+                    inputColumn = "X",
+                    inputFeaturesInt = new[] { 0, 1 },
+                    outputColumns = new[] { "yo" },
+                    values = "-10,10;-100,100",
+                    aggregation = ShakeInputTransform.ShakeAggregation.add
+                };
+
+                var trv = new ExampleValueMapperVector();
+                if (trv == null)
+                    throw new Exception("Invalid");
+                var shake = new ShakeInputTransform(host, args, data, new IValueMapper[] { trv });
+
+                using (var cursor = shake.GetRowCursor(i => true))
+                {
+                    var outValues = new List<float>();
+                    var colGetter = cursor.GetGetter<VBuffer<float>>(1);
+                    while (cursor.MoveNext())
+                    {
+                        VBuffer<float> got = new VBuffer<float>();
+                        colGetter(ref got);
+                        outValues.AddRange(got.DenseValues());
+                    }
+                    if (outValues.Count != 4)
+                        throw new Exception("expected 4");
                 }
-                if (outValues.Count != 4)
-                    throw new Exception("expected 4");
             }
         }
 

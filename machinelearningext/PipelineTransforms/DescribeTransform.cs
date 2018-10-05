@@ -31,7 +31,7 @@ namespace Scikit.ML.PipelineTransforms
     public class DescribeTransform : IDataTransform
     {
         public const string LoaderSignature = "DescribeTransform";  // Not more than 24 letters.
-        public const string Summary = "Compute various statistics on a list of columns.";
+        public const string Summary = "Computes various statistics on a list of columns.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()
@@ -41,7 +41,8 @@ namespace Scikit.ML.PipelineTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(DescribeTransform).Assembly.FullName);
         }
 
         public class Arguments
@@ -267,13 +268,13 @@ namespace Scikit.ML.PipelineTransforms
                             bool[] isInt = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.I4 || sch.GetColumnType(c).RawKind == DataKind.I4).ToArray();
                             bool[] isInt8 = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.I8 || sch.GetColumnType(c).RawKind == DataKind.I8).ToArray();
 
-                            ValueGetter<DvBool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind == DataKind.BL ? cur.GetGetter<DvBool>(i) : null).ToArray();
+                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
                             ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.U4 || sch.GetColumnType(i).RawKind == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
-                            ValueGetter<DvText>[] textGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == TextType.Instance ? cur.GetGetter<DvText>(i) : null).ToArray();
+                            ValueGetter<ReadOnlyMemory<char>>[] textGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == TextType.Instance ? cur.GetGetter<ReadOnlyMemory<char>>(i) : null).ToArray();
                             ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
                             ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
-                            ValueGetter<DvInt4>[] intGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I4 || sch.GetColumnType(i).RawKind == DataKind.I4 ? cur.GetGetter<DvInt4>(i) : null).ToArray();
-                            ValueGetter<DvInt8>[] int8Getters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I8 || sch.GetColumnType(i).RawKind == DataKind.I8 ? cur.GetGetter<DvInt8>(i) : null).ToArray();
+                            ValueGetter<int>[] intGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I4 || sch.GetColumnType(i).RawKind == DataKind.I4 ? cur.GetGetter<int>(i) : null).ToArray();
+                            ValueGetter<long>[] int8Getters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I8 || sch.GetColumnType(i).RawKind == DataKind.I8 ? cur.GetGetter<long>(i) : null).ToArray();
 
                             var cols = _args.columns == null ? null : new HashSet<string>(_args.columns);
                             var hists = _args.hists == null ? null : new HashSet<string>(_args.hists);
@@ -298,12 +299,12 @@ namespace Scikit.ML.PipelineTransforms
                             }
 
                             float value = 0;
-                            var tvalue = new DvText();
+                            var tvalue = new ReadOnlyMemory<char>();
                             var vector = new VBuffer<float>();
                             uint uvalue = 0;
-                            var bvalue = DvBool.True;
-                            var int4 = new DvInt4();
-                            var int8 = new DvInt8();
+                            var bvalue = true;
+                            var int4 = (int)0;
+                            var int8 = (long)0;
 
                             while (cur.MoveNext())
                             {

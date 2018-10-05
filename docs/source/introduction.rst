@@ -42,11 +42,13 @@ The parameter *data=* specifies the data file,
 
     train
     data=iris.txt
-    loader=text{col=Label:R4:0 col=Features:R4:1-4}
+    loader=text{col=Label:R4:0 col=Features:R4:1-4 header=+}
     tr=mlr{maxiter=5}
     out=logistic_regression.zip
 
-Its documentation is available with the following command:
+The documentation of every component is available
+through the command line. An exemple for
+:ref:`l-multi-class-logistic-regression`:
 
 .. mlcmd::
     :showcode:

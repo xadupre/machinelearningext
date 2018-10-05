@@ -6,6 +6,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
+using Scikit.ML.PipelineHelper;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
@@ -29,7 +30,7 @@ namespace Scikit.ML.PipelineGraphTransforms
     public class ChainTransform : IDataTransform
     {
         public const string LoaderSignature = "ChainTransform";  // Not more than 24 letters.
-        public const string Summary = "Chain multiple transforms into a single one.";
+        public const string Summary = "Chains multiple transforms into a single one.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()
@@ -39,16 +40,19 @@ namespace Scikit.ML.PipelineGraphTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(ChainTransform).Assembly.FullName);
         }
 
         public class Arguments
         {
-            [Argument(ArgumentType.Multiple, HelpText = "First transform", ShortName = "xf1")]
-            public SubComponent<IDataTransform, SignatureDataTransform> transformType1 = null;
+            [Argument(ArgumentType.Multiple, HelpText = "First transform", ShortName = "xf1",
+                SignatureType = typeof(SignatureDataTransform))]
+            public IComponentFactory<IDataTransform> transformType1 = null;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Second transform", ShortName = "xf2")]
-            public SubComponent<IDataTransform, SignatureDataTransform> transformType2 = null;
+            [Argument(ArgumentType.Multiple, HelpText = "Second transform", ShortName = "xf2",
+                SignatureType = typeof(SignatureDataTransform))]
+            public IComponentFactory<IDataTransform> transformType2 = null;
         }
 
         IDataView _input;
@@ -66,11 +70,11 @@ namespace Scikit.ML.PipelineGraphTransforms
             _host.CheckValue(input, "input");
             _input = input;
             _args = args;
-            _host.CheckUserArg(_args.transformType1.IsGood(), "transformType1", "Must specify a first transform.");
-            _host.CheckUserArg(_args.transformType2.IsGood(), "transformType2", "Must specify a second transform.");
+            var tr1 = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.transformType1);
+            var tr2 = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.transformType2);
             _dataTransforms = new IDataTransform[2];
-            _dataTransforms[0] = _args.transformType1.CreateInstance(env, input);
-            _dataTransforms[1] = _args.transformType2.CreateInstance(env, _dataTransforms[0]);
+            _dataTransforms[0] = tr1.CreateInstance(env, input);
+            _dataTransforms[1] = tr2.CreateInstance(env, _dataTransforms[0]);
         }
 
         public static ChainTransform Create(IHostEnvironment env, ModelLoadContext ctx, IDataView input)

@@ -114,13 +114,13 @@ namespace Scikit.ML.NearestNeighbors
                 var featureGetter = cursor.GetGetter<VBuffer<float>>(featureIndex);
                 var labelGetter = labelIndex >= 0 ? cursor.GetGetter<TLabel>(labelIndex) : null;
                 var weightGetter = weightIndex >= 0 ? cursor.GetGetter<float>(weightIndex) : null;
-                var idGetter = idIndex >= 0 ? cursor.GetGetter<DvInt8>(idIndex) : null;
+                var idGetter = idIndex >= 0 ? cursor.GetGetter<long>(idIndex) : null;
                 var kdtree = new KdTree(distance: args.distance, seed: args.seed);
                 labelsWeights = new Dictionary<long, Tuple<TLabel, float>>();
                 VBuffer<float> features = new VBuffer<float>();
                 TLabel label = default(TLabel);
                 float weight = 1;
-                DvInt8 lid = default(DvInt8);
+                long lid = default(long);
                 while (cursor.MoveNext())
                 {
                     featureGetter(ref features);
@@ -132,8 +132,8 @@ namespace Scikit.ML.NearestNeighbors
                         idGetter(ref lid);
                     else
                         lid = labelsWeights.Count;
-                    labelsWeights[lid.RawValue] = new Tuple<TLabel, float>(label, weight);
-                    var point = new PointIdFloat(lid.RawValue, features, true);
+                    labelsWeights[lid] = new Tuple<TLabel, float>(label, weight);
+                    var point = new PointIdFloat(lid, features, true);
                     kdtree.Add(point);
                 }
                 return kdtree;

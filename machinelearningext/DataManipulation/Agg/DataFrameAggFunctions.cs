@@ -2,7 +2,8 @@
 
 using System;
 using System.Linq;
-using Microsoft.ML.Runtime.Data;
+using DvText = Scikit.ML.PipelineHelper.DvText;
+
 
 namespace Scikit.ML.DataManipulation
 {
@@ -11,37 +12,37 @@ namespace Scikit.ML.DataManipulation
     /// </summary>
     public static class DataFrameAggFunctions
     {
-        public static Func<DvBool[], DvBool> GetAggFunction(AggregatedFunction func, DvBool defaultValue)
+        public static Func<bool[], bool> GetAggFunction(AggregatedFunction func, bool defaultValue)
         {
             switch (func)
             {
                 case AggregatedFunction.Mean:
                 case AggregatedFunction.Count:
-                    return (DvBool[] arr) => { return DvBool.NA; };
+                    return (bool[] arr) => { return false; };
                 case AggregatedFunction.Max:
                 case AggregatedFunction.Sum:
-                    return (DvBool[] arr) => { return arr.Aggregate((a, b) => a | b); };
+                    return (bool[] arr) => { return arr.Aggregate((a, b) => a | b); };
                 case AggregatedFunction.Min:
-                    return (DvBool[] arr) => { return arr.Aggregate((a, b) => a & b); };
+                    return (bool[] arr) => { return arr.Aggregate((a, b) => a & b); };
                 default:
                     throw new NotImplementedException($"Unkown aggregated function ${func}.");
             }
         }
 
-        public static Func<DvInt4[], DvInt4> GetAggFunction(AggregatedFunction func, DvInt4 defaultValue)
+        public static Func<int[], int> GetAggFunction(AggregatedFunction func, int defaultValue)
         {
             switch (func)
             {
                 case AggregatedFunction.Count:
-                    return (DvInt4[] arr) => { return (DvInt4)arr.Length; };
+                    return (int[] arr) => { return arr.Length; };
                 case AggregatedFunction.Sum:
-                    return (DvInt4[] arr) => { return arr.Aggregate((a, b) => a + b); };
+                    return (int[] arr) => { return arr.Aggregate((a, b) => a + b); };
                 case AggregatedFunction.Min:
-                    return (DvInt4[] arr) => { return arr.Aggregate((a, b) => DvInt4.Min(a, b)); };
+                    return (int[] arr) => { return arr.Aggregate((a, b) => Math.Min(a, b)); };
                 case AggregatedFunction.Max:
-                    return (DvInt4[] arr) => { return arr.Aggregate((a, b) => DvInt4.Max(a, b)); };
+                    return (int[] arr) => { return arr.Aggregate((a, b) => Math.Max(a, b)); };
                 case AggregatedFunction.Mean:
-                    return (DvInt4[] arr) => { return arr.Aggregate((a, b) => a + b) / arr.Length; };
+                    return (int[] arr) => { return arr.Aggregate((a, b) => a + b) / arr.Length; };
                 default:
                     throw new NotImplementedException($"Unkown aggregated function ${func}.");
             }
@@ -66,20 +67,20 @@ namespace Scikit.ML.DataManipulation
             }
         }
 
-        public static Func<DvInt8[], DvInt8> GetAggFunction(AggregatedFunction func, DvInt8 defaultValue)
+        public static Func<Int64[], Int64> GetAggFunction(AggregatedFunction func, Int64 defaultValue)
         {
             switch (func)
             {
                 case AggregatedFunction.Count:
-                    return (DvInt8[] arr) => { return (DvInt8)arr.Length; };
+                    return (Int64[] arr) => { return (Int64)arr.Length; };
                 case AggregatedFunction.Sum:
-                    return (DvInt8[] arr) => { return arr.Aggregate((a, b) => a + b); };
+                    return (Int64[] arr) => { return arr.Aggregate((a, b) => a + b); };
                 case AggregatedFunction.Min:
-                    return (DvInt8[] arr) => { return arr.Aggregate((a, b) => DvInt8.Min(a, b)); };
+                    return (Int64[] arr) => { return arr.Aggregate((a, b) => Math.Min(a, b)); };
                 case AggregatedFunction.Max:
-                    return (DvInt8[] arr) => { return arr.Aggregate((a, b) => DvInt8.Max(a, b)); };
+                    return (Int64[] arr) => { return arr.Aggregate((a, b) => Math.Max(a, b)); };
                 case AggregatedFunction.Mean:
-                    return (DvInt8[] arr) => { return arr.Aggregate((a, b) => a + b) / arr.Length; };
+                    return (Int64[] arr) => { return arr.Aggregate((a, b) => a + b) / arr.Length; };
                 default:
                     throw new NotImplementedException($"Unkown aggregated function ${func}.");
             }

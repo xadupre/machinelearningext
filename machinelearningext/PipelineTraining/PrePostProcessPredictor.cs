@@ -19,7 +19,7 @@ namespace Scikit.ML.PipelineTraining
     {
         public const string LoaderSignature = "PrePostProcessPredictor";
         public const string RegistrationName = "PrePostProcessPredictor";
-        public const string Summary = "Append optional transforms to preprocess and/or postprocess a trainer. " +
+        public const string Summary = "Appends optional transforms to preprocess and/or postprocess a trainer. " +
                                       "The pipeline will execute the following pipeline pre-predictor-score-post.";
 
         private static VersionInfo GetVersionInfo()
@@ -29,7 +29,8 @@ namespace Scikit.ML.PipelineTraining
                 verWrittenCur: 0x00010001, // Initial
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(PrePostProcessPredictor).Assembly.FullName);
         }
 
         public PredictionKind PredictionKind { get { return _predictor.PredictionKind; } }
@@ -94,7 +95,7 @@ namespace Scikit.ML.PipelineTraining
                 {
                     case DataKind.R4:
                         schema = new ExtendedSchema(null, new[] { _inputColumn }, new[] { new VectorType(NumberType.R4) });
-                        data = new TemporaryViewCursor<VBuffer<float>>(default(VBuffer<float>), 0, null, schema);
+                        data = new TemporaryViewCursorColumn<VBuffer<float>>(default(VBuffer<float>), 0, schema);
                         break;
                     default:
                         throw Contracts.Except("Unable to create a temporary view from type '{0}'", type);
@@ -106,7 +107,7 @@ namespace Scikit.ML.PipelineTraining
                 {
                     case DataKind.R4:
                         schema = new ExtendedSchema(null, new[] { _inputColumn }, new[] { NumberType.R4 });
-                        data = new TemporaryViewCursor<float>(default(float), 0, null, schema);
+                        data = new TemporaryViewCursorColumn<float>(default(float), 0, schema);
                         break;
                     default:
                         throw Contracts.Except("Unable to create a temporary view from type '{0}'", type);
@@ -226,7 +227,7 @@ namespace Scikit.ML.PipelineTraining
 
         ValueMapper<TSrc, TDst> GetMapperWithTransform<TSrc, TMiddle, TDst>(IDataTransform trans)
         {
-            var mapperPreVM = new ValueMapperFromTransform<TMiddle>(_host, trans, trans.Source, _inputColumn, _inputColumn, null, true);
+            var mapperPreVM = new ValueMapperFromTransformFloat<TMiddle>(_host, trans, _inputColumn, _inputColumn, trans.Source, true);
             var mapperPre = mapperPreVM.GetMapper<TSrc, TMiddle>();
             var mapperPred = (_predictor as IValueMapper).GetMapper<TMiddle, TDst>();
             TMiddle middle = default(TMiddle);

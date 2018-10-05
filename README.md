@@ -46,8 +46,8 @@ var env = new TlcEnvironment();
 var iris = "iris.txt";
 
 // We read the text data and create a dataframe / dataview.
-var df = DataFrame.ReadCsv(iris, sep: '\t',
-                           dtypes: new DataKind?[] { DataKind.R4 });
+var df = DataFrameIO.ReadCsv(iris, sep: '\t',
+                             dtypes: new DataKind?[] { DataKind.R4 });
 
 // We add a transform to concatenate two features in one vector columns.
 var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
@@ -70,7 +70,7 @@ using (var ch = env.Start("test"))
     DataFrame.ViewToCsv(scorer, "iris_predictions.txt", host: env);
 
     // Or we could put the predictions into a dataframe.
-    var dfout = DataFrame.ReadView(scorer);
+    var dfout = DataFrameIO.ReadView(scorer);
 
     // And access one value...
     var v = dfout.iloc[0, 7];
@@ -92,16 +92,15 @@ var env = new TlcEnvironment();
 var iris = "iris.txt";
 
 // We read the text data and create a dataframe / dataview.
-var df = DataFrame.ReadCsv(iris, sep: '\t',
-                           dtypes: new DataKind?[] { DataKind.R4 });
+var df = DataFrameIO.ReadCsv(iris, sep: '\t',
+                             dtypes: new DataKind?[] { DataKind.R4 });
 
-var pipe = new ScikitPipeline(new[] { "Concat{col=Feature:Sepal_length,Sepal_width}" },
-                              "ova{p=lr}", host: host);
+var pipe = new ScikitPipeline(new[] { "Concat{col=Feature:Sepal_length,Sepal_width}" }, "ova{p=lr}");
 pipe.Train(df, feature: "Feature", label: "Label");
 
 var scorer = pipe.Predict(df);
 
-var dfout = DataFrame.ReadView(scorer);
+var dfout = DataFrameIO.ReadView(scorer);
 
 // And access one value...
 var v = dfout.iloc[0, 7];
@@ -123,8 +122,8 @@ This extra work can be saved when the prediction instance is known.
 var iris = "iris.txt";
 
 // We read the text data and create a dataframe / dataview.
-var df = DataFrame.ReadCsv(iris, sep: '\t',
-                           dtypes: new DataKind?[] { DataKind.R4 });
+var df = DataFrameIO.ReadCsv(iris, sep: '\t',
+                             dtypes: new DataKind?[] { DataKind.R4 });
 
 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
 var learningPipeline = new GenericLearningPipeline();
@@ -134,7 +133,7 @@ learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
 var predictor = learningPipeline.Train();
 var predictions = predictor.Predict(df);
 
-var dfout = DataFrame.ReadView(predictions);
+var dfout = DataFrameIO.ReadView(predictions);
 
 // And access one value...
 var v = dfout.iloc[0, 7];
@@ -150,7 +149,7 @@ on columns:
 
 ```CSharp
 var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
-var df = DataFrame.ReadStr(text);
+var df = DataFrameIO.ReadStr(text);
 df["AA+BB"] = df["AA"] + df["BB"];
 Console.WriteLine(df.ToString());
 ```

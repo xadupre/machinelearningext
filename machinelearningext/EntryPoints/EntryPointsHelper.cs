@@ -6,6 +6,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Calibration;
 using Microsoft.ML.Runtime.EntryPoints;
+using Microsoft.ML.Runtime.PipelineInference;
 
 
 namespace Scikit.ML.EntryPoints
@@ -50,6 +51,14 @@ namespace Scikit.ML.EntryPoints
                             createTrainer, getLabel: getLabel, getWeight: getWeight,
                             getGroup: getGroup, getName: getName, getCustom: getCustom,
                             calibrator: calibrator, maxCalibrationExamples: maxCalibrationExamples);
+        }
+    }
+
+    public static class LinkIssues
+    {
+        public static int Link1()
+        {
+            return (int) ColumnPurpose.Ignore;
         }
     }
 }

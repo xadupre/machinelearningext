@@ -33,7 +33,7 @@ namespace Scikit.ML.PipelineGraphTransforms
         #region identification
 
         public const string LoaderSignature = "TagViewTransform";  // Not more than 24 letters.
-        public const string Summary = "Tag the source data view in order to reuse it later in the pipeline.";
+        public const string Summary = "Tags the source data view in order to reuse it later in the pipeline.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()
@@ -43,7 +43,8 @@ namespace Scikit.ML.PipelineGraphTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(TagViewTransform).Assembly.FullName);
         }
 
         #endregion

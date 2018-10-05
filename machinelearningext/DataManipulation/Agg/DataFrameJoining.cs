@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Runtime.Data;
+using DvText = Scikit.ML.PipelineHelper.DvText;
 
 
 namespace Scikit.ML.DataManipulation
@@ -62,7 +63,7 @@ namespace Scikit.ML.DataManipulation
                         {
                             var kind = right.Schema.GetColumnType(i);
                             var col = df.AddColumn(newColsRight[i], kind, df.Length);
-                            df.GetColumn(col).Set(DataFrameMissingValue.GetMissingValue(kind));
+                            df.GetColumn(col).Set(DataFrameMissingValue.GetMissingOrDefaultMissingValue(kind));
                         }
                         yield return df;
                     }
@@ -78,7 +79,7 @@ namespace Scikit.ML.DataManipulation
                         {
                             var kind = left.Schema.GetColumnType(i);
                             var col = df.AddColumn(newColsLeft[i], kind, df.Length);
-                            df.GetColumn(col).Set(DataFrameMissingValue.GetMissingValue(kind));
+                            df.GetColumn(col).Set(DataFrameMissingValue.GetMissingOrDefaultMissingValue(kind));
                         }
                         df.OrderColumns(newCols);
                         yield return df;
@@ -153,10 +154,10 @@ namespace Scikit.ML.DataManipulation
                 {
                     switch (kind.RawKind)
                     {
-                        case DataKind.BL: return left.TJoin<DvBool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I4: return left.TJoin<DvInt4>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.BL: return left.TJoin<bool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I4: return left.TJoin<int>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.U4: return left.TJoin<uint>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I8: return left.TJoin<DvInt8>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I8: return left.TJoin<long>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R4: return left.TJoin<float>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R8: return left.TJoin<double>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.TX: return left.TJoin<DvText>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
@@ -173,10 +174,10 @@ namespace Scikit.ML.DataManipulation
                 {
                     switch (kind.RawKind)
                     {
-                        case DataKind.BL: return RecJoin<DvBool>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I4: return RecJoin<DvInt4>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.BL: return RecJoin<bool>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I4: return RecJoin<int>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.U4: return RecJoin<uint>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I8: return RecJoin<DvInt8>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I8: return RecJoin<long>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R4: return RecJoin<float>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R8: return RecJoin<double>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.TX: return RecJoin<DvText>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
@@ -201,10 +202,10 @@ namespace Scikit.ML.DataManipulation
                 {
                     switch (kind.RawKind)
                     {
-                        case DataKind.BL: return left.TJoin<T1, DvBool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I4: return left.TJoin<T1, DvInt4>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.BL: return left.TJoin<T1, bool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I4: return left.TJoin<T1, int>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.U4: return left.TJoin<T1, uint>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I8: return left.TJoin<T1, DvInt8>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I8: return left.TJoin<T1, long>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R4: return left.TJoin<T1, float>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R8: return left.TJoin<T1, double>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.TX: return left.TJoin<T1, DvText>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
@@ -221,10 +222,10 @@ namespace Scikit.ML.DataManipulation
                 {
                     switch (kind.RawKind)
                     {
-                        case DataKind.BL: return RecJoin<T1, DvBool>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I4: return RecJoin<T1, DvInt4>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.BL: return RecJoin<T1, bool>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I4: return RecJoin<T1, int>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.U4: return RecJoin<T1, uint>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I8: return RecJoin<T1, DvInt8>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I8: return RecJoin<T1, long>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R4: return RecJoin<T1, float>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R8: return RecJoin<T1, double>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.TX: return RecJoin<T1, DvText>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
@@ -250,10 +251,10 @@ namespace Scikit.ML.DataManipulation
                 {
                     switch (kind.RawKind)
                     {
-                        case DataKind.BL: return left.TJoin<T1, T2, DvBool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I4: return left.TJoin<T1, T2, DvInt4>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.BL: return left.TJoin<T1, T2, bool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I4: return left.TJoin<T1, T2, int>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.U4: return left.TJoin<T1, T2, uint>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
-                        case DataKind.I8: return left.TJoin<T1, T2, DvInt8>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
+                        case DataKind.I8: return left.TJoin<T1, T2, long>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R4: return left.TJoin<T1, T2, float>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.R8: return left.TJoin<T1, T2, double>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.TX: return left.TJoin<T1, T2, DvText>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);

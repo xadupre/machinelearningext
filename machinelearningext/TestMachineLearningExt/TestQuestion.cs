@@ -3,12 +3,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
-using Microsoft.ML;
-using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Transforms;
-using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
+using Scikit.ML.ScikitAPI;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
@@ -48,10 +48,10 @@ namespace TestMachineLearningExt
         {
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
 
-            var pipeline = new LearningPipeline();
-            pipeline.Add(new Microsoft.ML.Data.TextLoader(iris).CreateFrom<IrisObservation>(separator: '\t'));
-            pipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            pipeline.Add(new Microsoft.ML.Trainers.KMeansPlusPlusClusterer());
+            var pipeline = new Legacy.LearningPipeline();
+            pipeline.Add(new Legacy.Data.TextLoader(iris).CreateFrom<IrisObservation>(separator: '\t'));
+            pipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            pipeline.Add(new Legacy.Trainers.KMeansPlusPlusClusterer());
             var model = pipeline.Train<IrisObservation, IrisPrediction>();
             var obs = new IrisObservation()
             {
@@ -66,7 +66,7 @@ namespace TestMachineLearningExt
 
         public static ITrainer CreateTrainer(IHostEnvironment env, string settings, params object[] extraArgs)
         {
-            var sc = SubComponent.Parse<ITrainer, SignatureTrainer>(settings);
+            var sc = ScikitSubComponent.Parse<ITrainer, SignatureTrainer>(settings);
             var inst = sc.CreateInstance(env, extraArgs);
             return inst;
         }
@@ -77,7 +77,8 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var outModelFilePath = Scikit.ML.TestHelper.FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
-            var env = new TlcEnvironment(conc: 1);
+            var env = new ConsoleEnvironment(conc: 1);
+            ComponentHelper.AddStandardComponents(env);
 
             var data = env.CreateLoader("Text{col=Label:R4:0 col=Sepal_length:R4:1 col=Sepal_width:R4:2 col=Petal_length:R4:3 col=Petal_width:R4:4}",
                                         new MultiFileSource(iris));
@@ -118,16 +119,16 @@ namespace TestMachineLearningExt
         public void TestEP_Q_KMeansEntryPointAPIWithDataFrame()
         {
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
-            var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = Scikit.ML.DataManipulation.DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new Scikit.ML.PipelineHelper.GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Microsoft.ML.Trainers.KMeansPlusPlusClusterer());
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Trainers.KMeansPlusPlusClusterer());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(predictions);
+            var dfout = Scikit.ML.DataManipulation.DataFrameIO.ReadView(predictions);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
         }
 
@@ -137,9 +138,10 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var outModelFilePath = Scikit.ML.TestHelper.FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
             var iris = Scikit.ML.TestHelper.FileHelper.GetTestFile("iris.txt");
-            var env = new TlcEnvironment(conc: 1);
+            var env = new ConsoleEnvironment(conc: 1);
+            ComponentHelper.AddStandardComponents(env);
 
-            var df = Scikit.ML.DataManipulation.DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = Scikit.ML.DataManipulation.DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
             var conc = env.CreateTransform("Concat{col=Feature:Sepal_length,Sepal_width}", df);
             var roleMap = env.CreateExamples(conc, "Feature", label: "Label");
             var trainer = CreateTrainer(env, "km");
@@ -164,7 +166,7 @@ namespace TestMachineLearningExt
 #pragma warning disable CS0618
             var scorer = ScoreUtils.GetScorer(pred.GetPredictorObject() as IPredictor, roleMap, env, null);
 #pragma warning restore CS0618
-            var dfout = Scikit.ML.DataManipulation.DataFrame.ReadView(scorer);
+            var dfout = Scikit.ML.DataManipulation.DataFrameIO.ReadView(scorer);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
         }
     }

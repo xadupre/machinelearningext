@@ -33,7 +33,7 @@ namespace Scikit.ML.PipelineTransforms
     public class PassThroughTransform : IDataTransform
     {
         public const string LoaderSignature = "PassThroughTransform";  // Not more than 24 letters.
-        public const string Summary = "Insert a transform which does nothing just to get a transform pointer. It can be used to dump a view on disk.";
+        public const string Summary = "Inserts a transform which does nothing just to get a transform pointer. It can be used to dump a view on disk.";
         public const string RegistrationName = LoaderSignature;
 
         static VersionInfo GetVersionInfo()
@@ -43,7 +43,8 @@ namespace Scikit.ML.PipelineTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(PassThroughTransform).Assembly.FullName);
         }
 
         public class Arguments
@@ -61,14 +62,14 @@ namespace Scikit.ML.PipelineTransforms
             public string GetSaverSettings()
             {
                 var saver = GetSaverComponent();
-                var res = string.Format("{0}{{{1}}}", saver.Kind, saver.SubComponentSettings);
+                var res = string.Format("{0}{{{1}}}", saver.Name, saver.GetSettingsString());
                 res = res.Replace("{}", "");
                 return res;
             }
 
-            public SubComponent<IDataSaver, SignatureDataSaver> GetSaverComponent()
+            public ISubComponent<IDataSaver> GetSaverComponent()
             {
-                return new SubComponent<IDataSaver, SignatureDataSaver>(saverSettings);
+                return new ScikitSubComponent<IDataSaver, SignatureDataSaver>(saverSettings);
             }
 
             public void Save(ModelSaveContext ctx)

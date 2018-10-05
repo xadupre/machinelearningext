@@ -41,7 +41,7 @@ namespace Scikit.ML.NearestNeighbors
             switch (kind)
             {
                 case DataKind.BL:
-                    _nearestPredictor = new NearestNeighborsValueMapper<DvBool>(host, ctx);
+                    _nearestPredictor = new NearestNeighborsValueMapper<bool>(host, ctx);
                     break;
                 case DataKind.U1:
                     _nearestPredictor = new NearestNeighborsValueMapper<byte>(host, ctx);

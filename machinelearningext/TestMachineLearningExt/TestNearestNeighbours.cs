@@ -6,11 +6,10 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.TestHelper;
 using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Trainers;
-using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.NearestNeighbors;
 using Scikit.ML.DataManipulation;
+using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
@@ -140,9 +139,9 @@ namespace TestMachineLearningExt
                 using (var cursor = concat.GetRowCursor(i => true))
                 {
                     var getdist = cursor.GetGetter<VBuffer<float>>(7);
-                    var getid = cursor.GetGetter<VBuffer<DvInt8>>(8);
+                    var getid = cursor.GetGetter<VBuffer<long>>(8);
                     var ddist = new VBuffer<float>();
-                    var did = new VBuffer<DvInt8>();
+                    var did = new VBuffer<long>();
                     while (cursor.MoveNext())
                     {
                         getdist(ref ddist);
@@ -155,7 +154,7 @@ namespace TestMachineLearningExt
                         {
                             if (ddist.Values[i - 1] > ddist.Values[i])
                                 throw new System.Exception("not sorted");
-                            if (did.Values[i].RawValue % 2 != 1)
+                            if (did.Values[i] % 2 != 1)
                                 throw new System.Exception("wrong id");
                         }
                     }
@@ -240,17 +239,17 @@ namespace TestMachineLearningExt
         public void TestEP_TestNearestNeighborsLPTr()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
             var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
-            learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighbors("Features"));
-            learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
+            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
-            var dfout = DataFrame.ReadView(predictions);
+            var dfout = DataFrameIO.ReadView(predictions);
             Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 18));
         }
 
@@ -260,17 +259,17 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris_binary.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
                 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
                 var learningPipeline = new GenericLearningPipeline(conc: 1);
                 learningPipeline.Add(importData);
-                learningPipeline.Add(new ColumnConcatenator("Feat", "Sepal_length", "Sepal_width"));
+                learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Feat", "Sepal_length", "Sepal_width"));
                 var node = new Scikit.ML.EntryPoints.NearestNeighborsBinary("Feat", "Label", null);
                 learningPipeline.Add(node);
                 var predictor = learningPipeline.Train();
                 var predictions = predictor.Predict(df);
-                var dfout = DataFrame.ReadView(predictions);
+                var dfout = DataFrameIO.ReadView(predictions);
                 Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 9));
             }
         }
@@ -281,15 +280,15 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrame.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
                 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
                 var learningPipeline = new GenericLearningPipeline(conc: 1);
                 learningPipeline.Add(importData);
-                learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
+                learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
                 learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsMultiClass());
                 var predictor = learningPipeline.Train();
                 var predictions = predictor.Predict(df);
-                var dfout = DataFrame.ReadView(predictions);
+                var dfout = DataFrameIO.ReadView(predictions);
                 Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 11));
             }
         }

@@ -39,7 +39,8 @@ namespace Scikit.ML.PipelineGraphTraining
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(TaggedScoreTransform).Assembly.FullName);
         }
 
         public new class Arguments
@@ -61,8 +62,9 @@ namespace Scikit.ML.PipelineGraphTraining
 
             public KeyValuePair<string, string>[] customColumnPair;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Scorer to use", NullName = "<Auto>")]
-            public SubComponent<IDataScorerTransform, SignatureDataScorer> scorer;
+            [Argument(ArgumentType.Multiple, HelpText = "Scorer to use", NullName = "<Auto>",
+                SignatureType = typeof(SignatureDataScorer))]
+            public IComponentFactory<IDataScorerTransform> scorer;
 
             public void PostProcess()
             {

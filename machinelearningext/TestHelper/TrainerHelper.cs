@@ -225,9 +225,9 @@ namespace Scikit.ML.TestHelper
                     if (ty1.RawKind == DataKind.R4)
                     {
                         var lgetter = cursor.GetGetter<float>(ilabel);
-                        var pgetter = cursor.GetGetter<DvBool>(ipred);
+                        var pgetter = cursor.GetGetter<bool>(ipred);
                         float ans = 0;
-                        DvBool pre = default(DvBool);
+                        bool pre = default(bool);
                         while (cursor.MoveNext())
                         {
                             lgetter(ref ans);
@@ -236,7 +236,7 @@ namespace Scikit.ML.TestHelper
                             if (ans != 0 && ans != 1)
                                 throw Contracts.Except("The problem is not binary, expected answer is {0}", ans);
 
-                            var key = new Tuple<int, int>(pre.IsTrue ? 1 : 0, (int)ans);
+                            var key = new Tuple<int, int>(pre ? 1 : 0, (int)ans);
                             if (!conf.ContainsKey(key))
                                 conf[key] = 1;
                             else
@@ -245,18 +245,18 @@ namespace Scikit.ML.TestHelper
                                 dist1[(int)ans] = 1;
                             else
                                 ++dist1[(int)ans];
-                            if (!dist2.ContainsKey((int)pre))
-                                dist2[(int)pre] = 1;
+                            if (!dist2.ContainsKey(pre ? 1 : 0))
+                                dist2[pre ? 1 : 0] = 1;
                             else
-                                ++dist2[(int)pre];
+                                ++dist2[pre ? 1 : 0];
                         }
                     }
                     else if (ty1.RawKind == DataKind.U4)
                     {
                         var lgetter = cursor.GetGetter<uint>(ilabel);
-                        var pgetter = cursor.GetGetter<DvBool>(ipred);
+                        var pgetter = cursor.GetGetter<bool>(ipred);
                         uint ans = 0;
-                        DvBool pre = default(DvBool);
+                        bool pre = default(bool);
                         while (cursor.MoveNext())
                         {
                             lgetter(ref ans);
@@ -267,7 +267,7 @@ namespace Scikit.ML.TestHelper
                             if (ans != 0 && ans != 1)
                                 throw Contracts.Except("The problem is not binary, expected answer is {0}", ans);
 
-                            var key = new Tuple<int, int>(pre.IsTrue ? 1 : 0, (int)ans);
+                            var key = new Tuple<int, int>(pre ? 1 : 0, (int)ans);
                             if (!conf.ContainsKey(key))
                                 conf[key] = 1;
                             else
@@ -276,37 +276,37 @@ namespace Scikit.ML.TestHelper
                                 dist1[(int)ans] = 1;
                             else
                                 ++dist1[(int)ans];
-                            if (!dist2.ContainsKey((int)pre))
-                                dist2[(int)pre] = 1;
+                            if (!dist2.ContainsKey(pre ? 1 : 0))
+                                dist2[pre ? 1 : 0] = 1;
                             else
-                                ++dist2[(int)pre];
+                                ++dist2[pre ? 1 : 0];
                         }
                     }
                     else if (ty1.RawKind == DataKind.BL)
                     {
-                        var lgetter = cursor.GetGetter<DvBool>(ilabel);
-                        var pgetter = cursor.GetGetter<DvBool>(ipred);
-                        DvBool ans = default(DvBool);
-                        DvBool pre = default(DvBool);
+                        var lgetter = cursor.GetGetter<bool>(ilabel);
+                        var pgetter = cursor.GetGetter<bool>(ipred);
+                        bool ans = default(bool);
+                        bool pre = default(bool);
                         while (cursor.MoveNext())
                         {
                             lgetter(ref ans);
                             pgetter(ref pre);
 
-                            var key = new Tuple<int, int>(pre.IsTrue ? 1 : 0, ans.IsTrue ? 1 : 0);
+                            var key = new Tuple<int, int>(pre ? 1 : 0, ans ? 1 : 0);
                             if (!conf.ContainsKey(key))
                                 conf[key] = 1;
                             else
                                 ++conf[key];
 
-                            if (!dist1.ContainsKey((int)ans))
-                                dist1[(int)ans] = 1;
+                            if (!dist1.ContainsKey(ans ? 1 : 0))
+                                dist1[ans ? 1 : 0] = 1;
                             else
-                                ++dist1[(int)ans];
-                            if (!dist2.ContainsKey((int)pre))
-                                dist2[(int)pre] = 1;
+                                ++dist1[ans ? 1 : 0];
+                            if (!dist2.ContainsKey(pre ? 1 : 0))
+                                dist2[pre ? 1 : 0] = 1;
                             else
-                                ++dist2[(int)pre];
+                                ++dist2[pre ? 1 : 0];
                         }
                     }
                     else

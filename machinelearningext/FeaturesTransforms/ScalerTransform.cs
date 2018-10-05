@@ -47,7 +47,8 @@ namespace Scikit.ML.FeaturesTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(ScalerTransform).Assembly.FullName);
         }
 
         public enum ScalerStrategy
@@ -289,9 +290,9 @@ namespace Scikit.ML.FeaturesTransforms
                             bool[] isBool = requiredIndexes.Select(c => sch.GetColumnType(c) == BoolType.Instance).ToArray();
                             bool[] isFloat = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.R4).ToArray();
                             bool[] isUint = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.U4 || sch.GetColumnType(c).RawKind == DataKind.U4).ToArray();
-                            ValueGetter<DvBool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind == DataKind.BL ? cur.GetGetter<DvBool>(i) : null).ToArray();
+                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
                             ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.U4 || sch.GetColumnType(i).RawKind == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
-                            ValueGetter<DvText>[] textGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == TextType.Instance ? cur.GetGetter<DvText>(i) : null).ToArray();
+                            ValueGetter<ReadOnlyMemory<char>>[] textGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == TextType.Instance ? cur.GetGetter<ReadOnlyMemory<char>>(i) : null).ToArray();
                             ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
                             ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
 
@@ -319,10 +320,10 @@ namespace Scikit.ML.FeaturesTransforms
                             }
 
                             float value = 0;
-                            DvText tvalue = new DvText();
+                            var tvalue = new ReadOnlyMemory<char>();
                             VBuffer<float> vector = new VBuffer<float>();
                             uint uvalue = 0;
-                            DvBool bvalue = DvBool.True;
+                            bool bvalue = true;
 
                             while (cur.MoveNext())
                             {

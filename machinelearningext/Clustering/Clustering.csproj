@@ -4,8 +4,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Scikit.ML.Clustering</AssemblyName>
     <RootNamespace>Scikit.ML.Clustering</RootNamespace>
-    <Version>0.6.0</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,9 +17,6 @@
     </Reference>
     <Reference Include="Microsoft.ML.Data">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.Maml">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Maml.dll</HintPath>

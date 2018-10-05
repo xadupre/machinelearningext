@@ -227,13 +227,14 @@ jobs:
             mkdir -p test-reports/doc
             python -u copy_binaries.py Release test-reports/dist/Release
             python -u copy_binaries.py Debug test-reports/dist/Release
+            cp _tests/1.0.0.0/Release/TestScikitAPITrain/*.txt test-reports
 
       - run:
           name: documentation compilation
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            python -c "from sphinx import build_main;build_main(['-j2','-v','-T','-b','html','-d','docs/doctrees','docs/source','docs/build'])"
+            python -c "from sphinx.cmd.build import build_main;build_main(['-j2','-v','-T','-b','html','-d','docs/doctrees','docs/source','docs/build'])"
             zip -r -9 test-reports/doc/documentation_html.zip docs/build
             
       - store_artifacts:

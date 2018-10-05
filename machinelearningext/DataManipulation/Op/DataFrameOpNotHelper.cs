@@ -35,8 +35,8 @@ namespace Scikit.ML.DataManipulation
                 {
                     case DataKind.BL:
                         {
-                            DvBool[] a;
-                            DataColumn<DvBool> res;
+                            bool[] a;
+                            DataColumn<bool> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
                                 res.Set(i, !(a[i]));

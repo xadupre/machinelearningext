@@ -82,7 +82,8 @@ namespace Scikit.ML.MultiClass
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(MultiClassConvertTransform).Assembly.FullName);
         }
 
         private const string RegistrationName = "McConvert";
@@ -147,7 +148,7 @@ namespace Scikit.ML.MultiClass
                 using (var bldr = md.BuildMetadata(iinfo, Source.Schema, info.Source, PassThrough))
                 {
                     if (info.TypeSrc.IsBool && _exes[iinfo].TypeDst.ItemType.IsNumber)
-                        bldr.AddPrimitive(MetadataUtils.Kinds.IsNormalized, BoolType.Instance, DvBool.True);
+                        bldr.AddPrimitive(MetadataUtils.Kinds.IsNormalized, BoolType.Instance, true);
                 }
             }
             md.Seal();
@@ -259,25 +260,25 @@ namespace Scikit.ML.MultiClass
             dst = src;
         }
 
-        private static void CheckRange(DvInt8 src, uint dst, IExceptionContext ectx = null)
+        private static void CheckRange(long src, uint dst, IExceptionContext ectx = null)
         {
-            if (src.IsNA || src.RawValue < 0 || src.RawValue >= uint.MaxValue)
+            if (src < 0 || src >= uint.MaxValue)
             {
                 if (ectx != null)
-                    ectx.Except("Value DvInt8 {0} cannot be converted into uint.", src);
+                    ectx.Except("Value long {0} cannot be converted into uint.", src);
                 else
-                    Contracts.Except("Value DvInt8 {0} cannot be converted into uint.", src);
+                    Contracts.Except("Value long {0} cannot be converted into uint.", src);
             }
         }
 
-        private static void CheckRange(DvInt8 src, ulong dst, IExceptionContext ectx = null)
+        private static void CheckRange(long src, ulong dst, IExceptionContext ectx = null)
         {
-            if (src.IsNA || src.RawValue < 0)
+            if (src < 0)
             {
                 if (ectx != null)
-                    ectx.Except("Value DvInt8 {0} cannot be converted into ulong.", src);
+                    ectx.Except("Value long {0} cannot be converted into ulong.", src);
                 else
-                    Contracts.Except("Value DvInt8 {0} cannot be converted into ulong.", src);
+                    Contracts.Except("Value long {0} cannot be converted into ulong.", src);
             }
         }
 
@@ -345,7 +346,7 @@ namespace Scikit.ML.MultiClass
                 {
                     ulong plus = (itemType.IsKey ? (ulong)1 : (ulong)0) - (typeSrc.IsKey ? (ulong)1 : (ulong)0);
                     identity = false;
-                    ValueMapper<DvInt8, ulong> map_ = (ref DvInt8 src, ref ulong dst) => { CheckRange(src, dst, ectx); dst = (ulong)src + plus; };
+                    ValueMapper<long, ulong> map_ = (ref long src, ref ulong dst) => { CheckRange(src, dst, ectx); dst = (ulong)src + plus; };
                     del = (Delegate)map_;
                     if (del == null)
                         throw Contracts.ExceptNotSupp("Issue with casting");
@@ -354,7 +355,7 @@ namespace Scikit.ML.MultiClass
                 {
                     uint plus = (itemType.IsKey ? (uint)1 : (uint)0) - (typeSrc.IsKey ? (uint)1 : (uint)0);
                     identity = false;
-                    ValueMapper<DvInt8, uint> map_ = (ref DvInt8 src, ref uint dst) => { CheckRange(src, dst, ectx); dst = (uint)src + plus; };
+                    ValueMapper<long, uint> map_ = (ref long src, ref uint dst) => { CheckRange(src, dst, ectx); dst = (uint)src + plus; };
                     del = (Delegate)map_;
                     if (del == null)
                         throw Contracts.ExceptNotSupp("Issue with casting");
@@ -423,9 +424,9 @@ namespace Scikit.ML.MultiClass
             else if (typeSrc.RawKind == DataKind.I8 && typeDst.RawKind == DataKind.U8)
             {
                 ulong plus = (typeDst.IsKey ? (ulong)1 : (ulong)0) - (typeSrc.IsKey ? (ulong)1 : (ulong)0);
-                var getter = row.GetGetter<DvInt8>(col);
+                var getter = row.GetGetter<long>(col);
                 identity = true;
-                var src = default(DvInt8);
+                var src = default(long);
                 ValueGetter<ulong> mapu =
                     (ref ulong dst) =>
                     {
@@ -438,9 +439,9 @@ namespace Scikit.ML.MultiClass
             else if (typeSrc.RawKind == DataKind.I8 && typeDst.RawKind == DataKind.U4)
             {
                 uint plus = (typeDst.IsKey ? (uint)1 : (uint)0) - (typeSrc.IsKey ? (uint)1 : (uint)0);
-                var getter = row.GetGetter<DvInt8>(col);
+                var getter = row.GetGetter<long>(col);
                 identity = true;
-                var src = default(DvInt8);
+                var src = default(long);
                 ValueGetter<uint> mapu =
                     (ref uint dst) =>
                     {

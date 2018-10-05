@@ -11,10 +11,12 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.EntryPoints;
 using Microsoft.ML.Runtime.CommandLine;
 using Scikit.ML.PipelineHelper;
+using Legacy = Microsoft.ML.Legacy;
 
 using NearestNeighborsBinaryClassificationTrainer = Scikit.ML.NearestNeighbors.NearestNeighborsBinaryClassificationTrainer;
 using EntryPointNearestNeighborsBinary = Scikit.ML.EntryPoints.EntryPointNearestNeighborsBinary;
 using NearestNeighborsBinary = Scikit.ML.EntryPoints.NearestNeighborsBinary;
+
 
 
 [assembly: LoadableClass(typeof(void), typeof(EntryPointNearestNeighborsBinary), null,
@@ -85,7 +87,7 @@ namespace Scikit.ML.EntryPoints
     /// <summary>
     /// k-Nearest Neighbors trainer for Binary Classification
     /// </summary>
-    public sealed partial class NearestNeighborsBinary : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITrainerInput, Microsoft.ML.ILearningPipelineItem
+    public sealed partial class NearestNeighborsBinary : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITrainerInput, Legacy.ILearningPipelineItem
     {
         public const string Name = nameof(NearestNeighborsBinary);
 
@@ -186,13 +188,13 @@ namespace Scikit.ML.EntryPoints
         }
         public Var<IDataView> GetInputData() => TrainingData;
 
-        public ILearningPipelineStep ApplyStep(ILearningPipelineStep previousStep, Experiment experiment)
+        public Legacy.ILearningPipelineStep ApplyStep(Legacy.ILearningPipelineStep previousStep, Experiment experiment)
         {
             if (previousStep != null)
             {
-                if (!(previousStep is ILearningPipelineDataStep dataStep))
+                if (!(previousStep is Legacy.ILearningPipelineDataStep dataStep))
                 {
-                    throw new InvalidOperationException($"{ nameof(NearestNeighborsBinary)} only supports an { nameof(ILearningPipelineDataStep)} as an input.");
+                    throw new InvalidOperationException($"{ nameof(NearestNeighborsBinary)} only supports an { nameof(Legacy.ILearningPipelineDataStep)} as an input.");
                 }
 
                 TrainingData = dataStep.Data;
@@ -201,7 +203,7 @@ namespace Scikit.ML.EntryPoints
             return new NearestNeighborsBinaryPipelineStep(output);
         }
 
-        private class NearestNeighborsBinaryPipelineStep : ILearningPipelinePredictorStep
+        private class NearestNeighborsBinaryPipelineStep : Legacy.ILearningPipelinePredictorStep
         {
             public NearestNeighborsBinaryPipelineStep(Output output)
             {

@@ -21,7 +21,7 @@ namespace Scikit.ML.RandomTransforms
         #region identification
 
         public const string LoaderSignature = "ShakeInputTransform";  // Not more than 24 letters.
-        public const string Summary = "Shake one input of a predictor and merges all outputs. This can be used to measure the sensitivity to one input.";
+        public const string Summary = "Shakes one input of a predictor and merges all outputs. This can be used to measure the sensitivity to one input.";
         public const string RegistrationName = LoaderSignature;
 
         /// <summary>
@@ -35,7 +35,8 @@ namespace Scikit.ML.RandomTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(ShakeInputTransform).Assembly.FullName);
         }
 
         #endregion
@@ -281,7 +282,7 @@ namespace Scikit.ML.RandomTransforms
                     transform = new ShakeInputState<float>(_host, transform ?? Source, _toShake, _args);
                     break;
                 case DataKind.BL:
-                    transform = new ShakeInputState<DvBool>(_host, transform ?? Source, _toShake, _args);
+                    transform = new ShakeInputState<bool>(_host, transform ?? Source, _toShake, _args);
                     break;
                 case DataKind.U1:
                     transform = new ShakeInputState<Byte>(_host, transform ?? Source, _toShake, _args);
@@ -384,7 +385,7 @@ namespace Scikit.ML.RandomTransforms
             {
                 bool identity;
                 var ty = _input.Schema.GetColumnType(_inputCol);
-                var conv = Conversions.Instance.GetStandardConversion<DvText, TInput>(TextType.Instance, ty.AsVector.ItemType, out identity);
+                var conv = Conversions.Instance.GetStandardConversion<ReadOnlyMemory<char>, TInput>(TextType.Instance, ty.AsVector.ItemType, out identity);
                 if (string.IsNullOrEmpty(_args.values))
                     throw _host.ExceptParam("_args.values cannot be null.");
                 string[][] values = _args.values.Split(';').Select(c => c.Split(',')).ToArray();
@@ -394,7 +395,7 @@ namespace Scikit.ML.RandomTransforms
                     res[i] = new TInput[values[i].Length];
                     for (int j = 0; j < res[i].Length; ++j)
                     {
-                        var t = new DvText(values[i][j]);
+                        var t = new ReadOnlyMemory<char>(values[i][j].ToCharArray());
                         conv(ref t, ref res[i][j]);
                     }
                 }

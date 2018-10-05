@@ -42,7 +42,8 @@ namespace Scikit.ML.RandomTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(ResampleTransform).Assembly.FullName);
         }
 
         #endregion
@@ -200,7 +201,7 @@ namespace Scikit.ML.RandomTransforms
                     bool clbool;
                     if (!bool.TryParse(_args.classValue, out clbool))
                         throw _host.Except("Unable to parse '{0}'.", _args.classValue);
-                    return new ResampleCursor<DvBool>(this, cursor, i => i == classColumn || predicate(i),
+                    return new ResampleCursor<bool>(this, cursor, i => i == classColumn || predicate(i),
                         _args.lambda, _args.seed, rand, _cacheReplica, classColumn, clbool);
                 case DataKind.U4:
                     uint cluint;
@@ -215,8 +216,8 @@ namespace Scikit.ML.RandomTransforms
                     return new ResampleCursor<float>(this, cursor, i => i == classColumn || predicate(i),
                         _args.lambda, _args.seed, rand, _cacheReplica, classColumn, clfloat);
                 case DataKind.TX:
-                    DvText cltext = new DvText(_args.classValue);
-                    return new ResampleCursor<DvText>(this, cursor, i => i == classColumn || predicate(i),
+                    var cltext = new ReadOnlyMemory<char>(_args.classValue.ToCharArray());
+                    return new ResampleCursor<ReadOnlyMemory<char>>(this, cursor, i => i == classColumn || predicate(i),
                         _args.lambda, _args.seed, rand, _cacheReplica, classColumn, cltext);
                 default:
                     throw _host.Except("Unsupported type '{0}'", type);
@@ -248,7 +249,7 @@ namespace Scikit.ML.RandomTransforms
                     bool clbool;
                     if (!bool.TryParse(_args.classValue, out clbool))
                         throw _host.Except("Unable to parse '{0}'.", _args.classValue);
-                    return cursors.Select(c => new ResampleCursor<DvBool>(this, c, i => i == classColumn || predicate(i),
+                    return cursors.Select(c => new ResampleCursor<bool>(this, c, i => i == classColumn || predicate(i),
                         _args.lambda, _args.seed, rand, _cacheReplica, classColumn, clbool)).ToArray();
                 case DataKind.U4:
                     uint cluint;
@@ -263,8 +264,8 @@ namespace Scikit.ML.RandomTransforms
                     return cursors.Select(c => new ResampleCursor<float>(this, c, i => i == classColumn || predicate(i),
                         _args.lambda, _args.seed, rand, _cacheReplica, classColumn, clfloat)).ToArray();
                 case DataKind.TX:
-                    DvText cltext = new DvText(_args.classValue);
-                    return cursors.Select(c => new ResampleCursor<DvText>(this, c, i => i == classColumn || predicate(i),
+                    var cltext = new ReadOnlyMemory<char>(_args.classValue.ToCharArray());
+                    return cursors.Select(c => new ResampleCursor<ReadOnlyMemory<char>>(this, c, i => i == classColumn || predicate(i),
                         _args.lambda, _args.seed, rand, _cacheReplica, classColumn, cltext)).ToArray();
                 default:
                     throw _host.Except("Unsupported type '{0}'", type);
@@ -327,7 +328,7 @@ namespace Scikit.ML.RandomTransforms
                                 bool clbool;
                                 if (!bool.TryParse(_args.classValue, out clbool))
                                     throw ch.Except("Unable to parse '{0}'.", _args.classValue);
-                                LoadCache<DvBool>(rand, cur, indexClass, clbool ? DvBool.True : DvBool.False, ch);
+                                LoadCache<bool>(rand, cur, indexClass, clbool, ch);
                                 break;
                             case DataKind.U4:
                                 uint cluint;
@@ -342,8 +343,8 @@ namespace Scikit.ML.RandomTransforms
                                 LoadCache<float>(rand, cur, indexClass, clfloat, ch);
                                 break;
                             case DataKind.TX:
-                                DvText cltext = new DvText(_args.classValue);
-                                LoadCache<DvText>(rand, cur, indexClass, cltext, ch);
+                                var cltext = new ReadOnlyMemory<char>(_args.classValue.ToCharArray());
+                                LoadCache<ReadOnlyMemory<char>>(rand, cur, indexClass, cltext, ch);
                                 break;
                             default:
                                 throw _host.Except("Unsupported type '{0}'", type);
@@ -354,7 +355,6 @@ namespace Scikit.ML.RandomTransforms
         }
 
         void LoadCache<TClass>(IRandom rand, IRowCursor cur, int classColumn, TClass valueClass, IChannel ch)
-            where TClass : IEquatable<TClass>
         {
             _cacheReplica = new Dictionary<UInt128, int>();
             var hist = new Dictionary<TClass, long>();
@@ -403,7 +403,6 @@ namespace Scikit.ML.RandomTransforms
         #region Cursor with no cache
 
         class ResampleCursor<TClass> : IRowCursor
-            where TClass : IEquatable<TClass>
         {
             readonly ResampleTransform _view;
             readonly IRowCursor _inputCursor;

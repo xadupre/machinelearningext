@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
+using DvText = Scikit.ML.PipelineHelper.DvText;
 
 
 namespace Scikit.ML.DataManipulation
@@ -119,11 +120,10 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator +(NumericColumn c1, NumericColumn c2) { return DataFrameOpAdditionHelper.Operation(c1, c2); }
         public static NumericColumn operator +(NumericColumn c1, int value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
-        public static NumericColumn operator +(NumericColumn c1, DvInt4 value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
-        public static NumericColumn operator +(NumericColumn c1, Int64 value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
-        public static NumericColumn operator +(NumericColumn c1, DvInt8 value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
+        public static NumericColumn operator +(NumericColumn c1, long value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
         public static NumericColumn operator +(NumericColumn c1, float value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
         public static NumericColumn operator +(NumericColumn c1, double value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
+        public static NumericColumn operator +(NumericColumn c1, ReadOnlyMemory<char> value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
         public static NumericColumn operator +(NumericColumn c1, DvText value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
         public static NumericColumn operator +(NumericColumn c1, string value) { return DataFrameOpAdditionHelper.Operation(c1, value); }
 
@@ -133,9 +133,7 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator *(NumericColumn c1, NumericColumn c2) { return DataFrameOpMultiplicationHelper.Operation(c1, c2); }
         public static NumericColumn operator *(NumericColumn c1, int value) { return DataFrameOpMultiplicationHelper.Operation(c1, value); }
-        public static NumericColumn operator *(NumericColumn c1, DvInt4 value) { return DataFrameOpMultiplicationHelper.Operation(c1, value); }
-        public static NumericColumn operator *(NumericColumn c1, Int64 value) { return DataFrameOpMultiplicationHelper.Operation(c1, value); }
-        public static NumericColumn operator *(NumericColumn c1, DvInt8 value) { return DataFrameOpMultiplicationHelper.Operation(c1, value); }
+        public static NumericColumn operator *(NumericColumn c1, long value) { return DataFrameOpMultiplicationHelper.Operation(c1, value); }
         public static NumericColumn operator *(NumericColumn c1, float value) { return DataFrameOpMultiplicationHelper.Operation(c1, value); }
         public static NumericColumn operator *(NumericColumn c1, double value) { return DataFrameOpMultiplicationHelper.Operation(c1, value); }
 
@@ -145,9 +143,7 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator /(NumericColumn c1, NumericColumn c2) { return DataFrameOpDivisionHelper.Operation(c1, c2); }
         public static NumericColumn operator /(NumericColumn c1, int value) { return DataFrameOpDivisionHelper.Operation(c1, value); }
-        public static NumericColumn operator /(NumericColumn c1, DvInt4 value) { return DataFrameOpDivisionHelper.Operation(c1, value); }
-        public static NumericColumn operator /(NumericColumn c1, Int64 value) { return DataFrameOpDivisionHelper.Operation(c1, value); }
-        public static NumericColumn operator /(NumericColumn c1, DvInt8 value) { return DataFrameOpDivisionHelper.Operation(c1, value); }
+        public static NumericColumn operator /(NumericColumn c1, long value) { return DataFrameOpDivisionHelper.Operation(c1, value); }
         public static NumericColumn operator /(NumericColumn c1, float value) { return DataFrameOpDivisionHelper.Operation(c1, value); }
         public static NumericColumn operator /(NumericColumn c1, double value) { return DataFrameOpDivisionHelper.Operation(c1, value); }
 
@@ -157,9 +153,7 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator -(NumericColumn c1, NumericColumn c2) { return DataFrameOpSoustractionHelper.Operation(c1, c2); }
         public static NumericColumn operator -(NumericColumn c1, int value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
-        public static NumericColumn operator -(NumericColumn c1, DvInt4 value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
-        public static NumericColumn operator -(NumericColumn c1, Int64 value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
-        public static NumericColumn operator -(NumericColumn c1, DvInt8 value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
+        public static NumericColumn operator -(NumericColumn c1, long value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
         public static NumericColumn operator -(NumericColumn c1, float value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
         public static NumericColumn operator -(NumericColumn c1, double value) { return DataFrameOpSoustractionHelper.Operation(c1, value); }
 
@@ -174,14 +168,13 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator ==(NumericColumn c1, NumericColumn c2) { return DataFrameOpEqualHelper.Operation(c1, c2); }
         public static NumericColumn operator ==(NumericColumn c1, int value) { return DataFrameOpEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator ==(NumericColumn c1, DvInt4 value) { return DataFrameOpEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator ==(NumericColumn c1, Int64 value) { return DataFrameOpEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator ==(NumericColumn c1, DvInt8 value) { return DataFrameOpEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator ==(NumericColumn c1, long value) { return DataFrameOpEqualHelper.Operation(c1, value); }
         public static NumericColumn operator ==(NumericColumn c1, float value) { return DataFrameOpEqualHelper.Operation(c1, value); }
         public static NumericColumn operator ==(NumericColumn c1, double value) { return DataFrameOpEqualHelper.Operation(c1, value); }
         public static NumericColumn operator ==(NumericColumn c1, bool value) { return DataFrameOpEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator ==(NumericColumn c1, DvBool value) { return DataFrameOpEqualHelper.Operation(c1, value); }
         public static NumericColumn operator ==(NumericColumn c1, string value) { return DataFrameOpEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator ==(NumericColumn c1, ReadOnlyMemory<char> value) { return DataFrameOpEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator ==(NumericColumn c1, DvText value) { return DataFrameOpEqualHelper.Operation(c1, value); }
 
         #endregion
 
@@ -189,14 +182,13 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator !=(NumericColumn c1, NumericColumn c2) { return DataFrameOpNotEqualHelper.Operation(c1, c2); }
         public static NumericColumn operator !=(NumericColumn c1, int value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator !=(NumericColumn c1, DvInt4 value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator !=(NumericColumn c1, Int64 value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator !=(NumericColumn c1, DvInt8 value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator !=(NumericColumn c1, long value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
         public static NumericColumn operator !=(NumericColumn c1, float value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
         public static NumericColumn operator !=(NumericColumn c1, double value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
         public static NumericColumn operator !=(NumericColumn c1, bool value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator !=(NumericColumn c1, DvBool value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
         public static NumericColumn operator !=(NumericColumn c1, string value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator !=(NumericColumn c1, ReadOnlyMemory<char> value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator !=(NumericColumn c1, DvText value) { return DataFrameOpNotEqualHelper.Operation(c1, value); }
 
         public static NumericColumn operator !(NumericColumn c1) { return DataFrameOpNotHelper.Operation(c1); }
 
@@ -206,13 +198,12 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator >(NumericColumn c1, NumericColumn c2) { return DataFrameOpSupHelper.Operation(c1, c2); }
         public static NumericColumn operator >(NumericColumn c1, int value) { return DataFrameOpSupHelper.Operation(c1, value); }
-        public static NumericColumn operator >(NumericColumn c1, DvInt4 value) { return DataFrameOpSupHelper.Operation(c1, value); }
-        public static NumericColumn operator >(NumericColumn c1, Int64 value) { return DataFrameOpSupHelper.Operation(c1, value); }
-        public static NumericColumn operator >(NumericColumn c1, DvInt8 value) { return DataFrameOpSupHelper.Operation(c1, value); }
+        public static NumericColumn operator >(NumericColumn c1, long value) { return DataFrameOpSupHelper.Operation(c1, value); }
         public static NumericColumn operator >(NumericColumn c1, float value) { return DataFrameOpSupHelper.Operation(c1, value); }
         public static NumericColumn operator >(NumericColumn c1, double value) { return DataFrameOpSupHelper.Operation(c1, value); }
-        public static NumericColumn operator >(NumericColumn c1, DvText value) { return DataFrameOpSupHelper.Operation(c1, value); }
+        public static NumericColumn operator >(NumericColumn c1, ReadOnlyMemory<char> value) { return DataFrameOpSupHelper.Operation(c1, value); }
         public static NumericColumn operator >(NumericColumn c1, string value) { return DataFrameOpSupHelper.Operation(c1, value); }
+        public static NumericColumn operator >(NumericColumn c1, DvText value) { return DataFrameOpSupHelper.Operation(c1, value); }
 
         #endregion
 
@@ -220,13 +211,12 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator >=(NumericColumn c1, NumericColumn c2) { return DataFrameOpSupEqualHelper.Operation(c1, c2); }
         public static NumericColumn operator >=(NumericColumn c1, int value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator >=(NumericColumn c1, DvInt4 value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator >=(NumericColumn c1, Int64 value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator >=(NumericColumn c1, DvInt8 value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator >=(NumericColumn c1, long value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
         public static NumericColumn operator >=(NumericColumn c1, float value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
         public static NumericColumn operator >=(NumericColumn c1, double value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator >=(NumericColumn c1, DvText value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator >=(NumericColumn c1, ReadOnlyMemory<char> value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
         public static NumericColumn operator >=(NumericColumn c1, string value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator >=(NumericColumn c1, DvText value) { return DataFrameOpSupEqualHelper.Operation(c1, value); }
 
         #endregion
 
@@ -234,13 +224,12 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator <(NumericColumn c1, NumericColumn c2) { return DataFrameOpInfHelper.Operation(c1, c2); }
         public static NumericColumn operator <(NumericColumn c1, int value) { return DataFrameOpInfHelper.Operation(c1, value); }
-        public static NumericColumn operator <(NumericColumn c1, DvInt4 value) { return DataFrameOpInfHelper.Operation(c1, value); }
-        public static NumericColumn operator <(NumericColumn c1, Int64 value) { return DataFrameOpInfHelper.Operation(c1, value); }
-        public static NumericColumn operator <(NumericColumn c1, DvInt8 value) { return DataFrameOpInfHelper.Operation(c1, value); }
+        public static NumericColumn operator <(NumericColumn c1, long value) { return DataFrameOpInfHelper.Operation(c1, value); }
         public static NumericColumn operator <(NumericColumn c1, float value) { return DataFrameOpInfHelper.Operation(c1, value); }
         public static NumericColumn operator <(NumericColumn c1, double value) { return DataFrameOpInfHelper.Operation(c1, value); }
-        public static NumericColumn operator <(NumericColumn c1, DvText value) { return DataFrameOpInfHelper.Operation(c1, value); }
+        public static NumericColumn operator <(NumericColumn c1, ReadOnlyMemory<char> value) { return DataFrameOpInfHelper.Operation(c1, value); }
         public static NumericColumn operator <(NumericColumn c1, string value) { return DataFrameOpInfHelper.Operation(c1, value); }
+        public static NumericColumn operator <(NumericColumn c1, DvText value) { return DataFrameOpInfHelper.Operation(c1, value); }
 
         #endregion
 
@@ -248,13 +237,12 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator <=(NumericColumn c1, NumericColumn c2) { return DataFrameOpInfEqualHelper.Operation(c1, c2); }
         public static NumericColumn operator <=(NumericColumn c1, int value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator <=(NumericColumn c1, DvInt4 value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator <=(NumericColumn c1, Int64 value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator <=(NumericColumn c1, DvInt8 value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator <=(NumericColumn c1, long value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
         public static NumericColumn operator <=(NumericColumn c1, float value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
         public static NumericColumn operator <=(NumericColumn c1, double value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
-        public static NumericColumn operator <=(NumericColumn c1, DvText value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator <=(NumericColumn c1, ReadOnlyMemory<char> value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
         public static NumericColumn operator <=(NumericColumn c1, string value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
+        public static NumericColumn operator <=(NumericColumn c1, DvText value) { return DataFrameOpInfEqualHelper.Operation(c1, value); }
 
         #endregion
 
@@ -262,11 +250,9 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn operator &(NumericColumn c1, NumericColumn c2) { return DataFrameOpAndHelper.Operation(c1, c2); }
         public static NumericColumn operator &(NumericColumn c1, bool value) { return DataFrameOpAndHelper.Operation(c1, value); }
-        public static NumericColumn operator &(NumericColumn c1, DvBool value) { return DataFrameOpAndHelper.Operation(c1, value); }
 
         public static NumericColumn operator |(NumericColumn c1, NumericColumn c2) { return DataFrameOpOrHelper.Operation(c1, c2); }
         public static NumericColumn operator |(NumericColumn c1, bool value) { return DataFrameOpOrHelper.Operation(c1, value); }
-        public static NumericColumn operator |(NumericColumn c1, DvBool value) { return DataFrameOpOrHelper.Operation(c1, value); }
 
         #endregion
 

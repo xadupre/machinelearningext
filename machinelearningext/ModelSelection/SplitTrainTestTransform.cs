@@ -6,10 +6,11 @@ using System.Linq;
 
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
 using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Runtime.CommandLine;
+using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.PipelineGraphTransforms;
 
@@ -40,7 +41,7 @@ namespace Scikit.ML.ModelSelection
         #region identification
 
         public const string LoaderSignature = "SplitTrainTestTransform";
-        public const string Summary = "Split a datasets into train / test.";
+        public const string Summary = "Splits a datasets into train / test.";
         public const string RegistrationName = LoaderSignature;
 
         private static VersionInfo GetVersionInfo()
@@ -50,7 +51,8 @@ namespace Scikit.ML.ModelSelection
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(SplitTrainTestTransform).Assembly.FullName);
         }
 
         #endregion
@@ -94,8 +96,9 @@ namespace Scikit.ML.ModelSelection
             [Argument(ArgumentType.MultipleUnique, HelpText = "To tag the split views (one tag per view).", ShortName = "tag")]
             public string[] tag = null;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver")]
-            public SubComponent<IDataSaver, SignatureDataSaver> saverSettings = new SubComponent<IDataSaver, SignatureDataSaver>("binary");
+            [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver",
+                      SignatureType = typeof(SignatureDataSaver))]
+            public IComponentFactory<IDataSaver> saverSettings = new ScikitSubComponent<IDataSaver, SignatureDataSaver>("binary");
 
             public void PostProcess()
             {
@@ -172,7 +175,10 @@ namespace Scikit.ML.ModelSelection
             _cacheFile = args.cacheFile;
             _reuse = args.reuse;
             _tags = args.tag;
-            _saverSettings = string.Format("{0}{{{1}}}", args.saverSettings.Kind, args.saverSettings.SubComponentSettings);
+
+            var saveSettings = args.saverSettings as ICommandLineComponentFactory;
+            Host.CheckValue(saveSettings, nameof(saveSettings));
+            _saverSettings = string.Format("{0}{{{1}}}", saveSettings.Name, saveSettings.GetSettingsString());
             _saverSettings = _saverSettings.Replace("{}", "");
 
             var saver = ComponentCreation.CreateSaver(Host, _saverSettings);
@@ -345,7 +351,7 @@ namespace Scikit.ML.ModelSelection
             for (int i = 1; i < _ratios.Length; ++i)
                 cRatios[i] = cRatios[i - 1] + _ratios[i - 1];
 
-            ValueMapper<float, DvInt4> mapper = (ref float src, ref DvInt4 dst) =>
+            ValueMapper<float, int> mapper = (ref float src, ref int dst) =>
             {
                 for (int i = cRatios.Length - 1; i > 0; --i)
                 {
@@ -402,9 +408,9 @@ namespace Scikit.ML.ModelSelection
                             ch.Info("Create part {0}: {1} (file: {2})", i + 1, _ratios[i], _filenames[i]);
                         var ar1 = new RangeFilter.Arguments() { Column = _newColumn, Min = i, Max = i, IncludeMax = true };
                         int pardId = i;
-                        var filtView = LambdaFilter.Create<DvInt4>(Host, string.Format("Select part {0}", i), currentTr,
+                        var filtView = LambdaFilter.Create<int>(Host, string.Format("Select part {0}", i), currentTr,
                                                                    _newColumn, NumberType.I4,
-                                                                   (ref DvInt4 part) => { return part.Equals(pardId); });
+                                                                   (ref int part) => { return part.Equals(pardId); });
 #if (DEBUG)
                         long count = DataViewUtils.ComputeRowCount(filtView);
                         if (count == 0)

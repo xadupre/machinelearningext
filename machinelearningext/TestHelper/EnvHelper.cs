@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.ScikitAPI;
 
 
 namespace Scikit.ML.TestHelper
@@ -14,7 +15,7 @@ namespace Scikit.ML.TestHelper
         /// Creates a new environment. It should be done
         /// with <tt>using</tt>.
         /// </summary>
-        public static TlcEnvironment NewTestEnvironment(int? seed = null, bool verbose = false,
+        public static ConsoleEnvironment NewTestEnvironment(int? seed = null, bool verbose = false,
                             MessageSensitivity sensitivity = (MessageSensitivity)(-1),
                             int conc = 0, TextWriter outWriter = null, TextWriter errWriter = null)
         {
@@ -24,10 +25,13 @@ namespace Scikit.ML.TestHelper
                 outWriter = new StreamWriter(new MemoryStream());
             if (errWriter == null)
                 errWriter = new StreamWriter(new MemoryStream());
-            return new TlcEnvironment(seed, verbose, sensitivity, conc, outWriter, errWriter);
+
+            var env = new ConsoleEnvironment(seed, verbose, sensitivity, conc, outWriter, errWriter);
+            ComponentHelper.AddStandardComponents(env);
+            return env;
         }
 
-        public static TlcEnvironment NewTestEnvironment(out StringWriter sout, out StringWriter serr,
+        public static ConsoleEnvironment NewTestEnvironment(out StringWriter sout, out StringWriter serr,
                                                         int? seed = null, bool verbose = false,
                                                         MessageSensitivity sensitivity = (MessageSensitivity)(-1),
                                                         int conc = 0)

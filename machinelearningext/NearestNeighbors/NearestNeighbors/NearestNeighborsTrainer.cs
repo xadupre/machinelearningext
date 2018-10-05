@@ -116,7 +116,7 @@ namespace Scikit.ML.NearestNeighbors
             switch (initialLabKind)
             {
                 case DataKind.BL:
-                    predictor = TrainPredictorLabel<DvBool>(ch, data);
+                    predictor = TrainPredictorLabel<bool>(ch, data);
                     break;
                 case DataKind.R4:
                     predictor = TrainPredictorLabel<float>(ch, data);

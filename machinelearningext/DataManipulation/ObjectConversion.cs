@@ -1,6 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
-using Microsoft.ML.Runtime.Data;
+using DvText = Scikit.ML.PipelineHelper.DvText;
 
 
 namespace Scikit.ML.DataManipulation

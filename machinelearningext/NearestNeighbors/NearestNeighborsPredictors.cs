@@ -34,7 +34,8 @@ namespace Scikit.ML.NearestNeighbors
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(NearestNeighborsBinaryClassifierPredictor).Assembly.FullName);
         }
 
         public PredictionKind PredictionKind { get { return PredictionKind.BinaryClassification; } }
@@ -123,7 +124,8 @@ namespace Scikit.ML.NearestNeighbors
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(NearestNeighborsMultiClassClassifierPredictor).Assembly.FullName);
         }
 
         public PredictionKind PredictionKind { get { return PredictionKind.MultiClassClassification; } }

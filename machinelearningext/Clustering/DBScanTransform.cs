@@ -48,7 +48,8 @@ namespace Scikit.ML.Clustering
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(DBScanTransform).Assembly.FullName);
         }
 
         #endregion
@@ -520,9 +521,9 @@ namespace Scikit.ML.Clustering
                 }
             }
 
-            ValueGetter<DvInt4> GetGetterCluster()
+            ValueGetter<int> GetGetterCluster()
             {
-                return (ref DvInt4 cluster) =>
+                return (ref int cluster) =>
                 {
                     cluster = _view.GetMappedIndex((int)_inputCursor.Position).Item1;
                 };

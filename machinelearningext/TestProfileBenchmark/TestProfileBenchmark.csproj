@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Clustering\Clustering.csproj" />
+    <ProjectReference Include="..\DataManipulation\DataManipulation.csproj" />
+    <ProjectReference Include="..\DocHelperMlExt\DocHelperMlExt.csproj" />
+    <ProjectReference Include="..\EntryPoints\EntryPoints.csproj" />
+    <ProjectReference Include="..\FeaturesTransforms\FeaturesTransforms.csproj" />
+    <ProjectReference Include="..\ModelSelection\ModelSelection.csproj" />
+    <ProjectReference Include="..\MultiClass\MultiClass.csproj" />
+    <ProjectReference Include="..\NearestNeighbors\NearestNeighbors.csproj" />
+    <ProjectReference Include="..\PipelineGraphTraining\PipelineGraphTraining.csproj" />
+    <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
+    <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
+    <ProjectReference Include="..\PipelineLambdaTransforms\PipelineLambdaTransforms.csproj" />
+    <ProjectReference Include="..\PipelineTraining\PipelineTraining.csproj" />
+    <ProjectReference Include="..\PipelineTransforms\PipelineTransforms.csproj" />
+    <ProjectReference Include="..\ProductionPrediction\ProductionPrediction.csproj" />
+    <ProjectReference Include="..\RandomTransforms\RandomTransforms.csproj" />
+    <ProjectReference Include="..\ScikitAPI\ScikitAPI.csproj" />
+    <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
+    <ProjectReference Include="..\TimeSeries\TimeSeries.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.ML.Core">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.Data">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.Maml">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Maml.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.Api">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.CpuMath">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.CpuMath.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.StandardLearners">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.KMeansClustering.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.StandardLearners">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.StandardLearners.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.CpuMath">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.CpuMath.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.FastTree">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.FastTree.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.Transforms">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Transforms.dll</HintPath>
+    </Reference>
+  </ItemGroup>  
+
+</Project>

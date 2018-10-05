@@ -35,8 +35,8 @@ namespace Scikit.ML.DataManipulation
                 {
                     case DataKind.I4:
                         {
-                            DvInt4[] a;
-                            DataColumn<DvInt4> res;
+                            int[] a;
+                            DataColumn<int> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
                                 res.Set(i, -a[i]);
@@ -44,8 +44,8 @@ namespace Scikit.ML.DataManipulation
                         }
                     case DataKind.I8:
                         {
-                            DvInt8[] a;
-                            DataColumn<DvInt8> res;
+                            long[] a;
+                            DataColumn<long> res;
                             Operation(c1, out a, out res);
                             for (int i = 0; i < res.Length; ++i)
                                 res.Set(i, -a[i]);

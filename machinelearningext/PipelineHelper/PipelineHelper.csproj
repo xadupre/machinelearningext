@@ -4,19 +4,21 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Scikit.ML.PipelineHelper</AssemblyName>
     <RootNamespace>Scikit.ML.PipelineHelper</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.6.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.ML.Legacy">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Legacy.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.ML.Core">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.Data">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ML">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ML.Maml">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Maml.dll</HintPath>

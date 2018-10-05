@@ -3,9 +3,10 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
+using Scikit.ML.PipelineHelper;
+
 
 // This indicates where to find objects in ML.net assemblies.
 using ComponentCreation = Microsoft.ML.Runtime.Api.ComponentCreation;
@@ -54,7 +55,7 @@ namespace Scikit.ML.PipelineTransforms
         #region identification
 
         public const string LoaderSignature = "ExtendedCacheTransform";
-        public const string Summary = "Cache data in memory or on disk. If async is true, the cache is asynchronous (different thread). " +
+        public const string Summary = "Caches data in memory or on disk. If async is true, the cache is asynchronous (different thread). " +
                                       "The transform can be used to overwrite some values in the middle of a pipeline while doing predictions.";
         public const string RegistrationName = LoaderSignature;
 
@@ -65,7 +66,8 @@ namespace Scikit.ML.PipelineTransforms
                 verWrittenCur: 0x00010001,
                 verReadableCur: 0x00010001,
                 verWeCanReadBack: 0x00010001,
-                loaderSignature: LoaderSignature);
+                loaderSignature: LoaderSignature,
+                loaderAssemblyName: typeof(ExtendedCacheTransform).Assembly.FullName);
         }
 
         #endregion
@@ -89,8 +91,9 @@ namespace Scikit.ML.PipelineTransforms
             [Argument(ArgumentType.AtMostOnce, HelpText = "Reuse the previous cache.", ShortName = "r")]
             public bool reuse = false;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver")]
-            public SubComponent<IDataSaver, SignatureDataSaver> saverSettings = new SubComponent<IDataSaver, SignatureDataSaver>("binary");
+            [Argument(ArgumentType.Multiple, HelpText = "Saver settings if data is saved on disk (default is binary).", ShortName = "saver",
+                      SignatureType = typeof(SignatureDataSaver))]
+            public IComponentFactory<IDataSaver> saverSettings = new ScikitSubComponent<IDataSaver, SignatureDataSaver>("binary");
         }
 
         #endregion
@@ -118,7 +121,9 @@ namespace Scikit.ML.PipelineTransforms
             Host.CheckUserArg(args.inDataFrame || !string.IsNullOrEmpty(args.cacheFile), "cacheFile cannot be empty if inDataFrame is false.");
             Host.CheckUserArg(!args.async || args.inDataFrame, "inDataFrame must be true if async is true.");
             Host.CheckUserArg(!args.numTheads.HasValue || args.numTheads > 0, "numThread must be > 0 if specified.");
-            _saverSettings = string.Format("{0}{{{1}}}", args.saverSettings.Kind, args.saverSettings.SubComponentSettings);
+            var saverSettings = args.saverSettings as ICommandLineComponentFactory;
+            Host.CheckValue(saverSettings, nameof(saverSettings));
+            _saverSettings = string.Format("{0}{{{1}}}", saverSettings.Name, saverSettings.GetSettingsString());
             _saverSettings = _saverSettings.Replace("{}", "");
             if (!_saverSettings.ToLower().StartsWith("binary"))
                 throw env.ExceptNotSupp("Only binary format is supported.");

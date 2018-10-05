@@ -15,21 +15,21 @@ namespace Scikit.ML.PipelineHelper
     {
         bool identity;
 
-        ValueMapper<TLabel, DvBool> mapperBL;
+        ValueMapper<TLabel, bool> mapperBL;
         ValueMapper<TLabel, byte> mapperU1;
         ValueMapper<TLabel, ushort> mapperU2;
         ValueMapper<TLabel, uint> mapperU4;
-        ValueMapper<TLabel, DvInt4> mapperI4;
+        ValueMapper<TLabel, int> mapperI4;
         ValueMapper<TLabel, float> mapperR4;
 
-        ValueMapper<DvBool, TLabel> mapperFromBL;
+        ValueMapper<bool, TLabel> mapperFromBL;
         ValueMapper<byte, TLabel> mapperFromU1;
         ValueMapper<ushort, TLabel> mapperFromU2;
         ValueMapper<uint, TLabel> mapperFromU4;
-        ValueMapper<DvInt4, TLabel> mapperFromI4;
+        ValueMapper<int, TLabel> mapperFromI4;
         ValueMapper<float, TLabel> mapperFromR4;
 
-        DvBool _bl;
+        bool _bl;
         byte _u1;
         ushort _u2;
         uint _u4;
@@ -70,8 +70,8 @@ namespace Scikit.ML.PipelineHelper
             switch (destKind)
             {
                 case DataKind.BL:
-                    mapperBL = SchemaHelper.GetConverter<TLabel, DvBool>(out identity);
-                    mapperFromBL = SchemaHelper.GetConverter<DvBool, TLabel>(out identity);
+                    mapperBL = SchemaHelper.GetConverter<TLabel, bool>(out identity);
+                    mapperFromBL = SchemaHelper.GetConverter<bool, TLabel>(out identity);
                     break;
                 case DataKind.U1:
                     mapperU1 = SchemaHelper.GetConverter<TLabel, byte>(out identity);
@@ -87,14 +87,14 @@ namespace Scikit.ML.PipelineHelper
                     break;
                 case DataKind.I4:
                     var temp = SchemaHelper.GetConverter<TLabel, float>(out identity);
-                    mapperI4 = (ref TLabel src, ref DvInt4 dst) =>
+                    mapperI4 = (ref TLabel src, ref int dst) =>
                     {
                         float v = 0f;
                         temp(ref src, ref v);
                         dst = (int)v;
                     };
                     var temp2 = SchemaHelper.GetConverter<float, TLabel>(out identity);
-                    mapperFromI4 = (ref DvInt4 src, ref TLabel dst) =>
+                    mapperFromI4 = (ref int src, ref TLabel dst) =>
                     {
                         float v = (float)src;
                         temp2(ref v, ref dst);
@@ -157,7 +157,7 @@ namespace Scikit.ML.PipelineHelper
             {
                 case DataKind.BL:
                     mapperBL(ref value, ref _bl);
-                    ctx.Writer.Write(_bl.RawValue);
+                    ctx.Writer.Write(_bl);
                     break;
                 case DataKind.U1:
                     mapperU1(ref value, ref _u1);
@@ -185,13 +185,7 @@ namespace Scikit.ML.PipelineHelper
             switch (_kind)
             {
                 case DataKind.BL:
-                    var b = ctx.Reader.ReadByte();
-                    if (b == DvBool.True.RawValue)
-                        _bl = DvBool.True;
-                    else if (b == DvBool.False.RawValue)
-                        _bl = DvBool.False;
-                    else
-                        _bl = DvBool.NA;
+                    var b = ctx.Reader.ReadBoolByte();
                     mapperFromBL(ref _bl, ref res);
                     break;
                 case DataKind.U1:
