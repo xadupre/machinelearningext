@@ -50,10 +50,10 @@ component_template = """
 {{"=" * len(title)}}
 
 **Type:** {{kind}}
-
 **Aliases:** *{{aliases}}*
-
+**Namespace:** {{namespace}}
 **Assembly:** {{assembly}}
+{{linkdocs}}
 
 **Description**
 

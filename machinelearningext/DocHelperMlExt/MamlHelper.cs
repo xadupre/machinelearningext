@@ -218,12 +218,14 @@ namespace Scikit.ML.DocHelperMlExt
             }
 
             public string Name;
+            public string ComponentName;
             public object Args;
             public string Description;
             public string[] Aliases;
             public ComponentCatalog.LoadableClassInfo Info;
             public Assembly Assembly;
             public string AssemblyName;
+            public string Namespace;
             public Argument[] Arguments;
 
             public DataFrame ArgsAsDataFrame
@@ -273,6 +275,8 @@ namespace Scikit.ML.DocHelperMlExt
                             Assembly = null,
                             AssemblyName = "?",
                             Arguments = null,
+                            Namespace = info.Type.Namespace,
+                            ComponentName=info.Type.Name,
                         };
                         yield return cmp;
                     }
@@ -305,6 +309,8 @@ namespace Scikit.ML.DocHelperMlExt
                             Assembly = asse,
                             AssemblyName = asse.ManifestModule.Name,
                             Arguments = arguments.OrderBy(c => c.Name).ToArray(),
+                            Namespace = info.Type.Namespace,
+                            ComponentName = info.Type.Name,
                         };
                         yield return cmp;
                     }
