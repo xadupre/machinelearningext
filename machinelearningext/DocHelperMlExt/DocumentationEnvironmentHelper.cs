@@ -394,7 +394,6 @@ namespace Scikit.ML.DocHelperMlExt
                 finally
                 {
                 }
-                ch.Done();
                 return result;
             }
         }

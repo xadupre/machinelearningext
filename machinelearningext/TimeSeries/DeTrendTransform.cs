@@ -276,7 +276,6 @@ namespace Scikit.ML.TimeSeries
                 var optSett = ScikitSubComponent<ITrainer, SignatureRegressorTrainer>.AsSubComponent(_args.optim);
                 ITrainer trainer = optSett.CreateInstance(Host);
                 _trend = TrainUtils.Train(Host, ch, roles, trainer, null, null, 0, null);
-                ch.Done();
             }
             return BuildTransform(_trend);
         }

@@ -22,24 +22,13 @@ namespace Scikit.ML.ProductionPrediction
                 Dispatch(this, new ChannelMessage(ChannelMessageKind.Trace, MessageSensitivity.None, "Channel started"));
             }
 
-            public override void Done()
-            {
-                Watch.Stop();
-                ChannelFinished();
-                base.Done();
-            }
-
-            private void ChannelFinished()
+            private void ChannelDisposed()
                 => Dispatch(this, new ChannelMessage(ChannelMessageKind.Trace, MessageSensitivity.None, "Channel finished. Elapsed { 0:c }.", Watch.Elapsed));
 
             protected override void DisposeCore()
             {
-                if (IsActive)
-                {
-                    ChannelFinished();
-                    Watch.Stop();
-                }
-
+                ChannelDisposed();
+                Watch.Stop();
                 Dispatch(this, new ChannelMessage(ChannelMessageKind.Trace, MessageSensitivity.None, "Channel disposed"));
                 base.DisposeCore();
             }

@@ -62,7 +62,6 @@ namespace Scikit.ML.TestHelper
             {
                 var trainingExamples = env.CreateExamples(tr, null);
                 TrainUtils.SaveModel(env, ch, fs, null, trainingExamples);
-                ch.Done();
             }
         }
     }

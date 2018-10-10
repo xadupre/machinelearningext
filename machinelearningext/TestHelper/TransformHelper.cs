@@ -35,11 +35,8 @@ namespace Scikit.ML.TestHelper
             // Saves model.
             var roles = env.CreateExamples(transform, null);
             using (var ch = env.Start("SaveModel"))
-            {
                 using (var fs = File.Create(outModelFilePath))
                     TrainUtils.SaveModel(env, ch, fs, null, roles);
-                ch.Done();
-            }
             if (!File.Exists(outModelFilePath))
                 throw new FileNotFoundException(outModelFilePath);
 

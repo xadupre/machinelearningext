@@ -87,7 +87,6 @@ namespace TestMachineLearningExt
                         throw new Exception("Empty file.");
                     if (lines.Length != 11)
                         throw new Exception("Some lines are missing.");
-                    ch.Done();
                 }
             }
         }

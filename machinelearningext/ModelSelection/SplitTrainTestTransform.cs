@@ -433,7 +433,6 @@ namespace Scikit.ML.ModelSelection
                             taggedViews.Add(new Tuple<string, ITaggedDataView>(_tags[i], tar));
                         }
                     }
-                    ch.Done();
                 }
             }
 

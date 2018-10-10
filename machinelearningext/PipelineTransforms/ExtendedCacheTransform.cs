@@ -276,7 +276,6 @@ namespace Scikit.ML.PipelineTransforms
                         using (var fs0 = Host.CreateOutputFile(_cacheFile))
                             DataSaverUtils.SaveDataView(ch, saver, input, fs0, true);
                     }
-                    ch.Done();
                 }
                 var loader = ComponentCreation.CreateLoader(env, string.Format("binary{{{0}}}", nt),
                                                             new MultiFileSource(_cacheFile));

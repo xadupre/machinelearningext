@@ -113,7 +113,6 @@ namespace Scikit.ML.MultiClass
                     _trainer = null;
                     _predictors[i] = TrainOne(ch, trainer, data, i);
                 }
-                ch.Done();
             }
             return CreatePredictor();
         }

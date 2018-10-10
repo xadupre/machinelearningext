@@ -177,7 +177,7 @@ namespace Scikit.ML.PipelineHelper
                 }
             }
 
-            public void ChannelFinished(Channel channel)
+            public void ChannelDisposed(Channel channel)
             {
                 if (!channel.Verbose)
                     return;
@@ -382,18 +382,10 @@ namespace Scikit.ML.PipelineHelper
                 Root._outErrWriter.ChannelStarted(this);
             }
 
-            public override void Done()
-            {
-                Watch.Stop();
-                Root._outErrWriter.ChannelFinished(this);
-                base.Done();
-            }
-
             protected override void DisposeCore()
             {
-                if (IsActive)
-                    Watch.Stop();
-                Root._outErrWriter.ChannelDisposed(this, IsActive);
+                Watch.Stop();
+                Root._outErrWriter.ChannelDisposed(this);
                 base.DisposeCore();
             }
         }

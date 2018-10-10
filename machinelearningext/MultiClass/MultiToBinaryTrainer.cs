@@ -129,7 +129,6 @@ namespace Scikit.ML.MultiClass
                     _trainer = null;
                     _predictors[i] = TrainPredictor(ch, trainer, data, count);
                 }
-                ch.Done();
             }
 
             return CreatePredictor();

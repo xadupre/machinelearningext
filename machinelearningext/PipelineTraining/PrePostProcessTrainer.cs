@@ -107,7 +107,6 @@ namespace Scikit.ML.PipelineTraining
                     ch2.Info("Applies a preprocess only for training: {0}", _args.preTrainType);
                     var trSett = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.preTrainType);
                     _preTrainProcess = trSett.CreateInstance(Host, view);
-                    ch2.Done();
                 }
                 view = _preTrainProcess;
             }
@@ -120,7 +119,6 @@ namespace Scikit.ML.PipelineTraining
                     ch2.Info("Applies a preprocess: {0}", _args.preType);
                     var trSett = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.preType);
                     _preProcess = trSett.CreateInstance(Host, view);
-                    ch2.Done();
                 }
             }
             else
@@ -155,7 +153,6 @@ namespace Scikit.ML.PipelineTraining
                     ch2.Info("Schema before training: {0}", sch2);
                     ch2.Info("Train a predictor: {0}", _args.predictorType);
                     _predictor = _trainer.Train(td);
-                    ch2.Done();
                 }
             }
 
@@ -166,8 +163,7 @@ namespace Scikit.ML.PipelineTraining
                     ch2.Info("Creates a transfrom from a predictor");
                     _inputColumn = td.Schema.Feature.Name;
                     _predictorAsTransform = new TransformFromValueMapper(Host, _predictor as IValueMapper,
-                                                        view, td.Schema.Feature.Name, _outputColumn);
-                    ch2.Done();
+                                                              view, td.Schema.Feature.Name, _outputColumn);
                 }
                 view = _predictorAsTransform;
             }
@@ -180,7 +176,6 @@ namespace Scikit.ML.PipelineTraining
                     ch2.Info("Applies a postprocess: {0}", _args.postType);
                     var postSett = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.postType);
                     _postProcess = postSett.CreateInstance(Host, view);
-                    ch2.Done();
                 }
             }
             else

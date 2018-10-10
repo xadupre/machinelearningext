@@ -270,7 +270,6 @@ namespace Scikit.ML.NearestNeighbors
                     _trees = NearestNeighborsBuilder.NearestNeighborsBuild<long>(ch, _input, featureIndex, labelIndex,
                                         idIndex, weightIndex, out merged, _args);
                     ch.Info("Done. Tree size: {0} points.", _trees.Count());
-                    ch.Done();
                 }
             }
         }

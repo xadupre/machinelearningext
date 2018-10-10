@@ -314,7 +314,6 @@ namespace Scikit.ML.FeaturesTransforms
 
                     // We extend the input schema. The new type has the same type as the input.
                     _schema = new ExtendedSchema(input.Schema, new[] { column.Name }, new[] { new VectorType(type.AsVector.ItemType, size) });
-                    ch.Done();
                 }
             }
 

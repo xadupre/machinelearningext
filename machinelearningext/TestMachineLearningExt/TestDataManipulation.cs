@@ -156,7 +156,6 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(predictions.Schema.GetColumnName(6), "Features.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 11));
-                    ch.Done();
                 }
             }
         }
@@ -182,7 +181,6 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
-                    ch.Done();
                 }
             }
         }
@@ -208,7 +206,6 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
-                    ch.Done();
                 }
             }
         }

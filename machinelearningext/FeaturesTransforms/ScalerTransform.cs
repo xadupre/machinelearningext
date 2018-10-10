@@ -368,7 +368,6 @@ namespace Scikit.ML.FeaturesTransforms
 
                         _scalingFactors = GetScalingParameters();
                         _revIndex = ComputeRevIndex();
-                        ch.Done();
                     }
                 }
             }

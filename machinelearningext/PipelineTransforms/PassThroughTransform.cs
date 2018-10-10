@@ -204,7 +204,6 @@ namespace Scikit.ML.PipelineTransforms
 
                     long length = new FileInfo(_args.filename).Length;
                     ch.Info("Done dump. Size: {0}", length);
-                    ch.Done();
                 }
 
                 _saved = true;

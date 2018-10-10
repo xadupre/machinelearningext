@@ -201,7 +201,6 @@ namespace TestMachineLearningExt
                     var predictor = trainer.Train(env, ch, roles);
                     TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
                                                          PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
-                    ch.Done();
                 }
             }
         }
@@ -237,7 +236,6 @@ namespace TestMachineLearningExt
                     var predictor = trainer.Train(env, ch, roles);
                     TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
                                                          PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
-                    ch.Done();
                 }
             }
         }
@@ -264,7 +262,6 @@ namespace TestMachineLearningExt
                     var predictor = trainer.Train(env, ch, roles);
                     TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
                                                          PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
-                    ch.Done();
                 }
             }
         }
@@ -291,7 +288,6 @@ namespace TestMachineLearningExt
                     var predictor = trainer.Train(env, ch, roles);
                     TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, predictor, roles, outData, outData2,
                                                          PredictionKind.MultiClassClassification, checkError, ratio: 0.1f);
-                    ch.Done();
                 }
             }
         }

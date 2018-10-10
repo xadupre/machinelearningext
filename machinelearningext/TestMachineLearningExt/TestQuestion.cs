@@ -87,17 +87,11 @@ namespace TestMachineLearningExt
             var trainer = CreateTrainer(env, "km");
             IPredictor model;
             using (var ch = env.Start("Train"))
-            {
                 model = TrainUtils.Train(env, ch, roleMap, trainer, null, 0);
-                ch.Done();
-            }
 
             using (var ch = env.Start("Save"))
-            {
                 using (var fs = File.Create(outModelFilePath))
                     TrainUtils.SaveModel(env, ch, fs, model, roleMap);
-                ch.Done();
-            }
 
             var obs = new IrisObservation()
             {
@@ -147,17 +141,11 @@ namespace TestMachineLearningExt
             var trainer = CreateTrainer(env, "km");
             IPredictor model;
             using (var ch = env.Start("test"))
-            {
                 model = TrainUtils.Train(env, ch, roleMap, trainer, null, 0);
-                ch.Done();
-            }
 
             using (var ch = env.Start("Save"))
-            {
                 using (var fs = File.Create(outModelFilePath))
                     TrainUtils.SaveModel(env, ch, fs, model, roleMap);
-                ch.Done();
-            }
 
             Predictor pred;
             using (var fs = File.OpenRead(outModelFilePath))

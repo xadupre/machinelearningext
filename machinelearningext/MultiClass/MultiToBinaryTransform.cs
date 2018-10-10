@@ -474,10 +474,7 @@ namespace Scikit.ML.MultiClass
                         _labelDistribution[tkey] = value;
                     }
                     using (var ch = _host.Start("Finalize MultiToBinaryState"))
-                    {
                         Finalize(ch);
-                        ch.Done();
-                    }
                 }
             }
 
@@ -489,10 +486,7 @@ namespace Scikit.ML.MultiClass
                         return;
 
                     using (var ch = _host.Start("MultiToBinary Training"))
-                    {
                         ComputeLabelDistribution(ch, rand);
-                        ch.Done();
-                    }
                 }
             }
 

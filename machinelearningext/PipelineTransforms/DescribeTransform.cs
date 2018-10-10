@@ -391,8 +391,6 @@ namespace Scikit.ML.PipelineTransforms
 
                         if (!_args.jsonFormat)
                             ch.Info("End DescribeTransform {0}", _args.name);
-
-                        ch.Done();
                     }
                     _statistics = _input;
                 }

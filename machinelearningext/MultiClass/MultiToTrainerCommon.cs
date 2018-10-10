@@ -485,8 +485,6 @@ namespace Scikit.ML.MultiClass
                 if (trainerRoles == null)
                     throw Host.Except("Trainer reclassification cannot be trained.");
                 _reclassPredictor = trainerRoles.Train(data_roles);
-
-                ch.Done();
             }
         }
     }

@@ -362,7 +362,6 @@ namespace Scikit.ML.Clustering
                         ch.Info("Ordered {0} points.", _Results.Count());
                         sw.Stop();
                         ch.Info("'OpticsOrdering' finished in {0}.", sw.Elapsed);
-                        ch.Done();
                     }
                 }
             }

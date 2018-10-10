@@ -160,7 +160,6 @@ namespace Scikit.ML.ScikitAPI
                     }
                     _transforms[i].transform = trans as IDataTransform;
                 }
-                ch.Done();
             }
 
             if (_predictor != null)
@@ -179,7 +178,6 @@ namespace Scikit.ML.ScikitAPI
                     var roleMap = new RoleMappedData(trans, label, feature, group: groupId, weight: weight);
                     _predictor.predictor = _predictor.trainer.Train(_env, ch, roleMap);
                     _predictor.roleMapData = roleMap;
-                    ch.Done();
                 }
             }
             else
@@ -198,7 +196,6 @@ namespace Scikit.ML.ScikitAPI
                     var df = DataFrameIO.ReadView(trans, 1, keepVectors: true, env: _env);
                     if (df.Length == 0)
                         throw _env.ExceptEmpty("Something went wrong. The pipeline does not produce any output.");
-                    ch.Done();
                 }
             }
             return this;
@@ -256,11 +253,7 @@ namespace Scikit.ML.ScikitAPI
         public void Save(Stream fs)
         {
             using (var ch = _env.Start("Save Predictor"))
-            {
-                TrainUtils.SaveModel(_env, ch, fs, _predictor.predictor,
-                                    _predictor.roleMapData);
-                ch.Done();
-            }
+                TrainUtils.SaveModel(_env, ch, fs, _predictor.predictor, _predictor.roleMapData);
         }
     }
 }

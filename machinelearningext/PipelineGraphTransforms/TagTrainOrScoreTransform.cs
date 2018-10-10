@@ -185,7 +185,6 @@ namespace Scikit.ML.PipelineGraphTransforms
                 var ar = new TagViewTransform.Arguments { tag = _args.tag };
                 var res = new TagViewTransform(_host, ar, _scorer, _predictor);
                 _sourcePipe = res;
-                ch.Done();
             }
         }
 
@@ -251,7 +250,6 @@ namespace Scikit.ML.PipelineGraphTransforms
 
                 var ar = new TagViewTransform.Arguments { tag = args.tag };
                 var res = new TagViewTransform(env, ar, _scorer, _predictor);
-                ch.Done();
                 return res;
             }
         }

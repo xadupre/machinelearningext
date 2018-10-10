@@ -221,7 +221,6 @@ namespace TestMachineLearningExt
                     if (predictor == null)
                         throw new Exception("Predictor is null");
                 }
-                ch.Done();
             }
             if (stdout.Count == 0)
                 throw new Exception("stdout is empty.");

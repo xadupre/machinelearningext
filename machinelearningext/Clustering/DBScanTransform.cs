@@ -367,7 +367,6 @@ namespace Scikit.ML.Clustering
                         ch.Info("Found {0} clusters.", mapprev.Select(c => c.Value).Where(c => c >= 0).Distinct().Count());
                         sw.Stop();
                         ch.Info("'DBScan' finished in {0}.", sw.Elapsed);
-                        ch.Done();
                     }
                 }
             }

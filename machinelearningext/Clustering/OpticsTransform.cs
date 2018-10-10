@@ -420,7 +420,6 @@ namespace Scikit.ML.Clustering
                         }
                         sw.Stop();
                         ch.Info("'Optics' finished in {0}.", sw.Elapsed);
-                        ch.Done();
                     }
                 }
             }
