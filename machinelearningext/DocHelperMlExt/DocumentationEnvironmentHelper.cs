@@ -61,6 +61,7 @@ namespace Scikit.ML.DocHelperMlExt
             {
                 case "cpumathnative.dll":
                 case "cqo.dll":
+                case "dnnanalyzer.dll":
                 case "fasttreenative.dll":
                 case "factorizationmachinenative.dll":
                 case "libiomp5md.dll":
