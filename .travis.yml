@@ -22,7 +22,6 @@ addons:
       - libunwind8
       - curl
       # ubuntu https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites?tabs=netcore2x#ubuntu
-      - libunwind8
       - liblttng-ust0
       - libcurl3
       - libssl1.0.0
@@ -51,15 +50,18 @@ before_install:
 
 before_script:
   - sudo unlink /usr/bin/gcc && sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
-  - gcc --version
+  # machinelearning
   - cd machinelearning
   - bash build.sh -Release
   - bash build.sh -Debug
+  # machinelearning publish
   - bash -c "dotnet publish Microsoft.ML.sln -o ../../dist/Debug -c Debug --self-contained" || true
   - bash -c "dotnet publish Microsoft.ML.sln -o ../../dist/Release -c Release --self-contained" || true
   - cd ..
+  # machinelearning copy
   - cp machinelearning/bin/x64.Debug/Native/*.so machinelearning/dist/Debug
   - cp machinelearning/bin/x64.Release/Native/*.so machinelearning/dist/Release
+  # machinelearningext
   - cd machinelearningext
   - dotnet build -c Debug
   - dotnet build -c Release
