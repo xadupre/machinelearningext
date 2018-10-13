@@ -499,14 +499,14 @@ namespace TestMachineLearningExt
                     if (th > 0)
                         trainer = env.CreateTrainer(string.Format("oova{{ p=ft{{t={0}}} }}", th, singleColumn ? "+" : "-"));
                     else
-                        trainer = env.CreateTrainer(string.Format("oova{{p=ft{t=1} }}", singleColumn ? "+" : "-"));
+                        trainer = env.CreateTrainer(string.Format("oova{{p=ft{{t=1}} }}", singleColumn ? "+" : "-"));
                 }
                 else
                 {
                     if (th > 0)
                         trainer = env.CreateTrainer(string.Format("iova{{ p=ft{{t={0}}} sc={1} }}", th, singleColumn ? "+" : "-"));
                     else
-                        trainer = env.CreateTrainer(string.Format("iova{{p=ft{t=1} sc={0} }}", singleColumn ? "+" : "-"));
+                        trainer = env.CreateTrainer(string.Format("iova{{p=ft{{t=1}} sc={0} }}", singleColumn ? "+" : "-"));
                 }
 
                 using (var ch = env.Start("Train"))
