@@ -331,7 +331,7 @@ namespace Scikit.ML.PipelineHelper
             }
             else if (col < ColumnCount)
             {
-                int c = col - _schemaInput.ColumnCount;
+                int c = col - count;
                 yield return new KeyValuePair<string, ColumnType>(_names[c], _types[c]);
             }
             else
