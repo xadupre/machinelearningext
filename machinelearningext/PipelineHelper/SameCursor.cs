@@ -13,17 +13,19 @@ namespace Scikit.ML.PipelineHelper
     public class SameCursor : IRowCursor
     {
         readonly IRowCursor _inputCursor;
-        readonly ISchema _schema;
+        readonly Schema _schema;
+        readonly Schema _cursorSchema;
 
-        public SameCursor(IRowCursor cursor, ISchema schema)
+        public SameCursor(IRowCursor cursor, Schema schema)
         {
             _schema = schema;
             _inputCursor = cursor;
+            _cursorSchema = _inputCursor.Schema;
         }
 
         public bool IsColumnActive(int col)
         {
-            if (col < _inputCursor.Schema.ColumnCount)
+            if (col < _cursorSchema.ColumnCount)
                 return _inputCursor.IsColumnActive(col);
             return false;
         }
@@ -39,7 +41,7 @@ namespace Scikit.ML.PipelineHelper
         public CursorState State { get { return _inputCursor.State; } }
         public long Batch { get { return _inputCursor.Batch; } }
         public long Position { get { return _inputCursor.Position; } }
-        public ISchema Schema { get { return _schema; } }
+        public Schema Schema { get { return _schema; } }
         public bool MoveMany(long count) { return _inputCursor.MoveMany(count); }
         public bool MoveNext() { return _inputCursor.MoveNext(); }
         public ValueGetter<TValue> GetGetter<TValue>(int col) { return _inputCursor.GetGetter<TValue>(col); }

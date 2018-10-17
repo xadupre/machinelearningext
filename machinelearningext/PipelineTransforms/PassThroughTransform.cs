@@ -157,7 +157,7 @@ namespace Scikit.ML.PipelineTransforms
             _saved = false;
         }
 
-        public ISchema Schema { get { return _input.Schema; } }
+        public Schema Schema { get { return _input.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
         public long? GetRowCount(bool lazy = true)
@@ -195,8 +195,9 @@ namespace Scikit.ML.PipelineTransforms
                     var saver = ComponentCreation.CreateSaver(_host, _args.GetSaverSettings());
 
                     var columnsList = new List<int>();
-                    for (int i = 0; i < _input.Schema.ColumnCount; ++i)
-                        columnsList.Add(saver.IsColumnSavable(_input.Schema.GetColumnType(i)) && _input.Schema.IsHidden(i) ? i : -1);
+                    var schema = _input.Schema;
+                    for (int i = 0; i < schema.ColumnCount; ++i)
+                        columnsList.Add(saver.IsColumnSavable(schema.GetColumnType(i)) && schema.IsHidden(i) ? i : -1);
                     var columns = columnsList.Where(c => c >= 0).ToArray();
                     ch.Info("Save columns: {0}", string.Join(", ", columns.Select(c => c.ToString())));
                     using (var fs2 = File.Create(_args.filename))

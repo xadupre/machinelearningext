@@ -91,10 +91,10 @@ namespace Scikit.ML.TimeSeries
         IDataTransform _transform;      // templated transform (not the serialized version)
         IPredictor _trend;              // Trend predictor
         Arguments _args;                // parameters
-        ISchema _schema;                // We need the schema the transform outputs.
+        Schema _schema;                 // We need the schema the transform outputs.
         object _lock;
 
-        public override ISchema Schema { get { return _schema; } }
+        public override Schema Schema { get { return _schema; } }
 
         #endregion
 
@@ -112,7 +112,9 @@ namespace Scikit.ML.TimeSeries
                 Host.ExceptUserArg(nameof(_args.timeColumn));
             if (!input.Schema.TryGetColumnIndex(args.columns[0].Source, out index))
                 Host.ExceptUserArg(nameof(Column1x1.Source));
-            _schema = new ExtendedSchema(input.Schema, new[] { _args.columns[0].Name }, new[] { NumberType.R4 /*input.Schema.GetColumnType(index)*/ });
+            _schema = Schema.Create(new ExtendedSchema(input.Schema, 
+                                                       new[] { _args.columns[0].Name }, 
+                                                       new[] { NumberType.R4 /*input.Schema.GetColumnType(index)*/ }));
             _trend = null;
             _transform = null;
             _lock = new object();
@@ -154,7 +156,9 @@ namespace Scikit.ML.TimeSeries
             if (!input.Schema.TryGetColumnIndex(_args.columns[0].Source, out index))
                 Host.ExceptUserArg(nameof(Column1x1.Source));
 
-            _schema = new ExtendedSchema(input.Schema, new[] { _args.columns[0].Name }, new[] { NumberType.R4 /*input.Schema.GetColumnType(index)*/ });
+            _schema = Schema.Create(new ExtendedSchema(input.Schema,
+                                    new[] { _args.columns[0].Name },
+                                    new[] { NumberType.R4 /*input.Schema.GetColumnType(index)*/ }));
             _lock = new object();
             _transform = BuildTransform(_trend);
         }

@@ -165,7 +165,7 @@ namespace Scikit.ML.RandomTransforms
 
         #region IDataTransform API
 
-        public ISchema Schema { get { return Source.Schema; } }
+        public Schema Schema { get { return Source.Schema; } }
 
         public bool CanShuffle { get { return true; } }
         public long? GetRowCount(bool lazy = true)
@@ -489,7 +489,7 @@ namespace Scikit.ML.RandomTransforms
             public CursorState State { get { return _inputCursor.State; } } // No change.
             public long Batch { get { return _inputCursor.Batch; } }        // No change.
             public long Position { get { return _inputCursor.Position; } }  // No change.
-            public ISchema Schema { get { return _view.Schema; } }          // No change.
+            public Schema Schema { get { return _view.Schema; } }          // No change.
 
             void IDisposable.Dispose()
             {

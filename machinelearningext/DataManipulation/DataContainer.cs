@@ -619,7 +619,7 @@ namespace Scikit.ML.DataManipulation
         #region IDataView API
 
         /// <summary>
-        /// Implements ISchema interface for this container.
+        /// Implements Schema interface for this container.
         /// </summary>
         public class DataContainerSchema : ISchema
         {
@@ -700,9 +700,11 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
-        /// Returns the schema.
+        /// Returns the schema. It should not be used unless it is necessary
+        /// as it makes a copy of the existing schema.
         /// </summary>
-        public ISchema Schema => _schema;
+        public Schema Schema => Schema.Create(_schema);
+        public ISchema SchemaI => _schema;
 
         /// <summary>
         /// Fills the value with values coming from a IDataView.
@@ -1143,7 +1145,7 @@ namespace Scikit.ML.DataManipulation
             int[] _rowsSet;
             int[] _colsSet;
             Dictionary<int, int> _revColsSet;
-            ISchema _schema;
+            Schema _schema;
             int[] _shuffled;
 
             public RowCursor(DataContainer cont, Func<int, bool> needCol,
@@ -1163,7 +1165,7 @@ namespace Scikit.ML.DataManipulation
                     _revColsSet = new Dictionary<int, int>();
                     for (int i = 0; i < columns.Length; ++i)
                         _revColsSet[columns[i]] = i;
-                    _schema = new DataFrameViewSchema(_cont.Schema, columns);
+                    _schema = Schema.Create(new DataFrameViewSchema(_cont.Schema, columns));
                 }
                 else
                     _schema = null;
@@ -1189,7 +1191,7 @@ namespace Scikit.ML.DataManipulation
 
             public ICursor GetRootCursor() { return this; }
             public bool IsColumnActive(int col) { return _needCol(col); }
-            public ISchema Schema => _colsSet == null ? _cont.Schema : _schema;
+            public Schema Schema => _colsSet == null ? _cont.Schema : _schema;
 
             public long Position => _rowsSet == null
                                         ? _position
@@ -1422,8 +1424,8 @@ namespace Scikit.ML.DataManipulation
                     row.Add($"'{Schema.GetColumnName(i)}':{Schema.GetColumnType(i)}");
                 else
                     row.Add("###");
-                if (i < c.Schema.ColumnCount)
-                    row.Add($"'{c.Schema.GetColumnName(i)}':{c.Schema.GetColumnType(i)}");
+                if (i < c.SchemaI.ColumnCount)
+                    row.Add($"'{c.SchemaI.GetColumnName(i)}':{c.SchemaI.GetColumnType(i)}");
                 else
                     row.Add("###");
                 var s = string.Join(" --- ", row);

@@ -234,6 +234,11 @@ namespace Scikit.ML.DataManipulation
         int Length { get; }
 
         /// <summary>
+        /// Returns the schema as an interface.
+        /// </summary>
+        ISchema SchemaI { get; }
+
+        /// <summary>
         /// In case of a DataView, returns the underlying DataFrame.
         /// </summary>
         IDataFrameView Source { get; }

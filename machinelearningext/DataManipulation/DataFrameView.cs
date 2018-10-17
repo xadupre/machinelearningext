@@ -29,13 +29,14 @@ namespace Scikit.ML.DataManipulation
         {
             _src = src;
             _rows = rows == null ? Enumerable.Range(0, src.Length).ToArray() : rows.ToArray();
-            _columns = columns == null ? Enumerable.Range(0, src.Schema.ColumnCount).ToArray() : columns.ToArray();
+            _columns = columns == null ? Enumerable.Range(0, src.SchemaI.ColumnCount).ToArray() : columns.ToArray();
             _schema = new DataFrameViewSchema(src.Schema, _columns);
         }
 
         #region IDataView API
 
-        public ISchema Schema => _schema;
+        public Schema Schema => Schema.Create(_schema);
+        public ISchema SchemaI => _schema;
         public int ColumnCount => _columns == null ? _src.ColumnCount : _columns.Length;
 
         /// <summary>
@@ -411,7 +412,7 @@ namespace Scikit.ML.DataManipulation
                 get
                 {
                     int icol;
-                    _parent._src.Schema.TryGetColumnIndex(col, out icol);
+                    _parent._src.SchemaI.TryGetColumnIndex(col, out icol);
                     return new DataFrameView(_parent._src, rows.Select(c => _parent._rows[c]), new[] { icol });
                 }
                 set { AsDataFrame().loc[rows.Select(c => _parent._rows[c]), col] = value; }
@@ -697,7 +698,7 @@ namespace Scikit.ML.DataManipulation
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
             var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
-            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,
                                           orderLeft, orderRight,
@@ -722,7 +723,7 @@ namespace Scikit.ML.DataManipulation
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
             var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
-            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,
                                           orderLeft, orderRight,
@@ -748,7 +749,7 @@ namespace Scikit.ML.DataManipulation
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
             var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
-            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,
                                           orderLeft, orderRight,

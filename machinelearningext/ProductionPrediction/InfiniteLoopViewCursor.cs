@@ -27,7 +27,7 @@ namespace Scikit.ML.ProductionPrediction
     public class InfiniteLoopViewCursorColumn<TRepValue> : IDataView, IInfiniteLoopViewCursor<TRepValue>
     {
         readonly int _column;
-        readonly ISchema _schema;
+        readonly Schema _schema;
         readonly IRowCursor _otherValues;
         readonly bool _ignoreOtherColumn;
         CursorType _ownCursor;
@@ -41,7 +41,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="schema">schema of the view</param>
         /// <param name="otherValues">cursor which contains the others values</param>
         /// <param name="ignoreOtherColumn">ignore other column if they are being requested</param>
-        public InfiniteLoopViewCursorColumn(int column, ISchema schema = null, IRowCursor otherValues = null, bool ignoreOtherColumn = false)
+        public InfiniteLoopViewCursorColumn(int column, Schema schema = null, IRowCursor otherValues = null, bool ignoreOtherColumn = false)
         {
             _column = column;
             _otherValues = otherValues;
@@ -53,7 +53,7 @@ namespace Scikit.ML.ProductionPrediction
 
         public bool CanShuffle { get { return false; } }
         public long? GetRowCount(bool lazy = true) { return null; }
-        public ISchema Schema { get { return _schema; } }
+        public Schema Schema { get { return _schema; } }
 
         public void Set(ref TRepValue value)
         {
@@ -125,7 +125,7 @@ namespace Scikit.ML.ProductionPrediction
             public ICursor GetRootCursor() { return this; }
             public long Batch { get { return _batch; } }
             public long Position { get { return _position; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
             public ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
 
             void IDisposable.Dispose()
@@ -249,7 +249,7 @@ namespace Scikit.ML.ProductionPrediction
         where TRowValue : class
     {
         readonly int[] _columns;
-        readonly ISchema _schema;
+        readonly Schema _schema;
         readonly IRowCursor _otherValues;
         readonly SchemaDefinition _columnsSchema;
         readonly Dictionary<string, Delegate> _overwriteRowGetter;
@@ -263,7 +263,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="columns">columns to be replaced</param>
         /// <param name="schema">schema of the view</param>
         /// <param name="otherValues">cursor which contains the others values</param>
-        public InfiniteLoopViewCursorRow(int[] columns = null, ISchema schema = null, IRowCursor otherValues = null,
+        public InfiniteLoopViewCursorRow(int[] columns = null, Schema schema = null, IRowCursor otherValues = null,
                                          Dictionary<string, Delegate> overwriteRowGetter = null)
         {
             var columnsSchema = SchemaDefinition.Create(typeof(TRowValue), SchemaDefinition.Direction.Read);
@@ -282,7 +282,7 @@ namespace Scikit.ML.ProductionPrediction
 
         public bool CanShuffle { get { return false; } }
         public long? GetRowCount(bool lazy = true) { return null; }
-        public ISchema Schema { get { return _schema; } }
+        public Schema Schema { get { return _schema; } }
 
         public void Set(ref TRowValue value)
         {
@@ -362,7 +362,7 @@ namespace Scikit.ML.ProductionPrediction
             public ICursor GetRootCursor() { return this; }
             public long Batch { get { return _batch; } }
             public long Position { get { return _position; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
             public ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
 
             void IDisposable.Dispose()

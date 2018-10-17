@@ -108,9 +108,9 @@ namespace Scikit.ML.Clustering
 
         IDataTransform _transform;      // templated transform (not the serialized version)
         Arguments _args;                // parameters
-        ISchema _schema;                // We need the schema the transform outputs.
+        Schema _schema;                 // We need the schema the transform outputs.
 
-        public override ISchema Schema { get { return _schema; } }
+        public override Schema Schema { get { return _schema; } }
 
         #endregion
 
@@ -128,8 +128,8 @@ namespace Scikit.ML.Clustering
                 Contracts.Check(false, "Parameter minPoints must be positive.");
 
             _args = args;
-            _schema = new ExtendedSchema(input.Schema, new string[] { args.outOrdering, args.outReachabilityDistance, args.outCoreDistance },
-                                    new ColumnType[] { NumberType.I8, NumberType.R4, NumberType.R4 });
+            _schema = Schema.Create(new ExtendedSchema(input.Schema, new string[] { args.outOrdering, args.outReachabilityDistance, args.outCoreDistance },
+                                                       new ColumnType[] { NumberType.I8, NumberType.R4, NumberType.R4 }));
             _transform = CreateTemplatedTransform();
         }
         public static OpticsOrderingTransform Create(IHostEnvironment env, ModelLoadContext ctx, IDataView input)
@@ -157,8 +157,8 @@ namespace Scikit.ML.Clustering
             Host.CheckValue(ctx, "ctx");
             _args = new Arguments();
             _args.Read(ctx, Host);
-            _schema = new ExtendedSchema(input.Schema, new string[] { _args.outOrdering, _args.outReachabilityDistance, _args.outCoreDistance },
-                                    new ColumnType[] { NumberType.I8, NumberType.R4, NumberType.R4 });
+            _schema = Schema.Create(new ExtendedSchema(input.Schema, new string[] { _args.outOrdering, _args.outReachabilityDistance, _args.outCoreDistance },
+                                                       new ColumnType[] { NumberType.I8, NumberType.R4, NumberType.R4 }));
             _transform = CreateTemplatedTransform();
         }
 
@@ -241,7 +241,7 @@ namespace Scikit.ML.Clustering
             object _lock;
 
             public IDataView Source { get { return _input; } }
-            public ISchema Schema { get { return _parent.Schema; } }
+            public Schema Schema { get { return _parent.Schema; } }
 
             public OpticsOrderingState(IHostEnvironment host, OpticsOrderingTransform parent, IDataView input, Arguments args)
             {
@@ -478,7 +478,7 @@ namespace Scikit.ML.Clustering
             public CursorState State { get { return _inputCursor.State; } }
             public long Batch { get { return _inputCursor.Batch; } }
             public long Position { get { return _inputCursor.Position; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
 
             void IDisposable.Dispose()
             {

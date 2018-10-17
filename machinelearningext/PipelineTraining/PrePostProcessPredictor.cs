@@ -87,14 +87,14 @@ namespace Scikit.ML.PipelineTraining
             var type = SchemaHelper.ReadType(ctx);
             _outputColumn = ctx.Reader.ReadString();
 
-            ISchema schema;
+            Schema schema;
             IDataView data;
             if (type.IsVector)
             {
                 switch (type.AsVector.ItemType.RawKind)
                 {
                     case DataKind.R4:
-                        schema = new ExtendedSchema(null, new[] { _inputColumn }, new[] { new VectorType(NumberType.R4) });
+                        schema = Schema.Create(new ExtendedSchema(null, new[] { _inputColumn }, new[] { new VectorType(NumberType.R4) }));
                         data = new TemporaryViewCursorColumn<VBuffer<float>>(default(VBuffer<float>), 0, schema);
                         break;
                     default:
@@ -106,7 +106,7 @@ namespace Scikit.ML.PipelineTraining
                 switch (type.RawKind)
                 {
                     case DataKind.R4:
-                        schema = new ExtendedSchema(null, new[] { _inputColumn }, new[] { NumberType.R4 });
+                        schema = Schema.Create(new ExtendedSchema(null, new[] { _inputColumn }, new[] { NumberType.R4 }));
                         data = new TemporaryViewCursorColumn<float>(default(float), 0, schema);
                         break;
                     default:

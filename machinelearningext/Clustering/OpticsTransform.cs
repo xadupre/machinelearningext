@@ -114,9 +114,9 @@ namespace Scikit.ML.Clustering
 
         IDataTransform _transform;      // templated transform (not the serialized version)
         Arguments _args;                // parameters
-        ISchema _schema;                // We need the schema the transform outputs.
+        Schema _schema;                 // We need the schema the transform outputs.
 
-        public override ISchema Schema { get { return _schema; } }
+        public override Schema Schema { get { return _schema; } }
 
         #endregion
 
@@ -164,7 +164,7 @@ namespace Scikit.ML.Clustering
             }
 
             args.newColumnsNumber = newColumnNames.Count() / 2;
-            _schema = new ExtendedSchema(input.Schema, newColumnNames, newColumnTypes);
+            _schema = Schema.Create(new ExtendedSchema(input.Schema, newColumnNames, newColumnTypes));
             _transform = CreateTemplatedTransform();
         }
 
@@ -193,8 +193,8 @@ namespace Scikit.ML.Clustering
             Host.CheckValue(ctx, "ctx");
             _args = new Arguments();
             _args.Read(ctx, Host);
-            _schema = new ExtendedSchema(input.Schema, new string[] { _args.outCluster, _args.outScore },
-                                    new ColumnType[] { NumberType.I4, NumberType.R4 });
+            _schema = Schema.Create(new ExtendedSchema(input.Schema, new string[] { _args.outCluster, _args.outScore },
+                                                       new ColumnType[] { NumberType.I4, NumberType.R4 }));
             _transform = CreateTemplatedTransform();
         }
 
@@ -278,7 +278,7 @@ namespace Scikit.ML.Clustering
             object _lock;
 
             public IDataView Source { get { return _input; } }
-            public ISchema Schema { get { return _parent.Schema; } }
+            public Schema Schema { get { return _parent.Schema; } }
 
             public OpticsState(IHostEnvironment host, OpticsTransform parent, IDataView input, Arguments args)
             {
@@ -531,7 +531,7 @@ namespace Scikit.ML.Clustering
             public CursorState State { get { return _inputCursor.State; } }
             public long Batch { get { return _inputCursor.Batch; } }
             public long Position { get { return _inputCursor.Position; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
 
             void IDisposable.Dispose()
             {

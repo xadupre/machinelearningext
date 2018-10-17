@@ -202,7 +202,7 @@ namespace Scikit.ML.PipelineHelper
         public bool TryGetScoreLabelNames(out string[] names, string scoreColumnName = DefaultColumnNames.Score)
         {
             names = null;
-            ISchema schema = _predictorModel.OutputSchema;
+            var schema = _predictorModel.OutputSchema;
             int colIndex;
             if (!schema.TryGetColumnIndex(scoreColumnName, out colIndex))
                 return false;

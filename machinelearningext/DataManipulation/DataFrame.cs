@@ -117,7 +117,8 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the schema of the dataframe, used schema used for IDataView.
         /// </summary>
-        public ISchema Schema => _data.Schema;
+        public Schema Schema => _data.Schema;
+        public ISchema SchemaI => _data.SchemaI;
 
         /// <summary>
         /// Returns a copy of the view.
@@ -563,7 +564,7 @@ namespace Scikit.ML.DataManipulation
                 get
                 {
                     int icol;
-                    _parent.Schema.TryGetColumnIndex(col, out icol);
+                    _parent.SchemaI.TryGetColumnIndex(col, out icol);
                     return new DataFrameView(_parent, rows, new[] { icol });
                 }
                 set { _parent._data[rows, col] = value; }
@@ -963,7 +964,7 @@ namespace Scikit.ML.DataManipulation
             {
                 for (int i = 0; i < df.ColumnCount; ++i)
                 {
-                    var c = df.Schema.GetColumnName(i);
+                    var c = df.SchemaI.GetColumnName(i);
                     if (!unique.Contains(c))
                     {
                         unique.Add(c);
@@ -977,12 +978,12 @@ namespace Scikit.ML.DataManipulation
             foreach (var col in ordered)
             {
                 var conc = new List<IDataColumn>();
-                var first = arr.Where(df => df.Schema.TryGetColumnIndex(col, out index))
+                var first = arr.Where(df => df.SchemaI.TryGetColumnIndex(col, out index))
                                .Select(df => df.GetColumn(col))
                                .First();
                 foreach (var df in arr)
                 {
-                    if (!df.Schema.TryGetColumnIndex(col, out index))
+                    if (!df.SchemaI.TryGetColumnIndex(col, out index))
                         conc.Add(first.Create(df.Length, true));
                     else
                         conc.Add(df.GetColumn(col));

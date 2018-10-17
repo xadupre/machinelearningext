@@ -12,7 +12,7 @@ namespace Scikit.ML.TestHelper
 {
     public static class StreamHelper
     {
-        public static int[] GetColumnsIndex(ISchema schema, IEnumerable<string> subsetColumns = null)
+        public static int[] GetColumnsIndex(Schema schema, IEnumerable<string> subsetColumns = null)
         {
             if (subsetColumns == null)
                 return Enumerable.Range(0, schema.ColumnCount).Where(c => !schema.IsHidden(c)).ToArray();

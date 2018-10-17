@@ -101,12 +101,13 @@ namespace Scikit.ML.TestHelper
         public static IDataTransform AddFlatteningTransform(IHostEnvironment env, IDataView view)
         {
             IDataTransform res = null;
-            for (int i = 0; i < view.Schema.ColumnCount; ++i)
+            var schema = view.Schema;
+            for (int i = 0; i < schema.ColumnCount; ++i)
             {
-                var ty = view.Schema.GetColumnType(i);
+                var ty = schema.GetColumnType(i);
                 if (ty.IsVector)
                 {
-                    var name = view.Schema.GetColumnName(i);
+                    var name = schema.GetColumnName(i);
 
                     view = LambdaColumnHelper.Create(env,
                                     "Lambda", view, name, name, new VectorType(NumberType.R4),

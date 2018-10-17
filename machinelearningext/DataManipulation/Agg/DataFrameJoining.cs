@@ -61,7 +61,7 @@ namespace Scikit.ML.DataManipulation
                             df.RenameColumns(newColsLeft);
                         for (int i = 0; i < right.ColumnCount; ++i)
                         {
-                            var kind = right.Schema.GetColumnType(i);
+                            var kind = right.SchemaI.GetColumnType(i);
                             var col = df.AddColumn(newColsRight[i], kind, df.Length);
                             df.GetColumn(col).Set(DataFrameMissingValue.GetMissingOrDefaultMissingValue(kind));
                         }
@@ -77,7 +77,7 @@ namespace Scikit.ML.DataManipulation
                         df.RenameColumns(newColsRight);
                         for (int i = 0; i < left.ColumnCount; ++i)
                         {
-                            var kind = left.Schema.GetColumnType(i);
+                            var kind = left.SchemaI.GetColumnType(i);
                             var col = df.AddColumn(newColsLeft[i], kind, df.Length);
                             df.GetColumn(col).Set(DataFrameMissingValue.GetMissingOrDefaultMissingValue(kind));
                         }
@@ -279,7 +279,7 @@ namespace Scikit.ML.DataManipulation
             if (icolsRight.Length != icolsLeft.Length)
                 throw new DataValueError("Left and right must be joined with the same number of columns.");
             for (int i = 0; i < icolsLeft.Length; ++i)
-                if (left.Schema.GetColumnType(icolsLeft[i]) != right.Schema.GetColumnType(icolsRight[i]))
+                if (left.SchemaI.GetColumnType(icolsLeft[i]) != right.SchemaI.GetColumnType(icolsRight[i]))
                     throw new DataTypeError("Left and right must be joined with the same number of columns and the same types.");
             return RecJoin(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
         }

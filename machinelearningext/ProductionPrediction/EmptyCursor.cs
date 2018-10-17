@@ -23,7 +23,7 @@ namespace Scikit.ML.ProductionPrediction
         public ICursor GetRootCursor() { return this; }
         public long Batch { get { return 0; } }
         public long Position { get { return 0; } }
-        public ISchema Schema { get { return _view.Schema; } }
+        public Schema Schema { get { return _view.Schema; } }
         public ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
 
         void IDisposable.Dispose()

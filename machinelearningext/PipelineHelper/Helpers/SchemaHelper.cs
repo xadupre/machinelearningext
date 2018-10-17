@@ -98,8 +98,9 @@ namespace Scikit.ML.PipelineHelper
         /// <param name="vectorVec">if true, show Vec<R4, 2> and false, shows :R4:5-6 </R4> does the same for keys</param>
         /// <param name="keepHidden">keepHidden columns?</param>
         /// <returns>schema as a string</returns>
-        public static string ToString(ISchema schema, string sep = "; ", bool vectorVec = true, bool keepHidden = false)
+        public static string ToString(ISchema schemaInst, string sep = "; ", bool vectorVec = true, bool keepHidden = false)
         {
+            var schema = Schema.Create(schemaInst);
             var builder = new StringBuilder();
             string name, type;
             string si;

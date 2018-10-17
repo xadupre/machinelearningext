@@ -177,7 +177,7 @@ namespace Scikit.ML.PipelineGraphTransforms
             _parallelViews.Add(new Tuple<string, ITaggedDataView>(_args.tag, this));
         }
 
-        public ISchema Schema { get { return _source.Schema; } }
+        public Schema Schema { get { return _source.Schema; } }
         public bool CanShuffle { get { return _source.CanShuffle; } }
         public long? GetRowCount(bool lazy = true)
         {

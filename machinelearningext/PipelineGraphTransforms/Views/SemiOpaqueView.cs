@@ -19,11 +19,11 @@ namespace Scikit.ML.PipelineGraphTransforms
     public sealed class SemiOpaqueDataView : IDataView
     {
         private readonly IDataView _source;
-        private readonly ISchema _newSchema;
+        private readonly Schema _newSchema;
 
         public IDataView SourceTags { get { return _source; } }
 
-        public SemiOpaqueDataView(IDataView source, ISchema newSchema = null)
+        public SemiOpaqueDataView(IDataView source, Schema newSchema = null)
         {
             _source = source;
             _newSchema = newSchema;
@@ -34,7 +34,7 @@ namespace Scikit.ML.PipelineGraphTransforms
             get { return _source.CanShuffle; }
         }
 
-        public ISchema Schema
+        public Schema Schema
         {
             get { return _newSchema == null ? _source.Schema : _newSchema; }
         }

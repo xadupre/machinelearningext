@@ -93,8 +93,9 @@ namespace Scikit.ML.PipelineTransforms
             _input = input;
 
             int ind;
+            var schema = _input.Schema;
             for (int i = 0; i < args.columns.Length; ++i)
-                if (!input.Schema.TryGetColumnIndex(args.columns[i].Source, out ind))
+                if (!schema.TryGetColumnIndex(args.columns[i].Source, out ind))
                     throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.columns[i].Source);
             _args = args;
             _transform = CreateTemplatedTransform();
@@ -135,7 +136,7 @@ namespace Scikit.ML.PipelineTransforms
 
         #region IDataTransform API
 
-        public ISchema Schema { get { return _transform.Schema; } }
+        public Schema Schema { get { return _transform.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
         public long? GetRowCount(bool lazy = true)
@@ -176,12 +177,13 @@ namespace Scikit.ML.PipelineTransforms
         private IDataTransform CreateTemplatedTransform()
         {
             IDataView view = Source;
+            var schema = _input.Schema;
             int index;
             for (int i = 0; i < _args.columns.Length; ++i)
             {
-                if (!_input.Schema.TryGetColumnIndex(_args.columns[i].Source, out index))
+                if (!schema.TryGetColumnIndex(_args.columns[i].Source, out index))
                     throw _host.Except("Unable to find '{0}'", _args.columns[i].Source);
-                var typeCol = _input.Schema.GetColumnType(index);
+                var typeCol = schema.GetColumnType(index);
                 if (typeCol.IsVector)
                     throw _host.Except("Expected a number as input.");
 
