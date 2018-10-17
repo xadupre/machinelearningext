@@ -297,6 +297,8 @@ namespace Scikit.ML.DataManipulation
             _mapping = new Dictionary<int, Tuple<ColumnType, int>>();
             _naming = new Dictionary<string, int>();
             _schema = new DataContainerSchema(this);
+            _schemaCache = null;
+            _lock = new object();
         }
 
         /// <summary>
@@ -703,7 +705,32 @@ namespace Scikit.ML.DataManipulation
         /// Returns the schema. It should not be used unless it is necessary
         /// as it makes a copy of the existing schema.
         /// </summary>
-        public Schema Schema => Schema.Create(_schema);
+        public Schema Schema
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    if (_schemaCache == null || _schemaCache.ColumnCount != _schema.ColumnCount)
+                    {
+                        _schemaCache = Schema.Create(_schema);
+                        return _schemaCache;
+                    }
+                    if (Enumerable.Range(0, _schema.ColumnCount).Where(i => _schema.GetColumnName(i) != _schemaCache.GetColumnName(i)).Any() ||
+                        Enumerable.Range(0, _schema.ColumnCount).Where(i => _schema.GetColumnType(i) != _schemaCache.GetColumnType(i)).Any())
+                    {
+                        _schemaCache = Schema.Create(_schema);
+                        return _schemaCache;
+
+                    }
+                }
+                return _schemaCache;
+            }
+        }
+
+        private Schema _schemaCache;
+        private object _lock;
+
         public ISchema SchemaI => _schema;
 
         /// <summary>
