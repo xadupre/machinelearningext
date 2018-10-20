@@ -3,6 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
@@ -22,6 +23,8 @@ namespace TestMachineLearningExt
     [TestClass]
     public class TestProductionPrediction
     {
+        #region TransformValueMapper
+
         [TestMethod]
         public void TestTransform2ValueMapperMultiThread()
         {
@@ -480,5 +483,50 @@ namespace TestMachineLearningExt
                 }
             }
         }
+
+        #endregion
+
+        #region DataFrame
+
+        [TestMethod]
+        public void TestInfiniteLoopViewCursorRowDataFrame()
+        {
+            var df = DataFrameIO.ReadStr("Label,X1,X2,X3,X4,X5,X6,X7,X8,X9\n" +
+                                "0,0.1,1.1,2.1,3.1,4.1,5.1,6.2,7.4,-5\n" +
+                                "1,1.1,1.1,2.1,3.1,4.1,5.1,6.2,7.5,-5\n" +
+                                "0,2.1,1.1,3.1,3.1,-4.1,5.1,6.2,7.6,-5\n" +
+                                "1,3.1,1.1,4.1,3.1,4.1,-5.1,6.2,7.7,-5\n" +
+                                "0,4.1,1.1,2.1,3.1,4.1,5.1,6.2,7.8,-5");
+            var df2 = DataFrameIO.ReadStr("Label,X1,X2,X3,X4,X5,X6,X7,X8,X9\n" +
+                                "0,0.1,1.1,2.1,3.1,4.1,5.1,6.2,8.4,-5\n" +
+                                "1,1.1,1.1,2.1,3.1,4.1,5.1,6.2,8.5,-5");
+
+            var view = new InfiniteLoopViewCursorRowDataFrame(schema: df.Schema);
+            var values = new List<float>();
+            using (var cur = view.GetRowCursor(i => true))
+            {
+                var getter = cur.GetGetter<float>(8);
+                float val = 0f;
+                view.Set(df);
+                for (int i = 0; i < df.Length; ++i)
+                {
+                    cur.MoveNext();
+                    getter(ref val);
+                    values.Add(val);
+                }
+                view.Set(df2);
+                for (int i = 0; i < df2.Length; ++i)
+                {
+                    cur.MoveNext();
+                    getter(ref val);
+                    values.Add(val);
+                }
+            }
+            var got = values.ToArray();
+            var expected = new[] { 7.4f, 7.5f, 7.6f, 7.7f, 7.8f, 8.4f, 8.5f };
+            Assert.IsTrue(expected.SequenceEqual(got));
+        }
+
+        #endregion
     }
 }

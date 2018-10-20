@@ -104,7 +104,7 @@ namespace Scikit.ML.DataManipulation
 
         public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
         {
-            throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrameView.");
+            throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrame.");
         }
 
         /// <summary>

@@ -444,7 +444,7 @@ namespace Scikit.ML.PipelineHelper
             if (type.IsVector)
             {
                 int dc = type.AsVector.DimCount;
-                return new Tuple<DataKind, ArrayKind>(type.ItemType.RawKind, dc == 1 && 
+                return new Tuple<DataKind, ArrayKind>(type.ItemType.RawKind, dc == 1 &&
                                                       type.AsVector.GetDim(0) > 0 ? ArrayKind.Array : ArrayKind.VBuffer);
             }
             else

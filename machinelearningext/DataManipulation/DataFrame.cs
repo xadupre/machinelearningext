@@ -600,6 +600,15 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
+        /// Retrieves a typed column.
+        /// </summary>
+        public void GetTypedColumn<DType>(int col, out DataColumn<DType> column, int[] rows = null)
+            where DType : IEquatable<DType>, IComparable<DType>
+        {
+            _data.GetTypedColumn(col, out column, rows);
+        }
+
+        /// <summary>
         /// Returns a column.
         /// </summary>
         public NumericColumn this[string colname]

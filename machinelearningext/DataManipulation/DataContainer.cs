@@ -41,7 +41,6 @@ namespace Scikit.ML.DataManipulation
         List<IDataColumn> _colsAR8;
         List<IDataColumn> _colsATX;
 
-
         /// <summary>
         /// Returns a copy.
         /// </summary>
