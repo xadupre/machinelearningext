@@ -77,6 +77,19 @@ namespace Scikit.ML.DataManipulation
             _data = new DataContainer(rows, kinds);
         }
 
+        /// <summary>
+        /// Creates a dataframe based on a schema.
+        /// </summary>
+        public DataFrame(Schema schema, int nb = 1)
+        {
+            _data = new DataContainer(schema, nb);
+        }
+
+        public bool CheckSharedSchema(Schema schema)
+        {
+            return _data.CheckSharedSchema(schema);
+        }
+
         #endregion
 
         #region IDataView API

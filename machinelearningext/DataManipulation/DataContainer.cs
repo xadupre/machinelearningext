@@ -308,8 +308,8 @@ namespace Scikit.ML.DataManipulation
         public DataContainer(IEnumerable<Dictionary<string, object>> rows,
                              Dictionary<string, ColumnType> kinds = null)
         {
-            var array = rows.ToArray();
             _init();
+            var array = rows.ToArray();
             if (kinds == null)
                 kinds = GuessKinds(array);
             foreach (var pair in kinds)
@@ -322,6 +322,35 @@ namespace Scikit.ML.DataManipulation
                 var data = CreateColumn(pair.Value, values);
                 AddColumn(pair.Key, pair.Value, array.Length, data);
             }
+        }
+
+        public DataContainer(Schema schema, int nb = 1)
+        {
+            _init();
+            for (int i = 0; i < schema.ColumnCount; ++i)
+            {
+                var name = schema.GetColumnName(i);
+                var type = schema.GetColumnType(i);
+                AddColumn(name, type, nb);
+            }
+        }
+
+        public bool CheckSharedSchema(Schema schema)
+        {
+            if (schema.ColumnCount != ColumnCount)
+                throw Contracts.Except($"Different number of columns ${ColumnCount} != ${schema.ColumnCount}.");
+            string name;
+            ColumnType colType;
+            for (int i = 0; i < ColumnCount; ++i)
+            {
+                name = schema.GetColumnName(i);
+                if (name != _names[i])
+                    throw Contracts.Except($"Different column name at position ${i}: ${_names[i]} != ${name}.");
+                colType = schema.GetColumnType(i);
+                if (colType != _kinds[i])
+                    throw Contracts.Except($"Different column type at position ${i}: ${_kinds[i]} != ${colType}.");
+            }
+            return true;
         }
 
         Dictionary<string, ColumnType> GuessKinds(Dictionary<string, object>[] rows)
