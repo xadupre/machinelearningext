@@ -9,6 +9,7 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Learners;
 using Microsoft.ML.Runtime.TextAnalytics;
+using Microsoft.ML.Transforms.Text;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
@@ -90,7 +91,7 @@ namespace TestMachineLearningExt
                 },
                 KeepDiacritics = false,
                 KeepPunctuations = false,
-                TextCase = TextNormalizerTransform.CaseNormalizationMode.Lower,
+                TextCase = TextNormalizerEstimator.CaseNormalizationMode.Lower,
                 OutputTokens = true,
                 StopWordsRemover = new PredefinedStopWordsRemoverFactory(),
                 VectorNormalizer = normalize ? TextTransform.TextNormKind.L2 : TextTransform.TextNormKind.None,
