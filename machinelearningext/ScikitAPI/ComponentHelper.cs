@@ -46,7 +46,7 @@ namespace Scikit.ML.ScikitAPI
             }
             catch(Exception e)
             {
-                throw new Exception($"Unable to register assembly {a.FullName} due to ${e}.");
+                throw new Exception($"Unable to register assembly '{a.FullName}' due to '{e}'.");
             }
         }
 

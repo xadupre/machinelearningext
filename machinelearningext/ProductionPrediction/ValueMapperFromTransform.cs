@@ -75,7 +75,7 @@ namespace Scikit.ML.ProductionPrediction
             else
                 res = GetMapperColumn<TDst>() as ValueMapper<TSrc, TDst>;
             if (res == null)
-                throw _env.ExceptNotSupp($"Unable to create mapper from ${typeof(TSrc)} to ${typeof(TDst)}.");
+                throw _env.ExceptNotSupp($"Unable to create mapper from {typeof(TSrc)} to {typeof(TDst)}.");
             return res;
         }
 

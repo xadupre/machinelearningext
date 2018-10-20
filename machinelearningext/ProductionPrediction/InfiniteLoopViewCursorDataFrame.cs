@@ -25,7 +25,7 @@ namespace Scikit.ML.ProductionPrediction
     /// <summary>
     /// Creates a view on one row and can loop on it after it was replaced.
     /// </summary>
-    public class InfiniteLoopViewCursorRowDataFrame : IDataView, IInfiniteLoopViewCursorDataFrame
+    public class InfiniteLoopViewCursorDataFrame : IDataView, IInfiniteLoopViewCursorDataFrame
     {
         readonly int[] _columns;
         readonly Schema _schema;
@@ -41,7 +41,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="columns">columns to be replaced</param>
         /// <param name="schema">schema of the view</param>
         /// <param name="otherValues">cursor which contains the others values</param>
-        public InfiniteLoopViewCursorRowDataFrame(int[] columns = null, Schema schema = null, IRowCursor otherValues = null)
+        public InfiniteLoopViewCursorDataFrame(int[] columns = null, Schema schema = null, IRowCursor otherValues = null)
         {
             if (columns == null)
                 columns = Enumerable.Range(0, schema.ColumnCount).ToArray();
@@ -104,7 +104,7 @@ namespace Scikit.ML.ProductionPrediction
         class CursorType : IRowCursor
         {
             readonly Func<int, bool> _needCol;
-            readonly InfiniteLoopViewCursorRowDataFrame _view;
+            readonly InfiniteLoopViewCursorDataFrame _view;
             readonly Schema _columnsSchema;
             CursorState _state;
             IRowCursor _otherValues;
@@ -115,7 +115,7 @@ namespace Scikit.ML.ProductionPrediction
             long _position;
             long _batch;
 
-            public CursorType(InfiniteLoopViewCursorRowDataFrame view, Func<int, bool> needCol, IRowCursor otherValues)
+            public CursorType(InfiniteLoopViewCursorDataFrame view, Func<int, bool> needCol, IRowCursor otherValues)
             {
                 _needCol = needCol;
                 _view = view;
