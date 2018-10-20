@@ -307,7 +307,6 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Converts the data frame into a string.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             using (var stream = new MemoryStream())
@@ -342,8 +341,8 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Changes the values for an entire row.
         /// </summary>
-        /// <param name="row"></param>
-        /// <param name="values"></param>
+        /// <param name="row">row</param>
+        /// <param name="values">list of values</param>
         public void FillValues(int row, string[] values)
         {
             _data.FillValues(row, values);

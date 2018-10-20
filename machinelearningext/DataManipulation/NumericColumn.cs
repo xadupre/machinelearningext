@@ -87,7 +87,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Converts a column into another type.
         /// </summary>
-        /// <param name="colType"></param>
+        /// <param name="colType">column type</param>
         /// <returns>new columns</returns>
         public IDataColumn AsType(ColumnType colType)
         {

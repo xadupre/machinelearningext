@@ -19,12 +19,12 @@ namespace Scikit.ML.TestHelper
         /// saves the data, saves the models, loads it back, saves the data again,
         /// checks the output is the same.
         /// </summary>
-        /// <param name="env"></param>
-        /// <param name="outModelFilePath"></param>
-        /// <param name="transform"></param>
+        /// <param name="env">environment</param>
+        /// <param name="outModelFilePath"model filename</param>
+        /// <param name="transform">transform to test</param>
         /// <param name="source">source (view before applying the transform</param>
-        /// <param name="outData"></param>
-        /// <param name="outData2"></param>
+        /// <param name="outData">fist data file</param>
+        /// <param name="outData2">second data file</param>
         /// <param name="startsWith">Check that outputs is the same on disk after outputting the transformed data after the model was serialized</param>
         public static void SerializationTestTransform(IHostEnvironment env,
                             string outModelFilePath, IDataTransform transform,

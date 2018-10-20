@@ -349,9 +349,9 @@ namespace Scikit.ML.ProductionPrediction
             /// from a view which has a column to be replaced,
             /// or the entire row (ConstantCol == -1, _otherValues).
             /// </summary>
-            /// <typeparam name="TValue"></typeparam>
-            /// <param name="col"></param>
-            /// <returns></returns>
+            /// <typeparam name="TValue">column type</typeparam>
+            /// <param name="col">column inde</param>
+            /// <returns>ValueGetter</returns>
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (_columns.ContainsKey(col))

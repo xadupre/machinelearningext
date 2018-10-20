@@ -353,9 +353,9 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// Suggests a default schema for a predictor
         /// </summary>
-        /// <param name="kind"></param>
-        /// <param name="dim"></param>
-        /// <returns></returns>
+        /// <param name="kind">DataKind</param>
+        /// <param name="dim">dimension</param>
+        /// <returns>ISchema</returns>
         public static ISchema PredictionDefaultSchema(PredictionKind kind, int dim = 0)
         {
             switch (kind)

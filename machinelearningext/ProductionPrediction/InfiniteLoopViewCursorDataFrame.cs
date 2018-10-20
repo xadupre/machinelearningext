@@ -15,7 +15,7 @@ namespace Scikit.ML.ProductionPrediction
 
     interface IInfiniteLoopViewCursorDataFrame
     {
-        void Set(DataFrame value, int position);
+        void Set(DataFrame value, int position = 0);
     }
 
     #endregion
@@ -103,9 +103,9 @@ namespace Scikit.ML.ProductionPrediction
 
         class CursorType : IRowCursor
         {
-            Func<int, bool> _needCol;
-            InfiniteLoopViewCursorRowDataFrame _view;
-            Schema _columnsSchema;
+            readonly Func<int, bool> _needCol;
+            readonly InfiniteLoopViewCursorRowDataFrame _view;
+            readonly Schema _columnsSchema;
             CursorState _state;
             IRowCursor _otherValues;
             DataFrame _container;
@@ -188,9 +188,9 @@ namespace Scikit.ML.ProductionPrediction
             /// from a view which has a column to be replaced,
             /// or the entire row (ReplacedCol == -1, _otherValues).
             /// </summary>
-            /// <typeparam name="TValue"></typeparam>
-            /// <param name="col"></param>
-            /// <returns></returns>
+            /// <typeparam name="TValue">column type</typeparam>
+            /// <param name="col">column index</param>
+            /// <returns>ValueGetter</returns>
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (_columns.ContainsKey(col))

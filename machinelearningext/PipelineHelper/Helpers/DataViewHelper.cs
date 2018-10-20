@@ -21,7 +21,7 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// Handles specific cases DataViewUtils does not handle.
         /// </summary>
-        /// <param name="view"></param>
+        /// <param name="view">IDataView</param>
         /// <param name="predicate">column selector (null for all)</param>
         /// <returns>number of rows</returns>
         public static long ComputeRowCount(IDataView view, Func<int, bool> predicate = null)
@@ -82,7 +82,7 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// Retrieves the first view of a pipeline.
         /// </summary>
-        /// <param name="view"></param>
+        /// <param name="view">IDataView</param>
         /// <returns>IDataView</returns>
         public static IDataView GetFirstView(IDataView view)
         {

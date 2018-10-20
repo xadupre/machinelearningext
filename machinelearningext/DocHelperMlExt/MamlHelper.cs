@@ -42,10 +42,10 @@ namespace Scikit.ML.DocHelperMlExt
         /// <summary>
         /// Runs a script. Can change the level of desired information.
         /// </summary>
-        /// <param name="script"></param>
-        /// <param name="catch_output"></param>
+        /// <param name="script">script to run</param>
+        /// <param name="catch_output">catches standard output</param>
         /// <param name="verbose">2 is default</param>
-        /// <returns></returns>
+        /// <returns>standard outputs</returns>
         public static string MamlScriptConsole(string script, bool catch_output, int verbose = 2)
         {
             ILogWriter logout = new LogWriter((string s) =>

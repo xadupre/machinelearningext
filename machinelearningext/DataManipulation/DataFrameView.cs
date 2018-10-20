@@ -128,7 +128,6 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Converts the data frame into a string.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             using (var stream = new MemoryStream())

@@ -68,7 +68,7 @@ namespace Scikit.ML.TestHelper
         /// <param name="name">name of the output</param>
         /// <param name="testFunction">name of the test</param>
         /// <param name="extended">addition to make to the file</param>
-        /// <returns></returns>
+        /// <returns>filename</returns>
         public static string GetOutputFile(string name, string testFunction, params string[] extended)
         {
 #if (DEBUG)

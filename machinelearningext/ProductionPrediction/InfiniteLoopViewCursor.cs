@@ -175,9 +175,9 @@ namespace Scikit.ML.ProductionPrediction
             /// from a view which has a column to be replaced,
             /// or the entire row (ReplacedCol == -1, _otherValues).
             /// </summary>
-            /// <typeparam name="TValue"></typeparam>
-            /// <param name="col"></param>
-            /// <returns></returns>
+            /// <typeparam name="TValue">column type</typeparam>
+            /// <param name="col">column number</param>
+            /// <returns>ValueGetter</returns>
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (col == _view.ReplacedCol)
@@ -412,9 +412,9 @@ namespace Scikit.ML.ProductionPrediction
             /// from a view which has a column to be replaced,
             /// or the entire row (ReplacedCol == -1, _otherValues).
             /// </summary>
-            /// <typeparam name="TValue"></typeparam>
-            /// <param name="col"></param>
-            /// <returns></returns>
+            /// <typeparam name="TValue">column type</typeparam>
+            /// <param name="col">column index</param>
+            /// <returns>ValueGetter</returns>
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (_columns.ContainsKey(col))

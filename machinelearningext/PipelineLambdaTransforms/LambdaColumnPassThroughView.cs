@@ -28,7 +28,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
         /// <param name="typeSrc">input column type</param>
         /// <param name="typeDst">output column type</param>
         /// <param name="mapper">mapper to apply</param>
-        /// <returns></returns>
+        /// <returns>IDataView</returns>
         public static IDataView Create<TSrc, TDst>(IHostEnvironment env, string name, IDataView input,
                         string src, string dst, ColumnType typeSrc, ColumnType typeDst,
                         ValueMapper<TSrc, TDst> mapper)

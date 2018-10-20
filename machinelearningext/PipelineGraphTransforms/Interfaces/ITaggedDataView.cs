@@ -52,8 +52,8 @@ namespace Scikit.ML.PipelineGraphTransforms
         /// <summary>
         /// Implements get tagged view.
         /// </summary>
-        /// <param name="recursive"></param>
-        /// <param name="view"></param>
+        /// <param name="recursive">recursive enumeration</param>
+        /// <param name="view">IDataView</param>
         public static IEnumerable<Tuple<string, ITaggedDataView>> EnumerateTaggedView(bool recursive,
                             IDataView view)
         {
@@ -104,10 +104,10 @@ namespace Scikit.ML.PipelineGraphTransforms
         /// Looks for a predictor among tagged predictors.
         /// If the tag ends by .zip, it assumes it is a file.
         /// </summary>
-        /// <param name="env"></param>
-        /// <param name="input"></param>
-        /// <param name="tag"></param>
-        /// <returns></returns>
+        /// <param name="env">environment</param>
+        /// <param name="input">IDataView</param>
+        /// <param name="tag">tag name</param>
+        /// <returns>predictor</returns>
         public static IPredictor GetTaggedPredictor(IHostEnvironment env, IDataView input, string tag)
         {
             if (string.IsNullOrEmpty(tag))

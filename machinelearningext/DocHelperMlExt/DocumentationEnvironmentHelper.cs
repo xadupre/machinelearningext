@@ -280,7 +280,7 @@ namespace Scikit.ML.DocHelperMlExt
         /// </summary>
         /// <param name="args">script or command line arguments</param>
         /// <param name="env">environment, created if null</param>
-        /// <returns></returns>
+        /// <returns>exit code</returns>
         public static int MainWithProgress(string args, DelegateEnvironment env = null)
         {
             string currentDirectory = Path.GetDirectoryName(typeof(Maml).Module.FullyQualifiedName);

@@ -33,12 +33,12 @@ namespace Scikit.ML.TestHelper
         /// saves the data, saves the models, loads it back, saves the data again,
         /// checks the output is the same.
         /// </summary>
-        /// <param name="env"></param>
-        /// <param name="outModelFilePath"></param>
-        /// <param name="predictor"></param>
-        /// <param name="roles"></param>
-        /// <param name="outData"></param>
-        /// <param name="outData2"></param>
+        /// <param name="env">environment</param>
+        /// <param name="outModelFilePath">output filename</param>
+        /// <param name="predictor">predictor</param>
+        /// <param name="roles">label, feature, ...</param>
+        /// <param name="outData">first output data</param>
+        /// <param name="outData2">second output data</param>
         /// <param name="kind">prediction kind</param>
         /// <param name="checkError">checks errors</param>
         /// <param name="ratio">check the error is below that threshold (if checkError is true)</param>

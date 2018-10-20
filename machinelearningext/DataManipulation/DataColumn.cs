@@ -124,7 +124,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Builds the columns.
         /// </summary>
-        /// <param name="nb"></param>
+        /// <param name="nb">number of rows</param>
         public DataColumn(int nb)
         {
             _data = new DType[nb];
@@ -133,7 +133,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Builds the columns.
         /// </summary>
-        /// <param name="nb"></param>
+        /// <param name="data">column data</param>
         public DataColumn(DType[] data)
         {
             _data = data;
@@ -295,7 +295,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Converts a column into another type.
         /// </summary>
-        /// <param name="colType"></param>
+        /// <param name="colType"column type></param>
         /// <returns>new column</returns>
         public IDataColumn AsType(ColumnType colType)
         {

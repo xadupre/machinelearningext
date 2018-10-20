@@ -58,9 +58,9 @@ namespace Scikit.ML.PipelineHelper
         /// </summary>
         public ExtendedPredictionModel Train(IHostEnvironment environment = null)
         {
-            ConsoleEnvironment tlcenv = null;
+            ConsoleEnvironment cosenv = null;
             if (environment == null)
-                environment = tlcenv = new ConsoleEnvironment(seed: _seed, conc: _conc);
+                environment = cosenv = new ConsoleEnvironment(seed: _seed, conc: _conc);
 
             Experiment experiment = environment.CreateExperiment();
             Legacy.ILearningPipelineStep step = null;
@@ -136,8 +136,8 @@ namespace Scikit.ML.PipelineHelper
                 memoryStream.Position = 0;
                 extModel = new ExtendedPredictionModel(memoryStream);
             }
-            if (tlcenv != null)
-                tlcenv.Dispose();
+            if (cosenv != null)
+                cosenv.Dispose();
             return extModel;
         }
 
@@ -198,7 +198,7 @@ namespace Scikit.ML.PipelineHelper
         /// </summary>
         /// <param name="names">Label to score mapping</param>
         /// <param name="scoreColumnName">Name of the score column</param>
-        /// <returns></returns>
+        /// <returns>boolean, possible or not</returns>
         public bool TryGetScoreLabelNames(out string[] names, string scoreColumnName = DefaultColumnNames.Score)
         {
             names = null;
@@ -264,7 +264,7 @@ namespace Scikit.ML.PipelineHelper
         /// Save model to file.
         /// </summary>
         /// <param name="path">File to save model</param>
-        /// <returns></returns>
+        /// <returns>Task</returns>
         public Task WriteAsync(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -280,7 +280,7 @@ namespace Scikit.ML.PipelineHelper
         /// Save model to stream.
         /// </summary>
         /// <param name="stream">Stream to save model.</param>
-        /// <returns></returns>
+        /// <returns>Task</returns>
         public Task WriteAsync(Stream stream)
         {
             if (stream == null)

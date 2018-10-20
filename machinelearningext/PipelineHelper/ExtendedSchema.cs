@@ -157,7 +157,8 @@ namespace Scikit.ML.PipelineHelper
                                      : Contracts.Except("Unable to parse '{0}' or '{1}'", cols[i], string.Format("{0}:{1}", cols[i], i));
                 tlcols.Add(t);
             }
-            return new ExtendedSchema(null, tlcols.Select(c => c.Name).ToArray(), tlcols.Select(c => SchemaHelper.Convert(c, ch)).ToArray());
+            return new ExtendedSchema(null, tlcols.Select(c => c.Name).ToArray(), 
+                                      tlcols.Select(c => SchemaHelper.Convert(c, ch)).ToArray());
         }
 
         /// <summary>
