@@ -144,6 +144,16 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
+        /// Resizes the dataframe.
+        /// </summary>
+        /// <param name="keepData">keeps existing data</param>
+        /// <param name="length">new length</param>
+        public void Resize(int length, bool keepData = false)
+        {
+            _data.Resize(length, keepData);
+        }
+
+        /// <summary>
         /// Returns the column index.
         /// </summary>
         public int GetColumnIndex(string name)
@@ -204,12 +214,28 @@ namespace Scikit.ML.DataManipulation
             return AddColumn(name, new DataColumn<bool>(buf));
         }
 
+        public int AddColumn(string name, bool[][] values)
+        {
+            var buf = new VBufferEqSort<bool>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<bool>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<bool>>(buf));
+        }
+
         public int AddColumn(string name, int[] values)
         {
             var buf = new int[values.Length];
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = values[i];
             return AddColumn(name, new DataColumn<int>(buf));
+        }
+
+        public int AddColumn(string name, int[][] values)
+        {
+            var buf = new VBufferEqSort<int>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<int>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<int>>(buf));
         }
 
         public int AddColumn(string name, long[] values)
@@ -225,12 +251,60 @@ namespace Scikit.ML.DataManipulation
         public int AddColumn(string name, double[] values) { return AddColumn(name, new DataColumn<double>(values)); }
         public int AddColumn(string name, DvText[] values) { return AddColumn(name, new DataColumn<DvText>(values)); }
 
+        public int AddColumn(string name, uint[][] values)
+        {
+            var buf = new VBufferEqSort<uint>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<uint>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<uint>>(buf));
+        }
+
+        public int AddColumn(string name, float[][] values)
+        {
+            var buf = new VBufferEqSort<float>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<float>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<float>>(buf));
+        }
+
+        public int AddColumn(string name, double[][] values)
+        {
+            var buf = new VBufferEqSort<double>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<double>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<double>>(buf));
+        }
+
+        public int AddColumn(string name, Int64[][] values)
+        {
+            var buf = new VBufferEqSort<Int64>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<Int64>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<Int64>>(buf));
+        }
+
+        public int AddColumn(string name, DvText[][] values)
+        {
+            var buf = new VBufferEqSort<DvText>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<DvText>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<DvText>>(buf));
+        }
+
         public int AddColumn(string name, string[] values)
         {
             var buf = new DvText[values.Length];
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = new DvText(values[i]);
             return AddColumn(name, new DataColumn<DvText>(buf));
+        }
+
+        public int AddColumn(string name, string[][] values)
+        {
+            var buf = new VBufferEqSort<DvText>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<DvText>(values[i].Length, values[i].Select(c=>new DvText(c)).ToArray());
+            return AddColumn(name, new DataColumn<VBufferEqSort<DvText>>(buf));
         }
 
         public int AddColumn(string name, ReadOnlyMemory<char>[] values)
@@ -359,6 +433,14 @@ namespace Scikit.ML.DataManipulation
         public void FillValues(int row, string[] values)
         {
             _data.FillValues(row, values);
+        }
+
+        public delegate void RowFillerDelegate(DataFrame df, int row);
+
+        public static RowFillerDelegate GetRowFiller(IRowCursor cur)
+        {
+            var dele = DataContainer.GetRowFiller(cur);
+            return (DataFrame df, int row) => { dele(df._data, row); };
         }
 
         #endregion

@@ -73,6 +73,11 @@ namespace Scikit.ML.DataManipulation
         int Length { get; }
 
         /// <summary>
+        /// Length of the column in memory (>= Length).
+        /// </summary>
+        int MemoryLength { get; }
+
+        /// <summary>
         /// type of the column 
         /// </summary>
         ColumnType Kind { get; }
@@ -144,6 +149,13 @@ namespace Scikit.ML.DataManipulation
         /// Updates values based on a condition.
         /// </summary>
         void Set(IEnumerable<int> rows, IEnumerable<object> values);
+
+        /// <summary>
+        /// Resizes the column.
+        /// </summary>
+        /// <param name="keepData">keeps existing data</param>
+        /// <param name="length">new length</param>
+        void Resize(int length, bool keepData=false);
 
         /// <summary>
         /// The returned getter returns the element

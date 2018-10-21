@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime.Data;
 
-namespace Scikit.ML.DataManipulation
+namespace Scikit.ML.PipelineHelper
 {
     public struct VBufferEqSort<T> : IEquatable<VBufferEqSort<T>>, IComparable<VBufferEqSort<T>>
         where T : IEquatable<T>, IComparable<T>

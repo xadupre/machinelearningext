@@ -165,6 +165,36 @@ namespace Scikit.ML.DataManipulation
         public ColumnType GetDType(int col) { return _kinds[col]; }
 
         /// <summary>
+        /// Returns the number of rows actually allocated.
+        /// </summary>
+        public int MemoryLength
+        {
+            get
+            {
+                if (ColumnCount == 0)
+                    return 0;
+                else
+                    return GetColumn(0).MemoryLength;
+            }
+        }
+
+        /// <summary>
+        /// Resizes all columns.
+        /// </summary>
+        /// <param name="keepData">keeps existing data</param>
+        /// <param name="length">new length</param>
+        public void Resize(int length, bool keepData = false)
+        {
+            if (length <= _length)
+                _length = length;
+            else if (length <= MemoryLength)
+                _length = length;
+            else
+                for (int i = 0; i < ColumnCount; ++i)
+                    GetColumn(i).Resize(length, keepData);
+        }
+
+        /// <summary>
         /// Returns a typed container of column col.
         /// </summary>
         public void GetTypedColumn<DType>(int col, out DataColumn<DType> column, int[] rows = null)
@@ -1119,6 +1149,85 @@ namespace Scikit.ML.DataManipulation
                         value.Values[0] = temp;
                 };
             }
+        }
+
+        public delegate void RowFillerDelegate(DataContainer cont, int row);
+        public delegate void RowColumnSetterDelegate(DataContainer cont, int row);
+
+        public static RowFillerDelegate GetRowFiller(IRowCursor cur)
+        {
+            var setters = GetAllSetters(cur);
+
+            return (DataContainer cont, int row) =>
+            {
+                for (int i = 0; i < setters.Length; ++i)
+                    setters[i](cont, row);
+            };
+        }
+
+        public static RowColumnSetterDelegate[] GetAllSetters(IRowCursor cur)
+        {
+            var sch = cur.Schema;
+            var res = new List<RowColumnSetterDelegate>();
+            var getters = CursorHelper.GetAllGetters(cur);
+            int pos = 0;
+            for (int i = 0; i < sch.ColumnCount; ++i)
+            {
+                if (sch.IsHidden(i))
+                    continue;
+                var getter = getters[pos];
+                res.Add(GetColumnSetter(cur, getter, pos, sch.GetColumnType(i)));
+                ++pos;
+            }
+            return res.ToArray();
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetter(IRowCursor cur, Delegate getter, int col, ColumnType colType)
+        {
+            if (colType.IsVector)
+            {
+                switch (colType.ItemType.RawKind)
+                {
+                    case DataKind.BL: return GetColumnSetter<VBufferEqSort<bool>>(cur, getter, col);
+                    case DataKind.I4: return GetColumnSetter<VBufferEqSort<int>>(cur, getter, col);
+                    case DataKind.U4: return GetColumnSetter<VBufferEqSort<uint>>(cur, getter, col);
+                    case DataKind.I8: return GetColumnSetter<VBufferEqSort<Int64>>(cur, getter, col);
+                    case DataKind.R4: return GetColumnSetter<VBufferEqSort<float>>(cur, getter, col);
+                    case DataKind.R8: return GetColumnSetter<VBufferEqSort<double>>(cur, getter, col);
+                    case DataKind.TX: return GetColumnSetter<VBufferEqSort<DvText>>(cur, getter, col);
+                    default:
+                        throw new NotImplementedException(string.Format("Not implemented for kind {0}", colType));
+                }
+            }
+            else
+            {
+                switch (colType.RawKind)
+                {
+                    case DataKind.BL: return GetColumnSetter<bool>(cur, getter, col);
+                    case DataKind.I4: return GetColumnSetter<int>(cur, getter, col);
+                    case DataKind.U4: return GetColumnSetter<uint>(cur, getter, col);
+                    case DataKind.I8: return GetColumnSetter<Int64>(cur, getter, col);
+                    case DataKind.R4: return GetColumnSetter<float>(cur, getter, col);
+                    case DataKind.R8: return GetColumnSetter<double>(cur, getter, col);
+                    case DataKind.TX: return GetColumnSetter<DvText>(cur, getter, col);
+                    default:
+                        throw new NotImplementedException(string.Format("Not implemented for kind {0}", colType));
+                }
+            }
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetter<DType>(IRowCursor cur, Delegate getter, int col)
+             where DType : IEquatable<DType>, IComparable<DType>
+        {
+            var typedGetter = getter as ValueGetter<DType>;
+            if (typedGetter == null)
+                throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type {typeof(DType)}.");
+            return (DataContainer cont, int row) =>
+            {
+                DataColumn<DType> typedCol;
+                cont.GetTypedColumn<DType>(col, out typedCol);
+                typedCol.Set(row, typedGetter);
+            };
         }
 
         #endregion

@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
@@ -401,34 +402,56 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// Returns the data kind based on a type.
         /// </summary>
-        public static DataKind GetKind<TLabel>()
+        public static ColumnType GetColumnType<TLabel>()
         {
-            return GetKind(typeof(TLabel));
+            return GetColumnType(typeof(TLabel));
         }
 
         /// <summary>
         /// Returns the data kind based on a type.
         /// </summary>
-        public static DataKind GetKind(Type type)
+        public static ColumnType GetColumnType(Type type)
         {
             if (type == typeof(bool))
-                return DataKind.BL;
+                return BoolType.Instance;
             if (type == typeof(byte))
-                return DataKind.U1;
+                return NumberType.U1;
             if (type == typeof(ushort))
-                return DataKind.U2;
+                return NumberType.U2;
             if (type == typeof(uint))
-                return DataKind.U4;
+                return NumberType.U4;
             if (type == typeof(int))
-                return DataKind.I4;
+                return NumberType.I4;
             if (type == typeof(Int64))
-                return DataKind.I8;
+                return NumberType.I8;
             if (type == typeof(float))
-                return DataKind.R4;
+                return NumberType.R4;
             if (type == typeof(double))
-                return DataKind.R8;
+                return NumberType.R8;
             if (type == typeof(ReadOnlyMemory<char>) || type == typeof(string) || type == typeof(DvText))
-                return DataKind.TX;
+                return PrimitiveType.FromKind(DataKind.TX);
+
+            if (type == typeof(VBuffer<bool>) || type == typeof(VBufferEqSort<bool>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.BL));
+            if (type == typeof(VBuffer<byte>) || type == typeof(VBufferEqSort<byte>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.U1));
+            if (type == typeof(VBuffer<ushort>) || type == typeof(VBufferEqSort<ushort>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.U2));
+            if (type == typeof(VBuffer<uint>) || type == typeof(VBufferEqSort<uint>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.U4));
+            if (type == typeof(VBuffer<int>) || type == typeof(VBufferEqSort<int>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.I4));
+            if (type == typeof(VBuffer<Int64>) || type == typeof(VBufferEqSort<Int64>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.I8));
+            if (type == typeof(VBuffer<float>) || type == typeof(VBufferEqSort<float>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.R4));
+            if (type == typeof(VBuffer<double>) || type == typeof(VBufferEqSort<double>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.R8));
+            if (type == typeof(VBuffer<ReadOnlyMemory<char>>) || type == typeof(VBuffer<string>) || type == typeof(VBuffer<DvText>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.TX));
+            if (type == typeof(VBufferEqSort<string>) || type == typeof(VBufferEqSort<DvText>))
+                return new VectorType(PrimitiveType.FromKind(DataKind.TX));
+
             throw Contracts.ExceptNotSupp("Unsupported output type {0}.", type);
         }
 
@@ -516,28 +539,6 @@ namespace Scikit.ML.PipelineHelper
             throw Contracts.ExceptNotSupp("Unsupported output type {0}.", type);
         }
 
-        public static ColumnType GetColumnType<TLabel>()
-        {
-            var kind = GetKind<TLabel>();
-            switch (kind)
-            {
-                case DataKind.BL: return BoolType.Instance;
-                case DataKind.U1: return NumberType.U1;
-                case DataKind.U2: return NumberType.U2;
-                case DataKind.U4: return NumberType.U4;
-                case DataKind.U8: return NumberType.U8;
-                case DataKind.I1: return NumberType.I1;
-                case DataKind.I2: return NumberType.I2;
-                case DataKind.I4: return NumberType.I4;
-                case DataKind.I8: return NumberType.I8;
-                case DataKind.R4: return NumberType.R4;
-                case DataKind.R8: return NumberType.R8;
-                case DataKind.TX: return TextType.Instance;
-                default:
-                    throw Contracts.ExceptNotSupp($"Unsupported output type: {kind}.");
-            }
-        }
-
         public static ValueMapper<TLabel, TDest> GetConverter<TLabel, TDest>(out bool identity)
         {
             var col1 = GetColumnType<TLabel>();
@@ -566,6 +567,37 @@ namespace Scikit.ML.PipelineHelper
                 }
             }
             return Conversions.Instance.GetStandardConversion<TLabel, TDest>(col1, col2, out identity);
+        }
+
+        public static ColumnType GetColumnType(ISchema schema, string name)
+        {
+            int index;
+            if (!schema.TryGetColumnIndex(name, out index))
+                throw Contracts.Except($"Unable to find column '{name}' in schema\n{ToString(schema)}.");
+            return schema.GetColumnType(index);
+        }
+
+        public static int GetColumnIndex(ISchema schema, string name)
+        {
+            int index;
+            if (!schema.TryGetColumnIndex(name, out index))
+                throw Contracts.Except($"Unable to find column '{name}' in schema\n{ToString(schema)}.");
+            return index;
+        }
+
+        public static int NeedColumn(Dictionary<int, int> mapping, int col)
+        {
+            int res;
+            if (mapping.TryGetValue(col, out res))
+                return res;
+            else
+                return col;
+        }
+
+        public static IEnumerable<string> EnumerateColumns(ISchema sch)
+        {
+            for (int i = 0; i < sch.ColumnCount; ++i)
+                yield return sch.GetColumnName(i);
         }
     }
 }

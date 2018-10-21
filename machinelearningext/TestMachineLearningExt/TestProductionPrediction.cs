@@ -501,7 +501,7 @@ namespace TestMachineLearningExt
                                 "0,0.1,1.1,2.1,3.1,4.1,5.1,6.2,8.4,-5\n" +
                                 "1,1.1,1.1,2.1,3.1,4.1,5.1,6.2,8.5,-5");
 
-            var view = new InfiniteLoopViewCursorRowDataFrame(schema: df.Schema);
+            var view = new InfiniteLoopViewCursorDataFrame(schema: df.Schema);
             var values = new List<float>();
             using (var cur = view.GetRowCursor(i => true))
             {
@@ -525,6 +525,28 @@ namespace TestMachineLearningExt
             var got = values.ToArray();
             var expected = new[] { 7.4f, 7.5f, 7.6f, 7.7f, 7.8f, 8.4f, 8.5f };
             Assert.IsTrue(expected.SequenceEqual(got));
+        }
+
+        [TestMethod]
+        public void TestValueMapperDataFrameFromTransform()
+        {
+            var df = DataFrameHelperTest.CreateDataFrameWithAllTypes();
+            var cols = SchemaHelper.EnumerateColumns(df.Schema).Select(c => new Column1x1() { Source = c, Name = c + "_" }).ToArray();
+            using (var env = EnvHelper.NewTestEnvironment())
+            {
+                var tr = new AddRandomTransform(env, new AddRandomTransform.Arguments() { seed = 0, columns = cols }, df);
+                var mapperTr = new ValueMapperDataFrameFromTransform(env, tr);
+                var mapper = mapperTr.GetMapper<DataFrame, DataFrame>();
+                DataFrame df2 = null;
+                mapper(ref df, ref df2);
+                var tr2 = new AddRandomTransform(env, new AddRandomTransform.Arguments() { seed = 0, columns = cols }, df);
+                var df3 = DataFrameHelperTest.CreateDataFrameWithAllTypes();
+                DataFrame df4 = null;
+                mapper(ref df3, ref df4);
+                var res = df2.AssertAlmostEqual(df4);
+                if (res != 0)
+                    throw new Exception($"Test failed.");
+            }
         }
 
         #endregion
