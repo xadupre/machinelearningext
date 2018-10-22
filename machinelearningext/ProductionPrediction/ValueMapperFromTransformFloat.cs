@@ -33,7 +33,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="env">TLC</param>
+        /// <param name="env">environment like ConsoleEnvironment</param>
         /// <param name="transform">transform to convert</param>
         /// <param name="inputColumn">input column of the mapper</param>
         /// <param name="outputColumn">output column of the mapper</param>

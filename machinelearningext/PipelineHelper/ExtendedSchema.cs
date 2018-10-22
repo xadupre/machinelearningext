@@ -157,7 +157,8 @@ namespace Scikit.ML.PipelineHelper
                                      : Contracts.Except("Unable to parse '{0}' or '{1}'", cols[i], string.Format("{0}:{1}", cols[i], i));
                 tlcols.Add(t);
             }
-            return new ExtendedSchema(null, tlcols.Select(c => c.Name).ToArray(), tlcols.Select(c => SchemaHelper.Convert(c, ch)).ToArray());
+            return new ExtendedSchema(null, tlcols.Select(c => c.Name).ToArray(), 
+                                      tlcols.Select(c => SchemaHelper.Convert(c, ch)).ToArray());
         }
 
         /// <summary>
@@ -331,7 +332,7 @@ namespace Scikit.ML.PipelineHelper
             }
             else if (col < ColumnCount)
             {
-                int c = col - _schemaInput.ColumnCount;
+                int c = col - count;
                 yield return new KeyValuePair<string, ColumnType>(_names[c], _types[c]);
             }
             else

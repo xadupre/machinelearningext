@@ -28,7 +28,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
         /// <param name="typeSrc">input column type</param>
         /// <param name="typeDst">output column type</param>
         /// <param name="mapper">mapper to apply</param>
-        /// <returns></returns>
+        /// <returns>IDataView</returns>
         public static IDataView Create<TSrc, TDst>(IHostEnvironment env, string name, IDataView input,
                         string src, string dst, ColumnType typeSrc, ColumnType typeDst,
                         ValueMapper<TSrc, TDst> mapper)
@@ -50,7 +50,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
         readonly ColumnType _typeSrc;
         readonly ColumnType _typeDst;
         readonly ValueMapper<TSrc, TDst> _mapper;
-        readonly ISchema _newSchema;
+        readonly Schema _newSchema;
         readonly IHost _host;
         readonly int _srcIndex;
 
@@ -68,7 +68,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
             _columnSrc = src;
             _typeDst = typeDst;
             _typeSrc = typeSrc;
-            _newSchema = new ExtendedSchema(_source.Schema, new[] { dst }, new[] { typeDst });
+            _newSchema = Schema.Create(new ExtendedSchema(_source.Schema, new[] { dst }, new[] { typeDst }));
             if (!_source.Schema.TryGetColumnIndex(_columnSrc, out _srcIndex))
                 _host.Except("Unable to find column '{0}' in input schema.", _columnSrc);
         }
@@ -78,7 +78,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
             get { return _source.CanShuffle; }
         }
 
-        public ISchema Schema
+        public Schema Schema
         {
             get { return _newSchema; }
         }
@@ -163,7 +163,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
             public CursorState State { get { return _inputCursor.State; } }
             public long Batch { get { return _inputCursor.Batch; } }
             public long Position { get { return _inputCursor.Position; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
 
             void IDisposable.Dispose()
             {

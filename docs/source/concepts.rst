@@ -62,3 +62,28 @@ may create several cursors working in parallel, the training
 must be protected against multithreading.
 
 .. image:: cursor.png
+
+.. index:: VBuffer, VBufferEqSort, ReadOnlyMemory, DvText
+
+DataFrame Getters
++++++++++++++++++
+
+DataFrames expects to have sortable elements which is not the case
+of objects representing strings ``ReadOnlyMemory<char>`` or
+sparse arrays ``VBuffer<TYPE>``. *Scikit.ML* implements a sortable
+version for both of them.
+
+* ``VBuffer<TYPE>`` is replaced by ``VBufferEqSort<TYPE>``,
+* ``ReadOnlyMemory<char>`` is replaced by ``DvText``.
+
+The biggest change comes when a user tries to get a *getter* available
+through interface ``IDataView``. The signature is ``ValueMapper<TYPE> GetGetter<TYPE>(int col)``.
+DataFrame implements to let the user choose which ever type 
+he would like to get. So the following calls do not return a null pointer,
+``GetGetter<VBuffer<TYPE>>(0)``,
+``GetGetter<VBufferEqSort<TYPE>>(0)``,
+``GetGetter<ReadOnlyMemory<char>>(0)``,
+``GetGetter<DvText>(0)``
+even though *DataFrame* always use ``VBufferEqSort<TYPE>`` and ``DvText``.
+Method ``GetGetter<TYPE>(int col)`` implements the implicit conversion
+requested by the user.

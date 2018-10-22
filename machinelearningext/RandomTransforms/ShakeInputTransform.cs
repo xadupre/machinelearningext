@@ -226,7 +226,7 @@ namespace Scikit.ML.RandomTransforms
 
         #region IDataTransform API
 
-        public ISchema Schema { get { return _transform.Schema; } }
+        public Schema Schema { get { return _transform.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
         /// <summary>
@@ -312,7 +312,7 @@ namespace Scikit.ML.RandomTransforms
             IDataView _input;
             IValueMapper[] _toShake;
 
-            readonly ISchema _schema;
+            readonly Schema _schema;
             readonly Arguments _args;
             readonly int _inputCol;
             TInput[][] _shakingValues;
@@ -320,7 +320,7 @@ namespace Scikit.ML.RandomTransforms
             object _lock;
 
             public IDataView Source { get { return _input; } }
-            public ISchema Schema { get { return _schema; } }
+            public Schema Schema { get { return _schema; } }
 
             public ShakeInputState(IHostEnvironment host, IDataView input, IValueMapper[] toShake, Arguments args)
             {
@@ -374,7 +374,7 @@ namespace Scikit.ML.RandomTransforms
                         throw _host.ExceptNotSupp("Unknown aggregatino strategy {0}", _args.aggregation);
 
                 }
-                _schema = new ExtendedSchema(input.Schema, args.outputColumns, colTypes.ToArray());
+                _schema = Schema.Create(new ExtendedSchema(input.Schema, args.outputColumns, colTypes.ToArray()));
             }
 
             public void Save(ModelSaveContext ctx)
@@ -513,7 +513,7 @@ namespace Scikit.ML.RandomTransforms
             public CursorState State { get { return _inputCursor.State; } }
             public long Batch { get { return _inputCursor.Batch; } }
             public long Position { get { return _inputCursor.Position; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
 
             void IDisposable.Dispose()
             {

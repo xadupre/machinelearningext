@@ -47,10 +47,7 @@ namespace Scikit.ML.MultiClass
         {
             IImplBase impl;
             using (var ch = host.Start("Creating MultiToBinary predictor"))
-            {
                 impl = new ImplRaw<TLabel>(classes, predictors, reclassPredictor, singleColumn, labelKey);
-                ch.Done();
-            }
             return new MultiToBinaryPredictor(host, impl);
         }
 

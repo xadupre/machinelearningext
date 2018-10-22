@@ -55,7 +55,7 @@ namespace Scikit.ML.PipelineHelper
         /// </summary>
         /// <param name="env">environment</param>
         /// <param name="data">data + role</param>
-        /// <returns></returns>
+        /// <returns>IDataScorerTransform</returns>
         IDataScorerTransform Predict(IHostEnvironment env, RoleMappedData data);
     }
 }

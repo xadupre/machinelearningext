@@ -96,7 +96,7 @@ namespace Scikit.ML.NearestNeighbors
         IDataView _input;
         Arguments _args;
         IHost _host;
-        ISchema _extendedSchema;
+        Schema _extendedSchema;
         NearestNeighborsTrees _trees;
         object _lock;
 
@@ -157,14 +157,14 @@ namespace Scikit.ML.NearestNeighbors
             _extendedSchema = ComputeExtendedSchema();
         }
 
-        ISchema ComputeExtendedSchema()
+        Schema ComputeExtendedSchema()
         {
-            return new ExtendedSchema(_input.Schema, new string[] { _args.distColumn, _args.idNeighborsColumn },
+            return Schema.Create(new ExtendedSchema(_input.Schema, new string[] { _args.distColumn, _args.idNeighborsColumn },
                                        new ColumnType[] { new VectorType(NumberType.R4, _args.k),
-                                       new VectorType(NumberType.I8, _args.k) });
+                                       new VectorType(NumberType.I8, _args.k) }));
         }
 
-        public ISchema Schema { get { return _extendedSchema; } }
+        public Schema Schema { get { return _extendedSchema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
         /// <summary>
@@ -193,11 +193,12 @@ namespace Scikit.ML.NearestNeighbors
         {
             ComputeNearestNeighbors();
             _host.AssertValue(_input, "_input");
+            var schema = _input.Schema;
 
-            if (predicate(_input.Schema.ColumnCount))
+            if (predicate(schema.ColumnCount))
             {
                 int featureIndex;
-                if (!_input.Schema.TryGetColumnIndex(_args.column, out featureIndex))
+                if (!schema.TryGetColumnIndex(_args.column, out featureIndex))
                     throw _host.Except("Unable to find column '{0}'.", _args.column);
                 return new NearestNeighborsCursor(_input.GetRowCursor(i => PredicatePropagation(i, featureIndex, predicate), rand), this, predicate, featureIndex);
             }
@@ -210,11 +211,12 @@ namespace Scikit.ML.NearestNeighbors
         {
             ComputeNearestNeighbors();
             _host.AssertValue(_input, "_input");
+            var schema = _input.Schema;
 
             if (predicate(_input.Schema.ColumnCount))
             {
                 int featureIndex;
-                if (!_input.Schema.TryGetColumnIndex(_args.column, out featureIndex))
+                if (!schema.TryGetColumnIndex(_args.column, out featureIndex))
                     throw _host.Except("Unable to find column '{0}'.", _args.column);
 
                 var res = _input.GetRowCursorSet(out consolidator, predicate, n, rand)
@@ -270,7 +272,6 @@ namespace Scikit.ML.NearestNeighbors
                     _trees = NearestNeighborsBuilder.NearestNeighborsBuild<long>(ch, _input, featureIndex, labelIndex,
                                         idIndex, weightIndex, out merged, _args);
                     ch.Info("Done. Tree size: {0} points.", _trees.Count());
-                    ch.Done();
                 }
             }
         }
@@ -323,7 +324,7 @@ namespace Scikit.ML.NearestNeighbors
             public CursorState State { get { return _inputCursor.State; } }
             public long Batch { get { return _inputCursor.Batch; } }
             public long Position { get { return _inputCursor.Position; } }
-            public ISchema Schema { get { return _parent.Schema; } }
+            public Schema Schema { get { return _parent.Schema; } }
 
             void IDisposable.Dispose()
             {
@@ -376,12 +377,13 @@ namespace Scikit.ML.NearestNeighbors
 
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
+                var schema = _inputCursor.Schema;
                 ValueGetter<TValue> res;
-                if (col < _inputCursor.Schema.ColumnCount)
+                if (col < schema.ColumnCount)
                     res = _inputCursor.GetGetter<TValue>(col);
-                else if (col == _inputCursor.Schema.ColumnCount)
+                else if (col == schema.ColumnCount)
                     res = GetGetterDistance(col) as ValueGetter<TValue>;
-                else if (col == _inputCursor.Schema.ColumnCount + 1)
+                else if (col == schema.ColumnCount + 1)
                     res = GetGetterIdNeighbors(col) as ValueGetter<TValue>;
                 else
                     throw Contracts.Except("Unexpected column position:{0}.", col);

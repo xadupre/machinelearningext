@@ -17,14 +17,14 @@ namespace Scikit.ML.PipelineHelper
     public sealed class TypeReplacementDataView : IDataView
     {
         private readonly IDataView _source;
-        private readonly ISchema _schema;
+        private readonly Schema _schema;
 
         public IDataView SourceTags { get { return _source; } }
 
         public TypeReplacementDataView(IDataView source, TypeReplacementSchema newSchema)
         {
             _source = source;
-            _schema = newSchema;
+            _schema = Schema.Create(newSchema);
         }
 
         public bool CanShuffle
@@ -32,7 +32,7 @@ namespace Scikit.ML.PipelineHelper
             get { return _source.CanShuffle; }
         }
 
-        public ISchema Schema
+        public Schema Schema
         {
             get { return _schema; }
         }
@@ -61,15 +61,15 @@ namespace Scikit.ML.PipelineHelper
         class TypeReplacementCursor : IRowCursor
         {
             IRowCursor _cursor;
-            ISchema _schema;
+            Schema _schema;
 
             public TypeReplacementCursor(IRowCursor cursor, ISchema newSchema)
             {
                 _cursor = cursor;
-                _schema = newSchema;
+                _schema = Schema.Create(newSchema);
             }
 
-            public ISchema Schema { get { return _schema; } }
+            public Schema Schema { get { return _schema; } }
             public ICursor GetRootCursor() { return this; }
             public bool IsColumnActive(int col) { return _cursor.IsColumnActive(col); }
             public ValueGetter<UInt128> GetIdGetter() { return _cursor.GetIdGetter(); }

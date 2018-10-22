@@ -17,6 +17,8 @@ namespace Scikit.ML.ScikitAPI
 {
     public class ScikitPipeline : IDisposable
     {
+        #region members
+
         public class StepTransform
         {
             public string transformSettings;
@@ -37,6 +39,10 @@ namespace Scikit.ML.ScikitAPI
         private string _loaderSettings;
         private List<KeyValuePair<RoleMappedSchema.ColumnRole, string>> _roles;
         private bool _dispose;
+
+        #endregion
+
+        #region constructor
 
         public ScikitPipeline(string[] transforms = null,
                               string predictor = null,
@@ -122,6 +128,25 @@ namespace Scikit.ML.ScikitAPI
             }
         }
 
+        public void Save(string filename)
+        {
+            using (var fs = File.Create(filename))
+                Save(fs);
+        }
+
+        public void Save(Stream fs)
+        {
+            using (var ch = _env.Start("Save Predictor"))
+                TrainUtils.SaveModel(_env, ch, fs, _predictor.predictor, _predictor.roleMapData);
+        }
+
+        #endregion
+
+        #region train
+
+        /// <summary>
+        /// Trains the pipeline.
+        /// </summary>
         public ScikitPipeline Train(string loaderSettings, string filename,
                                     string feature = "Feature", string label = null,
                                     string weight = null, string groupId = null)
@@ -131,6 +156,9 @@ namespace Scikit.ML.ScikitAPI
             return Train(loader);
         }
 
+        /// <summary>
+        /// Trains the pipeline.
+        /// </summary>
         public ScikitPipeline Train(IDataView data,
                                     string feature = "Feature", string label = null,
                                     string weight = null, string groupId = null)
@@ -160,7 +188,6 @@ namespace Scikit.ML.ScikitAPI
                     }
                     _transforms[i].transform = trans as IDataTransform;
                 }
-                ch.Done();
             }
 
             if (_predictor != null)
@@ -179,7 +206,6 @@ namespace Scikit.ML.ScikitAPI
                     var roleMap = new RoleMappedData(trans, label, feature, group: groupId, weight: weight);
                     _predictor.predictor = _predictor.trainer.Train(_env, ch, roleMap);
                     _predictor.roleMapData = roleMap;
-                    ch.Done();
                 }
             }
             else
@@ -198,11 +224,14 @@ namespace Scikit.ML.ScikitAPI
                     var df = DataFrameIO.ReadView(trans, 1, keepVectors: true, env: _env);
                     if (df.Length == 0)
                         throw _env.ExceptEmpty("Something went wrong. The pipeline does not produce any output.");
-                    ch.Done();
                 }
             }
             return this;
         }
+
+        #endregion
+
+        #region regular predict or transform
 
         /// <summary>
         /// There is no difference between predict or transform.
@@ -247,20 +276,32 @@ namespace Scikit.ML.ScikitAPI
             return PredictorHelper.Predict(_env, _predictor.predictor, roles);
         }
 
-        public void Save(string filename)
+        #endregion
+
+        #region fast predictions or transform
+
+        /// <summary>
+        /// Fast predictions, do not create getter, setter each time the predictions
+        /// are done.
+        /// </summary>
+        /// <param name="df">input data</param>
+        /// <param name="view">output, reused</param>
+        public void Predict(IDataFrameView df, ref DataFrame view)
         {
-            using (var fs = File.Create(filename))
-                Save(fs);
+            throw new NotImplementedException();
         }
 
-        public void Save(Stream fs)
+        /// <summary>
+        /// Fast predictions, do not create getter, setter each time the predictions
+        /// are done.
+        /// </summary>
+        /// <param name="df">input data</param>
+        /// <param name="view">output, reused</param>
+        public void Transform(IDataFrameView df, ref DataFrame view)
         {
-            using (var ch = _env.Start("Save Predictor"))
-            {
-                TrainUtils.SaveModel(_env, ch, fs, _predictor.predictor,
-                                    _predictor.roleMapData);
-                ch.Done();
-            }
+            throw new NotImplementedException();
         }
+
+        #endregion
     }
 }

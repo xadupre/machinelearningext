@@ -84,8 +84,6 @@ namespace Scikit.ML.MultiClass
                 }
                 else
                     impl = new ImplRaw(predictors);
-
-                ch.Done();
             }
 
             return new OptimizedOVAPredictor(host, impl);

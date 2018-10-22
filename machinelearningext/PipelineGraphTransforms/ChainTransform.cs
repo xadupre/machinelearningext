@@ -113,7 +113,7 @@ namespace Scikit.ML.PipelineGraphTransforms
                                 i == 0 ? input : _dataTransforms[i - 1]);
         }
 
-        public ISchema Schema { get { return _dataTransforms.Last().Schema; } }
+        public Schema Schema { get { return _dataTransforms.Last().Schema; } }
         public bool CanShuffle { get { return _dataTransforms.Select(c => c.CanShuffle).All(c => true); } }
 
         public long? GetRowCount(bool lazy = true)

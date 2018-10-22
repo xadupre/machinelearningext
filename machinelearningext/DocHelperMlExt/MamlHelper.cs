@@ -42,10 +42,10 @@ namespace Scikit.ML.DocHelperMlExt
         /// <summary>
         /// Runs a script. Can change the level of desired information.
         /// </summary>
-        /// <param name="script"></param>
-        /// <param name="catch_output"></param>
+        /// <param name="script">script to run</param>
+        /// <param name="catch_output">catches standard output</param>
         /// <param name="verbose">2 is default</param>
-        /// <returns></returns>
+        /// <returns>standard outputs</returns>
         public static string MamlScriptConsole(string script, bool catch_output, int verbose = 2)
         {
             ILogWriter logout = new LogWriter((string s) =>
@@ -218,12 +218,14 @@ namespace Scikit.ML.DocHelperMlExt
             }
 
             public string Name;
+            public string ComponentName;
             public object Args;
             public string Description;
             public string[] Aliases;
             public ComponentCatalog.LoadableClassInfo Info;
             public Assembly Assembly;
             public string AssemblyName;
+            public string Namespace;
             public Argument[] Arguments;
 
             public DataFrame ArgsAsDataFrame
@@ -273,6 +275,8 @@ namespace Scikit.ML.DocHelperMlExt
                             Assembly = null,
                             AssemblyName = "?",
                             Arguments = null,
+                            Namespace = info.Type.Namespace,
+                            ComponentName=info.Type.Name,
                         };
                         yield return cmp;
                     }
@@ -305,6 +309,8 @@ namespace Scikit.ML.DocHelperMlExt
                             Assembly = asse,
                             AssemblyName = asse.ManifestModule.Name,
                             Arguments = arguments.OrderBy(c => c.Name).ToArray(),
+                            Namespace = info.Type.Namespace,
+                            ComponentName = info.Type.Name,
                         };
                         yield return cmp;
                     }

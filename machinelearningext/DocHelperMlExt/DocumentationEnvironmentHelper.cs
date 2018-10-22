@@ -61,6 +61,7 @@ namespace Scikit.ML.DocHelperMlExt
             {
                 case "cpumathnative.dll":
                 case "cqo.dll":
+                case "dnnanalyzer.dll":
                 case "fasttreenative.dll":
                 case "factorizationmachinenative.dll":
                 case "libiomp5md.dll":
@@ -279,7 +280,7 @@ namespace Scikit.ML.DocHelperMlExt
         /// </summary>
         /// <param name="args">script or command line arguments</param>
         /// <param name="env">environment, created if null</param>
-        /// <returns></returns>
+        /// <returns>exit code</returns>
         public static int MainWithProgress(string args, DelegateEnvironment env = null)
         {
             string currentDirectory = Path.GetDirectoryName(typeof(Maml).Module.FullyQualifiedName);
@@ -394,7 +395,6 @@ namespace Scikit.ML.DocHelperMlExt
                 finally
                 {
                 }
-                ch.Done();
                 return result;
             }
         }

@@ -98,7 +98,6 @@ namespace Scikit.ML.NearestNeighbors
             {
                 // Train one-vs-all models.
                 _predictor = TrainPredictor(ch, data);
-                ch.Done();
             }
 
             return _predictor;

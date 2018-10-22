@@ -92,7 +92,7 @@ namespace Scikit.ML.FeaturesTransforms
         Dictionary<int, ScalingFactor> _scalingFactors;
         Dictionary<int, int> _revIndex;
         IHost _host;
-        ISchema _extendedSchema;
+        Schema _extendedSchema;
         object _lock;
 
         public IDataView Source { get { return _input; } }
@@ -179,24 +179,25 @@ namespace Scikit.ML.FeaturesTransforms
             }
         }
 
-        ISchema ComputeExtendedSchema()
+        Schema ComputeExtendedSchema()
         {
             int index;
             Func<string, ColumnType> getType = (string col) =>
             {
-                if (!_input.Schema.TryGetColumnIndex(col, out index))
+                var schema = _input.Schema;
+                if (!schema.TryGetColumnIndex(col, out index))
                     throw _host.Except("Unable to find column '{0}'.", col);
-                return _input.Schema.GetColumnType(index);
+                return schema.GetColumnType(index);
             };
             var iterCols = _args.columns.Where(c => c.Name != c.Source);
             return iterCols.Any()
-                        ? new ExtendedSchema(_input.Schema,
-                                      iterCols.Select(c => c.Name).ToArray(),
-                                      iterCols.Select(c => getType(c.Source)).ToArray())
+                        ? Schema.Create(new ExtendedSchema(_input.Schema,
+                                                iterCols.Select(c => c.Name).ToArray(),
+                                                iterCols.Select(c => getType(c.Source)).ToArray()))
                         : _input.Schema;
         }
 
-        public ISchema Schema { get { return _extendedSchema; } }
+        public Schema Schema { get { return _extendedSchema; } }
 
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
@@ -296,9 +297,10 @@ namespace Scikit.ML.FeaturesTransforms
                             ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
                             ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
 
-                            for (int i = 0; i < _input.Schema.ColumnCount; ++i)
+                            var schema = _input.Schema;
+                            for (int i = 0; i < schema.ColumnCount; ++i)
                             {
-                                string name = _input.Schema.GetColumnName(i);
+                                string name = schema.GetColumnName(i);
                                 if (!required.Contains(i))
                                     continue;
                                 _scalingStat[name] = new List<ColumnStatObs>();
@@ -324,12 +326,13 @@ namespace Scikit.ML.FeaturesTransforms
                             VBuffer<float> vector = new VBuffer<float>();
                             uint uvalue = 0;
                             bool bvalue = true;
+                            var curschema = cur.Schema;
 
                             while (cur.MoveNext())
                             {
                                 for (int i = 0; i < requiredIndexes.Length; ++i)
                                 {
-                                    string name = cur.Schema.GetColumnName(requiredIndexes[i]);
+                                    string name = curschema.GetColumnName(requiredIndexes[i]);
                                     if (!_scalingStat.ContainsKey(name))
                                         continue;
                                     if (isFloat[i])
@@ -368,7 +371,6 @@ namespace Scikit.ML.FeaturesTransforms
 
                         _scalingFactors = GetScalingParameters();
                         _revIndex = ComputeRevIndex();
-                        ch.Done();
                     }
                 }
             }
@@ -514,12 +516,14 @@ namespace Scikit.ML.FeaturesTransforms
         {
             var res = new Dictionary<int, ScalingFactor>();
             int index, index2;
+            var thisSchema = Schema;
+            var schema = _input.Schema;
             for (int i = 0; i < _args.columns.Length; ++i)
             {
-                if (!_input.Schema.TryGetColumnIndex(_args.columns[i].Source, out index))
+                if (!schema.TryGetColumnIndex(_args.columns[i].Source, out index))
                     throw _host.Except("Unable to find column '{0}'.", _args.columns[i].Source);
 
-                string name = Schema.GetColumnName(index);
+                string name = thisSchema.GetColumnName(index);
                 var stats = _scalingStat[name];
 
                 if (_args.columns[i].Source == _args.columns[i].Name)
@@ -573,7 +577,7 @@ namespace Scikit.ML.FeaturesTransforms
             public CursorState State { get { return _inputCursor.State; } }
             public long Batch { get { return _inputCursor.Batch; } }
             public long Position { get { return _inputCursor.Position; } }
-            public ISchema Schema { get { return _parent.Schema; } }
+            public Schema Schema { get { return _parent.Schema; } }
 
             void IDisposable.Dispose()
             {
@@ -593,15 +597,16 @@ namespace Scikit.ML.FeaturesTransforms
 
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
+                var schema = _inputCursor.Schema;
                 if (_scalingFactors.ContainsKey(col))
                 {
-                    var type = _inputCursor.Schema.GetColumnType(_scalingFactors[col].columnId);
+                    var type = schema.GetColumnType(_scalingFactors[col].columnId);
                     if (type.IsVector)
                         return GetGetterVector(_scalingFactors[col]) as ValueGetter<TValue>;
                     else
                         return GetGetter(_scalingFactors[col]) as ValueGetter<TValue>;
                 }
-                else if (col < _inputCursor.Schema.ColumnCount)
+                else if (col < schema.ColumnCount)
                     return _inputCursor.GetGetter<TValue>(col);
                 else
                     throw Contracts.Except("Unexpected columns {0}.", col);

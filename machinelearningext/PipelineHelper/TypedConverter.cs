@@ -40,7 +40,7 @@ namespace Scikit.ML.PipelineHelper
 
         public TypedConverters()
         {
-            Init(SchemaHelper.GetKind<TLabel>());
+            Init(SchemaHelper.GetColumnType<TLabel>().RawKind);
         }
 
         public TypedConverters(DataKind destKind)
@@ -50,7 +50,7 @@ namespace Scikit.ML.PipelineHelper
 
         void Init(DataKind destKind)
         {
-            _kind = SchemaHelper.GetKind<TLabel>();
+            _kind = SchemaHelper.GetColumnType<TLabel>().RawKind;
             _destKind = destKind;
 
             mapperBL = null;
@@ -111,8 +111,10 @@ namespace Scikit.ML.PipelineHelper
 
         public ValueMapper<TLabel, TDest> GetMapper<TDest>()
         {
-            var kind = SchemaHelper.GetKind<TDest>();
-            switch (kind)
+            var colType = SchemaHelper.GetColumnType<TDest>();
+            if (colType.IsVector)
+                throw Contracts.ExceptNotImpl($"Not implemented for type {typeof(TDest)}.");
+            switch (colType.RawKind)
             {
                 case DataKind.BL:
                     return mapperBL as ValueMapper<TLabel, TDest>;
@@ -127,14 +129,16 @@ namespace Scikit.ML.PipelineHelper
                 case DataKind.R4:
                     return mapperR4 as ValueMapper<TLabel, TDest>;
                 default:
-                    throw Contracts.ExceptNotSupp("Unsupported kind {0}", kind);
+                    throw Contracts.ExceptNotSupp("Unsupported kind {0}", colType.RawKind);
             }
         }
 
         public ValueMapper<TDest, TLabel> GetMapperFrom<TDest>()
         {
-            var kind = SchemaHelper.GetKind<TDest>();
-            switch (kind)
+            var colType = SchemaHelper.GetColumnType<TDest>();
+            if (colType.IsVector)
+                throw Contracts.ExceptNotImpl($"Not implemented for type {typeof(TDest)}.");
+            switch (colType.RawKind)
             {
                 case DataKind.BL:
                     return mapperBL as ValueMapper<TDest, TLabel>;
@@ -147,7 +151,7 @@ namespace Scikit.ML.PipelineHelper
                 case DataKind.R4:
                     return mapperR4 as ValueMapper<TDest, TLabel>;
                 default:
-                    throw Contracts.ExceptNotSupp("Unsupported kind {0}", kind);
+                    throw Contracts.ExceptNotSupp("Unsupported kind {0}", colType.RawKind);
             }
         }
 

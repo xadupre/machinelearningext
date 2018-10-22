@@ -34,7 +34,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="env">TLC</param>
+        /// <param name="env">environment like ConsoleEnvironment</param>
         /// <param name="transform">transform to convert</param>
         /// <param name="sourceToReplace">source to replace</param>
         /// <param name="getterEachTime">create the getter for each computation</param>
@@ -75,15 +75,13 @@ namespace Scikit.ML.ProductionPrediction
             else
                 res = GetMapperColumn<TDst>() as ValueMapper<TSrc, TDst>;
             if (res == null)
-                throw _env.ExceptNotSupp($"Unable to create mapper from ${typeof(TSrc)} to ${typeof(TDst)}.");
+                throw _env.ExceptNotSupp($"Unable to create mapper from {typeof(TSrc)} to {typeof(TDst)}.");
             return res;
         }
 
         /// <summary>
         /// Returns a getter on particuler column.
         /// </summary>
-        /// <typeparam name="TDst"></typeparam>
-        /// <returns></returns>
         ValueMapper<TRowInput, TDst> GetMapperColumn<TDst>()
         {
             throw _env.ExceptNotImpl("Not implemented yet as it is missing the column index.");

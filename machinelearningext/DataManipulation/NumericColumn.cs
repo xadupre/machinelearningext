@@ -40,11 +40,13 @@ namespace Scikit.ML.DataManipulation
 
         public IDataColumn Column { get { return _column; } }
         public int Length => _column.Length;
+        public int MemoryLength => _column.MemoryLength;
         public ColumnType Kind => _column.Kind;
         public object Get(int row) => _column.Get(row);
         public void Set(int row, object value) { _column.Set(row, value); }
         public void Set<T>(int row, T value) { _column.Set(row, value); }
         public void Set(object value) { _column.Set(value); }
+        public void Resize(int length, bool keepData = false) { _column.Resize(length, keepData); }
         public ValueGetter<DType> GetGetter<DType>(IRowCursor cursor) => _column.GetGetter<DType>(cursor);
         public ValueGetter<VBuffer<DType>> GetGetterVector<DType>(IRowCursor cursor) => _column.GetGetterVector<DType>(cursor);
         public bool Equals(IDataColumn col) => _column.Equals(col);
@@ -87,7 +89,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Converts a column into another type.
         /// </summary>
-        /// <param name="colType"></param>
+        /// <param name="colType">column type</param>
         /// <returns>new columns</returns>
         public IDataColumn AsType(ColumnType colType)
         {

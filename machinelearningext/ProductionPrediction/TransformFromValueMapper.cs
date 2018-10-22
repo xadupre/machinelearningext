@@ -24,7 +24,7 @@ namespace Scikit.ML.ProductionPrediction
         readonly IValueMapper _mapper;
         readonly string _inputColumn;
         readonly string _outputColumn;
-        readonly ISchema _schema;
+        readonly Schema _schema;
 
         #endregion
 
@@ -33,7 +33,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="env">TLC</param>
+        /// <param name="env">environment like ConsoleEnvironment</param>
         /// <param name="mapper">IValueMapper</param>
         /// <param name="source">source to replace</param>
         /// <param name="inputColumn">name of the input column (the last one sharing the same type)</param>
@@ -69,7 +69,7 @@ namespace Scikit.ML.ProductionPrediction
             if (_source.Schema.TryGetColumnIndex(outputColumn, out index))
                 throw env.Except("Column '{0}' already present in input schema.", outputColumn);
             _outputColumn = outputColumn;
-            _schema = new ExtendedSchema(source.Schema, new[] { outputColumn }, new[] { mapper.OutputType });
+            _schema = Schema.Create(new ExtendedSchema(source.Schema, new[] { outputColumn }, new[] { mapper.OutputType }));
             _transform = CreateMemoryTransform();
         }
 
@@ -81,7 +81,7 @@ namespace Scikit.ML.ProductionPrediction
         public IDataView Source { get { return _source; } }
         public bool CanShuffle { get { return _source.CanShuffle; } }
         public long? GetRowCount(bool lazy = true) { return _source.GetRowCount(lazy); }
-        public ISchema Schema { get { return _schema; } }
+        public Schema Schema { get { return _schema; } }
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
@@ -182,7 +182,7 @@ namespace Scikit.ML.ProductionPrediction
             public IDataView Source { get { return _parent.Source; } }
             public bool CanShuffle { get { return _parent.CanShuffle; } }
             public long? GetRowCount(bool lazy = true) { return _parent.GetRowCount(lazy); }
-            public ISchema Schema { get { return _parent.Schema; } }
+            public Schema Schema { get { return _parent.Schema; } }
             public void Save(ModelSaveContext ctx) { throw Contracts.ExceptNotSupp("Not meant to be serialized. You need to serialize whatever it takes to instantiate it."); }
 
             /// <summary>
@@ -272,7 +272,7 @@ namespace Scikit.ML.ProductionPrediction
             public CursorState State { get { return _inputCursor.State; } } // No change.
             public long Batch { get { return _inputCursor.Batch; } }        // No change.
             public long Position { get { return _inputCursor.Position; } }  // No change.
-            public ISchema Schema { get { return _view.Schema; } }          // No change.
+            public Schema Schema { get { return _view.Schema; } }          // No change.
 
             void IDisposable.Dispose()
             {

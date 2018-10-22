@@ -272,15 +272,22 @@ def builds_components_pages(epkg):
                                           Description=arg.Help)
                 sorted_params = [v for k, v in sorted(args.items())]
                 aliases = ", ".join(comp.Aliases)
-                
+
+                if assembly_name.startswith("Microsoft.ML"):
+                    linkdocs = "**Microsoft Documentation:** `{0} <https://docs.microsoft.com/dotnet/api/{1}.{2}>`_"
+                    linkdocs = linkdocs.format(comp.Name, comp.Namespace.lower(), comp.Name.lower())
+                else:
+                    linkdocs = ""
+
                 comp_name = comp.Name.replace(" ", "_")
                 pages[comp_name] = comp_tpl.render(title=comp.Name,
                                         aliases=aliases, 
                                         summary=process_description(comp.Description),
                                         kind=kind_kind, 
+                                        namespace=comp.Namespace,
                                         sorted_params=sorted_params,
                                         assembly=assembly_name,
-                                        len=len)
+                                        len=len, linkdocs=linkdocs)
     
     return pages
     

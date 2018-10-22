@@ -44,8 +44,7 @@ namespace TestMachineLearningExt
                 {
                     var pred = trainer.Train(env, ch, roles);
                     TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
-                                                                PredictionKind.BinaryClassification, true, ratio: ratio);
-                    ch.Done();
+                                                               PredictionKind.BinaryClassification, true, ratio: ratio);
                 }
             }
         }
@@ -77,8 +76,7 @@ namespace TestMachineLearningExt
                 {
                     var pred = trainer.Train(env, ch, roles);
                     TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
-                                                            PredictionKind.BinaryClassification, true, ratio: ratio);
-                    ch.Done();
+                                                              PredictionKind.BinaryClassification, true, ratio: ratio);
                 }
             }
         }
@@ -108,8 +106,7 @@ namespace TestMachineLearningExt
                 {
                     var pred = trainer.Train(env, ch, roles);
                     TestTrainerHelper.FinalizeSerializationTest(env, outModelFilePath, pred, roles, outData, outData2,
-                                                                PredictionKind.MultiClassClassification, true, ratio: ratio);
-                    ch.Done();
+                                                           PredictionKind.MultiClassClassification, true, ratio: ratio);
                 }
             }
         }

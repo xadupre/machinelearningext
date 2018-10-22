@@ -179,7 +179,7 @@ namespace Scikit.ML.PipelineTransforms
             _lock = new object();
         }
 
-        public ISchema Schema { get { return _input.Schema; } }
+        public Schema Schema { get { return _input.Schema; } }
 
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
@@ -278,10 +278,11 @@ namespace Scikit.ML.PipelineTransforms
 
                             var cols = _args.columns == null ? null : new HashSet<string>(_args.columns);
                             var hists = _args.hists == null ? null : new HashSet<string>(_args.hists);
+                            var schema = _input.Schema;
 
-                            for (int i = 0; i < _input.Schema.ColumnCount; ++i)
+                            for (int i = 0; i < schema.ColumnCount; ++i)
                             {
-                                string name = _input.Schema.GetColumnName(i);
+                                string name = schema.GetColumnName(i);
                                 if (!required.Contains(i))
                                     continue;
                                 stats[name] = new List<ColumnStatObs>();
@@ -391,8 +392,6 @@ namespace Scikit.ML.PipelineTransforms
 
                         if (!_args.jsonFormat)
                             ch.Info("End DescribeTransform {0}", _args.name);
-
-                        ch.Done();
                     }
                     _statistics = _input;
                 }

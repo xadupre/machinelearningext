@@ -16,6 +16,7 @@ written in :epkg:`C#` and implemented by :epkg:`Microsoft`.
     dataframe
     mlnetdocs/index
     concepts
+    commandline
     components/index
 
 You can also navigate through the documentation

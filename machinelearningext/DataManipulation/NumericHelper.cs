@@ -47,8 +47,25 @@ namespace Scikit.ML.DataManipulation
             return Enumerable.Max(Enumerable.Zip(exp, res, (a, b) => AlmostEqual(a, b, precision)), c => c);
         }
 
-        public static double AssertAlmostEqual(bool[] a1, bool[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(bool[] a1, bool[] a2, double precision = 1e-5, bool exc = true, int l1 = -1, int l2 = -1)
         {
+            l1 = l1 >= 0 ? l1 : a1.Length;
+            l2 = l2 >= 0 ? l2 : a2.Length;
+            if (l1 != l2)
+                throw new DataValueError($"Columns have different length {l1} != {l2}.");
+            for (int i = 0; i < l1; ++i)
+                if (a1[i].CompareTo(a2[i]) != 0)
+                    if (exc)
+                        throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
+                    else
+                        return 1;
+            return 0;
+        }
+
+        public static double AssertAlmostEqual(DvText[] a1, DvText[] a2, double precision = 1e-5, bool exc = true, int l1 = -1, int l2 = -1)
+        {
+            l1 = l1 >= 0 ? l1 : a1.Length;
+            l2 = l2 >= 0 ? l2 : a2.Length;
             if (a1.Length != a2.Length)
                 throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
             for (int i = 0; i < a1.Length; ++i)
@@ -60,24 +77,13 @@ namespace Scikit.ML.DataManipulation
             return 0;
         }
 
-        public static double AssertAlmostEqual(DvText[] a1, DvText[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(int[] a1, int[] a2, double precision = 1e-5, bool exc = true, int l1 = -1, int l2 = -1)
         {
-            if (a1.Length != a2.Length)
-                throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
-            for (int i = 0; i < a1.Length; ++i)
-                if (a1[i].CompareTo(a2[i]) != 0)
-                    if (exc)
-                        throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
-                    else
-                        return 1;
-            return 0;
-        }
-
-        public static double AssertAlmostEqual(int[] a1, int[] a2, double precision = 1e-5, bool exc = true)
-        {
-            if (a1.Length != a2.Length)
-                throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
-            for (int i = 0; i < a1.Length; ++i)
+            l1 = l1 >= 0 ? l1 : a1.Length;
+            l2 = l2 >= 0 ? l2 : a2.Length;
+            if (l1 != l2)
+                throw new DataValueError($"Columns have different length {l1} != {l2}.");
+            for (int i = 0; i < l1; ++i)
                 if (a1[i] != a2[i])
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
@@ -86,11 +92,13 @@ namespace Scikit.ML.DataManipulation
             return 0;
         }
 
-        public static double AssertAlmostEqual(long[] a1, long[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(long[] a1, long[] a2, double precision = 1e-5, bool exc = true, int l1 = -1, int l2 = -1)
         {
-            if (a1.Length != a2.Length)
-                throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
-            for (int i = 0; i < a1.Length; ++i)
+            l1 = l1 >= 0 ? l1 : a1.Length;
+            l2 = l2 >= 0 ? l2 : a2.Length;
+            if (l1 != l2)
+                throw new DataValueError($"Columns have different length {l1} != {l2}.");
+            for (int i = 0; i < l1; ++i)
                 if (a1[i] != a2[i])
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
@@ -99,11 +107,13 @@ namespace Scikit.ML.DataManipulation
             return 0;
         }
 
-        public static double AssertAlmostEqual(uint[] a1, uint[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(uint[] a1, uint[] a2, double precision = 1e-5, bool exc = true, int l1 = -1, int l2 = -1)
         {
-            if (a1.Length != a2.Length)
-                throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
-            for (int i = 0; i < a1.Length; ++i)
+            l1 = l1 >= 0 ? l1 : a1.Length;
+            l2 = l2 >= 0 ? l2 : a2.Length;
+            if (l1 != l2)
+                throw new DataValueError($"Columns have different length {l1} != {l2}.");
+            for (int i = 0; i < l1; ++i)
                 if ((double)a1[i] - (double)a2[i] >= precision)
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
@@ -112,11 +122,13 @@ namespace Scikit.ML.DataManipulation
             return 0;
         }
 
-        public static double AssertAlmostEqual(float[] a1, float[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(float[] a1, float[] a2, double precision = 1e-5, bool exc = true, int l1 = -1, int l2 = -1)
         {
-            if (a1.Length != a2.Length)
-                throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
-            for (int i = 0; i < a1.Length; ++i)
+            l1 = l1 >= 0 ? l1 : a1.Length;
+            l2 = l2 >= 0 ? l2 : a2.Length;
+            if (l1 != l2)
+                throw new DataValueError($"Columns have different length {l1} != {l2}.");
+            for (int i = 0; i < l1; ++i)
                 if ((double)a1[i] - (double)a2[i] >= precision)
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
@@ -125,11 +137,13 @@ namespace Scikit.ML.DataManipulation
             return 0;
         }
 
-        public static double AssertAlmostEqual(double[] a1, double[] a2, double precision = 1e-5, bool exc = true)
+        public static double AssertAlmostEqual(double[] a1, double[] a2, double precision = 1e-5, bool exc = true, int l1 = -1, int l2 = -1)
         {
-            if (a1.Length != a2.Length)
-                throw new DataValueError($"Columns have different length {a1.Length} != {a2.Length}.");
-            for (int i = 0; i < a1.Length; ++i)
+            l1 = l1 >= 0 ? l1 : a1.Length;
+            l2 = l2 >= 0 ? l2 : a2.Length;
+            if (l1 != l2)
+                throw new DataValueError($"Columns have different length {l1} != {l2}.");
+            for (int i = 0; i < l1; ++i)
                 if ((double)a1[i] - (double)a2[i] >= precision)
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");

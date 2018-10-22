@@ -19,6 +19,13 @@ namespace Scikit.ML.DataManipulation
     /// for the index which can be added as a column but does not
     /// play any particular role (concatenation does not take it
     /// into account).
+    /// 
+    /// The class follows IDataView API to be nicely integrated in 
+    /// machine learning pipelines. However, due to the column type contraints
+    /// (<code>IEquatable<DType>, IComparable<DType></code>), two news types
+    /// were introduced: <see cref="DvText"/> which a sortable and comparable
+    /// <see cref="ReadOnlyMemory{T}"/> and <see cref="VBufferEqSort{T}"/> to
+    /// get a sortable and comparable <see cref="VBuffer{T}"/>.
     /// </summary>
     public class DataFrame : IDataFrameView
     {
@@ -77,6 +84,19 @@ namespace Scikit.ML.DataManipulation
             _data = new DataContainer(rows, kinds);
         }
 
+        /// <summary>
+        /// Creates a dataframe based on a schema.
+        /// </summary>
+        public DataFrame(Schema schema, int nb = 1)
+        {
+            _data = new DataContainer(schema, nb);
+        }
+
+        public bool CheckSharedSchema(Schema schema)
+        {
+            return _data.CheckSharedSchema(schema);
+        }
+
         #endregion
 
         #region IDataView API
@@ -117,7 +137,8 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the schema of the dataframe, used schema used for IDataView.
         /// </summary>
-        public ISchema Schema => _data.Schema;
+        public Schema Schema => _data.Schema;
+        public ISchema SchemaI => _data.SchemaI;
 
         /// <summary>
         /// Returns a copy of the view.
@@ -127,6 +148,16 @@ namespace Scikit.ML.DataManipulation
             var df = new DataFrame();
             df._data = _data.Copy();
             return df;
+        }
+
+        /// <summary>
+        /// Resizes the dataframe.
+        /// </summary>
+        /// <param name="keepData">keeps existing data</param>
+        /// <param name="length">new length</param>
+        public void Resize(int length, bool keepData = false)
+        {
+            _data.Resize(length, keepData);
         }
 
         /// <summary>
@@ -157,7 +188,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the shape of the dataframe (number of rows, number of columns).
         /// </summary>
-        public Tuple<int, int> Shape => _data.Shape;
+        public ShapeType Shape => _data.Shape;
 
         /// <summary>
         /// Adds a new column. The length must be specified for the first column.
@@ -190,12 +221,28 @@ namespace Scikit.ML.DataManipulation
             return AddColumn(name, new DataColumn<bool>(buf));
         }
 
+        public int AddColumn(string name, bool[][] values)
+        {
+            var buf = new VBufferEqSort<bool>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<bool>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<bool>>(buf));
+        }
+
         public int AddColumn(string name, int[] values)
         {
             var buf = new int[values.Length];
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = values[i];
             return AddColumn(name, new DataColumn<int>(buf));
+        }
+
+        public int AddColumn(string name, int[][] values)
+        {
+            var buf = new VBufferEqSort<int>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<int>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<int>>(buf));
         }
 
         public int AddColumn(string name, long[] values)
@@ -211,12 +258,60 @@ namespace Scikit.ML.DataManipulation
         public int AddColumn(string name, double[] values) { return AddColumn(name, new DataColumn<double>(values)); }
         public int AddColumn(string name, DvText[] values) { return AddColumn(name, new DataColumn<DvText>(values)); }
 
+        public int AddColumn(string name, uint[][] values)
+        {
+            var buf = new VBufferEqSort<uint>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<uint>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<uint>>(buf));
+        }
+
+        public int AddColumn(string name, float[][] values)
+        {
+            var buf = new VBufferEqSort<float>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<float>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<float>>(buf));
+        }
+
+        public int AddColumn(string name, double[][] values)
+        {
+            var buf = new VBufferEqSort<double>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<double>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<double>>(buf));
+        }
+
+        public int AddColumn(string name, Int64[][] values)
+        {
+            var buf = new VBufferEqSort<Int64>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<Int64>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<Int64>>(buf));
+        }
+
+        public int AddColumn(string name, DvText[][] values)
+        {
+            var buf = new VBufferEqSort<DvText>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<DvText>(values[i].Length, values[i]);
+            return AddColumn(name, new DataColumn<VBufferEqSort<DvText>>(buf));
+        }
+
         public int AddColumn(string name, string[] values)
         {
             var buf = new DvText[values.Length];
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = new DvText(values[i]);
             return AddColumn(name, new DataColumn<DvText>(buf));
+        }
+
+        public int AddColumn(string name, string[][] values)
+        {
+            var buf = new VBufferEqSort<DvText>[values.Length];
+            for (int i = 0; i < values.Length; ++i)
+                buf[i] = new VBufferEqSort<DvText>(values[i].Length, values[i].Select(c => new DvText(c)).ToArray());
+            return AddColumn(name, new DataColumn<VBufferEqSort<DvText>>(buf));
         }
 
         public int AddColumn(string name, ReadOnlyMemory<char>[] values)
@@ -305,8 +400,8 @@ namespace Scikit.ML.DataManipulation
 
         /// <summary>
         /// Converts the data frame into a string.
+        /// Every vector column is skipped.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             using (var stream = new MemoryStream())
@@ -341,11 +436,19 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Changes the values for an entire row.
         /// </summary>
-        /// <param name="row"></param>
-        /// <param name="values"></param>
+        /// <param name="row">row</param>
+        /// <param name="values">list of values</param>
         public void FillValues(int row, string[] values)
         {
             _data.FillValues(row, values);
+        }
+
+        public delegate void RowFillerDelegate(DataFrame df, int row);
+
+        public static RowFillerDelegate GetRowFiller(IRowCursor cur)
+        {
+            var dele = DataContainer.GetRowFiller(cur);
+            return (DataFrame df, int row) => { dele(df._data, row); };
         }
 
         #endregion
@@ -563,7 +666,7 @@ namespace Scikit.ML.DataManipulation
                 get
                 {
                     int icol;
-                    _parent.Schema.TryGetColumnIndex(col, out icol);
+                    _parent.SchemaI.TryGetColumnIndex(col, out icol);
                     return new DataFrameView(_parent, rows, new[] { icol });
                 }
                 set { _parent._data[rows, col] = value; }
@@ -596,6 +699,15 @@ namespace Scikit.ML.DataManipulation
         public NumericColumn GetColumn(int col, int[] rows = null)
         {
             return new NumericColumn(_data.GetColumn(col, rows));
+        }
+
+        /// <summary>
+        /// Retrieves a typed column.
+        /// </summary>
+        public void GetTypedColumn<DType>(int col, out DataColumn<DType> column, int[] rows = null)
+            where DType : IEquatable<DType>, IComparable<DType>
+        {
+            _data.GetTypedColumn(col, out column, rows);
         }
 
         /// <summary>
@@ -857,10 +969,13 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
-        /// Sorts rows.
+        /// Sorts rows. If <i>columns </i> is null, it is replaced by the first
+        /// <see cref="DataFrameSorting.LimitNumberSortingColumns"/> columns.
         /// </summary>
-        public void Sort(IEnumerable<int> columns, bool ascending = true)
+        public void Sort(IEnumerable<int> columns = null, bool ascending = true)
         {
+            if (columns == null)
+                columns = Enumerable.Range(0, Math.Min(ColumnCount, DataFrameSorting.LimitNumberSortingColumns));
             DataFrameSorting.Sort(this, columns, ascending);
         }
 
@@ -963,7 +1078,7 @@ namespace Scikit.ML.DataManipulation
             {
                 for (int i = 0; i < df.ColumnCount; ++i)
                 {
-                    var c = df.Schema.GetColumnName(i);
+                    var c = df.SchemaI.GetColumnName(i);
                     if (!unique.Contains(c))
                     {
                         unique.Add(c);
@@ -977,12 +1092,12 @@ namespace Scikit.ML.DataManipulation
             foreach (var col in ordered)
             {
                 var conc = new List<IDataColumn>();
-                var first = arr.Where(df => df.Schema.TryGetColumnIndex(col, out index))
+                var first = arr.Where(df => df.SchemaI.TryGetColumnIndex(col, out index))
                                .Select(df => df.GetColumn(col))
                                .First();
                 foreach (var df in arr)
                 {
-                    if (!df.Schema.TryGetColumnIndex(col, out index))
+                    if (!df.SchemaI.TryGetColumnIndex(col, out index))
                         conc.Add(first.Create(df.Length, true));
                     else
                         conc.Add(df.GetColumn(col));

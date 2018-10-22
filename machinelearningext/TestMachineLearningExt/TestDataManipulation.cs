@@ -156,7 +156,6 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(predictions.Schema.GetColumnName(6), "Features.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 11));
-                    ch.Done();
                 }
             }
         }
@@ -182,7 +181,6 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
-                    ch.Done();
                 }
             }
         }
@@ -208,7 +206,6 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
                     Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
-                    ch.Done();
                 }
             }
         }
@@ -703,6 +700,26 @@ namespace TestMachineLearningExt
             Assert.AreEqual(df.iloc[2, 1], -1.1f);
             Assert.AreEqual(df.iloc[1, 1], 1f);
             Assert.AreEqual(df.iloc[0, 1], 1.1f);
+        }
+
+        [TestMethod]
+        public void TestDataFrameSortSimpleTypes()
+        {
+            var df = DataFrameHelperTest.CreateDataFrameWithAllTypes();
+            df.Sort();
+            var st = df.ToString();
+            Assert.IsTrue(!string.IsNullOrEmpty(st));
+            Assert.IsTrue(st.StartsWith("cbool,cint,cuint,cint64,cfloat,cdouble,ctext"));
+        }
+
+        [TestMethod]
+        public void TestDataFrameSortVectorTypes()
+        {
+            var df = DataFrameHelperTest.CreateDataFrameWithAllTypes();
+            df.Sort(new[] { df.ColumnCount - 1, df.ColumnCount - 2 });
+            var st = df.ToString();
+            Assert.IsTrue(!string.IsNullOrEmpty(st));
+            Assert.IsTrue(st.StartsWith("cbool,cint,cuint,cint64,cfloat,cdouble,ctext"));
         }
 
         [TestMethod]

@@ -26,8 +26,9 @@ copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.FastTree\netstandard2.0\*.d
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.HalLearners\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.ImageAnalytics\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.KMeansClustering\netstandard2.0\*.dll machinelearning\dist\Release
-copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Release
+copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Legacy\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.LightGBM\netstandard2.0\*.dll machinelearning\dist\Release
+copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Onnx\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.OnnxTransform\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.PCA\netstandard2.0\*.dll machinelearning\dist\Release
@@ -44,8 +45,9 @@ copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Ensemble\netstandard2.0\*.dll
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.FastTree\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.HalLearners\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.KMeansClustering\netstandard2.0\*.dll machinelearning\dist\Debug
-copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.ImageAnalytics\netstandard2.0\*.dll machinelearning\dist\Debug
+copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Legacy\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.LightGBM\netstandard2.0\*.dll machinelearning\dist\Debug
+copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.ImageAnalytics\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Maml\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Onnx\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.OnnxTransform\netstandard2.0\*.dll machinelearning\dist\Debug
@@ -63,8 +65,8 @@ cmd /C dotnet build -c Release
 cd ..
 
 :finalcopy:
-copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\TestProfileBenchmark\bin\Release\netcoreapp2.1
-copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\TestProfileBenchmark\bin\Debug\netcoreapp2.1
+copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\TestProfileBenchmark\netcoreapp2.1
+copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\TestProfileBenchmark\netcoreapp2.1
 
 :end:
 if not exist machinelearning\bin\x64.Debug @echo [build.cmd] Cannot build.

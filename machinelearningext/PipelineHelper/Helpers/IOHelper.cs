@@ -463,7 +463,7 @@ namespace Scikit.ML.PipelineHelper
             }
         }
 
-        public static RoleMappedSchema ReadRoleMappedSchema(ModelLoadContext ctx, ISchema schema)
+        public static RoleMappedSchema ReadRoleMappedSchema(ModelLoadContext ctx, Schema schema)
         {
             int nb = ctx.Reader.ReadInt32();
             var array = new KeyValuePair<RoleMappedSchema.ColumnRole, string>[nb];

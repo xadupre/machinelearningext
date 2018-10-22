@@ -73,6 +73,11 @@ namespace Scikit.ML.DataManipulation
         int Length { get; }
 
         /// <summary>
+        /// Length of the column in memory (>= Length).
+        /// </summary>
+        int MemoryLength { get; }
+
+        /// <summary>
         /// type of the column 
         /// </summary>
         ColumnType Kind { get; }
@@ -100,7 +105,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Converts a column into another type.
         /// </summary>
-        /// <param name="colType"></param>
+        /// <param name="colType">column type</param>
         /// <returns>new column</returns>
         IDataColumn AsType(ColumnType colType);
 
@@ -144,6 +149,13 @@ namespace Scikit.ML.DataManipulation
         /// Updates values based on a condition.
         /// </summary>
         void Set(IEnumerable<int> rows, IEnumerable<object> values);
+
+        /// <summary>
+        /// Resizes the column.
+        /// </summary>
+        /// <param name="keepData">keeps existing data</param>
+        /// <param name="length">new length</param>
+        void Resize(int length, bool keepData=false);
 
         /// <summary>
         /// The returned getter returns the element
@@ -234,6 +246,11 @@ namespace Scikit.ML.DataManipulation
         int Length { get; }
 
         /// <summary>
+        /// Returns the schema as an interface.
+        /// </summary>
+        ISchema SchemaI { get; }
+
+        /// <summary>
         /// In case of a DataView, returns the underlying DataFrame.
         /// </summary>
         IDataFrameView Source { get; }
@@ -262,7 +279,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the shape of the dataframe (number of rows, number of columns).
         /// </summary>
-        Tuple<int, int> Shape { get; }
+        ShapeType Shape { get; }
 
         /// <summary>
         /// Returns a copy of the view.

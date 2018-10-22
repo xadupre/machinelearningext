@@ -19,12 +19,12 @@ namespace Scikit.ML.TestHelper
         /// saves the data, saves the models, loads it back, saves the data again,
         /// checks the output is the same.
         /// </summary>
-        /// <param name="env"></param>
-        /// <param name="outModelFilePath"></param>
-        /// <param name="transform"></param>
+        /// <param name="env">environment</param>
+        /// <param name="outModelFilePath"model filename</param>
+        /// <param name="transform">transform to test</param>
         /// <param name="source">source (view before applying the transform</param>
-        /// <param name="outData"></param>
-        /// <param name="outData2"></param>
+        /// <param name="outData">fist data file</param>
+        /// <param name="outData2">second data file</param>
         /// <param name="startsWith">Check that outputs is the same on disk after outputting the transformed data after the model was serialized</param>
         public static void SerializationTestTransform(IHostEnvironment env,
                             string outModelFilePath, IDataTransform transform,
@@ -35,11 +35,8 @@ namespace Scikit.ML.TestHelper
             // Saves model.
             var roles = env.CreateExamples(transform, null);
             using (var ch = env.Start("SaveModel"))
-            {
                 using (var fs = File.Create(outModelFilePath))
                     TrainUtils.SaveModel(env, ch, fs, null, roles);
-                ch.Done();
-            }
             if (!File.Exists(outModelFilePath))
                 throw new FileNotFoundException(outModelFilePath);
 
@@ -104,12 +101,13 @@ namespace Scikit.ML.TestHelper
         public static IDataTransform AddFlatteningTransform(IHostEnvironment env, IDataView view)
         {
             IDataTransform res = null;
-            for (int i = 0; i < view.Schema.ColumnCount; ++i)
+            var schema = view.Schema;
+            for (int i = 0; i < schema.ColumnCount; ++i)
             {
-                var ty = view.Schema.GetColumnType(i);
+                var ty = schema.GetColumnType(i);
                 if (ty.IsVector)
                 {
-                    var name = view.Schema.GetColumnName(i);
+                    var name = schema.GetColumnName(i);
 
                     view = LambdaColumnHelper.Create(env,
                                     "Lambda", view, name, name, new VectorType(NumberType.R4),

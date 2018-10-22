@@ -15,7 +15,7 @@ using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
 using IDataView = Microsoft.ML.Runtime.Data.IDataView;
 using IRowCursor = Microsoft.ML.Runtime.Data.IRowCursor;
 using IRowCursorConsolidator = Microsoft.ML.Runtime.Data.IRowCursorConsolidator;
-using ISchema = Microsoft.ML.Runtime.Data.ISchema;
+using Schema = Microsoft.ML.Runtime.Data.Schema;
 using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
 
 using ModelLoadContext = Microsoft.ML.Runtime.Model.ModelLoadContext;
@@ -100,7 +100,7 @@ namespace Scikit.ML.PipelineTransforms
         readonly bool _reverse;             // sorting order
         readonly int? _numThreads;           // filling the cache with or without multithreading
 
-        public override ISchema Schema { get { return Source.Schema; } }
+        public override Schema Schema { get { return Source.Schema; } }
 
         #endregion
 
@@ -115,9 +115,10 @@ namespace Scikit.ML.PipelineTransforms
             if (!string.IsNullOrEmpty(args.sortColumn))
             {
                 int index;
-                if (!input.Schema.TryGetColumnIndex(args.sortColumn, out index))
+                var schema = input.Schema;
+                if (!schema.TryGetColumnIndex(args.sortColumn, out index))
                     Contracts.Check(false, "sortColumn not found in input schema.");
-                var type = input.Schema.GetColumnType(index);
+                var type = schema.GetColumnType(index);
                 Host.Check(!type.IsVector, "sortColumn cannot be a vector.");
             }
 
@@ -156,9 +157,10 @@ namespace Scikit.ML.PipelineTransforms
             _sortColumn = ctx.Reader.ReadString();
             Host.AssertValue(_sortColumn);
             int index;
-            if (!input.Schema.TryGetColumnIndex(_sortColumn, out index))
+            var schema = input.Schema;
+            if (!schema.TryGetColumnIndex(_sortColumn, out index))
                 Contracts.Check(false, "sortColumn not found in input schema.");
-            var type = input.Schema.GetColumnType(index);
+            var type = schema.GetColumnType(index);
             Host.Check(!type.IsVector, "sortColumn cannot be a vector.");
             _reverse = ctx.Reader.ReadBoolean();
             _numThreads = ctx.Reader.ReadInt32();
@@ -229,11 +231,9 @@ namespace Scikit.ML.PipelineTransforms
         private IDataTransform CreateTemplatedTransform()
         {
             // Get the type of the sorting columns.
-            ISchema schema = Source.Schema;
+            var schema = Source.Schema;
             if (string.IsNullOrEmpty(_sortColumn))
-            {
                 return CreateTransformNoSort();
-            }
             else
             {
                 int index;
@@ -318,7 +318,7 @@ namespace Scikit.ML.PipelineTransforms
             object _lock;
 
             public IDataView Source { get { return _source; } }
-            public ISchema Schema { get { return _source.Schema; } }
+            public Schema Schema { get { return _source.Schema; } }
 
             public SortInDataFrameState(IHostEnvironment host, IDataView input, int sortColumn, bool reverse, int? numThreads)
             {

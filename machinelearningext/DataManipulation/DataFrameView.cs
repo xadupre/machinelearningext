@@ -29,13 +29,14 @@ namespace Scikit.ML.DataManipulation
         {
             _src = src;
             _rows = rows == null ? Enumerable.Range(0, src.Length).ToArray() : rows.ToArray();
-            _columns = columns == null ? Enumerable.Range(0, src.Schema.ColumnCount).ToArray() : columns.ToArray();
+            _columns = columns == null ? Enumerable.Range(0, src.SchemaI.ColumnCount).ToArray() : columns.ToArray();
             _schema = new DataFrameViewSchema(src.Schema, _columns);
         }
 
         #region IDataView API
 
-        public ISchema Schema => _schema;
+        public Schema Schema => Schema.Create(_schema);
+        public ISchema SchemaI => _schema;
         public int ColumnCount => _columns == null ? _src.ColumnCount : _columns.Length;
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace Scikit.ML.DataManipulation
 
         public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
         {
-            throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrameView.");
+            throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrame.");
         }
 
         /// <summary>
@@ -127,7 +128,6 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Converts the data frame into a string.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             using (var stream = new MemoryStream())
@@ -146,7 +146,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the shape of the dataframe (number of rows, number of columns).
         /// </summary>
-        public Tuple<int, int> Shape => new Tuple<int, int>(_rows.Length, _columns.Length);
+        public ShapeType Shape => new ShapeType(_rows.Length, _columns.Length);
 
         /// <summary>
         /// Returns the list of columns.
@@ -411,7 +411,7 @@ namespace Scikit.ML.DataManipulation
                 get
                 {
                     int icol;
-                    _parent._src.Schema.TryGetColumnIndex(col, out icol);
+                    _parent._src.SchemaI.TryGetColumnIndex(col, out icol);
                     return new DataFrameView(_parent._src, rows.Select(c => _parent._rows[c]), new[] { icol });
                 }
                 set { AsDataFrame().loc[rows.Select(c => _parent._rows[c]), col] = value; }
@@ -697,7 +697,7 @@ namespace Scikit.ML.DataManipulation
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
             var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
-            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,
                                           orderLeft, orderRight,
@@ -722,7 +722,7 @@ namespace Scikit.ML.DataManipulation
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
             var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
-            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,
                                           orderLeft, orderRight,
@@ -748,7 +748,7 @@ namespace Scikit.ML.DataManipulation
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
             var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
-            var scolsRight = icolsRight.Select(c => right.Schema.GetColumnName(c)).ToArray();
+            var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,
                                           orderLeft, orderRight,

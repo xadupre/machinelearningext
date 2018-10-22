@@ -16,7 +16,7 @@ using IDataSaver = Microsoft.ML.Runtime.Data.IDataSaver;
 using IDataView = Microsoft.ML.Runtime.Data.IDataView;
 using IRowCursor = Microsoft.ML.Runtime.Data.IRowCursor;
 using IRowCursorConsolidator = Microsoft.ML.Runtime.Data.IRowCursorConsolidator;
-using ISchema = Microsoft.ML.Runtime.Data.ISchema;
+using Schema = Microsoft.ML.Runtime.Data.Schema;
 using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
 using MultiFileSource = Microsoft.ML.Runtime.Data.MultiFileSource;
 using CacheDataView = Microsoft.ML.Runtime.Data.CacheDataView;
@@ -108,7 +108,7 @@ namespace Scikit.ML.PipelineTransforms
         readonly string _saverSettings;
         readonly IDataTransform _pipedTransform;
 
-        public override ISchema Schema { get { return Source.Schema; } }
+        public override Schema Schema { get { return Source.Schema; } }
 
         #endregion
 
@@ -276,7 +276,6 @@ namespace Scikit.ML.PipelineTransforms
                         using (var fs0 = Host.CreateOutputFile(_cacheFile))
                             DataSaverUtils.SaveDataView(ch, saver, input, fs0, true);
                     }
-                    ch.Done();
                 }
                 var loader = ComponentCreation.CreateLoader(env, string.Format("binary{{{0}}}", nt),
                                                             new MultiFileSource(_cacheFile));

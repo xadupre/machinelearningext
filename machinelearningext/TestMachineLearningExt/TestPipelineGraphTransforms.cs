@@ -85,9 +85,8 @@ namespace TestMachineLearningExt
                     var lines = File.ReadAllLines(outData);
                     if (!lines.Any())
                         throw new Exception("Empty file.");
-                    if (lines.Length != 11)
+                    if (lines.Length != 9)
                         throw new Exception("Some lines are missing.");
-                    ch.Done();
                 }
             }
         }

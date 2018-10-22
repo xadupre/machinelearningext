@@ -116,8 +116,8 @@ namespace Scikit.ML.ProductionPrediction
         /// <summary>
         /// Produces prediction assuming the input accepts a features vectors as inputs.
         /// </summary>
-        /// <param name="features"></param>
-        /// <returns></returns>
+        /// <param name="features">feature vector</param>
+        /// <returns>prediction as float</returns>
         public float Predict(float[] features)
         {
             if (_mapper == null)
@@ -131,8 +131,8 @@ namespace Scikit.ML.ProductionPrediction
         /// <summary>
         /// Produces prediction assuming the input accepts a features vectors as inputs.
         /// </summary>
-        /// <param name="features"></param>
-        /// <returns></returns>
+        /// <param name="features">feature vector</param>
+        /// <returns>predictions</returns>
         public float[] PredictVector(float[] features)
         {
             if (_mapperVector == null)

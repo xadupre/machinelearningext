@@ -150,7 +150,7 @@ namespace Scikit.ML.PipelineGraphTransforms
             _mergedView = Setup(input);
         }
 
-        public ISchema Schema { get { return _mergedView.Schema; } }
+        public Schema Schema { get { return _mergedView.Schema; } }
         public bool CanShuffle { get { return _mergedView.CanShuffle; } }
         public long? GetRowCount(bool lazy = true)
         {

@@ -41,7 +41,6 @@ namespace Scikit.ML.DataManipulation
         List<IDataColumn> _colsAR8;
         List<IDataColumn> _colsATX;
 
-
         /// <summary>
         /// Returns a copy.
         /// </summary>
@@ -122,7 +121,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the dimension of the container.
         /// </summary>
-        public Tuple<int, int> Shape => new Tuple<int, int>(Length, _names.Count);
+        public ShapeType Shape => new ShapeType(Length, _names.Count);
 
         /// <summary>
         /// Returns the name and the type of a column such as
@@ -164,6 +163,36 @@ namespace Scikit.ML.DataManipulation
         /// Returns the type of a column.
         /// </summary>
         public ColumnType GetDType(int col) { return _kinds[col]; }
+
+        /// <summary>
+        /// Returns the number of rows actually allocated.
+        /// </summary>
+        public int MemoryLength
+        {
+            get
+            {
+                if (ColumnCount == 0)
+                    return 0;
+                else
+                    return GetColumn(0).MemoryLength;
+            }
+        }
+
+        /// <summary>
+        /// Resizes all columns.
+        /// </summary>
+        /// <param name="keepData">keeps existing data</param>
+        /// <param name="length">new length</param>
+        public void Resize(int length, bool keepData = false)
+        {
+            if (length <= _length)
+                _length = length;
+            else if (length <= MemoryLength)
+                _length = length;
+            else
+                for (int i = 0; i < ColumnCount; ++i)
+                    GetColumn(i).Resize(length, keepData);
+        }
 
         /// <summary>
         /// Returns a typed container of column col.
@@ -297,6 +326,8 @@ namespace Scikit.ML.DataManipulation
             _mapping = new Dictionary<int, Tuple<ColumnType, int>>();
             _naming = new Dictionary<string, int>();
             _schema = new DataContainerSchema(this);
+            _schemaCache = null;
+            _lock = new object();
         }
 
         /// <summary>
@@ -307,8 +338,8 @@ namespace Scikit.ML.DataManipulation
         public DataContainer(IEnumerable<Dictionary<string, object>> rows,
                              Dictionary<string, ColumnType> kinds = null)
         {
-            var array = rows.ToArray();
             _init();
+            var array = rows.ToArray();
             if (kinds == null)
                 kinds = GuessKinds(array);
             foreach (var pair in kinds)
@@ -321,6 +352,35 @@ namespace Scikit.ML.DataManipulation
                 var data = CreateColumn(pair.Value, values);
                 AddColumn(pair.Key, pair.Value, array.Length, data);
             }
+        }
+
+        public DataContainer(Schema schema, int nb = 1)
+        {
+            _init();
+            for (int i = 0; i < schema.ColumnCount; ++i)
+            {
+                var name = schema.GetColumnName(i);
+                var type = schema.GetColumnType(i);
+                AddColumn(name, type, nb);
+            }
+        }
+
+        public bool CheckSharedSchema(Schema schema)
+        {
+            if (schema.ColumnCount != ColumnCount)
+                throw Contracts.Except($"Different number of columns ${ColumnCount} != ${schema.ColumnCount}.");
+            string name;
+            ColumnType colType;
+            for (int i = 0; i < ColumnCount; ++i)
+            {
+                name = schema.GetColumnName(i);
+                if (name != _names[i])
+                    throw Contracts.Except($"Different column name at position ${i}: ${_names[i]} != ${name}.");
+                colType = schema.GetColumnType(i);
+                if (colType != _kinds[i])
+                    throw Contracts.Except($"Different column type at position ${i}: ${_kinds[i]} != ${colType}.");
+            }
+            return true;
         }
 
         Dictionary<string, ColumnType> GuessKinds(Dictionary<string, object>[] rows)
@@ -619,7 +679,7 @@ namespace Scikit.ML.DataManipulation
         #region IDataView API
 
         /// <summary>
-        /// Implements ISchema interface for this container.
+        /// Implements Schema interface for this container.
         /// </summary>
         public class DataContainerSchema : ISchema
         {
@@ -700,9 +760,36 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
-        /// Returns the schema.
+        /// Returns the schema. It should not be used unless it is necessary
+        /// as it makes a copy of the existing schema.
         /// </summary>
-        public ISchema Schema => _schema;
+        public Schema Schema
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    if (_schemaCache == null || _schemaCache.ColumnCount != _schema.ColumnCount)
+                    {
+                        _schemaCache = Schema.Create(_schema);
+                        return _schemaCache;
+                    }
+                    if (Enumerable.Range(0, _schema.ColumnCount).Where(i => _schema.GetColumnName(i) != _schemaCache.GetColumnName(i)).Any() ||
+                        Enumerable.Range(0, _schema.ColumnCount).Where(i => _schema.GetColumnType(i) != _schemaCache.GetColumnType(i)).Any())
+                    {
+                        _schemaCache = Schema.Create(_schema);
+                        return _schemaCache;
+
+                    }
+                }
+                return _schemaCache;
+            }
+        }
+
+        private Schema _schemaCache;
+        private object _lock;
+
+        public ISchema SchemaI => _schema;
 
         /// <summary>
         /// Fills the value with values coming from a IDataView.
@@ -1064,6 +1151,183 @@ namespace Scikit.ML.DataManipulation
             }
         }
 
+        public delegate void RowFillerDelegate(DataContainer cont, int row);
+        public delegate void RowColumnSetterDelegate(DataContainer cont, int row);
+
+        public static RowFillerDelegate GetRowFiller(IRowCursor cur)
+        {
+            var setters = GetAllSetters(cur);
+
+            return (DataContainer cont, int row) =>
+            {
+                for (int i = 0; i < setters.Length; ++i)
+                    setters[i](cont, row);
+            };
+        }
+
+        /// <summary>
+        /// Builds setters for each column in the DataFrame based on the schema of a cursor.
+        /// </summary>
+        public static RowColumnSetterDelegate[] GetAllSetters(IRowCursor cur)
+        {
+            var sch = cur.Schema;
+            var res = new List<RowColumnSetterDelegate>();
+            var getters = CursorHelper.GetAllGetters(cur);
+            int pos = 0;
+            for (int i = 0; i < sch.ColumnCount; ++i)
+            {
+                if (sch.IsHidden(i))
+                    continue;
+                var getter = getters[pos];
+                res.Add(GetColumnSetter(cur, getter, pos, sch.GetColumnType(i)));
+                ++pos;
+            }
+            return res.ToArray();
+        }
+
+        /// <summary>
+        /// Builds a setter for a specific column, the function then chooses the best
+        /// option based on the type. It deals with ambiguities introduced by
+        /// DvText and VBufferEqSort.
+        /// </summary>
+        public static RowColumnSetterDelegate GetColumnSetter(IRowCursor cur, Delegate getter, int col, ColumnType colType)
+        {
+            if (colType.IsVector)
+            {
+                switch (colType.ItemType.RawKind)
+                {
+                    case DataKind.BL: return GetColumnSetterVector<bool>(cur, getter, col);
+                    case DataKind.I4: return GetColumnSetterVector<int>(cur, getter, col);
+                    case DataKind.U4: return GetColumnSetterVector<uint>(cur, getter, col);
+                    case DataKind.I8: return GetColumnSetterVector<Int64>(cur, getter, col);
+                    case DataKind.R4: return GetColumnSetterVector<float>(cur, getter, col);
+                    case DataKind.R8: return GetColumnSetterVector<double>(cur, getter, col);
+                    case DataKind.TX: return GetColumnSetterVectorText(cur, getter, col);
+                    default:
+                        throw new NotImplementedException(string.Format("Not implemented for kind {0}", colType));
+                }
+            }
+            else
+            {
+                switch (colType.RawKind)
+                {
+                    case DataKind.BL: return GetColumnSetter<bool>(cur, getter, col);
+                    case DataKind.I4: return GetColumnSetter<int>(cur, getter, col);
+                    case DataKind.U4: return GetColumnSetter<uint>(cur, getter, col);
+                    case DataKind.I8: return GetColumnSetter<Int64>(cur, getter, col);
+                    case DataKind.R4: return GetColumnSetter<float>(cur, getter, col);
+                    case DataKind.R8: return GetColumnSetter<double>(cur, getter, col);
+                    case DataKind.TX: return GetColumnSetterText(cur, getter, col);
+                    default:
+                        throw new NotImplementedException(string.Format("Not implemented for kind {0}", colType));
+                }
+            }
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetter<DType>(IRowCursor cur, Delegate getter, int col)
+             where DType : IEquatable<DType>, IComparable<DType>
+        {
+            var typedGetter = getter as ValueGetter<DType>;
+            if (typedGetter == null)
+                throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type {typeof(DType)}.");
+            return (DataContainer cont, int row) =>
+            {
+                DataColumn<DType> typedCol;
+                cont.GetTypedColumn(col, out typedCol);
+                typedCol.Set(row, typedGetter);
+            };
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetterVector<DType>(IRowCursor cur, Delegate getter, int col)
+            where DType : IEquatable<DType>, IComparable<DType>
+        {
+            var typedGetter2 = getter as ValueGetter<VBufferEqSort<DType>>;
+            if (typedGetter2 != null)
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DType>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedCol.Set(row, typedGetter2);
+                };
+            var typedGetter = getter as ValueGetter<VBuffer<DType>>;
+            if (typedGetter != null)
+            {
+                var buffer = new VBuffer<DType>();
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DType>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedGetter(ref buffer);
+                    typedCol.Set(row, new VBufferEqSort<DType>(buffer));
+                };
+            }
+            throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type {typeof(DType)}.");
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetterVectorText(IRowCursor cur, Delegate getter, int col)
+        {
+            var typedGetter3 = getter as ValueGetter<VBufferEqSort<DvText>>;
+            if (typedGetter3 != null)
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DvText>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedCol.Set(row, typedGetter3);
+                };
+            var typedGetter2 = getter as ValueGetter<VBuffer<DvText>>;
+            if (typedGetter2 != null)
+            {
+                var buffer = new VBuffer<DvText>();
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DvText>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedGetter2(ref buffer);
+                    typedCol.Set(row, new VBufferEqSort<DvText>(buffer));
+                };
+            }
+            var typedGetter = getter as ValueGetter<VBuffer<ReadOnlyMemory<char>>>;
+            if (typedGetter != null)
+            {
+                var buffer = new VBuffer<ReadOnlyMemory<char>>();
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DvText>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedGetter(ref buffer);
+                    typedCol.Set(row, new VBufferEqSort<DvText>(buffer.Length, buffer.Count,
+                                                                buffer.Values.Select(c => new DvText(c)).ToArray(),
+                                                                buffer.Indices));
+                };
+            }
+            throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type VBufferEqSort<DvText> or equivalent.");
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetterText(IRowCursor cur, Delegate getter, int col)
+        {
+            var typedGetter2 = getter as ValueGetter<DvText>;
+            if (typedGetter2 != null)
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<DvText> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedCol.Set(row, typedGetter2);
+                };
+            var typedGetter = getter as ValueGetter<ReadOnlyMemory<char>>;
+            if (typedGetter != null)
+            {
+                var buffer = new ReadOnlyMemory<char>();
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<DvText> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedGetter(ref buffer);
+                    typedCol.Set(row, new DvText(buffer));
+                };
+            }
+            throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type DvText or ReadOnlyMemory<char>.");
+        }
+
         #endregion
 
         #region Cursor
@@ -1143,7 +1407,7 @@ namespace Scikit.ML.DataManipulation
             int[] _rowsSet;
             int[] _colsSet;
             Dictionary<int, int> _revColsSet;
-            ISchema _schema;
+            Schema _schema;
             int[] _shuffled;
 
             public RowCursor(DataContainer cont, Func<int, bool> needCol,
@@ -1163,7 +1427,7 @@ namespace Scikit.ML.DataManipulation
                     _revColsSet = new Dictionary<int, int>();
                     for (int i = 0; i < columns.Length; ++i)
                         _revColsSet[columns[i]] = i;
-                    _schema = new DataFrameViewSchema(_cont.Schema, columns);
+                    _schema = Schema.Create(new DataFrameViewSchema(_cont.Schema, columns));
                 }
                 else
                     _schema = null;
@@ -1189,7 +1453,7 @@ namespace Scikit.ML.DataManipulation
 
             public ICursor GetRootCursor() { return this; }
             public bool IsColumnActive(int col) { return _needCol(col); }
-            public ISchema Schema => _colsSet == null ? _cont.Schema : _schema;
+            public Schema Schema => _colsSet == null ? _cont.Schema : _schema;
 
             public long Position => _rowsSet == null
                                         ? _position
@@ -1422,8 +1686,8 @@ namespace Scikit.ML.DataManipulation
                     row.Add($"'{Schema.GetColumnName(i)}':{Schema.GetColumnType(i)}");
                 else
                     row.Add("###");
-                if (i < c.Schema.ColumnCount)
-                    row.Add($"'{c.Schema.GetColumnName(i)}':{c.Schema.GetColumnType(i)}");
+                if (i < c.SchemaI.ColumnCount)
+                    row.Add($"'{c.SchemaI.GetColumnName(i)}':{c.SchemaI.GetColumnType(i)}");
                 else
                     row.Add("###");
                 var s = string.Join(" --- ", row);

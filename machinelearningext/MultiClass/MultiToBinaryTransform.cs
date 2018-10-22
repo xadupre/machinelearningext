@@ -192,7 +192,7 @@ namespace Scikit.ML.MultiClass
         #region IDataTransform API
 
         public IDataView Source { get { return _input; } }
-        public ISchema Schema { get { return _transform.Schema; } }
+        public Schema Schema { get { return _transform.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
         public long? GetRowCount(bool lazy = true)
@@ -326,7 +326,7 @@ namespace Scikit.ML.MultiClass
         {
             IHost _host;
             IDataView _input;
-            ISchema _schema;
+            Schema _schema;
             Arguments _args;
             Dictionary<TLabel, float> _labelDistribution;
             float _averageMultiplication;
@@ -380,7 +380,7 @@ namespace Scikit.ML.MultiClass
             object _lock;
 
             public IDataView Source { get { return _input; } }
-            public ISchema Schema { get { return _schema; } }
+            public Schema Schema { get { return _schema; } }
 
             public MultiToBinaryState(IHostEnvironment host, IDataView input, Arguments args)
             {
@@ -408,14 +408,14 @@ namespace Scikit.ML.MultiClass
                 {
                     case MultiplicationAlgorithm.Default:
                     case MultiplicationAlgorithm.Reweight:
-                        _schema = new ExtendedSchema(input.Schema,
+                        _schema = Schema.Create(new ExtendedSchema(input.Schema,
                                                 new string[] { _args.newColumn },
-                                                new ColumnType[] { BoolType.Instance });
+                                                new ColumnType[] { BoolType.Instance }));
                         break;
                     case MultiplicationAlgorithm.Ranking:
-                        _schema = new ExtendedSchema(input.Schema,
+                        _schema = Schema.Create(new ExtendedSchema(input.Schema,
                                                 new string[] { _args.newColumn },
-                                                new ColumnType[] { NumberType.U4 });
+                                                new ColumnType[] { NumberType.U4 }));
                         break;
                     default:
                         throw _host.ExceptNotSupp("Unsupported algorithm {0}", _args.algo);
@@ -474,10 +474,7 @@ namespace Scikit.ML.MultiClass
                         _labelDistribution[tkey] = value;
                     }
                     using (var ch = _host.Start("Finalize MultiToBinaryState"))
-                    {
                         Finalize(ch);
-                        ch.Done();
-                    }
                 }
             }
 
@@ -489,10 +486,7 @@ namespace Scikit.ML.MultiClass
                         return;
 
                     using (var ch = _host.Start("MultiToBinary Training"))
-                    {
                         ComputeLabelDistribution(ch, rand);
-                        ch.Done();
-                    }
                 }
             }
 
@@ -803,7 +797,7 @@ namespace Scikit.ML.MultiClass
             public CursorState State { get { return _inputCursor.State; } }
             public long Batch { get { return _inputCursor.Batch; } }
             public long Position { get { return _inputCursor.Position; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
 
             void IDisposable.Dispose()
             {

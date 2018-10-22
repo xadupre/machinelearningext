@@ -1,11 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.IO;
-using System.Reflection;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
@@ -21,7 +17,7 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// Handles specific cases DataViewUtils does not handle.
         /// </summary>
-        /// <param name="view"></param>
+        /// <param name="view">IDataView</param>
         /// <param name="predicate">column selector (null for all)</param>
         /// <returns>number of rows</returns>
         public static long ComputeRowCount(IDataView view, Func<int, bool> predicate = null)
@@ -57,7 +53,6 @@ namespace Scikit.ML.PipelineHelper
                 ch.Info("Saving data into file '{0}' or '{1}'.", filename, full_output);
                 using (var fs0 = host.CreateOutputFile(full_output))
                     DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
-                ch.Done();
             }
         }
 
@@ -77,14 +72,13 @@ namespace Scikit.ML.PipelineHelper
                 ch.Info("Saving data into file '{0}' or '{1}'.", filename, full_output);
                 using (var fs0 = host.CreateOutputFile(full_output))
                     DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
-                ch.Done();
             }
         }
 
         /// <summary>
         /// Retrieves the first view of a pipeline.
         /// </summary>
-        /// <param name="view"></param>
+        /// <param name="view">IDataView</param>
         /// <returns>IDataView</returns>
         public static IDataView GetFirstView(IDataView view)
         {

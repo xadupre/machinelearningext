@@ -139,8 +139,9 @@ namespace Scikit.ML.FeaturesTransforms
             _input = input;
 
             int ind;
+            var schema = input.Schema;
             foreach (var col in args.columns)
-                if (!input.Schema.TryGetColumnIndex(col.Source, out ind))
+                if (!schema.TryGetColumnIndex(col.Source, out ind))
                     throw _host.ExceptParam("columns", "Column '{0}' not found in schema.", col.Source);
             _args = args;
             _transform = CreateTemplatedTransform();
@@ -185,7 +186,7 @@ namespace Scikit.ML.FeaturesTransforms
 
         #region IDataTransform API
 
-        public ISchema Schema { get { return _transform.Schema; } }
+        public Schema Schema { get { return _transform.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
         /// <summary>
@@ -232,13 +233,14 @@ namespace Scikit.ML.FeaturesTransforms
 
             // The column is a vector.
             int index = -1;
+            var schema = _input.Schema;
             foreach (var col in _args.columns)
-                if (!_input.Schema.TryGetColumnIndex(col.Source, out index))
+                if (!schema.TryGetColumnIndex(col.Source, out index))
                     throw _host.Except("Unable to find '{0}'", col.Source);
             if (_args.columns.Length != 1)
                 throw _host.Except("Only one column allowed not '{0}'.", _args.columns.Length);
 
-            var typeCol = _input.Schema.GetColumnType(index);
+            var typeCol = schema.GetColumnType(index);
             if (!typeCol.IsVector)
                 throw _host.Except("Expected a vector as input.");
             typeCol = typeCol.AsVector.ItemType;
@@ -274,7 +276,7 @@ namespace Scikit.ML.FeaturesTransforms
             IHost _host;
             IDataView _input;
 
-            readonly ISchema _schema;
+            readonly Schema _schema;
             readonly Arguments _args;
             readonly int _inputCol;
             readonly Func<TInput, TInput, TInput> _multiplication;
@@ -285,7 +287,7 @@ namespace Scikit.ML.FeaturesTransforms
             // object _lock;
 
             public IDataView Source => _input;
-            public ISchema Schema => _schema;
+            public Schema Schema => _schema;
             public IHost Host => _host;
 
             public PolynomialState(IHostEnvironment host, IDataView input, Arguments args, Func<TInput, TInput, TInput> multiplication)
@@ -297,11 +299,12 @@ namespace Scikit.ML.FeaturesTransforms
                 _args = args;
                 _multiplication = multiplication;
                 var column = _args.columns[0];
+                var schema = input.Schema;
                 using (var ch = _host.Start("PolynomialState"))
                 {
-                    if (!input.Schema.TryGetColumnIndex(column.Source, out _inputCol))
+                    if (!schema.TryGetColumnIndex(column.Source, out _inputCol))
                         throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", column.Source);
-                    var type = input.Schema.GetColumnType(_inputCol);
+                    var type = schema.GetColumnType(_inputCol);
                     if (!type.IsVector)
                         throw _host.Except("Input column type must be a vector.");
                     int dim = type.AsVector.DimCount;
@@ -313,8 +316,9 @@ namespace Scikit.ML.FeaturesTransforms
                     ch.Trace("PolynomialTransform {0}->{1}.", dim, size);
 
                     // We extend the input schema. The new type has the same type as the input.
-                    _schema = new ExtendedSchema(input.Schema, new[] { column.Name }, new[] { new VectorType(type.AsVector.ItemType, size) });
-                    ch.Done();
+                    _schema = Schema.Create(new ExtendedSchema(input.Schema,
+                                                    new[] { column.Name },
+                                                    new[] { new VectorType(type.AsVector.ItemType, size) }));
                 }
             }
 
@@ -419,7 +423,7 @@ namespace Scikit.ML.FeaturesTransforms
             public CursorState State => _inputCursor.State; // No change.
             public long Batch => _inputCursor.Batch;        // No change.
             public long Position => _inputCursor.Position;  // No change.
-            public ISchema Schema => _view.Schema;          // No change.
+            public Schema Schema => _view.Schema;           // No change.
 
             void IDisposable.Dispose()
             {
@@ -440,14 +444,15 @@ namespace Scikit.ML.FeaturesTransforms
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 // If the column is part of the input view.
-                if (col < _inputCursor.Schema.ColumnCount)
+                var schema = _inputCursor.Schema;
+                if (col < schema.ColumnCount)
                     return _inputCursor.GetGetter<TValue>(col);
                 // If it is the added column.
-                else if (col == _inputCursor.Schema.ColumnCount)
+                else if (col == schema.ColumnCount)
                     return PolynomialBuilder() as ValueGetter<TValue>;
                 // Otherwise, it is an error.
                 else
-                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, _inputCursor.Schema.ColumnCount);
+                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, schema.ColumnCount);
             }
 
             /// <summary>

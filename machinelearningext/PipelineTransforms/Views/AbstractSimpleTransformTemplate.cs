@@ -59,7 +59,7 @@ namespace Scikit.ML.PipelineTransforms
         /// <summary>
         /// Schema.
         /// </summary>
-        public virtual ISchema Schema
+        public virtual Schema Schema
         {
             get
             {
@@ -119,7 +119,6 @@ namespace Scikit.ML.PipelineTransforms
         /// <summary>
         /// Tells if the class is initialized. Otherwise, calls DelayedInitialisation.
         /// </summary>
-        /// <returns></returns>
         protected virtual bool IsInitialized()
         {
             return _sourcePipe != null;

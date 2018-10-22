@@ -33,7 +33,12 @@ namespace Scikit.ML.ScikitAPI
 {
     public static class ComponentHelper
     {
-        private static void AddComponent(IHostEnvironment env, Assembly a)
+        /// <summary>
+        /// Register one assembly.
+        /// </summary>
+        /// <param name="env">environment</param>
+        /// <param name="a">assembly</param>
+        public static void AddComponent(IHostEnvironment env, Assembly a)
         {
             try
             {
@@ -41,10 +46,14 @@ namespace Scikit.ML.ScikitAPI
             }
             catch(Exception e)
             {
-                throw new Exception($"Unable to register assembly {a.FullName} due to ${e}.");
+                throw new Exception($"Unable to register assembly '{a.FullName}' due to '{e}'.");
             }
         }
 
+        /// <summary>
+        /// Register standard assemblies from Microsoft.ML and Scikit.ML.
+        /// </summary>
+        /// <param name="env">environment</param>
         public static void AddStandardComponents(IHostEnvironment env)
         {
             AddComponent(env, typeof(TextLoader).Assembly);

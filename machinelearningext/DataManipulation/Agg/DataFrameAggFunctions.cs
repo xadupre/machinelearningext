@@ -25,7 +25,7 @@ namespace Scikit.ML.DataManipulation
                 case AggregatedFunction.Min:
                     return (bool[] arr) => { return arr.Aggregate((a, b) => a & b); };
                 default:
-                    throw new NotImplementedException($"Unkown aggregated function ${func}.");
+                    throw new NotImplementedException($"Unkown aggregated function '{func}'.");
             }
         }
 
@@ -44,7 +44,7 @@ namespace Scikit.ML.DataManipulation
                 case AggregatedFunction.Mean:
                     return (int[] arr) => { return arr.Aggregate((a, b) => a + b) / arr.Length; };
                 default:
-                    throw new NotImplementedException($"Unkown aggregated function ${func}.");
+                    throw new NotImplementedException($"Unkown aggregated function '{func}'.");
             }
         }
 
@@ -63,7 +63,7 @@ namespace Scikit.ML.DataManipulation
                 case AggregatedFunction.Mean:
                     return (uint[] arr) => { return arr.Aggregate((a, b) => a + b) / (uint)arr.Length; };
                 default:
-                    throw new NotImplementedException($"Unkown aggregated function ${func}.");
+                    throw new NotImplementedException($"Unkown aggregated function '{func}'.");
             }
         }
 
@@ -82,7 +82,7 @@ namespace Scikit.ML.DataManipulation
                 case AggregatedFunction.Mean:
                     return (Int64[] arr) => { return arr.Aggregate((a, b) => a + b) / arr.Length; };
                 default:
-                    throw new NotImplementedException($"Unkown aggregated function ${func}.");
+                    throw new NotImplementedException($"Unkown aggregated function '{func}'.");
             }
         }
 
@@ -101,7 +101,7 @@ namespace Scikit.ML.DataManipulation
                 case AggregatedFunction.Mean:
                     return (float[] arr) => { return arr.Sum() / (uint)arr.Length; };
                 default:
-                    throw new NotImplementedException($"Unkown aggregated function ${func}.");
+                    throw new NotImplementedException($"Unkown aggregated function '{func}'.");
             }
         }
 
@@ -120,7 +120,7 @@ namespace Scikit.ML.DataManipulation
                 case AggregatedFunction.Mean:
                     return (double[] arr) => { return arr.Sum() / (uint)arr.Length; };
                 default:
-                    throw new NotImplementedException($"Unkown aggregated function ${func}.");
+                    throw new NotImplementedException($"Unkown aggregated function '{func}'.");
             }
         }
 
@@ -138,7 +138,7 @@ namespace Scikit.ML.DataManipulation
                 case AggregatedFunction.Max:
                     return (DvText[] arr) => { return arr.Aggregate((a, b) => a.CompareTo(b) >= 0 ? a : b); };
                 default:
-                    throw new NotImplementedException($"Unkown aggregated function ${func}.");
+                    throw new NotImplementedException($"Unkown aggregated function '{func}'.");
             }
         }
     }

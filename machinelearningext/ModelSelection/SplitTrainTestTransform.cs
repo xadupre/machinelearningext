@@ -137,7 +137,7 @@ namespace Scikit.ML.ModelSelection
         IDataTransform _pipedTransform;
         readonly string _saverSettings;
 
-        public override ISchema Schema { get { return _pipedTransform.Schema; } }
+        public override Schema Schema { get { return _pipedTransform.Schema; } }
         public IPredictor TaggedPredictor { get { return null; } }
 
         #endregion
@@ -433,7 +433,6 @@ namespace Scikit.ML.ModelSelection
                             taggedViews.Add(new Tuple<string, ITaggedDataView>(_tags[i], tar));
                         }
                     }
-                    ch.Done();
                 }
             }
 

@@ -19,7 +19,7 @@ namespace Scikit.ML.ProductionPrediction
     {
         readonly int _column;
         readonly TRepValue _value;
-        readonly ISchema _schema;
+        readonly Schema _schema;
         readonly IRowCursor _otherValues;
         readonly bool _ignoreOtherColumn;
 
@@ -33,7 +33,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="column">column to be replaced</param>
         /// <param name="otherValues">cursor which contains the others values</param>
         /// <param name="schema">schema to replace if otherValues is null</param>
-        public TemporaryViewCursorColumn(TRepValue value, int column, ISchema schema = null, IRowCursor otherValues = null, bool ignoreOtherColumn = false)
+        public TemporaryViewCursorColumn(TRepValue value, int column, Schema schema = null, IRowCursor otherValues = null, bool ignoreOtherColumn = false)
         {
             _column = column;
             _otherValues = otherValues;
@@ -45,7 +45,7 @@ namespace Scikit.ML.ProductionPrediction
 
         public bool CanShuffle { get { return false; } }
         public long? GetRowCount(bool lazy = true) { return null; }
-        public ISchema Schema { get { return _schema; } }
+        public Schema Schema { get { return _schema; } }
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
@@ -100,7 +100,7 @@ namespace Scikit.ML.ProductionPrediction
             public ICursor GetRootCursor() { return this; }
             public long Batch { get { return 1; } }
             public long Position { get { return 0; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
             public ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
 
             void IDisposable.Dispose()
@@ -210,7 +210,7 @@ namespace Scikit.ML.ProductionPrediction
     {
         readonly int[] _columns;
         TRowValue _value;
-        readonly ISchema _schema;
+        readonly Schema _schema;
         readonly IRowCursor _otherValues;
         readonly SchemaDefinition _columnsSchema;
         readonly Dictionary<string, Delegate> _overwriteRowGetter;
@@ -224,7 +224,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="column">column to be replaced</param>
         /// <param name="otherValues">cursor which contains the others values</param>
         /// <param name="schema">schema to replace if otherValues is null</param>
-        public TemporaryViewCursorRow(TRowValue value, int[] columns = null, ISchema schema = null, IRowCursor otherValues = null,
+        public TemporaryViewCursorRow(TRowValue value, int[] columns = null, Schema schema = null, IRowCursor otherValues = null,
                                          Dictionary<string, Delegate> overwriteRowGetter = null)
         {
             var columnsSchema = SchemaDefinition.Create(typeof(TRowValue), SchemaDefinition.Direction.Read);
@@ -243,7 +243,7 @@ namespace Scikit.ML.ProductionPrediction
 
         public bool CanShuffle { get { return false; } }
         public long? GetRowCount(bool lazy = true) { return null; }
-        public ISchema Schema { get { return _schema; } }
+        public Schema Schema { get { return _schema; } }
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
         {
@@ -304,7 +304,7 @@ namespace Scikit.ML.ProductionPrediction
             public ICursor GetRootCursor() { return this; }
             public long Batch { get { return 1; } }
             public long Position { get { return 0; } }
-            public ISchema Schema { get { return _view.Schema; } }
+            public Schema Schema { get { return _view.Schema; } }
             public ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
 
             void IDisposable.Dispose()
@@ -349,9 +349,9 @@ namespace Scikit.ML.ProductionPrediction
             /// from a view which has a column to be replaced,
             /// or the entire row (ConstantCol == -1, _otherValues).
             /// </summary>
-            /// <typeparam name="TValue"></typeparam>
-            /// <param name="col"></param>
-            /// <returns></returns>
+            /// <typeparam name="TValue">column type</typeparam>
+            /// <param name="col">column inde</param>
+            /// <returns>ValueGetter</returns>
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (_columns.ContainsKey(col))

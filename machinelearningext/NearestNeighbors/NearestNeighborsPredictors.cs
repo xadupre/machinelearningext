@@ -56,7 +56,6 @@ namespace Scikit.ML.NearestNeighbors
                 var trees = new NearestNeighborsTrees(host, kdtrees);
                 var pred = new NearestNeighborsValueMapper<TLabel>(host, labelWeights);
                 res = new NearestNeighborsBinaryClassifierPredictor(host, trees, pred, k, algo, weights);
-                ch.Done();
             }
             return res;
         }
@@ -152,7 +151,6 @@ namespace Scikit.ML.NearestNeighbors
                 var trees = new NearestNeighborsTrees(host, kdtrees);
                 var pred = new NearestNeighborsValueMapper<TLabel>(host, labelWeights);
                 res = new NearestNeighborsMultiClassClassifierPredictor(host, trees, pred, k, algo, weights);
-                ch.Done();
             }
             return res;
         }
