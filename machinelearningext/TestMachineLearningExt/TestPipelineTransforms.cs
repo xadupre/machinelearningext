@@ -123,7 +123,7 @@ namespace TestMachineLearningExt
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrameIO.ReadView(predictions);
-            Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
             Assert.IsTrue(File.Exists(outPass));
         }
 
@@ -176,7 +176,7 @@ namespace TestMachineLearningExt
             var predictor = learningPipeline.Train();
             var predictions = predictor.Predict(df);
             var dfout = DataFrameIO.ReadView(predictions);
-            Assert.AreEqual(new Tuple<int, int>(150, 8), dfout.Shape);
+            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
         }
 
         #endregion

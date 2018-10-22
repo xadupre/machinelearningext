@@ -20,6 +20,7 @@ namespace Scikit.ML.DataManipulation
         public int Item2;
 
         public ShapeType(int nlin, int ncol) { Item1 = nlin; Item2 = ncol; }
+        public ShapeType(Tuple<int, int> shape) { Item1 = shape.Item1; Item2 = shape.Item2; }
 
         public int this[int i]
         {
@@ -57,7 +58,12 @@ namespace Scikit.ML.DataManipulation
 
         public override bool Equals(object other)
         {
-            return Equals((ShapeType)other);
+            if (other is ShapeType)
+                return Equals((ShapeType)other);
+            else if (other is Tuple<int, int>)
+                return Equals(new ShapeType((Tuple<int, int>)other));
+            else
+                throw new DataTypeError($"Cannot compare a ShapeType to {other.GetType()}.");
         }
 
         public static bool operator ==(ShapeType c1, ShapeType c2)
