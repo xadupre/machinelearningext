@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Runtime.Data;
-using DvText = Scikit.ML.PipelineHelper.DvText;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.DataManipulation
@@ -14,6 +14,11 @@ namespace Scikit.ML.DataManipulation
     /// </summary>
     public static class DataFrameSorting
     {
+        /// <summary>
+        /// The number of sorting columns which can be used is limited.
+        /// </summary>
+        public const int LimitNumberSortingColumns = 3;
+
         #region typed version
 
         public static void TSort<T>(IDataFrameView df, ref int[] order, T[] keys, bool ascending)
@@ -95,7 +100,20 @@ namespace Scikit.ML.DataManipulation
             if (icols.Length == 1)
             {
                 if (kind.IsVector)
-                    throw new NotImplementedException();
+                {
+                    switch (kind.ItemType.RawKind)
+                    {
+                        case DataKind.BL: df.TSort<VBufferEqSort<bool>>(icols, ascending); break;
+                        case DataKind.I4: df.TSort<VBufferEqSort<int>>(icols, ascending); break;
+                        case DataKind.U4: df.TSort<VBufferEqSort<uint>>(icols, ascending); break;
+                        case DataKind.I8: df.TSort<VBufferEqSort<long>>(icols, ascending); break;
+                        case DataKind.R4: df.TSort<VBufferEqSort<float>>(icols, ascending); break;
+                        case DataKind.R8: df.TSort<VBufferEqSort<double>>(icols, ascending); break;
+                        case DataKind.TX: df.TSort<VBufferEqSort<DvText>>(icols, ascending); break;
+                        default:
+                            throw new NotImplementedException($"Sort is not implemented for type '{kind}'.");
+                    }
+                }
                 else
                 {
                     switch (kind.RawKind)
@@ -115,7 +133,20 @@ namespace Scikit.ML.DataManipulation
             else
             {
                 if (kind.IsVector)
-                    throw new NotImplementedException();
+                {
+                    switch (kind.ItemType.RawKind)
+                    {
+                        case DataKind.BL: RecSort<VBufferEqSort<bool>>(df, icols, ascending); break;
+                        case DataKind.I4: RecSort<VBufferEqSort<int>>(df, icols, ascending); break;
+                        case DataKind.U4: RecSort<VBufferEqSort<uint>>(df, icols, ascending); break;
+                        case DataKind.I8: RecSort<VBufferEqSort<long>>(df, icols, ascending); break;
+                        case DataKind.R4: RecSort<VBufferEqSort<float>>(df, icols, ascending); break;
+                        case DataKind.R8: RecSort<VBufferEqSort<double>>(df, icols, ascending); break;
+                        case DataKind.TX: RecSort<VBufferEqSort<DvText>>(df, icols, ascending); break;
+                        default:
+                            throw new NotImplementedException($"Sort is not implemented for type '{kind}'.");
+                    }
+                }
                 else
                 {
                     switch (kind.RawKind)
@@ -141,7 +172,20 @@ namespace Scikit.ML.DataManipulation
             if (icols.Length == 2)
             {
                 if (kind.IsVector)
-                    throw new NotImplementedException();
+                {
+                    switch (kind.ItemType.RawKind)
+                    {
+                        case DataKind.BL: df.TSort<T1, VBufferEqSort<bool>>(icols, ascending); break;
+                        case DataKind.I4: df.TSort<T1, VBufferEqSort<int>>(icols, ascending); break;
+                        case DataKind.U4: df.TSort<T1, VBufferEqSort<uint>>(icols, ascending); break;
+                        case DataKind.I8: df.TSort<T1, VBufferEqSort<long>>(icols, ascending); break;
+                        case DataKind.R4: df.TSort<T1, VBufferEqSort<float>>(icols, ascending); break;
+                        case DataKind.R8: df.TSort<T1, VBufferEqSort<double>>(icols, ascending); break;
+                        case DataKind.TX: df.TSort<T1, VBufferEqSort<DvText>>(icols, ascending); break;
+                        default:
+                            throw new NotImplementedException($"Sort is not implemented for type '{kind}'.");
+                    }
+                }
                 else
                 {
                     switch (kind.RawKind)
@@ -161,7 +205,20 @@ namespace Scikit.ML.DataManipulation
             else
             {
                 if (kind.IsVector)
-                    throw new NotImplementedException();
+                {
+                    switch (kind.ItemType.RawKind)
+                    {
+                        case DataKind.BL: RecSort<T1, VBufferEqSort<bool>>(df, icols, ascending); break;
+                        case DataKind.I4: RecSort<T1, VBufferEqSort<int>>(df, icols, ascending); break;
+                        case DataKind.U4: RecSort<T1, VBufferEqSort<uint>>(df, icols, ascending); break;
+                        case DataKind.I8: RecSort<T1, VBufferEqSort<long>>(df, icols, ascending); break;
+                        case DataKind.R4: RecSort<T1, VBufferEqSort<float>>(df, icols, ascending); break;
+                        case DataKind.R8: RecSort<T1, VBufferEqSort<double>>(df, icols, ascending); break;
+                        case DataKind.TX: RecSort<T1, VBufferEqSort<DvText>>(df, icols, ascending); break;
+                        default:
+                            throw new NotImplementedException($"Sort is not implemented for type '{kind}'.");
+                    }
+                }
                 else
                 {
                     switch (kind.RawKind)
@@ -188,7 +245,20 @@ namespace Scikit.ML.DataManipulation
             if (icols.Length == 3)
             {
                 if (kind.IsVector)
-                    throw new NotImplementedException();
+                {
+                    switch (kind.ItemType.RawKind)
+                    {
+                        case DataKind.BL: df.TSort<T1, T2, VBufferEqSort<bool>>(icols, ascending); break;
+                        case DataKind.I4: df.TSort<T1, T2, VBufferEqSort<int>>(icols, ascending); break;
+                        case DataKind.U4: df.TSort<T1, T2, VBufferEqSort<uint>>(icols, ascending); break;
+                        case DataKind.I8: df.TSort<T1, T2, VBufferEqSort<long>>(icols, ascending); break;
+                        case DataKind.R4: df.TSort<T1, T2, VBufferEqSort<float>>(icols, ascending); break;
+                        case DataKind.R8: df.TSort<T1, T2, VBufferEqSort<double>>(icols, ascending); break;
+                        case DataKind.TX: df.TSort<T1, T2, VBufferEqSort<DvText>>(icols, ascending); break;
+                        default:
+                            throw new NotImplementedException($"Sort is not implemented for type '{kind}'.");
+                    }
+                }
                 else
                 {
                     switch (kind.RawKind)

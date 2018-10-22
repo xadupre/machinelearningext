@@ -703,6 +703,26 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
+        public void TestDataFrameSortSimpleTypes()
+        {
+            var df = DataFrameHelperTest.CreateDataFrameWithAllTypes();
+            df.Sort();
+            var st = df.ToString();
+            Assert.IsTrue(!string.IsNullOrEmpty(st));
+            Assert.IsTrue(st.StartsWith("cbool,cint,cuint,cint64,cfloat,cdouble,ctext"));
+        }
+
+        [TestMethod]
+        public void TestDataFrameSortVectorTypes()
+        {
+            var df = DataFrameHelperTest.CreateDataFrameWithAllTypes();
+            df.Sort(new[] { df.ColumnCount - 1, df.ColumnCount - 2 });
+            var st = df.ToString();
+            Assert.IsTrue(!string.IsNullOrEmpty(st));
+            Assert.IsTrue(st.StartsWith("cbool,cint,cuint,cint64,cfloat,cdouble,ctext"));
+        }
+
+        [TestMethod]
         public void TestDataFrameSortView()
         {
             var text = "AA,BB,CC\n0,1,text\n1,1.1,text2\n0,-1.1,text3";

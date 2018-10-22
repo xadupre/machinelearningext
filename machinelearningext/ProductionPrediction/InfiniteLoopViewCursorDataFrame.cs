@@ -210,13 +210,34 @@ namespace Scikit.ML.ProductionPrediction
                 {
                     switch (coor.ItemType.RawKind)
                     {
-                        case DataKind.BL: return GetGetterPrivateI<VBufferEqSort<bool>>(col) as ValueGetter<TValue>;
-                        case DataKind.I4: return GetGetterPrivateI<VBufferEqSort<int>>(col) as ValueGetter<TValue>;
-                        case DataKind.U4: return GetGetterPrivateI<VBufferEqSort<uint>>(col) as ValueGetter<TValue>;
-                        case DataKind.I8: return GetGetterPrivateI<VBufferEqSort<Int64>>(col) as ValueGetter<TValue>;
-                        case DataKind.R4: return GetGetterPrivateI<VBufferEqSort<float>>(col) as ValueGetter<TValue>;
-                        case DataKind.R8: return GetGetterPrivateI<VBufferEqSort<double>>(col) as ValueGetter<TValue>;
-                        case DataKind.TX: return GetGetterPrivateI<VBufferEqSort<DvText>>(col) as ValueGetter<TValue>;
+                        case DataKind.BL:
+                            return typeof(TValue) == typeof(VBufferEqSort<bool>)
+                                         ? GetGetterPrivateI<VBufferEqSort<bool>>(col) as ValueGetter<TValue>
+                                         : GetGetterPrivateIVector<bool>(col) as ValueGetter<TValue>;
+                        case DataKind.I4:
+                            return typeof(TValue) == typeof(VBufferEqSort<int>)
+                                         ? GetGetterPrivateI<VBufferEqSort<int>>(col) as ValueGetter<TValue>
+                                         : GetGetterPrivateIVector<int>(col) as ValueGetter<TValue>;
+                        case DataKind.U4:
+                            return typeof(TValue) == typeof(VBufferEqSort<uint>)
+                                         ? GetGetterPrivateI<VBufferEqSort<uint>>(col) as ValueGetter<TValue>
+                                         : GetGetterPrivateIVector<uint>(col) as ValueGetter<TValue>;
+                        case DataKind.I8:
+                            return typeof(TValue) == typeof(VBufferEqSort<Int64>)
+                                         ? GetGetterPrivateI<VBufferEqSort<Int64>>(col) as ValueGetter<TValue>
+                                         : GetGetterPrivateIVector<Int64>(col) as ValueGetter<TValue>;
+                        case DataKind.R4:
+                            return typeof(TValue) == typeof(VBufferEqSort<float>)
+                                         ? GetGetterPrivateI<VBufferEqSort<float>>(col) as ValueGetter<TValue>
+                                         : GetGetterPrivateIVector<float>(col) as ValueGetter<TValue>;
+                        case DataKind.R8:
+                            return typeof(TValue) == typeof(VBufferEqSort<double>)
+                                         ? GetGetterPrivateI<VBufferEqSort<double>>(col) as ValueGetter<TValue>
+                                         : GetGetterPrivateIVector<double>(col) as ValueGetter<TValue>;
+                        case DataKind.TX:
+                            return typeof(TValue) == typeof(VBufferEqSort<DvText>)
+                                         ? GetGetterPrivateI<VBufferEqSort<DvText>>(col) as ValueGetter<TValue>
+                                         : GetGetterPrivateIVectorText(col) as ValueGetter<TValue>;
                         default:
                             throw new DataTypeError(string.Format("Type '{0}' is not handled.", coor));
                     }
@@ -231,7 +252,13 @@ namespace Scikit.ML.ProductionPrediction
                         case DataKind.I8: return GetGetterPrivateI<Int64>(col) as ValueGetter<TValue>;
                         case DataKind.R4: return GetGetterPrivateI<float>(col) as ValueGetter<TValue>;
                         case DataKind.R8: return GetGetterPrivateI<double>(col) as ValueGetter<TValue>;
-                        case DataKind.TX: return GetGetterPrivateI<DvText>(col) as ValueGetter<TValue>;
+                        case DataKind.TX:
+                            {
+                                if (typeof(TValue) == typeof(DvText))
+                                    return GetGetterPrivateI<DvText>(col) as ValueGetter<TValue>;
+                                else
+                                    return GetGetterPrivateIText(col) as ValueGetter<TValue>;
+                            }
                         default:
                             throw new DataTypeError(string.Format("Type {0} is not handled.", coor.RawKind));
                     }
@@ -248,6 +275,45 @@ namespace Scikit.ML.ProductionPrediction
                     DataColumn<TValue> column;
                     _container.GetTypedColumn(col, out column);
                     value = column.Data[_positionDataFrame - 1];
+                };
+            }
+
+            ValueGetter<VBuffer<TValue>> GetGetterPrivateIVector<TValue>(int col)
+                where TValue : IEquatable<TValue>, IComparable<TValue>
+            {
+                var schema = Schema;
+                Contracts.CheckValue(schema, nameof(schema));
+                return (ref VBuffer<TValue> value) =>
+                {
+                    DataColumn<VBufferEqSort<TValue>> column;
+                    _container.GetTypedColumn(col, out column);
+                    var t = column.Data[_positionDataFrame - 1];
+                    value = new VBuffer<TValue>(t.Length, t.Count, t.Values, t.Indices);
+                };
+            }
+
+            ValueGetter<ReadOnlyMemory<char>> GetGetterPrivateIText(int col)
+            {
+                var schema = Schema;
+                Contracts.CheckValue(schema, nameof(schema));
+                return (ref ReadOnlyMemory<char> value) =>
+                {
+                    DataColumn<DvText> column;
+                    _container.GetTypedColumn(col, out column);
+                    value = column.Data[_positionDataFrame - 1].str;
+                };
+            }
+
+            ValueGetter<VBuffer<ReadOnlyMemory<char>>> GetGetterPrivateIVectorText(int col)
+            {
+                var schema = Schema;
+                Contracts.CheckValue(schema, nameof(schema));
+                return (ref VBuffer<ReadOnlyMemory<char>> value) =>
+                {
+                    DataColumn<VBufferEqSort<DvText>> column;
+                    _container.GetTypedColumn(col, out column);
+                    var t = column.Data[_positionDataFrame - 1];
+                    value = new VBuffer<ReadOnlyMemory<char>>(t.Length, t.Count, t.Values.Select(c => c.str).ToArray(), t.Indices);
                 };
             }
         }

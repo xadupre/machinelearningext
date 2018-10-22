@@ -19,6 +19,13 @@ namespace Scikit.ML.DataManipulation
     /// for the index which can be added as a column but does not
     /// play any particular role (concatenation does not take it
     /// into account).
+    /// 
+    /// The class follows IDataView API to be nicely integrated in 
+    /// machine learning pipelines. However, due to the column type contraints
+    /// (<code>IEquatable<DType>, IComparable<DType></code>), two news types
+    /// were introduced: <see cref="DvText"/> which a sortable and comparable
+    /// <see cref="ReadOnlyMemory{T}"/> and <see cref="VBufferEqSort{T}"/> to
+    /// get a sortable and comparable <see cref="VBuffer{T}"/>.
     /// </summary>
     public class DataFrame : IDataFrameView
     {
@@ -181,7 +188,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the shape of the dataframe (number of rows, number of columns).
         /// </summary>
-        public Tuple<int, int> Shape => _data.Shape;
+        public ShapeType Shape => _data.Shape;
 
         /// <summary>
         /// Adds a new column. The length must be specified for the first column.
@@ -303,7 +310,7 @@ namespace Scikit.ML.DataManipulation
         {
             var buf = new VBufferEqSort<DvText>[values.Length];
             for (int i = 0; i < values.Length; ++i)
-                buf[i] = new VBufferEqSort<DvText>(values[i].Length, values[i].Select(c=>new DvText(c)).ToArray());
+                buf[i] = new VBufferEqSort<DvText>(values[i].Length, values[i].Select(c => new DvText(c)).ToArray());
             return AddColumn(name, new DataColumn<VBufferEqSort<DvText>>(buf));
         }
 
@@ -393,6 +400,7 @@ namespace Scikit.ML.DataManipulation
 
         /// <summary>
         /// Converts the data frame into a string.
+        /// Every vector column is skipped.
         /// </summary>
         public override string ToString()
         {
@@ -961,10 +969,13 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
-        /// Sorts rows.
+        /// Sorts rows. If <i>columns </i> is null, it is replaced by the first
+        /// <see cref="DataFrameSorting.LimitNumberSortingColumns"/> columns.
         /// </summary>
-        public void Sort(IEnumerable<int> columns, bool ascending = true)
+        public void Sort(IEnumerable<int> columns = null, bool ascending = true)
         {
+            if (columns == null)
+                columns = Enumerable.Range(0, Math.Min(ColumnCount, DataFrameSorting.LimitNumberSortingColumns));
             DataFrameSorting.Sort(this, columns, ascending);
         }
 

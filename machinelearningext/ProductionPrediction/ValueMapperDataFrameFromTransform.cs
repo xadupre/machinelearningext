@@ -101,7 +101,7 @@ namespace Scikit.ML.ProductionPrediction
 
                 return (ref DataFrame src, ref DataFrame dst) =>
                 {
-                    if (dst == null)
+                    if (dst is null)
                         dst = new DataFrame(outputView.Schema, src.Length);
                     else if (!dst.CheckSharedSchema(outputView.Schema))
                         throw _env.Except($"DataFrame does not share the same schema, expected {SchemaHelper.ToString(outputView.Schema)}.");

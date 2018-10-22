@@ -121,7 +121,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the dimension of the container.
         /// </summary>
-        public Tuple<int, int> Shape => new Tuple<int, int>(Length, _names.Count);
+        public ShapeType Shape => new ShapeType(Length, _names.Count);
 
         /// <summary>
         /// Returns the name and the type of a column such as
@@ -1165,6 +1165,9 @@ namespace Scikit.ML.DataManipulation
             };
         }
 
+        /// <summary>
+        /// Builds setters for each column in the DataFrame based on the schema of a cursor.
+        /// </summary>
         public static RowColumnSetterDelegate[] GetAllSetters(IRowCursor cur)
         {
             var sch = cur.Schema;
@@ -1182,19 +1185,24 @@ namespace Scikit.ML.DataManipulation
             return res.ToArray();
         }
 
+        /// <summary>
+        /// Builds a setter for a specific column, the function then chooses the best
+        /// option based on the type. It deals with ambiguities introduced by
+        /// DvText and VBufferEqSort.
+        /// </summary>
         public static RowColumnSetterDelegate GetColumnSetter(IRowCursor cur, Delegate getter, int col, ColumnType colType)
         {
             if (colType.IsVector)
             {
                 switch (colType.ItemType.RawKind)
                 {
-                    case DataKind.BL: return GetColumnSetter<VBufferEqSort<bool>>(cur, getter, col);
-                    case DataKind.I4: return GetColumnSetter<VBufferEqSort<int>>(cur, getter, col);
-                    case DataKind.U4: return GetColumnSetter<VBufferEqSort<uint>>(cur, getter, col);
-                    case DataKind.I8: return GetColumnSetter<VBufferEqSort<Int64>>(cur, getter, col);
-                    case DataKind.R4: return GetColumnSetter<VBufferEqSort<float>>(cur, getter, col);
-                    case DataKind.R8: return GetColumnSetter<VBufferEqSort<double>>(cur, getter, col);
-                    case DataKind.TX: return GetColumnSetter<VBufferEqSort<DvText>>(cur, getter, col);
+                    case DataKind.BL: return GetColumnSetterVector<bool>(cur, getter, col);
+                    case DataKind.I4: return GetColumnSetterVector<int>(cur, getter, col);
+                    case DataKind.U4: return GetColumnSetterVector<uint>(cur, getter, col);
+                    case DataKind.I8: return GetColumnSetterVector<Int64>(cur, getter, col);
+                    case DataKind.R4: return GetColumnSetterVector<float>(cur, getter, col);
+                    case DataKind.R8: return GetColumnSetterVector<double>(cur, getter, col);
+                    case DataKind.TX: return GetColumnSetterVectorText(cur, getter, col);
                     default:
                         throw new NotImplementedException(string.Format("Not implemented for kind {0}", colType));
                 }
@@ -1209,7 +1217,7 @@ namespace Scikit.ML.DataManipulation
                     case DataKind.I8: return GetColumnSetter<Int64>(cur, getter, col);
                     case DataKind.R4: return GetColumnSetter<float>(cur, getter, col);
                     case DataKind.R8: return GetColumnSetter<double>(cur, getter, col);
-                    case DataKind.TX: return GetColumnSetter<DvText>(cur, getter, col);
+                    case DataKind.TX: return GetColumnSetterText(cur, getter, col);
                     default:
                         throw new NotImplementedException(string.Format("Not implemented for kind {0}", colType));
                 }
@@ -1225,9 +1233,99 @@ namespace Scikit.ML.DataManipulation
             return (DataContainer cont, int row) =>
             {
                 DataColumn<DType> typedCol;
-                cont.GetTypedColumn<DType>(col, out typedCol);
+                cont.GetTypedColumn(col, out typedCol);
                 typedCol.Set(row, typedGetter);
             };
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetterVector<DType>(IRowCursor cur, Delegate getter, int col)
+            where DType : IEquatable<DType>, IComparable<DType>
+        {
+            var typedGetter2 = getter as ValueGetter<VBufferEqSort<DType>>;
+            if (typedGetter2 != null)
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DType>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedCol.Set(row, typedGetter2);
+                };
+            var typedGetter = getter as ValueGetter<VBuffer<DType>>;
+            if (typedGetter != null)
+            {
+                var buffer = new VBuffer<DType>();
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DType>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedGetter(ref buffer);
+                    typedCol.Set(row, new VBufferEqSort<DType>(buffer));
+                };
+            }
+            throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type {typeof(DType)}.");
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetterVectorText(IRowCursor cur, Delegate getter, int col)
+        {
+            var typedGetter3 = getter as ValueGetter<VBufferEqSort<DvText>>;
+            if (typedGetter3 != null)
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DvText>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedCol.Set(row, typedGetter3);
+                };
+            var typedGetter2 = getter as ValueGetter<VBuffer<DvText>>;
+            if (typedGetter2 != null)
+            {
+                var buffer = new VBuffer<DvText>();
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DvText>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedGetter2(ref buffer);
+                    typedCol.Set(row, new VBufferEqSort<DvText>(buffer));
+                };
+            }
+            var typedGetter = getter as ValueGetter<VBuffer<ReadOnlyMemory<char>>>;
+            if (typedGetter != null)
+            {
+                var buffer = new VBuffer<ReadOnlyMemory<char>>();
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<VBufferEqSort<DvText>> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedGetter(ref buffer);
+                    typedCol.Set(row, new VBufferEqSort<DvText>(buffer.Length, buffer.Count,
+                                                                buffer.Values.Select(c => new DvText(c)).ToArray(),
+                                                                buffer.Indices));
+                };
+            }
+            throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type VBufferEqSort<DvText> or equivalent.");
+        }
+
+        public static RowColumnSetterDelegate GetColumnSetterText(IRowCursor cur, Delegate getter, int col)
+        {
+            var typedGetter2 = getter as ValueGetter<DvText>;
+            if (typedGetter2 != null)
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<DvText> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedCol.Set(row, typedGetter2);
+                };
+            var typedGetter = getter as ValueGetter<ReadOnlyMemory<char>>;
+            if (typedGetter != null)
+            {
+                var buffer = new ReadOnlyMemory<char>();
+                return (DataContainer cont, int row) =>
+                {
+                    DataColumn<DvText> typedCol;
+                    cont.GetTypedColumn(col, out typedCol);
+                    typedGetter(ref buffer);
+                    typedCol.Set(row, new DvText(buffer));
+                };
+            }
+            throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type DvText or ReadOnlyMemory<char>.");
         }
 
         #endregion

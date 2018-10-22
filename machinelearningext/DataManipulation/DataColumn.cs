@@ -308,7 +308,7 @@ namespace Scikit.ML.DataManipulation
         /// <returns>max difference</returns>
         public double AssertAlmostEqual(IDataColumn col, double precision = 1e-5, bool exc = true)
         {
-            var colt = col as DataColumn<DType>;
+            var colt = (col is NumericColumn ? (col as NumericColumn).Column : col) as DataColumn<DType>;
             if (colt is null)
                 throw new DataValueError(string.Format("Column types are different {0} != {1}",
                                                        GetType(), col.GetType()));
@@ -316,7 +316,53 @@ namespace Scikit.ML.DataManipulation
                 throw new DataValueError(string.Format("Column have different length {0} != {1}",
                                                        Length, colt.Length));
             if (Kind.IsVector)
-                throw new NotImplementedException();
+            {
+                double oks = 0;
+                for (int i = 0; i < Length; ++i)
+                {
+                    switch (Kind.ItemType.RawKind)
+                    {
+                        case DataKind.BL:
+                            oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<bool>[])[i].DenseValues().ToArray(),
+                                                                   (colt._data as VBufferEqSort<bool>[])[i].DenseValues().ToArray(),
+                                                                   precision, exc, Length, colt.Length);
+                            break;
+                        case DataKind.I4:
+                            oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<int>[])[i].DenseValues().ToArray(),
+                                                                   (colt._data as VBufferEqSort<int>[])[i].DenseValues().ToArray(),
+                                                                   precision, exc, Length, colt.Length);
+                            break;
+                        case DataKind.U4:
+                            oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<uint>[])[i].DenseValues().ToArray(),
+                                                                   (colt._data as VBufferEqSort<uint>[])[i].DenseValues().ToArray(),
+                                                                   precision, exc, Length, colt.Length);
+                            break;
+                        case DataKind.I8:
+                            oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<Int64>[])[i].DenseValues().ToArray(),
+                                                                   (colt._data as VBufferEqSort<Int64>[])[i].DenseValues().ToArray(),
+                                                                   precision, exc, Length, colt.Length);
+                            break;
+                        case DataKind.R4:
+                            oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<float>[])[i].DenseValues().ToArray(),
+                                                                   (colt._data as VBufferEqSort<float>[])[i].DenseValues().ToArray(),
+                                                                   precision, exc, Length, colt.Length);
+                            break;
+                        case DataKind.R8:
+                            oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<double>[])[i].DenseValues().ToArray(),
+                                                                   (colt._data as VBufferEqSort<double>[])[i].DenseValues().ToArray(),
+                                                                   precision, exc, Length, colt.Length);
+                            break;
+                        case DataKind.TX:
+                            oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<DvText>[])[i].DenseValues().ToArray(),
+                                                                   (colt._data as VBufferEqSort<DvText>[])[i].DenseValues().ToArray(),
+                                                                   precision, exc, Length, colt.Length);
+                            break;
+                        default:
+                            throw new DataTypeError($"Unable to handle kind '{Kind}'");
+                    }
+                }
+                return oks;
+            }
             else
             {
                 switch (Kind.RawKind)
@@ -445,7 +491,10 @@ namespace Scikit.ML.DataManipulation
         {
             if (typeof(DType2) == typeof(ReadOnlyMemory<char>))
             {
-                return GetGetterReadOnlyMemory(cursor) as ValueGetter<DType2>;
+                var res = GetGetterReadOnlyMemory(cursor) as ValueGetter<DType2>;
+                if (res != null)
+                    return res;
+                throw new DataTypeError($"Unable to get a getter for type {typeof(DType2)} from type {typeof(DType)}.");
             }
             else
             {
@@ -476,6 +525,14 @@ namespace Scikit.ML.DataManipulation
             };
         }
 
+        private static ValueGetter<VBuffer<DType2>> CheckNotEmpty<DType2, DT0>(ValueGetter<VBuffer<DT0>> dele)
+        {
+            var dele2 = dele as ValueGetter<VBuffer<DType2>>;
+            if (dele2 == null)
+                throw new DataTypeError($"Unable to get a getter for type {typeof(DType2)} from type {typeof(DT0)}.");
+            return dele2;
+        }
+
         /// <summary>
         /// Creates a getter on the column. The getter returns the element at
         /// cursor.Position.
@@ -483,17 +540,22 @@ namespace Scikit.ML.DataManipulation
         public ValueGetter<VBuffer<DType2>> GetGetterVector<DType2>(IRowCursor cursor)
         {
             var colType = SchemaHelper.GetColumnType<DType2>();
-            switch (colType.RawKind)
+            if (colType.IsVector)
+                throw new DataValueError($"Unable to handle vector of kind {colType.ItemType.RawKind}.");
+            else
             {
-                case DataKind.BL: return GetGetterVectorEqSort<bool>(cursor) as ValueGetter<VBuffer<DType2>>;
-                case DataKind.I4: return GetGetterVectorEqSort<int>(cursor) as ValueGetter<VBuffer<DType2>>;
-                case DataKind.U4: return GetGetterVectorEqSort<uint>(cursor) as ValueGetter<VBuffer<DType2>>;
-                case DataKind.I8: return GetGetterVectorEqSort<long>(cursor) as ValueGetter<VBuffer<DType2>>;
-                case DataKind.R4: return GetGetterVectorEqSort<float>(cursor) as ValueGetter<VBuffer<DType2>>;
-                case DataKind.R8: return GetGetterVectorEqSort<double>(cursor) as ValueGetter<VBuffer<DType2>>;
-                case DataKind.TX: return GetGetterVectorEqSort<DvText>(cursor) as ValueGetter<VBuffer<DType2>>;
-                default:
-                    throw new DataValueError($"Unable to handle kind {colType.RawKind}.");
+                switch (colType.ItemType.RawKind)
+                {
+                    case DataKind.BL: return CheckNotEmpty<DType2, bool>(GetGetterVectorEqSort<bool>(cursor));
+                    case DataKind.I4: return CheckNotEmpty<DType2, int>(GetGetterVectorEqSort<int>(cursor));
+                    case DataKind.U4: return CheckNotEmpty<DType2, uint>(GetGetterVectorEqSort<uint>(cursor));
+                    case DataKind.I8: return CheckNotEmpty<DType2, long>(GetGetterVectorEqSort<long>(cursor));
+                    case DataKind.R4: return CheckNotEmpty<DType2, float>(GetGetterVectorEqSort<float>(cursor));
+                    case DataKind.R8: return CheckNotEmpty<DType2, double>(GetGetterVectorEqSort<double>(cursor));
+                    case DataKind.TX: return GetGetterVectorEqSortText<DType2>(cursor);
+                    default:
+                        throw new DataValueError($"Unable to handle kind {colType.RawKind}.");
+                }
             }
         }
 
@@ -507,6 +569,34 @@ namespace Scikit.ML.DataManipulation
                 value = cursor.Position < Length
                         ? _data2[cursor.Position].data
                         : missing;
+            };
+        }
+
+        public ValueGetter<VBuffer<DType2>> GetGetterVectorEqSortText<DType2>(IRowCursor cursor)
+        {
+            if (typeof(DType2) == typeof(DvText))
+                return GetGetterVectorEqSort<DvText>(cursor) as ValueGetter<VBuffer<DType2>>;
+            if (typeof(DType2) != typeof(ReadOnlyMemory<char>))
+                throw new DataValueError($"Unable to create a getter of type {typeof(DType2)} from type {typeof(DType)}.");
+            var getter = GetGetterVectorEqSortReadOnlyMemoryChar(cursor) as ValueGetter<VBuffer<DType2>>;
+            if (getter == null)
+                throw new DataValueError($"Unable to create a getter of type {typeof(DType2)} from type {typeof(DType)}.");
+            return getter;
+        }
+
+        public ValueGetter<VBuffer<ReadOnlyMemory<char>>> GetGetterVectorEqSortReadOnlyMemoryChar(IRowCursor cursor)
+        {
+            var _data2 = _data as VBufferEqSort<DvText>[];
+            var missing = new VBuffer<ReadOnlyMemory<char>>();
+            return (ref VBuffer<ReadOnlyMemory<char>> value) =>
+            {
+                if (cursor.Position < Length)
+                {
+                    var el = _data2[cursor.Position].data;
+                    value = new VBuffer<ReadOnlyMemory<char>>(el.Length, el.Count, el.Values.Select(c => c.str).ToArray(), el.Indices);
+                }
+                else
+                    value = missing;
             };
         }
 

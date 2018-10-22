@@ -279,7 +279,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the shape of the dataframe (number of rows, number of columns).
         /// </summary>
-        Tuple<int, int> Shape { get; }
+        ShapeType Shape { get; }
 
         /// <summary>
         /// Returns a copy of the view.

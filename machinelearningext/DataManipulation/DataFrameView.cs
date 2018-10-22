@@ -146,7 +146,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the shape of the dataframe (number of rows, number of columns).
         /// </summary>
-        public Tuple<int, int> Shape => new Tuple<int, int>(_rows.Length, _columns.Length);
+        public ShapeType Shape => new ShapeType(_rows.Length, _columns.Length);
 
         /// <summary>
         /// Returns the list of columns.

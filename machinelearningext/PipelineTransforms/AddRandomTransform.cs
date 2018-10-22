@@ -269,9 +269,9 @@ namespace Scikit.ML.PipelineTransforms
 
             public ValueGetter<TValue> GetGetter<TValue>(int col)
             {
-                if (col < _view.Schema.ColumnCount)
+                if (col < _view.Source.Schema.ColumnCount)
                     return _inputCursor.GetGetter<TValue>(col);
-                else if (col == _view.Schema.ColumnCount)
+                else if (col < _view.Schema.ColumnCount)
                 {
                     var colType = _schema.GetColumnType(_view._columnMapping[col]);
                     if (colType.IsVector)
@@ -371,6 +371,8 @@ namespace Scikit.ML.PipelineTransforms
             {
                 string alpha = "abcdefghijklmnopqrstuvwxyz";
                 var getter = _inputCursor.GetGetter<ReadOnlyMemory<char>>(_view._columnMapping[col]);
+                if (getter == null)
+                    throw _view._host.Except($"Unable to get a getter for column {_view._columnMapping[col]} and schema\n{SchemaHelper.ToString(_inputCursor.Schema)}.");
                 return (ref ReadOnlyMemory<char> value) =>
                 {
                     getter(ref value);
@@ -383,6 +385,8 @@ namespace Scikit.ML.PipelineTransforms
             ValueGetter<VBuffer<bool>> GetGetterVector(int col, bool defval)
             {
                 var getter = _inputCursor.GetGetter<VBuffer<bool>>(_view._columnMapping[col]);
+                if (getter == null)
+                    throw _view._host.Except($"Unable to create a getter for column {_view._columnMapping[col]} from schema\n{SchemaHelper.ToString(_inputCursor.Schema)}.");
                 return (ref VBuffer<bool> value) =>
                 {
                     getter(ref value);
@@ -394,6 +398,8 @@ namespace Scikit.ML.PipelineTransforms
             ValueGetter<VBuffer<int>> GetGetterVector(int col, int defval)
             {
                 var getter = _inputCursor.GetGetter<VBuffer<int>>(_view._columnMapping[col]);
+                if (getter == null)
+                    throw _view._host.Except($"Unable to create a getter for column {_view._columnMapping[col]} from schema\n{SchemaHelper.ToString(_inputCursor.Schema)}.");
                 return (ref VBuffer<int> value) =>
                 {
                     getter(ref value);
@@ -405,6 +411,8 @@ namespace Scikit.ML.PipelineTransforms
             ValueGetter<VBuffer<uint>> GetGetterVector(int col, uint defval)
             {
                 var getter = _inputCursor.GetGetter<VBuffer<uint>>(_view._columnMapping[col]);
+                if (getter == null)
+                    throw _view._host.Except($"Unable to create a getter for column {_view._columnMapping[col]} from schema\n{SchemaHelper.ToString(_inputCursor.Schema)}.");
                 return (ref VBuffer<uint> value) =>
                 {
                     getter(ref value);
@@ -416,6 +424,8 @@ namespace Scikit.ML.PipelineTransforms
             ValueGetter<VBuffer<Int64>> GetGetterVector(int col, Int64 defval)
             {
                 var getter = _inputCursor.GetGetter<VBuffer<Int64>>(_view._columnMapping[col]);
+                if (getter == null)
+                    throw _view._host.Except($"Unable to create a getter for column {_view._columnMapping[col]} from schema\n{SchemaHelper.ToString(_inputCursor.Schema)}.");
                 return (ref VBuffer<Int64> value) =>
                 {
                     getter(ref value);
@@ -427,6 +437,8 @@ namespace Scikit.ML.PipelineTransforms
             ValueGetter<VBuffer<float>> GetGetterVector(int col, float defval)
             {
                 var getter = _inputCursor.GetGetter<VBuffer<float>>(_view._columnMapping[col]);
+                if (getter == null)
+                    throw _view._host.Except($"Unable to create a getter for column {_view._columnMapping[col]} from schema\n{SchemaHelper.ToString(_inputCursor.Schema)}.");
                 return (ref VBuffer<float> value) =>
                 {
                     getter(ref value);
@@ -438,6 +450,8 @@ namespace Scikit.ML.PipelineTransforms
             ValueGetter<VBuffer<double>> GetGetterVector(int col, double defval)
             {
                 var getter = _inputCursor.GetGetter<VBuffer<double>>(_view._columnMapping[col]);
+                if (getter == null)
+                    throw _view._host.Except($"Unable to create a getter for column {_view._columnMapping[col]} from schema\n{SchemaHelper.ToString(_inputCursor.Schema)}.");
                 return (ref VBuffer<double> value) =>
                 {
                     getter(ref value);
@@ -450,6 +464,8 @@ namespace Scikit.ML.PipelineTransforms
             {
                 string alpha = "abcdefghijklmnopqrstuvwxyz";
                 var getter = _inputCursor.GetGetter<VBuffer<ReadOnlyMemory<char>>>(_view._columnMapping[col]);
+                if (getter == null)
+                    throw _view._host.Except($"Unable to create a getter for column {_view._columnMapping[col]} from schema\n{SchemaHelper.ToString(_inputCursor.Schema)}.");
                 string cs;
                 return (ref VBuffer<ReadOnlyMemory<char>> value) =>
                 {
