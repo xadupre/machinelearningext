@@ -14,7 +14,7 @@ written in :epkg:`C#` and implemented by :epkg:`Microsoft`.
 
     introduction
     dataframe
-    mlnetdocs/index
+    machinelearning_docs
     concepts
     commandline
     components/index

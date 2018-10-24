@@ -35,6 +35,7 @@ extensions = [
     'pyquickhelper.sphinxext.sphinx_epkg_extension',
     'pyquickhelper.sphinxext.sphinx_exref_extension',
     'pyquickhelper.sphinxext.sphinx_collapse_extension',
+    'pyquickhelper.sphinxext.sphinx_md_builder',
     #,
     'sphinx_mlext',
 ]
@@ -53,16 +54,20 @@ html_logo = "project_ico.png"
 owner = "xadupre"
 
 epkg_dictionary = {
+    'C#': 'https://en.wikipedia.org/wiki/C_Sharp_(programming_language)',
     'DataFrame': 'https://github.com/%s/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs' % owner,
     'DBSCAN': 'https://fr.wikipedia.org/wiki/DBSCAN',
-    'C#': 'https://en.wikipedia.org/wiki/C_Sharp_(programming_language)',
+    'dotnet/machinelearning': 'https://github.com/dotnet/machinelearning',
     'Iris': 'http://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html',
+    'LightGBM': 'http://lightgbm.apachecn.org/en/latest/index.html',
     'Microsoft': 'https://www.microsoft.com/',
+    'MIT License': 'https://github.com/dotnet/machinelearning/blob/master/LICENSE',
     'ML.net': 'https://github.com/dotnet/machinelearning',
     'OPTICS': 'https://fr.wikipedia.org/wiki/OPTICS',
     'PCA': 'https://en.wikipedia.org/wiki/Principal_component_analysis',
     'Python': 'https://www.python.org/',
     'R': 'https://www.r-project.org/',
+    'xadupre/machinelearningext': 'https://github.com/xadupre/machinelearningext',
 }
 
 # -- Options for HTML output -------------------------------------------------
