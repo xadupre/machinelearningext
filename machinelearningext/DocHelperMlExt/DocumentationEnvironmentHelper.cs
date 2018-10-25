@@ -382,10 +382,13 @@ namespace Scikit.ML.DocHelperMlExt
                     {
                         ch.Error(MessageSensitivity.None, "===== Begin detailed dump =====");
                         PrintFullExceptionDetails(ch, ex);
-                        ch.Error("= LoadedAssemblies =");
-                        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => InfoAssembly(x)).OrderBy(c => c);
-                        foreach (var a in assemblies)
-                            ch.Error(a);
+                        if (env.VerboseLevel >= 3)
+                        {
+                            ch.Error("= LoadedAssemblies =");
+                            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => InfoAssembly(x)).OrderBy(c => c);
+                            foreach (var a in assemblies)
+                                ch.Error(a);
+                        }
                         ch.Error(MessageSensitivity.None, "====== End detailed dump =====");
                     }
 

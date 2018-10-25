@@ -394,6 +394,8 @@ namespace Scikit.ML.PipelineHelper
         private readonly MessageSensitivity _sensitivityFlags;
         private readonly int _verbose;
 
+        public int VerboseLevel => _verbose;
+
         public DelegateEnvironment(int? seed = null, int verbose = 0,
             MessageSensitivity sensitivity = MessageSensitivity.All, int conc = 0,
             ILogWriter outWriter = null, ILogWriter errWriter = null)

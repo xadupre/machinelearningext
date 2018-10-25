@@ -3,10 +3,13 @@
 Custom Extensions to ML.net
 ===========================
 
-These pages go through some elements useful
+This documentation goes through some elements useful
 to whoever wants to extend :epkg:`ML.net`
 which is a open source machine learning library mostly
 written in :epkg:`C#` and implemented by :epkg:`Microsoft`.
+It contains documentation pages about the :epkg:`ML.net`
+itself taken from the main repository or automatically
+built from it extended with custom code or experiments.
 
 
 .. toctree::
@@ -18,6 +21,7 @@ written in :epkg:`C#` and implemented by :epkg:`Microsoft`.
     concepts
     commandline
     components/index
+    incompatibilities
 
 You can also navigate through the documentation
 with the :ref:`genindex` or the :ref:`search`.
