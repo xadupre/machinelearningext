@@ -503,13 +503,22 @@ namespace Scikit.ML.DataManipulation
         {
             if (_naming.ContainsKey(name))
             {
-                if (values == null)
-                    throw new DataValueError(string.Format("Values are needed to replace column '{0}'.", name));
                 // Works as replacement.
                 var column = GetColumn(name);
                 if (column.Kind == kind)
                 {
-                    column.Set(values);
+                    if (values == null)
+                        column.SetDefault();
+                    else
+                        column.Set(values);
+                    return _naming[name];
+                }
+                else if (column.Kind.IsVector && kind.IsVector && column.Kind.ItemType.RawKind == kind.ItemType.RawKind)
+                {
+                    if (values == null)
+                        column.SetDefault();
+                    else
+                        column.Set(values);
                     return _naming[name];
                 }
                 else
@@ -636,6 +645,26 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
+        /// Adds all columns in a container.
+        /// </summary>
+        public void AddColumn(DataContainer dc)
+        {
+            for (int i = 0; i < dc.ColumnCount; ++i)
+                AddColumn(GetColumnName(i), GetDType(i), dc.Length, GetColumn(i));
+        }
+
+        /// <summary>
+        /// Adds all columns in a container.
+        /// </summary>
+        public void AddColumn(IDataFrameView dc)
+        {
+            var names = dc.Columns;
+            var kinds = dc.Kinds;
+            for (int i = 0; i < dc.ColumnCount; ++i)
+                AddColumn(names[i], kinds[i], dc.Length, dc.GetColumn(i));
+        }
+
+        /// <summary>
         /// Sets values for a row.
         /// </summary>
         /// <param name="row">row to fill</param>
@@ -672,6 +701,41 @@ namespace Scikit.ML.DataManipulation
                         throw new DataTypeError(string.Format("Type {0} is not handled.", coor.Item1));
                 }
             }
+        }
+
+        public DataContainer Flatten(IEnumerable<int> rows = null, IEnumerable<int> columns = null)
+        {
+            if (columns == null)
+                columns = Enumerable.Range(0, ColumnCount);
+            var srows = rows == null ? Enumerable.Range(0, Length).ToArray() : rows.ToArray();
+            var dc = new DataContainer();
+            foreach (var col in columns)
+            {
+                var kind = GetDType(col);
+                if (kind.IsVector)
+                {
+                    var dc2 = GetColumn(col).Flatten(GetColumnName(col), rows);
+                    dc.AddColumn(dc2);
+                }
+                else
+                    dc.AddColumn(GetColumnName(col), kind, srows.Length,
+                                 rows == null ? GetColumn(col) : GetColumn(col, srows));
+
+            }
+            return dc;
+        }
+
+        public bool HasVectorColumn(IEnumerable<int> columns = null)
+        {
+            if (columns == null)
+                columns = Enumerable.Range(0, ColumnCount);
+            foreach (var i in columns)
+            {
+                var kind = GetDType(i);
+                if (kind.IsVector)
+                    return true;
+            }
+            return false;
         }
 
         #endregion

@@ -213,6 +213,32 @@ namespace Scikit.ML.DataManipulation
             return _data.AddColumn(name, values.Kind, values.Length, values);
         }
 
+        public int AddColumn<DT>(string name, DT[] values)
+        {
+            var kind = SchemaHelper.GetColumnType<DT>();
+            switch (kind.RawKind)
+            {
+                case DataKind.BL: return AddColumn(name, values as bool[]);
+                case DataKind.I4: return AddColumn(name, values as int[]);
+                case DataKind.I8: return AddColumn(name, values as long[]);
+                case DataKind.U4: return AddColumn(name, values as uint[]);
+                case DataKind.R4: return AddColumn(name, values as float[]);
+                case DataKind.R8: return AddColumn(name, values as double[]);
+                case DataKind.TX:
+                    {
+                        if (values as string[] != null)
+                            return AddColumn(name, values as string[]);
+                        if (values as DvText[] != null)
+                            return AddColumn(name, values as DvText[]);
+                        if (values as ReadOnlyMemory<char>[] != null)
+                            return AddColumn(name, values as ReadOnlyMemory<char>[]);
+                        throw Contracts.ExceptNotImpl($"Unable to add a column of type {typeof(DT)}.");
+                    }
+                default:
+                    throw Contracts.ExceptNotImpl($"Unable to add a column of type {typeof(DT)}.");
+            }
+        }
+
         public int AddColumn(string name, bool[] values)
         {
             var buf = new bool[values.Length];
@@ -250,7 +276,7 @@ namespace Scikit.ML.DataManipulation
             var buf = new Int64[values.Length];
             for (int i = 0; i < values.Length; ++i)
                 buf[i] = values[i];
-            return AddColumn(name, new DataColumn<Int64>(buf));
+            return AddColumn(name, new DataColumn<long>(buf));
         }
 
         public int AddColumn(string name, uint[] values) { return AddColumn(name, new DataColumn<uint>(values)); }
@@ -282,7 +308,7 @@ namespace Scikit.ML.DataManipulation
             return AddColumn(name, new DataColumn<VBufferEqSort<double>>(buf));
         }
 
-        public int AddColumn(string name, Int64[][] values)
+        public int AddColumn(string name, long[][] values)
         {
             var buf = new VBufferEqSort<Int64>[values.Length];
             for (int i = 0; i < values.Length; ++i)
@@ -404,13 +430,19 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         public override string ToString()
         {
+            var df = HasVectorColumn() ? Flatten() : this;
             using (var stream = new MemoryStream())
             {
-                DataFrameIO.ViewToCsv(this, stream, silent: true);
+                DataFrameIO.ViewToCsv(df, stream, silent: true);
                 stream.Position = 0;
                 using (var reader = new StreamReader(stream))
                     return reader.ReadToEnd().Replace("\r", "").TrimEnd(new char[] { '\n' });
             }
+        }
+
+        public bool HasVectorColumn(IEnumerable<int> columns = null)
+        {
+            return _data.HasVectorColumn(columns);
         }
 
         /// <summary>
@@ -449,6 +481,11 @@ namespace Scikit.ML.DataManipulation
         {
             var dele = DataContainer.GetRowFiller(cur);
             return (DataFrame df, int row) => { dele(df._data, row); };
+        }
+
+        public DataFrame Flatten(IEnumerable<int> rows = null, IEnumerable<int> columns = null)
+        {
+            return new DataFrame(_data.Flatten(rows, columns), _shuffle);
         }
 
         #endregion

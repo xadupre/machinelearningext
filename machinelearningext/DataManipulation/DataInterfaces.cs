@@ -131,6 +131,11 @@ namespace Scikit.ML.DataManipulation
         void Set(object value);
 
         /// <summary>
+        /// Updates all values with default values.
+        /// </summary>
+        void SetDefault();
+
+        /// <summary>
         /// Updates values based on a condition.
         /// </summary>
         void Set(IEnumerable<bool> rows, object value);
@@ -155,7 +160,12 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         /// <param name="keepData">keeps existing data</param>
         /// <param name="length">new length</param>
-        void Resize(int length, bool keepData=false);
+        void Resize(int length, bool keepData = false);
+
+        /// <summary>
+        /// Returns a container with a vector columns split into multiple ones.
+        /// </summary>
+        IDataFrameView Flatten(string name, IEnumerable<int> rows = null);
 
         /// <summary>
         /// The returned getter returns the element
@@ -331,6 +341,17 @@ namespace Scikit.ML.DataManipulation
         /// <param name="exc">raises an exception if too different</param>
         /// <returns>max difference</returns>
         double AssertAlmostEqual(IDataFrameView df, double precision = 1e-5, bool exc = true);
+
+        /// <summary>
+        /// Transforms all vector columns into single columns.
+        /// </summary>
+        DataFrame Flatten(IEnumerable<int> rows = null, IEnumerable<int> columns = null);
+
+        /// <summary>
+        /// Tells if among the list of selected columns, there is one vector column.
+        /// </summary>
+        bool HasVectorColumn(IEnumerable<int> columns = null);
+
 
         #region SQL function
 

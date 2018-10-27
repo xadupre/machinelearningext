@@ -1313,6 +1313,27 @@ namespace TestMachineLearningExt
             }
         }
 
+        [TestMethod]
+        public void TestDataFrame_Flatten()
+        {
+            var inputs = new[] {
+                new ExampleA() { X = new float[] { 1, 10, 100 } },
+                new ExampleA() { X = new float[] { 2, 3, 5 } },
+                new ExampleA() { X = new float[] { 2, 4, 5 } },
+                new ExampleA() { X = new float[] { 2, 4, 7 } },
+            };
+            DataFrame df1;
+            using (var host = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                var data = host.CreateStreamingDataView(inputs);
+                df1 = DataFrameIO.ReadView(data, env: host, keepVectors: true);
+            }
+            var flat = df1.Flatten();
+            Assert.AreEqual(flat.Shape, new ShapeType(4, 3));
+            var st = flat.ToString();
+            Assert.AreEqual(st, "X.0,X.1,X.2\n1,10,100\n2,3,5\n2,4,5\n2,4,7");
+        }
+
         #endregion
     }
 }

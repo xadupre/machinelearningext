@@ -208,6 +208,14 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Changes all values.
         /// </summary>
+        public void SetDefault()
+        {
+            Set(default(DType));
+        }
+
+        /// <summary>
+        /// Changes all values.
+        /// </summary>
         public void Set(object value)
         {
             var numCol = value as NumericColumn;
@@ -299,6 +307,62 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
+        /// Splits a vector column into multiple ones.
+        /// </summary>
+        public IDataFrameView Flatten(string name, IEnumerable<int> rows = null)
+        {
+            var kind = Kind;
+            if (kind.IsVector)
+            {
+                switch (kind.ItemType.RawKind)
+                {
+                    case DataKind.BL: return BuildDataFrame(name, Flatten<bool>(rows));
+                    case DataKind.I4: return BuildDataFrame(name, Flatten<int>(rows));
+                    case DataKind.I8: return BuildDataFrame(name, Flatten<long>(rows));
+                    case DataKind.U4: return BuildDataFrame(name, Flatten<uint>(rows));
+                    case DataKind.R4: return BuildDataFrame(name, Flatten<float>(rows));
+                    case DataKind.R8: return BuildDataFrame(name, Flatten<double>(rows));
+                    case DataKind.TX: return BuildDataFrame(name, Flatten<DvText>(rows));
+                    default:
+                        throw new NotImplementedException($"Unable to flatten column of type {kind}.");
+                }
+
+            }
+            else
+            {
+                var df = new DataFrame();
+                df.AddColumn(name, new DataColumn<DType>(rows == null ? _data : rows.Select(c => _data[c]).ToArray()));
+                return df;
+            }
+        }
+
+        private DT[][] Flatten<DT>(IEnumerable<int> rows = null)
+            where DT : IEquatable<DT>, IComparable<DT>
+        {
+            var srows = rows == null ? Enumerable.Range(0, Length).ToArray() : rows.ToArray();
+            var data = _data as VBufferEqSort<DT>[];
+            var max = data.Select(c => c.Count).Max();
+            var res = new DT[max][];
+            for (int i = 0; i < max; ++i)
+            {
+                res[i] = new DT[srows.Length];
+                var col = res[i];
+                for (int j = 0; j < srows.Length; ++j)
+                    col[j] = data[j].GetItemOrDefault(i);
+            }
+            return res;
+        }
+
+        public IDataFrameView BuildDataFrame<DT>(string name, DT[][] values)
+        {
+            var kind = SchemaHelper.GetColumnType<DT>();
+            var df = new DataFrame();
+            for (int i = 0; i < values.Length; ++i)
+                df.AddColumn($"{name}.{i}", values[i]);
+            return df;
+        }
+
+        /// <summary>
         /// Raises an exception if two columns do not have the same
         /// shape or are two much different.
         /// </summary>
@@ -325,37 +389,37 @@ namespace Scikit.ML.DataManipulation
                         case DataKind.BL:
                             oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<bool>[])[i].DenseValues().ToArray(),
                                                                    (colt._data as VBufferEqSort<bool>[])[i].DenseValues().ToArray(),
-                                                                   precision, exc, Length, colt.Length);
+                                                                   precision, exc);
                             break;
                         case DataKind.I4:
                             oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<int>[])[i].DenseValues().ToArray(),
                                                                    (colt._data as VBufferEqSort<int>[])[i].DenseValues().ToArray(),
-                                                                   precision, exc, Length, colt.Length);
+                                                                   precision, exc);
                             break;
                         case DataKind.U4:
                             oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<uint>[])[i].DenseValues().ToArray(),
                                                                    (colt._data as VBufferEqSort<uint>[])[i].DenseValues().ToArray(),
-                                                                   precision, exc, Length, colt.Length);
+                                                                   precision, exc);
                             break;
                         case DataKind.I8:
                             oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<Int64>[])[i].DenseValues().ToArray(),
                                                                    (colt._data as VBufferEqSort<Int64>[])[i].DenseValues().ToArray(),
-                                                                   precision, exc, Length, colt.Length);
+                                                                   precision, exc);
                             break;
                         case DataKind.R4:
                             oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<float>[])[i].DenseValues().ToArray(),
                                                                    (colt._data as VBufferEqSort<float>[])[i].DenseValues().ToArray(),
-                                                                   precision, exc, Length, colt.Length);
+                                                                   precision, exc);
                             break;
                         case DataKind.R8:
                             oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<double>[])[i].DenseValues().ToArray(),
                                                                    (colt._data as VBufferEqSort<double>[])[i].DenseValues().ToArray(),
-                                                                   precision, exc, Length, colt.Length);
+                                                                   precision, exc);
                             break;
                         case DataKind.TX:
                             oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<DvText>[])[i].DenseValues().ToArray(),
                                                                    (colt._data as VBufferEqSort<DvText>[])[i].DenseValues().ToArray(),
-                                                                   precision, exc, Length, colt.Length);
+                                                                   precision, exc);
                             break;
                         default:
                             throw new DataTypeError($"Unable to handle kind '{Kind}'");

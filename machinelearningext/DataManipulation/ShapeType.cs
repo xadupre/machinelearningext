@@ -21,6 +21,7 @@ namespace Scikit.ML.DataManipulation
 
         public ShapeType(int nlin, int ncol) { Item1 = nlin; Item2 = ncol; }
         public ShapeType(Tuple<int, int> shape) { Item1 = shape.Item1; Item2 = shape.Item2; }
+        public override string ToString() { return $"({Item1},{Item2})"; }
 
         public int this[int i]
         {
