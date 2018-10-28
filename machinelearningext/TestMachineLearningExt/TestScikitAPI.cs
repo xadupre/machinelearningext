@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Api;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ScikitAPI;
@@ -305,6 +306,19 @@ namespace TestMachineLearningExt
                     pred.AssertAlmostEqual(pred2);
                 }
             }
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_TrainingWithIris()
+        {
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t');
+            df.AddColumn("LabelI", df["Label"].AsType(NumberType.R4));
+            var pipe = new ScikitPipeline(new[] { $"Concat{{col=Features:{df.Columns[1]},{df.Columns[2]}}}" }, "mlr");
+            pipe.Train(df, "Features", "LabelI");
+            DataFrame pred = null;
+            pipe.Predict(df, ref pred);
+            Assert.AreEqual(pred.Shape, new ShapeType(150, 9));
         }
     }
 }
