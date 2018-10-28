@@ -31,6 +31,7 @@ copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.PipelineInference\netstanda
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.StandardLearners\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.TensorFlow\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.TimeSeries\netstandard2.0\*.dll machinelearning\dist\Release
+copy machinelearning\packages\lightgbm\2.2.1.1\runtimes\win-x64\native machinelearning\bin\x64.Release\Native
 copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
 
 @echo [build.cmd] Publish Debug
@@ -51,6 +52,7 @@ copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.PipelineInference\netstandard
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.StandardLearners\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.TimeSeries\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.TensorFlow\netstandard2.0\*.dll machinelearning\dist\Debug
+copy machinelearning\packages\lightgbm\2.2.1.1\runtimes\win-x64\native machinelearning\bin\x64.Debug\Native
 copy machinelearning\bin\x64.Debug\Native\*.dll machinelearning\dist\Debug
 
 @echo [build.cmd] build machinelearningext
