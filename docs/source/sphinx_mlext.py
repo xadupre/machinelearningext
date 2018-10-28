@@ -195,7 +195,7 @@ def mlnet_components_kinds():
         'binaryclassifiertrainer': 'Binary Classification', 
         'clusteringtrainer': 'Clustering', 
         'dataloader': 'Data Loader', 
-        'datasaver': 'Data Loader', 
+        'datasaver': 'Data Saver', 
         'datascorer': 'Scoring',
         'datatransform': 'Transforms (all)',
         'ensembledataselector': 'Data Selection',

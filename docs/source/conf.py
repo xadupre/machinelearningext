@@ -5,8 +5,6 @@
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-
-import sphinx_materialdesign_theme
 import csharpy
 
 
@@ -72,13 +70,26 @@ epkg_dictionary = {
 
 # -- Options for HTML output -------------------------------------------------
 
+# import sphinx_materialdesign_theme as theme_ext
+# html_theme = 'sphinx_materialdesign_theme'
+# html_theme_path = [theme_ext.get_path()]
+
+import alabaster
+html_theme_path = [alabaster.get_path()]
+html_theme = 'alabaster'
+
 html_output_encoding = 'utf-8'
-html_theme = 'sphinx_materialdesign_theme'
 html_theme_options = {}
 html_static_path = ['_static']
-html_theme_path = [sphinx_materialdesign_theme.get_path()]
 
-# html_sidebars = {}
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+    ]
+}
 
 from recommonmark.parser import CommonMarkParser
 source_parsers = {'.md': CommonMarkParser}

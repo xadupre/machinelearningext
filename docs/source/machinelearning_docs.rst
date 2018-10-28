@@ -1,7 +1,10 @@
 
+.. _l-mlnetdoc:
 
 ML.net implementation details
 =============================
+
+.. index:: ML.net
 
 The following pages were generated from content released in
 `machinelearning/docs/docs <https://github.com/dotnet/machinelearning/tree/master/docs/code>`_

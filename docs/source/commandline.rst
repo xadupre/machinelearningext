@@ -1,4 +1,5 @@
 
+.. index:: command line
 
 ============
 Command Line
@@ -9,7 +10,7 @@ syntax:
 
 ::
 
-    dotnet .\bin\AnyCPU.Debug\Microsoft.ML.Console\netcoreapp2.1\MML.dll <string>
+    dotnet ./bin/AnyCPU.Debug/Microsoft.ML.Console/netcoreapp2.1/MML.dll <string>
     
 The ``<string>`` is either ``?`` to get help or a command.
 
@@ -66,6 +67,8 @@ Help on a particular object
     :current:
     
     ? lr
+
+.. _l-multi-class-logistic-regression:
 
 One example: train a logistic regression
 ========================================

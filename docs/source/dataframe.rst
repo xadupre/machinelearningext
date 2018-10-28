@@ -1,4 +1,5 @@
 
+.. index:: DataFrame
 
 ===============
 DataFrame in C#
@@ -6,8 +7,6 @@ DataFrame in C#
 
 .. contents::
     :local:
-
-
 
 The class :epkg:`DataFrame` replicates some functionalities
 datascientist are used to in others languages such as

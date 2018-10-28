@@ -8,6 +8,9 @@ Scikit.ML details
 Elements of code
 ================
 
+The following concepts are described in details
+in section :ref:`l-mlnetdoc`.
+
 Definitions
 +++++++++++
 
@@ -67,6 +70,8 @@ must be protected against multithreading.
 
 DataFrame Getters
 +++++++++++++++++
+
+.. index:: VBufferEqSort, VBuffer, DvText, ReadOnlyMemory, DataFrame
 
 DataFrames expects to have sortable elements which is not the case
 of objects representing strings ``ReadOnlyMemory<char>`` or
