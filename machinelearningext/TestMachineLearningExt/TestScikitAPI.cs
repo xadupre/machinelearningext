@@ -120,7 +120,7 @@ namespace TestMachineLearningExt
                 {
                     var predictor = pipe.Train(data, feature: "X");
                     Assert.IsTrue(predictor != null);
-                    var data2 = host.CreateStreamingDataView(inputs2);
+                    var data2 = new StreamingDataFrame(host.CreateStreamingDataView(inputs2));
                     var predictions = pipe.Predict(data2);
                     var df = DataFrameIO.ReadView(predictions);
                     Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));

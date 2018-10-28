@@ -13,7 +13,7 @@ built from it extended with custom code or experiments.
 
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     introduction
     dataframe

@@ -304,6 +304,26 @@ namespace Scikit.ML.ScikitAPI
         }
 
         /// <summary>
+        /// Computes the predictions for data stored in a <see cref="StreamingDataFrame"/>.
+        /// It must follow the same schema as the training data.
+        /// This method can be called from any thread as it creates new getters.
+        /// </summary>
+        public StreamingDataFrame Transform(StreamingDataFrame data)
+        {
+            return new StreamingDataFrame(Transform(data.Source), _env);
+        }
+
+        /// <summary>
+        /// Computes the predictions for data stored in a <see cref="StreamingDataFrame"/>.
+        /// It must follow the same schema as the training data.
+        /// This method can be called from any thread as it creates new getters.
+        /// </summary>
+        public StreamingDataFrame Predict(StreamingDataFrame data)
+        {
+            return new StreamingDataFrame(Predict(data.Source), _env);
+        }
+
+        /// <summary>
         /// Computes the predictions for data stored in a <see cref="IDataView"/>.
         /// This method can be called from any thread as it creates new getters.
         /// It must follow the same schema as the training data.

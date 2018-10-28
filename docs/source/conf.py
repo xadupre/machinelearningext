@@ -56,6 +56,7 @@ epkg_dictionary = {
     'DataFrame': 'https://github.com/%s/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs' % owner,
     'DBSCAN': 'https://fr.wikipedia.org/wiki/DBSCAN',
     'dotnet/machinelearning': 'https://github.com/dotnet/machinelearning',
+    'IDataView': 'https://github.com/dotnet/machinelearning/blob/master/docs/code/IDataViewDesignPrinciples.md',
     'Iris': 'http://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html',
     'LightGBM': 'http://lightgbm.apachecn.org/en/latest/index.html',
     'Microsoft': 'https://www.microsoft.com/',

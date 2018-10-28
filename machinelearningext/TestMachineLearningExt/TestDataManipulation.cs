@@ -28,6 +28,20 @@ namespace TestMachineLearningExt
         #region DataFrame IO
 
         [TestMethod]
+        public void TestStreamingDataFrame()
+        {
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var sdf = StreamingDataFrame.ReadCsv(iris, sep: '\t');
+            var df = sdf.ToDataFrame();
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
+            var sch = df.Schema;
+            Assert.AreEqual(sch.GetColumnName(0), "Label");
+            Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
+            Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
+            Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
+        }
+
+        [TestMethod]
         public void TestReadCsvSimple()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
