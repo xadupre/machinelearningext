@@ -5,13 +5,8 @@ cd machinelearning
 if "%1"=="ml" goto compileml:
 if exist bin\x64.Release goto mldeb:
 :compileml:
-cmd /C build.cmd -release
+cmd /C build.cmd
 :mldeb:
-if "%1"=="ml" goto compilemld:
-if exist bin\x64.Debug goto mlrel:
-:compilemld:
-cmd /C build.cmd -debug
-:mlrel:
 cd ..
 
 if "%1"=="ml" goto docopy:
