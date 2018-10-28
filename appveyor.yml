@@ -27,10 +27,12 @@ before_build:
 before_test:
   - cd machinelearning
   - cmd /C build.cmd
+  - cmd /C build.cmd -Release
   - cd ..
   - dir
   - mkdir machinelearning\dist\Release
   - dir machinelearning
+  - dir machinelearning\bin
   - dir machinelearning\bin\AnyCPU.Release
   - dir machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0
   - copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Release
