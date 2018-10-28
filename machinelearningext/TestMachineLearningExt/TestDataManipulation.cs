@@ -1308,7 +1308,7 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
                     var dfs = df.ToString();
                     var dfs2 = dfs.Replace("\n", ";");
-                    Assert.AreEqual(dfs2, "X,Y,\"\",\"\";1,2,1,2;3,4,3,4");
+                    Assert.AreEqual(dfs2, "X,Y,Z.0,Z.1;1,2,1,2;3,4,3,4");
                 }
             }
         }
