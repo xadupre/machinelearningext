@@ -19,10 +19,16 @@ namespace Scikit.ML.DataManipulation
         public int Item1;
         public int Item2;
 
+        /// <summary>
+        /// Creates a shape for a dataframe.
+        /// </summary>
         public ShapeType(int nlin, int ncol) { Item1 = nlin; Item2 = ncol; }
         public ShapeType(Tuple<int, int> shape) { Item1 = shape.Item1; Item2 = shape.Item2; }
         public override string ToString() { return $"({Item1},{Item2})"; }
 
+        /// <summary>
+        /// Retrieves either the number of lines or the number of columns.
+        /// </summary>
         public int this[int i]
         {
             get
