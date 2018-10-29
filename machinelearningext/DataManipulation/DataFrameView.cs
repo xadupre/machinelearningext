@@ -139,6 +139,22 @@ namespace Scikit.ML.DataManipulation
             }
         }
 
+        public DataFrame Flatten(IEnumerable<int> rows = null, IEnumerable<int> columns = null)
+        {
+            if (rows != null)
+                rows = rows.Select(i => _rows[i]);
+            if (columns != null)
+                columns = columns.Select(i => _columns[i]);
+            return _src.Flatten(rows, columns);
+        }
+
+        public bool HasVectorColumn(IEnumerable<int> columns = null)
+        {
+            if (columns != null)
+                columns = columns.Select(i => _columns[i]);
+            return _src.HasVectorColumn(columns);
+        }
+
         #endregion
 
         #region DataFrame

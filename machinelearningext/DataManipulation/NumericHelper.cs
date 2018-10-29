@@ -114,7 +114,7 @@ namespace Scikit.ML.DataManipulation
             if (l1 != l2)
                 throw new DataValueError($"Columns have different length {l1} != {l2}.");
             for (int i = 0; i < l1; ++i)
-                if ((double)a1[i] - (double)a2[i] >= precision)
+                if (Math.Abs((double)a1[i] - (double)a2[i]) >= precision)
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
                     else
@@ -129,7 +129,7 @@ namespace Scikit.ML.DataManipulation
             if (l1 != l2)
                 throw new DataValueError($"Columns have different length {l1} != {l2}.");
             for (int i = 0; i < l1; ++i)
-                if ((double)a1[i] - (double)a2[i] >= precision)
+                if (Math.Abs((double)a1[i] - (double)a2[i]) >= precision)
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
                     else
@@ -144,7 +144,7 @@ namespace Scikit.ML.DataManipulation
             if (l1 != l2)
                 throw new DataValueError($"Columns have different length {l1} != {l2}.");
             for (int i = 0; i < l1; ++i)
-                if ((double)a1[i] - (double)a2[i] >= precision)
+                if (Math.Abs((double)a1[i] - (double)a2[i]) >= precision)
                     if (exc)
                         throw new DataValueError($"Values are different at row {i}: {a1[i]} != {a2[i]}.");
                     else

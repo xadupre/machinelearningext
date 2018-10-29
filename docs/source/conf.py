@@ -5,8 +5,6 @@
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-
-import sphinx_materialdesign_theme
 import csharpy
 
 
@@ -35,6 +33,7 @@ extensions = [
     'pyquickhelper.sphinxext.sphinx_epkg_extension',
     'pyquickhelper.sphinxext.sphinx_exref_extension',
     'pyquickhelper.sphinxext.sphinx_collapse_extension',
+    'pyquickhelper.sphinxext.sphinx_md_builder',
     #,
     'sphinx_mlext',
 ]
@@ -53,27 +52,45 @@ html_logo = "project_ico.png"
 owner = "xadupre"
 
 epkg_dictionary = {
+    'C#': 'https://en.wikipedia.org/wiki/C_Sharp_(programming_language)',
     'DataFrame': 'https://github.com/%s/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs' % owner,
     'DBSCAN': 'https://fr.wikipedia.org/wiki/DBSCAN',
-    'C#': 'https://en.wikipedia.org/wiki/C_Sharp_(programming_language)',
+    'dotnet/machinelearning': 'https://github.com/dotnet/machinelearning',
+    'IDataView': 'https://github.com/dotnet/machinelearning/blob/master/docs/code/IDataViewDesignPrinciples.md',
     'Iris': 'http://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html',
+    'LightGBM': 'http://lightgbm.apachecn.org/en/latest/index.html',
     'Microsoft': 'https://www.microsoft.com/',
+    'MIT License': 'https://github.com/dotnet/machinelearning/blob/master/LICENSE',
     'ML.net': 'https://github.com/dotnet/machinelearning',
     'OPTICS': 'https://fr.wikipedia.org/wiki/OPTICS',
     'PCA': 'https://en.wikipedia.org/wiki/Principal_component_analysis',
     'Python': 'https://www.python.org/',
     'R': 'https://www.r-project.org/',
+    'xadupre/machinelearningext': 'https://github.com/xadupre/machinelearningext',
 }
 
 # -- Options for HTML output -------------------------------------------------
 
+# import sphinx_materialdesign_theme as theme_ext
+# html_theme = 'sphinx_materialdesign_theme'
+# html_theme_path = [theme_ext.get_path()]
+
+import alabaster
+html_theme_path = [alabaster.get_path()]
+html_theme = 'alabaster'
+
 html_output_encoding = 'utf-8'
-html_theme = 'sphinx_materialdesign_theme'
 html_theme_options = {}
 html_static_path = ['_static']
-html_theme_path = [sphinx_materialdesign_theme.get_path()]
 
-# html_sidebars = {}
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+    ]
+}
 
 from recommonmark.parser import CommonMarkParser
 source_parsers = {'.md': CommonMarkParser}

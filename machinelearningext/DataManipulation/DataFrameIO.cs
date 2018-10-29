@@ -213,6 +213,17 @@ namespace Scikit.ML.DataManipulation
             saver.SaveData(st, view, columns);
         }
 
+        public static IDataView ReadCsvToTextLoader(string filename,
+                                        char sep = ',', bool header = true,
+                                        string[] names = null, ColumnType[] dtypes = null,
+                                        int nrows = -1, int guess_rows = 10,
+                                        Encoding encoding = null, bool useThreads = true,
+                                        bool index = false, IHost host = null)
+        {
+            return ReadCsvToTextLoader(new string[] { filename }, sep, header, names, dtypes, nrows, guess_rows, encoding,
+                                       useThreads, index, host);
+        }
+
         /// <summary>
         /// Reads a text file as a IDataView.
         /// Follows pandas API.
@@ -229,14 +240,14 @@ namespace Scikit.ML.DataManipulation
         /// <param name="host">host</param>
         /// <param name="index">add a column to hold the index</param>
         /// <returns>TextLoader</returns>
-        public static IDataView ReadCsvToTextLoader(string filename,
+        public static IDataView ReadCsvToTextLoader(string[] filenames,
                                         char sep = ',', bool header = true,
                                         string[] names = null, ColumnType[] dtypes = null,
                                         int nrows = -1, int guess_rows = 10,
                                         Encoding encoding = null, bool useThreads = true,
                                         bool index = false, IHost host = null)
         {
-            var df = ReadCsv(filename, sep: sep, header: header, names: names, dtypes: dtypes,
+            var df = ReadCsv(filenames[0], sep: sep, header: header, names: names, dtypes: dtypes,
                              nrows: guess_rows, guess_rows: guess_rows, encoding: encoding, index: index);
             var sch = df.Schema;
             var cols = new TextLoader.Column[sch.ColumnCount];
@@ -255,7 +266,7 @@ namespace Scikit.ML.DataManipulation
             };
             if (host == null)
                 host = new ConsoleEnvironment().Register("TextLoader");
-            var multiSource = new MultiFileSource(filename);
+            var multiSource = new MultiFileSource(filenames);
             return new TextLoader(host, args, multiSource).Read(multiSource);
         }
 
@@ -409,7 +420,7 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
-        /// Reads a text file as a IDataView.
+        /// Converts a <see cref="IDataView"/> into a <see cref="DataFrame"/>.
         /// Follows pandas API.
         /// </summary>
         /// <param name="view">IDataView</param>
@@ -417,7 +428,8 @@ namespace Scikit.ML.DataManipulation
         /// <param name="nrows">number of rows to read</param>
         /// <param name="keepVectors">keep vectors as they are</param>
         /// <param name="numThreads">number of threads to use to fill the dataframe</param>
-        /// <returns>DataFrame</returns>
+        /// <param name="env">mostly for logging</param>
+        /// <returns><see cref="DataFrame"/></returns>
         public static DataFrame ReadView(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1,
                                          IHostEnvironment env = null)
         {

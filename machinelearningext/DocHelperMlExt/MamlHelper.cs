@@ -94,7 +94,7 @@ namespace Scikit.ML.DocHelperMlExt
                 res = string.Empty;
             }
             if (errCode != 0)
-                throw new MamlException($"Unable to run script, error code={errCode}\n{script}\n{res}");
+                throw new MamlException($"Unable to run script, error code={errCode}\n{script}" + (string.IsNullOrEmpty(res) ? string.Empty : $"\n{res}"));
             return res;
         }
 

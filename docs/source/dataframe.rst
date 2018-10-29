@@ -1,13 +1,42 @@
 
-
-===============
-DataFrame in C#
-===============
+================
+DataFrames in C#
+================
 
 .. contents::
     :local:
 
+*Dataframes* are very common in many applications
+to manipulate data. :epkg:`ML.net` API implements a kind
+of *StreamingDataFrame* which basically of to go through
+huge volume of data by implementing a kind of 
+*map/reduce* API. Most of the time, the data holds in memory
+and it becomes quite convenient to manipulate it
+with pseudo *SQL* methods. That's what the class
+:ref:`l-cs-dataframe` implements.
 
+StreamingDataFrame
+==================
+
+.. index:: SteamingDataFrame
+
+Class *StreamingDataView* is a wrapper around :epkg:`IDataView` interface.
+It adds easy conversions to :ref:`l-cs-dataframe` and easy to parse
+a file or multiple files.
+
+
+
+.. code-block:: CSharp
+
+    var sdf = StreamingDataFrame.ReadCsv(new"iris.txt", sep: '\t');
+    var sdf2 = StreamingDataFrame.ReadCsv(new [] {"part1.txt", "part2.txt"}, sep: '\t');
+
+.. _l-cs-dataframe:
+    
+DataFrame
+=========
+
+.. index:: DataFrame
 
 The class :epkg:`DataFrame` replicates some functionalities
 datascientist are used to in others languages such as

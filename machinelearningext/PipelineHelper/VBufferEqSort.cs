@@ -39,9 +39,13 @@ namespace Scikit.ML.PipelineHelper
         public void CopyTo(ref VBuffer<T> dst, int[] indicesInclude, int count) { data.CopyTo(ref dst, indicesInclude, count); }
         public void CopyToDense(ref VBuffer<T> dst) { data.CopyToDense(ref dst); }
         public IEnumerable<T> DenseValues() { return data.DenseValues(); }
-        public T GetItemOrDefault(int slot) { return data.GetItemOrDefault(slot); }
         public void GetItemOrDefault(int slot, ref T dst) { data.GetItemOrDefault(slot, ref dst); }
         public IEnumerable<KeyValuePair<int, T>> Items(bool all = false) { return data.Items(all); }
+
+        public T GetItemOrDefault(int slot)
+        {
+            return slot < Length ? data.GetItemOrDefault(slot) : default(T);
+        }
 
         public IEnumerable<KeyValuePair<int, T>> SparseValues()
         {

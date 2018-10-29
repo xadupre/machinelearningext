@@ -28,6 +28,20 @@ namespace TestMachineLearningExt
         #region DataFrame IO
 
         [TestMethod]
+        public void TestStreamingDataFrame()
+        {
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var sdf = StreamingDataFrame.ReadCsv(iris, sep: '\t');
+            var df = sdf.ToDataFrame();
+            Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
+            var sch = df.Schema;
+            Assert.AreEqual(sch.GetColumnName(0), "Label");
+            Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
+            Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
+            Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
+        }
+
+        [TestMethod]
         public void TestReadCsvSimple()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
@@ -1308,9 +1322,30 @@ namespace TestMachineLearningExt
                     Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
                     var dfs = df.ToString();
                     var dfs2 = dfs.Replace("\n", ";");
-                    Assert.AreEqual(dfs2, "X,Y,\"\",\"\";1,2,1,2;3,4,3,4");
+                    Assert.AreEqual(dfs2, "X,Y,Z.0,Z.1;1,2,1,2;3,4,3,4");
                 }
             }
+        }
+
+        [TestMethod]
+        public void TestDataFrame_Flatten()
+        {
+            var inputs = new[] {
+                new ExampleA() { X = new float[] { 1, 10, 100 } },
+                new ExampleA() { X = new float[] { 2, 3, 5 } },
+                new ExampleA() { X = new float[] { 2, 4, 5 } },
+                new ExampleA() { X = new float[] { 2, 4, 7 } },
+            };
+            DataFrame df1;
+            using (var host = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                var data = host.CreateStreamingDataView(inputs);
+                df1 = DataFrameIO.ReadView(data, env: host, keepVectors: true);
+            }
+            var flat = df1.Flatten();
+            Assert.AreEqual(flat.Shape, new ShapeType(4, 3));
+            var st = flat.ToString();
+            Assert.AreEqual(st, "X.0,X.1,X.2\n1,10,100\n2,3,5\n2,4,5\n2,4,7");
         }
 
         #endregion

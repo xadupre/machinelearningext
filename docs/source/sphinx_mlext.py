@@ -82,10 +82,10 @@ def copy_missing_md_docs(source):
     Copies missing markdown documentation.
     """
     try:
-        from .sphinx_mlext_templates import mddocs_index_template
+        from .sphinx_mlext_templates import mddocs_index_template_docs, mddocs_index_template_releases
     except (ModuleNotFoundError, ImportError):
-        from sphinx_mlext_templates import mddocs_index_template
-    
+        from sphinx_mlext_templates import mddocs_index_template_docs, mddocs_index_template_releases
+
     dest = os.path.join(os.path.dirname(__file__), "mlnetdocs")
     if not os.path.exists(dest):
         os.mkdir(dest)
@@ -95,7 +95,14 @@ def copy_missing_md_docs(source):
             
     # code
     docs = []
-    code = os.path.join(source, "code")    
+    code = os.path.join(source, "code")
+    for name_ in os.listdir(code):
+        name = name_.lower()
+        docs.append(os.path.splitext(name)[0])
+        print("3> copy '{0}'".format(name))
+        dst = os.path.join(dest, name)
+        shutil.copy(os.path.join(code, name), dst)
+    code = os.path.join(source, "specs")
     for name_ in os.listdir(code):
         name = name_.lower()
         docs.append(os.path.splitext(name)[0])
@@ -114,9 +121,14 @@ def copy_missing_md_docs(source):
             dst = os.path.join(rel, name)
             shutil.copy(os.path.join(rele, sub, name_), dst)
     
-    tpl = jinja2.Template(mddocs_index_template)
-    page = tpl.render(docs=docs, releases=releases)
+    tpl = jinja2.Template(mddocs_index_template_docs)
+    page = tpl.render(docs=docs)
     with open(os.path.join(dest, "index.rst"), "w", encoding="utf-8") as f:
+        f.write(page)    
+
+    tpl = jinja2.Template(mddocs_index_template_releases)
+    page = tpl.render(releases=releases)
+    with open(os.path.join(dest, "changes.rst"), "w", encoding="utf-8") as f:
         f.write(page)    
 
 
@@ -183,7 +195,7 @@ def mlnet_components_kinds():
         'binaryclassifiertrainer': 'Binary Classification', 
         'clusteringtrainer': 'Clustering', 
         'dataloader': 'Data Loader', 
-        'datasaver': 'Data Loader', 
+        'datasaver': 'Data Saver', 
         'datascorer': 'Scoring',
         'datatransform': 'Transforms (all)',
         'ensembledataselector': 'Data Selection',
@@ -205,6 +217,10 @@ def builds_components_pages(epkg):
         from .sphinx_mlext_templates import index_template, kind_template, component_template
     except (ModuleNotFoundError, ImportError):
         from sphinx_mlext_templates import index_template, kind_template, component_template
+    try:
+        from .machinelearning_docs import components
+    except (ModuleNotFoundError, ImportError):
+        from machinelearning_docs import components
     try:
         from pyquickhelper.texthelper import add_rst_links
     except ImportError:
@@ -279,6 +295,7 @@ def builds_components_pages(epkg):
                 else:
                     linkdocs = ""
 
+
                 comp_name = comp.Name.replace(" ", "_")
                 pages[comp_name] = comp_tpl.render(title=comp.Name,
                                         aliases=aliases, 
@@ -287,7 +304,10 @@ def builds_components_pages(epkg):
                                         namespace=comp.Namespace,
                                         sorted_params=sorted_params,
                                         assembly=assembly_name,
-                                        len=len, linkdocs=linkdocs)
+                                        len=len, linkdocs=linkdocs,
+                                        docadd=components.get(comp.Name, ''),
+                                        MicrosoftML="Microsoft.ML" in assembly_name,
+                                        ScikitML="Scikit.ML" in assembly_name)
     
     return pages
     

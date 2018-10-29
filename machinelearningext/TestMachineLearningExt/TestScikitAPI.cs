@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Api;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ScikitAPI;
@@ -120,7 +121,7 @@ namespace TestMachineLearningExt
                 {
                     var predictor = pipe.Train(data, feature: "X");
                     Assert.IsTrue(predictor != null);
-                    var data2 = host.CreateStreamingDataView(inputs2);
+                    var data2 = new StreamingDataFrame(host.CreateStreamingDataView(inputs2));
                     var predictions = pipe.Predict(data2);
                     var df = DataFrameIO.ReadView(predictions);
                     Assert.AreEqual(df.Shape, new Tuple<int, int>(4, 12));
@@ -258,6 +259,66 @@ namespace TestMachineLearningExt
             }
             Assert.AreEqual(stdout.Count, 0);
             Assert.AreEqual(stderr.Count, 0);
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_SimplePredictor_FastValueMapper()
+        {
+            var inputs = new[] {
+                new ExampleA() { X = new float[] { 1, 10, 100 } },
+                new ExampleA() { X = new float[] { 2, 3, 5 } },
+                new ExampleA() { X = new float[] { 2, 4, 5 } },
+                new ExampleA() { X = new float[] { 2, 4, 7 } },
+            };
+
+            var inputs2 = new[] {
+                new ExampleA() { X = new float[] { -1, -10, -100 } },
+                new ExampleA() { X = new float[] { -2, -3, -5 } },
+                new ExampleA() { X = new float[] { 3, 4, 5 } },
+                new ExampleA() { X = new float[] { 3, 4, 7 } },
+            };
+            DataFrame df1, df2, df3;
+            using (var host = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                var data = host.CreateStreamingDataView(inputs);
+                var data2 = host.CreateStreamingDataView(inputs2);
+                df1 = DataFrameIO.ReadView(data, env: host, keepVectors: true);
+                df2 = DataFrameIO.ReadView(data2, env: host, keepVectors: true);
+                df3 = DataFrameIO.ReadView(data2, env: host, keepVectors: true);
+            }
+
+            using (var host = EnvHelper.NewTestEnvironment(conc: 1))
+            {
+                using (var pipe = new ScikitPipeline(new[] { "poly{col=X}" }, "km{k=2}", host))
+                {
+                    DataFrame pred = null, pred2 = null;
+                    var predictor = pipe.Train(df1, feature: "X");
+                    Assert.IsTrue(predictor != null);
+
+                    pipe.Predict(df2, ref pred);
+                    Assert.AreEqual(pred.Shape, new Tuple<int, int>(4, 3));
+                    var dfs = pred.ToString();
+                    var dfs2 = dfs.Replace("\n", ";");
+                    if (!dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"))
+                        throw new Exception($"Wrong starts\n{dfs2}");
+
+                    pipe.Predict(df3, ref pred2);
+                    pred.AssertAlmostEqual(pred2);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_TrainingWithIris()
+        {
+            var iris = FileHelper.GetTestFile("iris.txt");
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t');
+            df.AddColumn("LabelI", df["Label"].AsType(NumberType.R4));
+            var pipe = new ScikitPipeline(new[] { $"Concat{{col=Features:{df.Columns[1]},{df.Columns[2]}}}" }, "mlr");
+            pipe.Train(df, "Features", "LabelI");
+            DataFrame pred = null;
+            pipe.Predict(df, ref pred);
+            Assert.AreEqual(pred.Shape, new ShapeType(150, 9));
         }
     }
 }

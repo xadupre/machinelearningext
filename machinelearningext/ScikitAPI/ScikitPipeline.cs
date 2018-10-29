@@ -11,10 +11,17 @@ using Microsoft.ML.Runtime.Model;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
+using Scikit.ML.ProductionPrediction;
 
 
 namespace Scikit.ML.ScikitAPI
 {
+    /// <summary>
+    /// Creates an interface easy to use and close to what others languages offer.
+    /// The user should be careful when Predict or Transform methods are used
+    /// in a multi-threaded environment.
+    /// Predict and Transform methods are equivalent.
+    /// </summary>
     public class ScikitPipeline : IDisposable
     {
         #region members
@@ -39,11 +46,19 @@ namespace Scikit.ML.ScikitAPI
         private string _loaderSettings;
         private List<KeyValuePair<RoleMappedSchema.ColumnRole, string>> _roles;
         private bool _dispose;
+        private ValueMapperDataFrameFromTransform _fastValueMapperObject;
+        private ValueMapper<DataFrame, DataFrame> _fastValueMapper;
 
         #endregion
 
         #region constructor
 
+        /// <summary>
+        /// Initializes the pipeline.
+        /// </summary>
+        /// <param name="transforms">list of transform, can be empty</param>
+        /// <param name="predictor">a predictor, can be empty</param>
+        /// <param name="host">can be empty too, a <see cref="ExtendedConsoleEnvironment"/> is then created</param>
         public ScikitPipeline(string[] transforms = null,
                               string predictor = null,
                               IHostEnvironment host = null)
@@ -65,6 +80,8 @@ namespace Scikit.ML.ScikitAPI
             };
             _loaderSettings = null;
             _roles = null;
+            _fastValueMapper = null;
+            _fastValueMapperObject = null;
         }
 
         public void Dispose()
@@ -84,6 +101,11 @@ namespace Scikit.ML.ScikitAPI
             return env;
         }
 
+        /// <summary>
+        /// Initializes a pipeline based on an a filename.
+        /// </summary>
+        /// <param name="filename">zip</param>
+        /// <param name="host">can be empty too, a <see cref="ExtendedConsoleEnvironment"/> is then created</param>
         public ScikitPipeline(string filename, IHostEnvironment host = null)
         {
             _dispose = false;
@@ -92,6 +114,11 @@ namespace Scikit.ML.ScikitAPI
                 Load(st);
         }
 
+        /// <summary>
+        /// Initializes a pipeline based on an a stream.
+        /// </summary>
+        /// <param name="filename">stream on a zip file</param>
+        /// <param name="host">can be empty too, a <see cref="ExtendedConsoleEnvironment"/> is then created</param>
         public ScikitPipeline(Stream st, IHostEnvironment host = null)
         {
             _dispose = false;
@@ -99,7 +126,10 @@ namespace Scikit.ML.ScikitAPI
             Load(st);
         }
 
-        public void Load(Stream fs)
+        /// <summary>
+        /// Loads a pipeline.
+        /// </summary>
+        protected void Load(Stream fs)
         {
             var transformPipe = ModelFileUtils.LoadPipeline(_env, fs, new MultiFileSource(null), true);
             var pred = _env.LoadPredictorOrNull(fs);
@@ -126,14 +156,21 @@ namespace Scikit.ML.ScikitAPI
                 var data = new RoleMappedData(transformPipe, _roles);
                 _predictor = new StepPredictor() { predictor = ipred, roleMapData = data, trainer = null, trainerSettings = null };
             }
+            _fastValueMapper = null;
         }
 
+        /// <summary>
+        /// Saves the pipeline as a filename.
+        /// </summary>
         public void Save(string filename)
         {
             using (var fs = File.Create(filename))
                 Save(fs);
         }
 
+        /// <summary>
+        /// Saves the pipeline in a stream.
+        /// </summary>
         public void Save(Stream fs)
         {
             using (var ch = _env.Start("Save Predictor"))
@@ -145,7 +182,7 @@ namespace Scikit.ML.ScikitAPI
         #region train
 
         /// <summary>
-        /// Trains the pipeline.
+        /// Trains the pipeline with data stored in a filename.
         /// </summary>
         public ScikitPipeline Train(string loaderSettings, string filename,
                                     string feature = "Feature", string label = null,
@@ -157,7 +194,7 @@ namespace Scikit.ML.ScikitAPI
         }
 
         /// <summary>
-        /// Trains the pipeline.
+        /// Trains the pipeline with data coming from a <see cref="IDataView"/>.
         /// </summary>
         public ScikitPipeline Train(IDataView data,
                                     string feature = "Feature", string label = null,
@@ -234,13 +271,20 @@ namespace Scikit.ML.ScikitAPI
         #region regular predict or transform
 
         /// <summary>
-        /// There is no difference between predict or transform.
+        /// Computes the predictions for data stored in a filename.
+        /// It must follow the same schema as the training data.
+        /// This method can be called from any thread as it creates new getters.
         /// </summary>
         public IDataView Transform(string filename)
         {
             return Predict(filename);
         }
 
+        /// <summary>
+        /// Computes the predictions for data stored in a filename.
+        /// It must follow the same schema as the training data.
+        /// This method can be called from any thread as it creates new getters.
+        /// </summary>
         public IDataView Predict(string filename)
         {
             if (string.IsNullOrEmpty(_loaderSettings))
@@ -250,13 +294,40 @@ namespace Scikit.ML.ScikitAPI
         }
 
         /// <summary>
-        /// There is no difference between predict or transform.
+        /// Computes the predictions for data stored in a <see cref="IDataView"/>.
+        /// It must follow the same schema as the training data.
+        /// This method can be called from any thread as it creates new getters.
         /// </summary>
         public IDataView Transform(IDataView data)
         {
             return Predict(data);
         }
 
+        /// <summary>
+        /// Computes the predictions for data stored in a <see cref="StreamingDataFrame"/>.
+        /// It must follow the same schema as the training data.
+        /// This method can be called from any thread as it creates new getters.
+        /// </summary>
+        public StreamingDataFrame Transform(StreamingDataFrame data)
+        {
+            return new StreamingDataFrame(Transform(data.Source), _env);
+        }
+
+        /// <summary>
+        /// Computes the predictions for data stored in a <see cref="StreamingDataFrame"/>.
+        /// It must follow the same schema as the training data.
+        /// This method can be called from any thread as it creates new getters.
+        /// </summary>
+        public StreamingDataFrame Predict(StreamingDataFrame data)
+        {
+            return new StreamingDataFrame(Predict(data.Source), _env);
+        }
+
+        /// <summary>
+        /// Computes the predictions for data stored in a <see cref="IDataView"/>.
+        /// This method can be called from any thread as it creates new getters.
+        /// It must follow the same schema as the training data.
+        /// </summary>
         public IDataView Predict(IDataView data)
         {
             IDataView features = null;
@@ -281,25 +352,47 @@ namespace Scikit.ML.ScikitAPI
         #region fast predictions or transform
 
         /// <summary>
-        /// Fast predictions, do not create getter, setter each time the predictions
-        /// are done.
+        /// Fast predictions, it does not create getter, setter each time the predictions
+        /// are done. The first call is slower as it creates getters.
+        /// It must not be called from different threads.
+        /// The function uses no lock.
         /// </summary>
         /// <param name="df">input data</param>
         /// <param name="view">output, reused</param>
-        public void Predict(IDataFrameView df, ref DataFrame view)
+        /// <param name="conc">number of threads used to compute the predictions</param>
+        public void Predict(DataFrame df, ref DataFrame view, int conc = 1)
         {
-            throw new NotImplementedException();
+            if (_fastValueMapper == null)
+                CreateFastValueMapper(conc);
+            _fastValueMapper(ref df, ref view);
         }
 
         /// <summary>
         /// Fast predictions, do not create getter, setter each time the predictions
-        /// are done.
+        /// are done. The first call is slower as it creates getters.
+        /// It must not be called from different threads.
+        /// The function uses no lock.
         /// </summary>
         /// <param name="df">input data</param>
         /// <param name="view">output, reused</param>
-        public void Transform(IDataFrameView df, ref DataFrame view)
+        /// <param name="conc">number of threads used to compute the predictions</param>
+        public void Transform(DataFrame df, ref DataFrame view, int conc = 1)
         {
-            throw new NotImplementedException();
+            Predict(df, ref view, conc);
+        }
+
+        protected void CreateFastValueMapper(int conc)
+        {
+            IDataTransform tr = _transforms.Last().transform;
+
+            if (_predictor != null && _predictor.predictor != null)
+            {
+                var roles = new RoleMappedData(tr, _roles ?? new List<KeyValuePair<RoleMappedSchema.ColumnRole, string>>());
+                tr = PredictorHelper.Predict(_env, _predictor.predictor, roles);
+            }
+
+            _fastValueMapperObject = new ValueMapperDataFrameFromTransform(_env, tr, conc: conc);
+            _fastValueMapper = _fastValueMapperObject.GetMapper<DataFrame, DataFrame>();
         }
 
         #endregion
