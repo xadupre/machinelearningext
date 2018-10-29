@@ -90,6 +90,7 @@ after_test:
   - if not exist dist\Debug mkdir dist\Debug
   - python -u copy_binaries.py Release dist\Release
   - python -u copy_binaries.py Debug dist\Debug
+  # benchmark
   - copy _tests\1.0.0.0\Release\TestScikitAPITrain\*.txt dist
 
 artifacts:
