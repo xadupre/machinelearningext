@@ -10,6 +10,7 @@ using Microsoft.ML.Trainers.KMeans;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.ScikitAPI;
 using Scikit.ML.TestHelper;
+using Scikit.ML.ProductionPrediction;
 using Legacy = Microsoft.ML.Legacy;
 
 
@@ -102,6 +103,12 @@ namespace TestMachineLearningExt
 
                 var prediction = model.MakePredictionFunction<IrisObservation, IrisPrediction>(env).Predict(obs);
                 Assert.IsTrue(prediction.PredictedLabel != 0);
+
+                var df = Scikit.ML.DataManipulation.DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var prediction2 = model.MakePredictionFunctionDataFrame(env, df.Schema);
+                var df2 = Scikit.ML.DataManipulation.DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
+                var df3 = prediction2.Predict(df2);
+                Assert.AreEqual(df.Shape[0], df3.Shape[0]);
             }
         }
 
