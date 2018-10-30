@@ -1,7 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
-using System.Reflection;
 using System.Linq;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
@@ -172,13 +171,13 @@ namespace Scikit.ML.TestHelper
             {
                 case 0:
                     {
-                        ValueGetterInstance<SentimentData, float> dele = 
+                        ValueGetterInstance<SentimentData, float> dele =
                             (ref SentimentData self, ref float x) => { x = self.Sentiment ? 1f : 0f; };
                         return dele;
                     }
                 case 1:
                     {
-                        ValueGetterInstance<SentimentData, ReadOnlyMemory<char>> dele = 
+                        ValueGetterInstance<SentimentData, ReadOnlyMemory<char>> dele =
                             (ref SentimentData self, ref ReadOnlyMemory<char> x) => { x = new ReadOnlyMemory<char>(self.SentimentText.ToCharArray()); };
                         return dele;
                     }

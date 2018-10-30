@@ -58,9 +58,9 @@ namespace Scikit.ML.PipelineHelper
         /// </summary>
         public ExtendedPredictionModel Train(IHostEnvironment environment = null)
         {
-            ConsoleEnvironment cosenv = null;
             if (environment == null)
-                environment = cosenv = new ConsoleEnvironment(seed: _seed, conc: _conc);
+                using (var env = new ConsoleEnvironment(seed: _seed, conc: _conc))
+                    return Train(env);
 
             Experiment experiment = environment.CreateExperiment();
             Legacy.ILearningPipelineStep step = null;
@@ -123,9 +123,7 @@ namespace Scikit.ML.PipelineHelper
 
             experiment.Compile();
             foreach (Legacy.ILearningPipelineLoader loader in loaders)
-            {
                 loader.SetInput(environment, experiment);
-            }
             experiment.Run();
 
             ITransformModel model = experiment.GetOutput(lastTransformModel);
@@ -136,8 +134,6 @@ namespace Scikit.ML.PipelineHelper
                 memoryStream.Position = 0;
                 extModel = new ExtendedPredictionModel(memoryStream);
             }
-            if (cosenv != null)
-                cosenv.Dispose();
             return extModel;
         }
 
