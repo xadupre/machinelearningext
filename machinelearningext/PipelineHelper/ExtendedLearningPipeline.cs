@@ -45,7 +45,7 @@ namespace Scikit.ML.PipelineHelper
         private readonly int _conc;
 
         /// <summary>
-        /// Construct an empty <see cref="ExtendedLearningPipeline"/> object.
+        /// Builds an empty <see cref="ExtendedLearningPipeline"/> object.
         /// </summary>
         public GenericLearningPipeline(int? seed = null, int conc = 0) : base()
         {
@@ -54,7 +54,7 @@ namespace Scikit.ML.PipelineHelper
         }
 
         /// <summary>
-        /// Train the model using the ML components in the pipeline.
+        /// Trains the model using the ML components in the pipeline.
         /// </summary>
         public ExtendedPredictionModel Train(IHostEnvironment environment = null)
         {

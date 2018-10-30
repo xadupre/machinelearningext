@@ -116,7 +116,7 @@ namespace TestMachineLearningExt
             var df = Scikit.ML.DataManipulation.DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
 
             var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-            var learningPipeline = new Scikit.ML.PipelineHelper.GenericLearningPipeline(conc: 1);
+            var learningPipeline = new GenericLearningPipeline(conc: 1);
             learningPipeline.Add(importData);
             learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             learningPipeline.Add(new Legacy.Trainers.KMeansPlusPlusClusterer());

@@ -121,7 +121,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the dimension of the container.
         /// </summary>
-        public ShapeType Shape => new ShapeType(Length, _names.Count);
+        public ShapeType Shape => new ShapeType(Length, _names == null ? 0 : _names.Count);
 
         /// <summary>
         /// Returns the name and the type of a column such as
