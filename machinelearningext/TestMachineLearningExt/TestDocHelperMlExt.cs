@@ -66,7 +66,7 @@ namespace TestMachineLearningExt
         {
             var trainers = MamlHelper.EnumerateComponents("trainer").ToArray();
             Assert.IsTrue(trainers.Length > 0);
-            var df = trainers.First().ArgsAsDataFrame;
+            var df = trainers.First().GetArgsAsDataFrame();
             Assert.AreEqual(df.Shape.Item2, 4);
         }
 
@@ -77,9 +77,33 @@ namespace TestMachineLearningExt
             var names = dt.Select(c => c.Name).ToArray();
             Assert.IsTrue(dt.Length > 0);
             Assert.IsTrue(names.Length > 0);
-            var df = dt.First().ArgsAsDataFrame;
+            var df = dt.First().GetArgsAsDataFrame();
             Assert.AreEqual(df.Shape.Item2, 4);
             Assert.IsTrue(names.Where(c => c.Contains("Sliding")).Any());
+        }
+
+        [TestMethod]
+        public void TestMamlHelperParameter()
+        {
+            var dt = MamlHelper.EnumerateComponents("argument").ToArray();
+            var names = dt.Select(c => c.Name).ToArray();
+            Assert.IsTrue(dt.Length > 0);
+            Assert.IsTrue(names.Length > 0);
+            var df = dt.First().GetArgsAsDataFrame();
+            Assert.AreEqual(df.Shape.Item2, 4);
+            Assert.IsTrue(names.Where(c => c.Contains("Tweedie")).Any());
+        }
+
+        [TestMethod]
+        public void TestMamlHelperParameterCommand()
+        {
+            var dt = MamlHelper.EnumerateComponents("command").ToArray();
+            var names = dt.Select(c => c.Name).ToArray();
+            Assert.IsTrue(dt.Length > 0);
+            Assert.IsTrue(names.Length > 0);
+            var df = dt.First().GetArgsAsDataFrame();
+            Assert.AreEqual(df.Shape.Item2, 4);
+            Assert.IsTrue(names.Where(c => c.Contains("Cross")).Any());
         }
 
         [TestMethod]

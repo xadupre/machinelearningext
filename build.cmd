@@ -6,6 +6,7 @@ if "%1"=="ml" goto compileml:
 if exist bin\x64.Release goto mldeb:
 :compileml:
 cmd /C build.cmd
+cmd /C build.cmd -Release
 :mldeb:
 cd ..
 

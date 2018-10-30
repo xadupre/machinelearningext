@@ -110,7 +110,7 @@ Console.WriteLine("PredictedLabel: {0}", v);
 ### Example 3: EntryPoints API
 
 This is the same example based on
-[Iris Classification](https://github.com/dotnet/machinelearning-samples/tree/master/samples/getting-started/MulticlassClassification_Iris)
+[Iris Classification](https://github.com/dotnet/machinelearning-samples/tree/master/samples/csharp/getting-started/MulticlassClassification_Iris)
 but using the new class DataFrame. It is not necessary anymore
 to create a class specific to the data used to train. It is a
 little bit less efficient for predictions as two consecutive
@@ -126,14 +126,16 @@ var df = DataFrameIO.ReadCsv(iris, sep: '\t',
                              dtypes: new DataKind?[] { DataKind.R4 });
 
 var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-var learningPipeline = new GenericLearningPipeline();
-learningPipeline.Add(importData);
-learningPipeline.Add(new ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-learningPipeline.Add(new StochasticDualCoordinateAscentRegressor());
-var predictor = learningPipeline.Train();
-var predictions = predictor.Predict(df);
 
-var dfout = DataFrameIO.ReadView(predictions);
+var learningPipeline = new ConcatEstimator(env, "Features", new[] { "SepalLength", "SepalWidth", "PetalLength", "PetalWidth" })
+                                 .Append(new SdcaMultiClassTrainer(env, new SdcaMultiClassTrainer.Arguments(),
+                                                             "Features", "Label"));
+                                                                   
+var predictor = learningPipeline.Fit(importData);
+
+var predictionFunct = model.MakePredictionFunctionDataFrame(env, importData.Schema);
+
+var predictions = predictionFunct.Predict(importData);
 
 // And access one value...
 var v = dfout.iloc[0, 7];

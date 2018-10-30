@@ -121,7 +121,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the dimension of the container.
         /// </summary>
-        public ShapeType Shape => new ShapeType(Length, _names.Count);
+        public ShapeType Shape => new ShapeType(Length, _names == null ? 0 : _names.Count);
 
         /// <summary>
         /// Returns the name and the type of a column such as
@@ -505,7 +505,8 @@ namespace Scikit.ML.DataManipulation
             {
                 // Works as replacement.
                 var column = GetColumn(name);
-                if (column.Kind == kind)
+                if (column.Kind == kind ||
+                    (kind.IsKey && !kind.IsVector && !column.Kind.IsVector && column.Kind.RawKind == kind.RawKind))
                 {
                     if (values == null)
                         column.SetDefault();
@@ -749,7 +750,7 @@ namespace Scikit.ML.DataManipulation
         {
             DataContainer _cont;
             public DataContainerSchema(DataContainer cont) { _cont = cont; }
-            public int ColumnCount => _cont._names.Count;
+            public int ColumnCount => _cont._names == null ? 0 : _cont._names.Count;
             public string GetColumnName(int col) { return _cont._names[col]; }
             public bool TryGetColumnIndex(string name, out int col)
             {

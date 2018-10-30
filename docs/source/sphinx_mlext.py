@@ -190,6 +190,8 @@ def mlnet_components_kinds():
     from Scikit.ML.DocHelperMlExt import MamlHelper
 
     kinds = list(MamlHelper.GetAllKinds())
+    kinds += ["argument", "command"]
+    kinds = list(set(kinds))
     titles = {
         'anomalydetectortrainer': 'Anomaly Detection', 
         'binaryclassifiertrainer': 'Binary Classification', 
@@ -204,7 +206,9 @@ def mlnet_components_kinds():
         'ngramextractorfactory': 'N-Grams',
         'rankertrainer': 'Ranking',
         'regressortrainer': 'Regression', 
-        'tokenizetransform': 'Tokenization'
+        'tokenizetransform': 'Tokenization',
+        'argument': 'Arguments',
+        'command': 'Commands',
     }
     return {k: titles[k] for k in kinds if k in titles}
 
@@ -232,7 +236,10 @@ def builds_components_pages(epkg):
     def process_default(default_value):
         if not default_value:
             return ''
-        if len(default_value) > 28:
+        if "+" in default_value:
+            default_value = default_value.split(".")[-1].replace("+", ".")
+            return default_value
+        if len(default_value) > 28:            
             if len(default_value.split(".")) > 2:
                 default_value = default_value.replace(".", ". ")
             elif len(default_value.split(",")) > 2:
@@ -259,18 +266,34 @@ def builds_components_pages(epkg):
     kind_tpl = jinja2.Template(kind_template)
     comp_tpl = jinja2.Template(component_template)
     
+    # builds references
+    refs = {}
+    for v, k in sorted_kinds:
+        enumc = MamlHelper.EnumerateComponents(k)
+        try:
+            comps = list(enumc)
+        except Exception as e:
+            print("Issue with kind '{0}'\n{1}".format(k, e))
+            continue
+        if len(comps) == 0:
+            print("Empty kind '{0}'\n{1}".format(k, e))
+            continue
+        for comp in comps:
+            refs[comp.Name] = ":ref:`l-{0}`".format(comp.Name.lower().replace(".", "-"))
+    
     # kinds and components
     for v, k in sorted_kinds:
         enumc = MamlHelper.EnumerateComponents(k)
         try:
             comps = list(enumc)
         except Exception as e:
-            print("Issue with kind {0}\n{1}".format(k, e))
+            print("Issue with kind '{0}'\n{1}".format(k, e))
             continue
         if len(comps) == 0:
+            print("Empty kind '{0}'\n{1}".format(k, e))
             continue
             
-        comp_names = list(sorted(c.Name.replace(" ", "_") for c in comps))
+        comp_names = list(sorted(c.Name.replace(" ", "_").replace(".", "_").lower() for c in comps))
         kind_name = v
         kind_kind = k
         pages[k] = kind_tpl.render(title=kind_name, fnames=comp_names, len=len)
@@ -283,9 +306,9 @@ def builds_components_pages(epkg):
                 assembly_name = comp.AssemblyName
                 args = {}
                 for arg in comp.Arguments:
+                    dv = process_default(arg.DefaultValue)
                     args[arg.Name] = dict(Name=arg.Name, ShortName=arg.ShortName or '',
-                                          Default=process_default(arg.DefaultValue),
-                                          Description=arg.Help)
+                                          Default=refs.get(dv, dv), Description=arg.Help)
                 sorted_params = [v for k, v in sorted(args.items())]
                 aliases = ", ".join(comp.Aliases)
 
@@ -296,7 +319,7 @@ def builds_components_pages(epkg):
                     linkdocs = ""
 
 
-                comp_name = comp.Name.replace(" ", "_")
+                comp_name = comp.Name.replace(" ", "_").replace(".", "_").lower()
                 pages[comp_name] = comp_tpl.render(title=comp.Name,
                                         aliases=aliases, 
                                         summary=process_description(comp.Description),
@@ -343,7 +366,14 @@ if __name__ == "__main__":
     from clr import AddReference
     AddReference('Scikit.ML.DocHelperMlExt')
     from Scikit.ML.DocHelperMlExt import MamlHelper
-    pages = builds_components_pages({"OPTICS": "http://OPTICS"})
+    class dummy:
+        pass
+    app = dummy()
+    app.config = dummy()
+    app.config.epkg_dictionary = {"OPTICS": "http://OPTICS"}
+    app.env = dummy()
+    app.env.srcdir = os.path.dirname(__file__)
+    write_components_pages(app, app.env, None)
     # Test 1
     maml_test()
     # print(maml_pythonnet("?"))

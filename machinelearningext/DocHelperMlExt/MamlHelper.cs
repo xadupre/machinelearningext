@@ -227,17 +227,149 @@ namespace Scikit.ML.DocHelperMlExt
             public string AssemblyName;
             public string Namespace;
             public Argument[] Arguments;
+            public bool IsArgumentClass => Arguments == null;
 
-            public DataFrame ArgsAsDataFrame
+            public ComponentDescription(ComponentCatalog.LoadableClassInfo info, object args, Assembly asse,
+                                        IEnumerable<Argument> arguments)
             {
-                get
+                Args = args;
+                Name = info.UserName;
+                Description = info.Summary;
+                Info = info;
+                Aliases = info.LoadNames.ToArray();
+                if (asse == null)
+                    asse = info.LoaderType.Assembly;
+                Assembly = asse;
+                AssemblyName = asse == null ? null : asse.ManifestModule.Name;
+                Arguments = arguments == null ? null : arguments.OrderBy(c => c.Name).ToArray();
+                Namespace = info.Type.Namespace;
+                if (arguments == null)
                 {
-                    var df = new DataFrame();
+                    ComponentName = info.LoaderType.ReflectedType != null ? info.LoaderType.ReflectedType.Name : info.LoaderType.Name;
+
+                    // Default Values.
+                    object obj = null;
+                    foreach (var cst in info.LoaderType.GetConstructors())
+                    {
+                        try
+                        {
+                            obj = cst.Invoke(null);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                    Dictionary<string, object> values = new Dictionary<string, object>();
+                    if (obj != null)
+                    {
+                        foreach (var field in obj.GetType().GetFields())
+                        {
+                            var name = field.Name;
+                            var value = field.GetValue(obj);
+                            if (value != null)
+                                values[name] = value;
+                        }
+                        Args = obj;
+                    }
+
+                    // Fields.
+                    var fields = info.LoaderType.GetFields();
+                    var largs = new List<Argument>();
+                    foreach (var field in fields)
+                    {
+                        var arg = new Argument();
+                        arg.Name = field.Name;
+                        foreach (var c in field.CustomAttributes)
+                        {
+                            foreach (var d in c.NamedArguments)
+                            {
+                                if (d.MemberName.Contains("Help"))
+                                    arg.Help = d.ToString();
+                                else if (d.MemberName == "ShortName")
+                                    arg.ShortName = d.ToString();
+                            }
+                        }
+                        object vv = null;
+                        if (values.TryGetValue(arg.Name, out vv))
+                            arg.DefaultValue = vv.ToString();
+                        if (!string.IsNullOrEmpty(arg.Help))
+                            largs.Add(arg);
+                    }
+                    Arguments = largs.Count > 0 ? largs.ToArray() : null;
+                }
+                else
+                    ComponentName = info.Type.Name;
+                if (Name.Contains("+"))
+                    Name = Name.Split('.').Last().Replace("+", ".");
+            }
+
+            public DataFrame GetArgsAsDataFrame()
+            {
+                var df = new DataFrame();
+                if (Arguments != null)
+                {
                     df.AddColumn("Name", Arguments.Select(c => c.Name).ToArray());
                     df.AddColumn("ShortName", Arguments.Select(c => c.ShortName).ToArray());
                     df.AddColumn("DefaultValue", Arguments.Select(c => c.DefaultValue).ToArray());
                     df.AddColumn("Help", Arguments.Select(c => c.Help).ToArray());
-                    return df;
+                }
+                else if (Info.LoaderType != null)
+                {
+                    // Arguments class.
+                    var atts = Info.LoaderType.CustomAttributes;
+                    var names = new List<string>();
+                    var shortNames = new List<string>();
+                    var defaultValues = new List<string>();
+                    var help = new List<string>();
+                    foreach (var p in atts)
+                    {
+                        var n = "";
+                        var s = "";
+                        var d = "";
+                        var h = "";
+                        foreach (var at in p.NamedArguments)
+                        {
+                            if (at.MemberName == "Name")
+                                n = at.ToString();
+                            else if (at.MemberName == "Alias")
+                                s = at.ToString();
+                            else if (at.MemberName == "Default")
+                                d = at.ToString();
+                            else if (at.MemberName == "Desc")
+                                h = at.ToString();
+                        }
+                        names.Add(n);
+                        shortNames.Add(s);
+                        defaultValues.Add(d);
+                        help.Add(h);
+                    }
+                    var decl = Info.LoaderType;
+                    df.AddColumn("Name", names.ToArray());
+                    df.AddColumn("ShortName", shortNames.ToArray());
+                    df.AddColumn("DefaultValue", defaultValues.ToArray());
+                    df.AddColumn("Help", help.ToArray());
+                }
+                return df;
+            }
+        }
+
+        /// <summary>
+        /// Returns all kinds of parameters.
+        /// </summary>
+        private static IEnumerable<ComponentDescription> EnumerateComponentsParameter(bool commands)
+        {
+            foreach (var comp in EnumerateComponents(null))
+            {
+                var name = comp.Name;
+                if (commands)
+                {
+                    if (comp.ComponentName.Contains("Command"))
+                        yield return comp;
+                }
+                else
+                {
+                    if (comp.Name.EndsWith("Arguments"))
+                        yield return comp;
                 }
             }
         }
@@ -247,72 +379,61 @@ namespace Scikit.ML.DocHelperMlExt
         /// </summary>
         public static IEnumerable<ComponentDescription> EnumerateComponents(string kind)
         {
-            var kinds = GetAllKinds();
-            if (!kinds.Where(c => c == kind).Any())
-                throw new ArgumentException($"Unable to find kind '{kind}' in\n{string.Join("\n", kinds)}.");
-
-            using (var env = new ConsoleEnvironment())
+            if (kind == "argument")
+                foreach (var comp in EnumerateComponentsParameter(false))
+                    yield return comp;
+            else if (kind == "command")
+                foreach (var comp in EnumerateComponentsParameter(true))
+                    yield return comp;
+            else
             {
-                ComponentHelper.AddStandardComponents(env);
-                var sigs = env.ComponentCatalog.GetAllSignatureTypes();
-                var typeSig = sigs.FirstOrDefault(t => ComponentCatalog.SignatureToString(t).ToLowerInvariant() == kind);
-                var typeRes = typeof(object);
-                var infos = env.ComponentCatalog.GetAllDerivedClasses(typeRes, typeSig)
-                    .Where(x => !x.IsHidden)
-                    .OrderBy(x => x.LoadNames[0].ToLowerInvariant());
-                foreach (var info in infos)
+                var kinds = GetAllKinds();
+                if (!string.IsNullOrEmpty(kind) && !kinds.Where(c => c == kind).Any())
+                    throw new ArgumentException($"Unable to find kind '{kind}' in\n{string.Join("\n", kinds)}.");
+
+                using (var env = new ConsoleEnvironment())
                 {
-                    var args = info.CreateArguments();
-                    if (args == null)
-                    {
-                        var cmp = new ComponentDescription()
-                        {
-                            Args = args,
-                            Name = info.UserName,
-                            Description = info.Summary,
-                            Info = info,
-                            Aliases = info.LoadNames.ToArray(),
-                            Assembly = null,
-                            AssemblyName = "?",
-                            Arguments = null,
-                            Namespace = info.Type.Namespace,
-                            ComponentName=info.Type.Name,
-                        };
-                        yield return cmp;
-                    }
+                    ComponentHelper.AddStandardComponents(env);
+                    var sigs = env.ComponentCatalog.GetAllSignatureTypes();
+                    var typeRes = typeof(object);
+                    Type[] typeSigs;
+                    if (string.IsNullOrEmpty(kind))
+                        typeSigs = sigs.ToArray();
                     else
+                        typeSigs = new[] { sigs.FirstOrDefault(t => ComponentCatalog.SignatureToString(t).ToLowerInvariant() == kind) };
+                    foreach (var typeSig in typeSigs)
                     {
-                        var asse = args.GetType().Assembly;
-
-                        var parsedArgs = CmdParser.GetArgInfo(args.GetType(), args).Args;
-                        var arguments = new List<ComponentDescription.Argument>();
-                        foreach (var arg in parsedArgs)
+                        var infos = env.ComponentCatalog.GetAllDerivedClasses(typeRes, typeSig)
+                            .Where(x => !x.IsHidden)
+                            .OrderBy(x => x.LoadNames[0].ToLowerInvariant());
+                        foreach (var info in infos)
                         {
-                            var a = new ComponentDescription.Argument()
+                            var args = info.CreateArguments();
+                            if (args == null)
+                                yield return new ComponentDescription(info, args, null, null);
+                            else
                             {
-                                Name = arg.LongName,
-                                ShortName = arg.ShortNames == null || !arg.ShortNames.Any() ? null : arg.ShortNames.First(),
-                                DefaultValue = arg.DefaultValue == null ? null : arg.DefaultValue.ToString(),
-                                Help = arg.HelpText,
-                                Arg = arg,
-                            };
-                            arguments.Add(a);
-                        }
+                                var asse = args.GetType().Assembly;
 
-                        var cmp = new ComponentDescription()
-                        {
-                            Args = args,
-                            Name = info.UserName,
-                            Description = info.Summary,
-                            Info = info,
-                            Aliases = info.LoadNames.ToArray(),
-                            Assembly = asse,
-                            AssemblyName = asse.ManifestModule.Name,
-                            Arguments = arguments.OrderBy(c => c.Name).ToArray(),
-                            Namespace = info.Type.Namespace,
-                            ComponentName = info.Type.Name,
-                        };
-                        yield return cmp;
+                                var parsedArgs = CmdParser.GetArgInfo(args.GetType(), args).Args;
+                                var arguments = new List<ComponentDescription.Argument>();
+                                foreach (var arg in parsedArgs)
+                                {
+                                    var a = new ComponentDescription.Argument()
+                                    {
+                                        Name = arg.LongName,
+                                        ShortName = arg.ShortNames == null || !arg.ShortNames.Any() ? null : arg.ShortNames.First(),
+                                        DefaultValue = arg.DefaultValue == null ? null : arg.DefaultValue.ToString(),
+                                        Help = arg.HelpText,
+                                        Arg = arg,
+                                    };
+                                    arguments.Add(a);
+                                }
+
+                                var cmp = new ComponentDescription(info, args, asse, arguments);
+                                yield return cmp;
+                            }
+                        }
                     }
                 }
             }

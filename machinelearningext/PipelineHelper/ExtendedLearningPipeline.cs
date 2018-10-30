@@ -45,7 +45,7 @@ namespace Scikit.ML.PipelineHelper
         private readonly int _conc;
 
         /// <summary>
-        /// Construct an empty <see cref="ExtendedLearningPipeline"/> object.
+        /// Builds an empty <see cref="ExtendedLearningPipeline"/> object.
         /// </summary>
         public GenericLearningPipeline(int? seed = null, int conc = 0) : base()
         {
@@ -54,13 +54,13 @@ namespace Scikit.ML.PipelineHelper
         }
 
         /// <summary>
-        /// Train the model using the ML components in the pipeline.
+        /// Trains the model using the ML components in the pipeline.
         /// </summary>
         public ExtendedPredictionModel Train(IHostEnvironment environment = null)
         {
-            ConsoleEnvironment cosenv = null;
             if (environment == null)
-                environment = cosenv = new ConsoleEnvironment(seed: _seed, conc: _conc);
+                using (var env = new ConsoleEnvironment(seed: _seed, conc: _conc))
+                    return Train(env);
 
             Experiment experiment = environment.CreateExperiment();
             Legacy.ILearningPipelineStep step = null;
@@ -123,9 +123,7 @@ namespace Scikit.ML.PipelineHelper
 
             experiment.Compile();
             foreach (Legacy.ILearningPipelineLoader loader in loaders)
-            {
                 loader.SetInput(environment, experiment);
-            }
             experiment.Run();
 
             ITransformModel model = experiment.GetOutput(lastTransformModel);
@@ -136,8 +134,6 @@ namespace Scikit.ML.PipelineHelper
                 memoryStream.Position = 0;
                 extModel = new ExtendedPredictionModel(memoryStream);
             }
-            if (cosenv != null)
-                cosenv.Dispose();
             return extModel;
         }
 

@@ -410,7 +410,7 @@ namespace Scikit.ML.ModelSelection
                         int pardId = i;
                         var filtView = LambdaFilter.Create<int>(Host, string.Format("Select part {0}", i), currentTr,
                                                                    _newColumn, NumberType.I4,
-                                                                   (ref int part) => { return part.Equals(pardId); });
+                                                                   (in int part) => { return part.Equals(pardId); });
 #if (DEBUG)
                         long count = DataViewUtils.ComputeRowCount(filtView);
                         if (count == 0)
