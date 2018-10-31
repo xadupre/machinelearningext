@@ -53,7 +53,7 @@ namespace TestMachineLearningExt
             var iris = FileHelper.GetTestFile("iris.txt");
 
             var pipeline = new Legacy.LearningPipeline();
-            pipeline.Add(new Legacy.Data.TextLoader(iris).CreateFrom<IrisObservation>(separator: '\t'));
+            pipeline.Add(new Legacy.Data.TextLoader(iris).CreateFrom<IrisObservation>(separator: '\t', useHeader: true));
             pipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
             pipeline.Add(new Legacy.Trainers.KMeansPlusPlusClusterer());
             var model = pipeline.Train<IrisObservation, IrisPrediction>();
@@ -130,7 +130,8 @@ namespace TestMachineLearningExt
             {
                 ComponentHelper.AddStandardComponents(env);
 
-                var data = env.CreateLoader("Text{col=Label:R4:0 col=Sepal_length:R4:1 col=Sepal_width:R4:2 col=Petal_length:R4:3 col=Petal_width:R4:4}",
+                var data = env.CreateLoader("Text{col=Label:R4:0 col=Sepal_length:R4:1 col=Sepal_width:R4:2 " +
+                                            "col=Petal_length:R4:3 col=Petal_width:R4:4 header=+}",
                                             new MultiFileSource(iris));
                 var conc = env.CreateTransform("Concat{col=Features:Sepal_length,Sepal_width}", data);
                 var roleMap = env.CreateExamples(conc, "Features", "Label");

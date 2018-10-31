@@ -69,8 +69,9 @@ namespace TestMachineLearningExt
 
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
-                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=- sep=,}",
-                    new MultiFileSource(dataFilePath));
+                var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 " +
+                                              "col=Pwidth:R4:4 header=+ sep=tab}",
+                                              new MultiFileSource(dataFilePath));
                 var sorted = env.CreateTransform("resample{lambda=1 c=-}", loader);
                 DataViewHelper.ToCsv(env, sorted, outputDataFilePath);
 
