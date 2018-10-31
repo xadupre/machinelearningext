@@ -7,6 +7,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Trainers.KMeans;
+using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.ScikitAPI;
 using Scikit.ML.TestHelper;
@@ -87,7 +88,7 @@ namespace TestMachineLearningExt
                                         }
                                     });
 
-                var pipeline = new ConcatEstimator(env, "Features", "Sepal_length", "Sepal_width", "Petal_length", "Petal_width")
+                var pipeline = new ColumnConcatenatingEstimator(env, "Features", "Sepal_length", "Sepal_width", "Petal_length", "Petal_width")
                        .Append(new KMeansPlusPlusTrainer(env, "Features", clustersCount: 3));
 
                 IDataView trainingDataView = reader.Read(new MultiFileSource(iris));

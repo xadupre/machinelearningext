@@ -12,6 +12,7 @@ using Microsoft.ML.Trainers.HalLearners;
 using Microsoft.ML.Trainers.KMeans;
 using Microsoft.ML.Trainers.PCA;
 using Microsoft.ML.Trainers.FastTree;
+using Microsoft.ML.Transforms.Text;
 using Scikit.ML.Clustering;
 using Scikit.ML.TimeSeries;
 using Scikit.ML.FeaturesTransforms;
@@ -66,7 +67,7 @@ namespace Scikit.ML.ScikitAPI
             AddComponent(env, typeof(OlsLinearRegressionPredictor).Assembly);
             AddComponent(env, typeof(PcaPredictor).Assembly);
             AddComponent(env, typeof(SlidingWindowTransform).Assembly);
-            AddComponent(env, typeof(TextTransform).Assembly);
+            AddComponent(env, typeof(TextFeaturizingEstimator).Assembly);
             AddComponent(env, typeof(TensorFlowTransform).Assembly);
             // ext
             AddComponent(env, typeof(DBScan).Assembly);

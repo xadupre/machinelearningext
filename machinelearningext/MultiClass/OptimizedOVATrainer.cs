@@ -7,6 +7,7 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Training;
 using Microsoft.ML.Runtime.Internal.Calibration;
+using Microsoft.ML.Transforms;
 using Scikit.ML.RandomTransforms;
 using Scikit.ML.PipelineHelper;
 

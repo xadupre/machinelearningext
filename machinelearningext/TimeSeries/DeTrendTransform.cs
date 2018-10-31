@@ -6,6 +6,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineLambdaTransforms;
 
@@ -319,8 +320,7 @@ namespace Scikit.ML.TimeSeries
                 dropColumns.Add(slotTime);
             dropColumns.Add(tempColumn);
 
-            var dropArgs = new DropColumnsTransform.Arguments { Column = dropColumns.ToArray() };
-            var dropped = new DropColumnsTransform(Host, dropArgs, lambdaView);
+            var dropped = SelectColumnsTransform.CreateDrop(Host, lambdaView, dropColumns.ToArray());
             return dropped;
         }
     }

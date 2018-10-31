@@ -82,9 +82,9 @@ namespace TestMachineLearningExt
                 }
             };
 
-            var args2 = new TextTransform.Arguments()
+            var args2 = new TextFeaturizingEstimator.Arguments()
             {
-                Column = new TextTransform.Column
+                Column = new TextFeaturizingEstimator.Column
                 {
                     Name = "Features",
                     Source = new[] { "SentimentText" }
@@ -94,7 +94,7 @@ namespace TestMachineLearningExt
                 TextCase = TextNormalizerEstimator.CaseNormalizationMode.Lower,
                 OutputTokens = true,
                 StopWordsRemover = new PredefinedStopWordsRemoverFactory(),
-                VectorNormalizer = normalize ? TextTransform.TextNormKind.L2 : TextTransform.TextNormKind.None,
+                VectorNormalizer = normalize ? TextFeaturizingEstimator.TextNormKind.L2 : TextFeaturizingEstimator.TextNormKind.None,
                 CharFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
                 WordFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
             };
@@ -106,7 +106,7 @@ namespace TestMachineLearningExt
                 // Pipeline
                 var loader = TextLoader.ReadFile(env, args, new MultiFileSource(trainFilename));
 
-                var trans = TextTransform.Create(env, args2, loader);
+                var trans = TextFeaturizingEstimator.Create(env, args2, loader);
 
                 // Train
                 var trainer = new LinearClassificationTrainer(env, new LinearClassificationTrainer.Arguments
