@@ -39,7 +39,7 @@ namespace TestMachineLearningExt
 
                 var data = host.CreateStreamingDataView(inputs);
 
-                var trv = LambdaTransform.CreateMap<InputOutput, InputOutput, EnvHelper.EmptyState>(host, data,
+                var trv = LambdaTransform.CreateMap(host, data,
                                             (InputOutput src, InputOutput dst, EnvHelper.EmptyState state) =>
                                             {
                                                 dst.X = new float[] { src.X[0] + 1f, src.X[1] - 1f };
@@ -103,7 +103,7 @@ namespace TestMachineLearningExt
 
                 var data = host.CreateStreamingDataView(inputs);
 
-                var trv = LambdaTransform.CreateMap<InputOutput, InputOutput2, EnvHelper.EmptyState>(host, data,
+                var trv = LambdaTransform.CreateMap(host, data,
                                             (InputOutput src, InputOutput2 dst, EnvHelper.EmptyState state) =>
                                             {
                                                 dst.X2 = new float[] { src.X[0] + 1f, src.X[1] - 1f };
