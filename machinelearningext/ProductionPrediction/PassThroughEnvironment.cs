@@ -81,7 +81,6 @@ namespace Scikit.ML.ProductionPrediction
         protected override IChannel CreateCommChannel(ChannelProviderBase parent, string name)
         {
             Contracts.AssertValue(parent);
-            Contracts.Assert(parent is LocalEnvironment);
             Contracts.AssertNonEmpty(name);
             return new Channel(this, parent, name, GetDispatchDelegate<ChannelMessage>());
         }
@@ -89,7 +88,6 @@ namespace Scikit.ML.ProductionPrediction
         protected override IPipe<TMessage> CreatePipe<TMessage>(ChannelProviderBase parent, string name)
         {
             Contracts.AssertValue(parent);
-            Contracts.Assert(parent is LocalEnvironment);
             Contracts.AssertNonEmpty(name);
             return new Pipe<TMessage>(parent, name, GetDispatchDelegate<TMessage>());
         }

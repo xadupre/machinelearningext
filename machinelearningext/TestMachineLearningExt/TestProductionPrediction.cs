@@ -39,11 +39,11 @@ namespace TestMachineLearningExt
 
                 var data = host.CreateStreamingDataView(inputs);
 
-                var trv = LambdaTransform.CreateMap(host, data,
-                                            (InputOutput src, InputOutput dst) =>
+                var trv = LambdaTransform.CreateMap<InputOutput, InputOutput, EnvHelper.EmptyState>(host, data,
+                                            (InputOutput src, InputOutput dst, EnvHelper.EmptyState state) =>
                                             {
                                                 dst.X = new float[] { src.X[0] + 1f, src.X[1] - 1f };
-                                            });
+                                            }, (EnvHelper.EmptyState state) => { });
 
                 var ino = new InputOutput { X = new float[] { -5, -5 }, Y = 3 };
                 var inob = new VBuffer<float>(2, ino.X);
@@ -103,11 +103,11 @@ namespace TestMachineLearningExt
 
                 var data = host.CreateStreamingDataView(inputs);
 
-                var trv = LambdaTransform.CreateMap(host, data,
-                                            (InputOutput src, InputOutput2 dst) =>
+                var trv = LambdaTransform.CreateMap<InputOutput, InputOutput2, EnvHelper.EmptyState>(host, data,
+                                            (InputOutput src, InputOutput2 dst, EnvHelper.EmptyState state) =>
                                             {
                                                 dst.X2 = new float[] { src.X[0] + 1f, src.X[1] - 1f };
-                                            });
+                                            }, (state) => { });
 
                 var inos = new InputOutput[] {new InputOutput { X = new float[] { -5, -5 }, Y = 3 },
                 new InputOutput { X = new float[] { -6, -6 }, Y = 30 } };

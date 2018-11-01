@@ -91,7 +91,7 @@ namespace TestMachineLearningExt
                 },
                 KeepDiacritics = false,
                 KeepPunctuations = false,
-                TextCase = TextNormalizerEstimator.CaseNormalizationMode.Lower,
+                TextCase = TextNormalizingEstimator.CaseNormalizationMode.Lower,
                 OutputTokens = true,
                 StopWordsRemover = new PredefinedStopWordsRemoverFactory(),
                 VectorNormalizer = normalize ? TextFeaturizingEstimator.TextNormKind.L2 : TextFeaturizingEstimator.TextNormKind.None,

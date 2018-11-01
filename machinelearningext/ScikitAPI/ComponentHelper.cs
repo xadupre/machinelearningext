@@ -12,6 +12,7 @@ using Microsoft.ML.Trainers.HalLearners;
 using Microsoft.ML.Trainers.KMeans;
 using Microsoft.ML.Trainers.PCA;
 using Microsoft.ML.Trainers.FastTree;
+using Microsoft.ML.Transforms.Categorical;
 using Microsoft.ML.Transforms.Text;
 using Scikit.ML.Clustering;
 using Scikit.ML.TimeSeries;

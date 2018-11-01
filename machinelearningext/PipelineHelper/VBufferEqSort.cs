@@ -26,10 +26,10 @@ namespace Scikit.ML.PipelineHelper
 
         public static void Copy(T[] src, int srcIndex, ref VBuffer<T> dst, int length) { VBuffer<T>.Copy(src, srcIndex, ref dst, length); }
         public static void Copy(T[] src, int srcIndex, ref VBufferEqSort<T> dst, int length) { VBuffer<T>.Copy(src, srcIndex, ref dst.data, length); }
-        public static void Copy(ref VBuffer<T> src, ref VBuffer<T> dst) { VBuffer<T>.Copy(ref src, ref dst); }
-        public static void Copy(ref VBufferEqSort<T> src, ref VBuffer<T> dst) { VBuffer<T>.Copy(ref src.data, ref dst); }
-        public static void Copy(ref VBuffer<T> src, ref VBufferEqSort<T> dst) { VBuffer<T>.Copy(ref src, ref dst.data); }
-        public static void Copy(ref VBufferEqSort<T> src, ref VBufferEqSort<T> dst) { VBuffer<T>.Copy(ref src.data, ref dst.data); }
+        public static void Copy(ref VBuffer<T> src, ref VBuffer<T> dst) { src.CopyTo(ref dst); }
+        public static void Copy(ref VBufferEqSort<T> src, ref VBuffer<T> dst) { src.data.CopyTo(ref dst); }
+        public static void Copy(ref VBuffer<T> src, ref VBufferEqSort<T> dst) { src.CopyTo(ref dst.data); }
+        public static void Copy(ref VBufferEqSort<T> src, ref VBufferEqSort<T> dst) { src.data.CopyTo(ref dst.data); }
 
         public void CopyTo(ref VBuffer<T> dst) { data.CopyTo(ref dst); }
         public void CopyTo(ref VBuffer<T> dst, int srcMin, int length) { data.CopyTo(ref dst, srcMin, length); }

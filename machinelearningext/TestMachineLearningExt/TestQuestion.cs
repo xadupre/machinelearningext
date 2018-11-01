@@ -72,7 +72,7 @@ namespace TestMachineLearningExt
         public void TestEP_Q_KMeansEntryPointAPI_06()
         {
             var iris = FileHelper.GetTestFile("iris.txt");
-            using (var env = new LocalEnvironment())
+            using (var env = new ConsoleEnvironment())
             {
                 var reader = new TextLoader(env,
                                     new TextLoader.Arguments()

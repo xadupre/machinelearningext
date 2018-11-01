@@ -216,12 +216,12 @@ namespace TestMachineLearningExt
                 var args = new SortInDataFrameTransform.Arguments { sortColumn = "Y" };
                 var transformedData = new SortInDataFrameTransform(host, args, data);
                 var sorted = transformedData;
-                LambdaTransform.CreateMap<InputOutput, InputOutput>(host, data,
-                    (input, output) =>
+                LambdaTransform.CreateMap<InputOutput, InputOutput, EnvHelper.EmptyState>(host, data,
+                    (input, output, state) =>
                     {
                         output.X = input.X;
                         output.Y = input.Y;
-                    });
+                    }, (state) => { });
 
                 using (var cursor = sorted.GetRowCursor(i => true))
                 {
@@ -275,12 +275,12 @@ namespace TestMachineLearningExt
                 var args = new ExtendedCacheTransform.Arguments { numTheads = nt, async = async };
                 var transformedData = new ExtendedCacheTransform(host, args, data);
                 var lastTransform = transformedData;
-                LambdaTransform.CreateMap<InputOutput, InputOutput>(host, data,
-                    (input, output) =>
+                LambdaTransform.CreateMap<InputOutput, InputOutput, EnvHelper.EmptyState>(host, data,
+                    (input, output, state) =>
                     {
                         output.X = input.X;
                         output.Y = input.Y;
-                    });
+                    }, (EnvHelper.EmptyState state) => { });
 
                 using (var cursor = lastTransform.GetRowCursor(i => true))
                 {
