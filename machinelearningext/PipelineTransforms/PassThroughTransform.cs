@@ -9,6 +9,7 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Runtime.Model.Onnx;
 using Scikit.ML.PipelineHelper;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
@@ -30,7 +31,7 @@ namespace Scikit.ML.PipelineTransforms
     /// <summary>
     /// Inserts a transform which does nothing just to get a transform pointer.
     /// </summary>
-    public class PassThroughTransform : IDataTransform
+    public class PassThroughTransform : IDataTransform, ISaveAsOnnx
     {
         public const string LoaderSignature = "PassThroughTransform";  // Not more than 24 letters.
         public const string Summary = "Inserts a transform which does nothing just to get a transform pointer. It can be used to dump a view on disk.";
@@ -209,6 +210,16 @@ namespace Scikit.ML.PipelineTransforms
 
                 _saved = true;
             }
+        }
+
+        public bool CanSaveOnnx(OnnxContext ctx)
+        {
+            return true;
+        }
+
+        public void SaveAsOnnx(OnnxContext ctx)
+        {
+            // Nothing to do.
         }
     }
 }

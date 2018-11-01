@@ -7,7 +7,9 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Runtime.Model.Onnx;
 using Scikit.ML.PipelineHelper;
+
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
@@ -28,7 +30,7 @@ namespace Scikit.ML.PipelineTransforms
     /// <summary>
     /// Compute various statistics on a list of columns.
     /// </summary>
-    public class DescribeTransform : IDataTransform
+    public class DescribeTransform : IDataTransform, ISaveAsOnnx
     {
         public const string LoaderSignature = "DescribeTransform";  // Not more than 24 letters.
         public const string Summary = "Computes various statistics on a list of columns.";
@@ -396,6 +398,16 @@ namespace Scikit.ML.PipelineTransforms
                     _statistics = _input;
                 }
             }
+        }
+
+        public bool CanSaveOnnx(OnnxContext ctx)
+        {
+            return true;
+        }
+
+        public void SaveAsOnnx(OnnxContext ctx)
+        {
+            // Nothing to do.
         }
     }
 }

@@ -259,7 +259,7 @@ namespace TestMachineLearningExt
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var filename = FileHelper.GetOutputFile("benchmark_ValueMapperPredictionEngineMultiThread.txt", methodName);
             df.ToCsv(filename);
-            Assert.AreEqual(dico.Count, 72);
+            Assert.AreEqual(dico.Count, 48);
         }
     }
 }

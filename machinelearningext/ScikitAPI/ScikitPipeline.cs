@@ -8,10 +8,12 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Runtime.Model.Onnx;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
+using Scikit.ML.OnnxHelper;
 
 
 namespace Scikit.ML.ScikitAPI
@@ -25,6 +27,12 @@ namespace Scikit.ML.ScikitAPI
     public class ScikitPipeline : IDisposable
     {
         #region members
+
+        public enum SaveFormat
+        {
+            Zip = 1,
+            Onnx = 2,
+        };
 
         public class StepTransform
         {
@@ -103,6 +111,8 @@ namespace Scikit.ML.ScikitAPI
 
         /// <summary>
         /// Initializes a pipeline based on an a filename.
+        /// The pipeline can restore a pipeline saved into Onnx format but
+        /// it cannot be trained again. You need to save it as a zip format to do so.
         /// </summary>
         /// <param name="filename">zip</param>
         /// <param name="host">can be empty too, a <see cref="ExtendedConsoleEnvironment"/> is then created</param>
@@ -111,7 +121,12 @@ namespace Scikit.ML.ScikitAPI
             _dispose = false;
             _env = host ?? ExtendedConsoleEnvironment();
             using (var st = File.OpenRead(filename))
-                Load(st);
+            {
+                if (filename.EndsWith(".zip"))
+                    Load(st);
+                else
+                    LoadOnnx(st);
+            }
         }
 
         /// <summary>
@@ -119,15 +134,25 @@ namespace Scikit.ML.ScikitAPI
         /// </summary>
         /// <param name="filename">stream on a zip file</param>
         /// <param name="host">can be empty too, a <see cref="ExtendedConsoleEnvironment"/> is then created</param>
-        public ScikitPipeline(Stream st, IHostEnvironment host = null)
+        public ScikitPipeline(Stream st, SaveFormat format = SaveFormat.Zip, IHostEnvironment host = null)
         {
             _dispose = false;
             _env = host ?? ExtendedConsoleEnvironment();
-            Load(st);
+            switch (format)
+            {
+                case SaveFormat.Zip:
+                    Load(st);
+                    break;
+                case SaveFormat.Onnx:
+                    LoadOnnx(st);
+                    break;
+                default:
+                    throw _env.Except($"Unable to save pipeline into format {format}.");
+            }
         }
 
         /// <summary>
-        /// Loads a pipeline.
+        /// Loads a pipeline saved in zip format.
         /// </summary>
         protected void Load(Stream fs)
         {
@@ -160,12 +185,28 @@ namespace Scikit.ML.ScikitAPI
         }
 
         /// <summary>
+        /// Loads a pipeline saved in onnx format.
+        /// </summary>
+        protected void LoadOnnx(Stream fs)
+        {
+            var root = new PassThroughTransform(_env, new PassThroughTransform.Arguments(), null);
+            _transforms = new StepTransform[2];
+            _transforms[0] = new StepTransform() { transform = root as IDataTransform, transformSettings = null };
+            _transforms[1] = new StepTransform() { transform = ConvertFromOnnx.ReadOnnx(fs, root), transformSettings = null };
+            _predictor = new StepPredictor() { predictor = null, roleMapData = null, trainer = null, trainerSettings = null };
+            _fastValueMapper = null;
+        }
+
+        /// <summary>
         /// Saves the pipeline as a filename.
         /// </summary>
         public void Save(string filename)
         {
             using (var fs = File.Create(filename))
-                Save(fs);
+                if (filename.EndsWith(".zip"))
+                    Save(fs);
+                else
+                    ToOnnx().Save(fs);
         }
 
         /// <summary>
@@ -393,6 +434,33 @@ namespace Scikit.ML.ScikitAPI
 
             _fastValueMapperObject = new ValueMapperDataFrameFromTransform(_env, tr, conc: conc);
             _fastValueMapper = _fastValueMapperObject.GetMapper<DataFrame, DataFrame>();
+        }
+
+        #endregion
+
+        #region onnx
+
+        /// <summary>
+        /// Exports to onnx.
+        /// </summary>
+        /// <param name="stream">stream</param>
+        /// <param name="inputs">inputs, modified by the function to contains what is actually used</param>
+        /// <param name="outputs">outputs, modified by the function to contains what is actually used</param>
+        public ScikitOnnxContext ToOnnx(int firstTransform = 0, string[] inputs = null, string[] outputs = null,
+                                        string name = null, string producer = "Scikit.ML",
+                                        long version = 0, string domain = "onnx.ai.ml",
+                                        OnnxVersion onnxVersion = OnnxVersion.Stable)
+        {
+            var begin = _transforms == null ? null : _transforms[firstTransform].transform;
+            var res = Convert2Onnx.ToOnnx(_predictor == null ? _transforms.Last().transform : GetScorer(),
+                                          ref inputs, ref outputs, name, producer, version, domain,
+                                          onnxVersion, new IDataView[] { begin }, _env);
+            return res;
+        }
+
+        IDataScorerTransform GetScorer()
+        {
+            return PredictorHelper.CreateDefaultScorer(_env, _predictor.roleMapData, _predictor.predictor, null);
         }
 
         #endregion

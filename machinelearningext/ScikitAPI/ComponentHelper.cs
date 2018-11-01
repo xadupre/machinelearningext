@@ -7,6 +7,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Learners;
 using Microsoft.ML.Runtime.Ensemble;
 using Microsoft.ML.Runtime.LightGBM;
+using Microsoft.ML.Runtime.Model.Onnx;
 using Microsoft.ML.Runtime.TimeSeriesProcessing;
 using Microsoft.ML.Trainers.HalLearners;
 using Microsoft.ML.Trainers.KMeans;
@@ -21,6 +22,7 @@ using Scikit.ML.PipelineLambdaTransforms;
 using Scikit.ML.ModelSelection;
 using Scikit.ML.MultiClass;
 using Scikit.ML.NearestNeighbors;
+using Scikit.ML.OnnxHelper;
 using Scikit.ML.PipelineGraphTraining;
 using Scikit.ML.PipelineGraphTransforms;
 using Scikit.ML.PipelineTraining;
@@ -70,6 +72,7 @@ namespace Scikit.ML.ScikitAPI
             AddComponent(env, typeof(SlidingWindowTransform).Assembly);
             AddComponent(env, typeof(TextFeaturizingEstimator).Assembly);
             AddComponent(env, typeof(TensorFlowTransform).Assembly);
+            AddComponent(env, typeof(OnnxContext).Assembly);
             // ext
             AddComponent(env, typeof(DBScan).Assembly);
             AddComponent(env, typeof(DeTrendTransform).Assembly);
@@ -84,6 +87,7 @@ namespace Scikit.ML.ScikitAPI
             AddComponent(env, typeof(ResampleTransform).Assembly);
             AddComponent(env, typeof(SplitTrainTestTransform).Assembly);
             AddComponent(env, typeof(ValueMapperPredictionEngineFloat).Assembly);
+            AddComponent(env, typeof(Convert2Onnx).Assembly);
         }
     }
 }

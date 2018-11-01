@@ -10,7 +10,7 @@
     <NewtonsoftJsonPackageVersion>10.0.3</NewtonsoftJsonPackageVersion>
     <ParquetDotNetPackageVersion>2.1.3</ParquetDotNetPackageVersion>
     <PublishSymbolsPackageVersion>1.0.0-beta-62824-02</PublishSymbolsPackageVersion>
-    <SystemCodeDomPackageVersion>4.4.0</SystemCodeDomPackageVersion>
+    <SystemCodeDomPackageVersion>4.5.0</SystemCodeDomPackageVersion>
     <SystemCollectionsImmutableVersion>1.5.0</SystemCollectionsImmutableVersion>
     <SystemCompositionVersion>1.2.0</SystemCompositionVersion>
     <SystemDrawingCommonPackageVersion>4.5.0</SystemDrawingCommonPackageVersion>
