@@ -163,7 +163,7 @@ namespace TestMachineLearningExt
             ValueMapper<VBuffer<float>, float> _mapper;
             ValueMapperFromTransformFloat<VBuffer<float>> _valueMapper;
 
-            public ValueMapperExample(string modelName, string features, bool getterEachTime)
+            public ValueMapperExample(string modelName, string features)
             {
                 _env = EnvHelper.NewTestEnvironment();
                 _predictor = _env.LoadPredictorOrNull(File.OpenRead(modelName));
@@ -223,7 +223,7 @@ namespace TestMachineLearningExt
         public void TestTransform2ValueMapperSingleThreadSimple()
         {
             var name = FileHelper.GetTestFile("bc-lr.zip");
-            using (var example = new ValueMapperExample(name, "Features", true))
+            using (var example = new ValueMapperExample(name, "Features"))
             {
                 var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
                 var ans = example.Predict(feat);
@@ -247,7 +247,7 @@ namespace TestMachineLearningExt
                         throw new Exception(string.Format("Issue {0} != {1}", ans, ans6.Item2));
                 }
 
-                using (var exampleNo = new ValueMapperExample(name, "Features", false))
+                using (var exampleNo = new ValueMapperExample(name, "Features"))
                 {
                     var ans3 = example.Predict(feat);
                     if (ans != ans3)
@@ -312,7 +312,7 @@ namespace TestMachineLearningExt
             int n = 10000;
 #endif
             var name = FileHelper.GetTestFile("bc-lr.zip");
-            using (var example = new ValueMapperExample(name, "Features", false))
+            using (var example = new ValueMapperExample(name, "Features"))
                 RunValueMapperExample(example, n);
             using (var engine = new PredictionEngineExample(name))
                 RunPredictionEngineExample(engine, n);

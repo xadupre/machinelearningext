@@ -33,7 +33,6 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="env">environment like ConsoleEnvironment</param>
         /// <param name="transform">transform to convert</param>
         /// <param name="sourceToReplace">source to replace</param>
-        /// <param name="getterEachTime">create the getter for each computation</param>
         /// <param name="conc">number of concurrency threads</param>
         public ValueMapperDataFrameFromTransform(IHostEnvironment env, IDataTransform transform,
                                                  IDataView sourceToReplace = null,

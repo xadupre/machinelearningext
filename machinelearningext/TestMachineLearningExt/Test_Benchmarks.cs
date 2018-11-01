@@ -60,7 +60,7 @@ namespace TestMachineLearningExt
                     }
                 }
                 Assert.AreEqual(dico.Count, 8);
-                var df = DataFrameIO.Convert(dico, "N", "getterEachTime", "number of threads", "time(s)");
+                var df = DataFrameIO.Convert(dico, "N", "number of threads", "time(s)");
                 var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
                 var filename = FileHelper.GetOutputFile("benchmark_ValueMapperPredictionEngineMultiThread.txt", methodName);
                 df.ToCsv(filename);
@@ -151,14 +151,8 @@ namespace TestMachineLearningExt
                 else
                     cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
                 var testData = cache.AsEnumerable<SentimentData>(env, false);
-
                 var testDataArray = cache.AsEnumerable<SentimentData>(env, false).ToArray();
-
-#if (DEBUG)
                 int N = 1;
-#else
-                int N = getterEachTime ? 1 : 100;
-#endif
 
                 if (engine == "mlnet")
                 {

@@ -88,7 +88,6 @@ namespace Scikit.ML.ProductionPrediction
         /// </summary>
         /// <param name="env">environment</param>
         /// <param name="modelStream">stream</param>
-        /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="conc">number of concurrency threads</param>
         /// <param name="features">features column</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, Stream modelStream,
@@ -124,7 +123,6 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="env">environment</param>
         /// <param name="modelStream">stream</param>
         /// <param name="output">name of the output column</param>
-        /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, IDataScorerTransform scorer, int conc = 1)

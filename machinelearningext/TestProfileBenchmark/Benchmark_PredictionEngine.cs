@@ -105,7 +105,7 @@ namespace TestProfileBenchmark
 
                 if (engine == "mlnet")
                 {
-                    Console.WriteLine("engine={0} N={1} ncall={2} each={3} cacheScikit={4}", engine, N, ncall, cacheScikit);
+                    Console.WriteLine("engine={0} N={1} ncall={2} cacheScikit={3}", engine, N, ncall, cacheScikit);
                     var model = env.CreatePredictionEngine<SentimentData, SentimentPrediction>(scorer);
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
@@ -121,7 +121,7 @@ namespace TestProfileBenchmark
                 }
                 else if (engine == "scikit")
                 {
-                    Console.WriteLine("engine={0} N={1} ncall={2} each={3} cacheScikit={4}", engine, N, ncall, cacheScikit);
+                    Console.WriteLine("engine={0} N={1} ncall={2} cacheScikit={3}", engine, N, ncall, cacheScikit);
                     var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, conc: conc);
                     var output = new ValueMapperPredictionEngine<SentimentData>.PredictionTypeForBinaryClassification();
                     var sw = new Stopwatch();
