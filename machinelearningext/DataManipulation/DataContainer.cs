@@ -804,12 +804,12 @@ namespace Scikit.ML.DataManipulation
                 {
                     if (typeof(TValue) == typeof(ReadOnlyMemory<char>))
                     {
-                        ValueMapper<string, DvText> convs = (ref string src, ref DvText dst) =>
+                        ValueMapper<string, DvText> convs = (in string src, ref DvText dst) =>
                         {
                             dst = new DvText(src);
                         };
                         var convs2 = convs as ValueMapper<string, TValue>;
-                        convs2(ref kind, ref value);
+                        convs2(in kind, ref value);
                     }
                 }
                 else

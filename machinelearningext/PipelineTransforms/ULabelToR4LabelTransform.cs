@@ -194,14 +194,14 @@ namespace Scikit.ML.PipelineTransforms
                                             LambdaColumnMapper.Create(_host, "R42R4", view,
                                             _args.columns[i].Source, _args.columns[i].Name,
                                             NumberType.R4, NumberType.R4,
-                                            (ref float src, ref float dst) => { dst = src; }));
+                                            (in float src, ref float dst) => { dst = src; }));
                         break;
                     case DataKind.U4:
                         view = new PassThroughTransform(_host, new PassThroughTransform.Arguments(),
                                             LambdaColumnMapper.Create(_host, "U42R4", view,
                                             _args.columns[i].Source, _args.columns[i].Name,
                                             NumberType.U4, NumberType.R4,
-                                            (ref uint src, ref float dst) => { dst = src == 0 ? float.NaN : src - 1; }));
+                                            (in uint src, ref float dst) => { dst = src == 0 ? float.NaN : src - 1; }));
                         break;
                     default:
                         throw Contracts.ExceptNotSupp("Type '{0}' is not handled yet.", typeCol.RawKind);

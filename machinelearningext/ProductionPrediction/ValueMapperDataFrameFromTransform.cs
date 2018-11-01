@@ -99,7 +99,7 @@ namespace Scikit.ML.ProductionPrediction
             {
                 var getRowFiller = DataFrame.GetRowFiller(cur);
 
-                return (ref DataFrame src, ref DataFrame dst) =>
+                return (in DataFrame src, ref DataFrame dst) =>
                 {
                     if (dst is null)
                         dst = new DataFrame(outputView.Schema, src.Length);

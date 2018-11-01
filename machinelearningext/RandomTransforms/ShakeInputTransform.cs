@@ -396,7 +396,7 @@ namespace Scikit.ML.RandomTransforms
                     for (int j = 0; j < res[i].Length; ++j)
                     {
                         var t = new ReadOnlyMemory<char>(values[i][j].ToCharArray());
-                        conv(ref t, ref res[i][j]);
+                        conv(in t, ref res[i][j]);
                     }
                 }
                 return res;
@@ -640,7 +640,7 @@ namespace Scikit.ML.RandomTransforms
                             for (int j = 0; j < _shakingValues[i].Length; ++j)
                             {
                                 values[dim] = _shakingValues[i][j];
-                                _mappers[k](ref _inputValue, ref oneRes);
+                                _mappers[k](in _inputValue, ref oneRes);
                                 merges[k].Add(oneRes);
                             }
                         }
@@ -649,7 +649,7 @@ namespace Scikit.ML.RandomTransforms
                             for (int j = 0; j < _shakingValues[i].Length; ++j)
                             {
                                 values[dim] = _shakingValues[i][j];
-                                _mappersV[k](ref _inputValue, ref oneResV);
+                                _mappersV[k](in _inputValue, ref oneResV);
                                 merges[k].AddRange(oneResV.DenseValues());
                             }
                         }
@@ -730,7 +730,7 @@ namespace Scikit.ML.RandomTransforms
                             for (int j = 0; j < _shakingValues[i].Length; ++j)
                             {
                                 values[dim] = _shakingValues[i][j];
-                                _mappers[k](ref _inputValue, ref oneRes);
+                                _mappers[k](in _inputValue, ref oneRes);
                                 if (j == 0 && i == 0)
                                     merges[k].Add(oneRes);
                                 else
@@ -742,7 +742,7 @@ namespace Scikit.ML.RandomTransforms
                             for (int j = 0; j < _shakingValues[i].Length; ++j)
                             {
                                 values[dim] = _shakingValues[i][j];
-                                _mappersV[k](ref _inputValue, ref oneResV);
+                                _mappersV[k](in _inputValue, ref oneResV);
                                 if (j == 0 && i == 0)
                                     merges[k].AddRange(oneResV.DenseValues());
                                 else

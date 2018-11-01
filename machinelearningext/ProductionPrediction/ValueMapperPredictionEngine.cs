@@ -75,13 +75,11 @@ namespace Scikit.ML.ProductionPrediction
         /// </summary>
         /// <param name="env">environment</param>
         /// <param name="modelName">filename</param>
-        /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="conc">number of concurrency threads</param>
         /// <param name="features">features name</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, string modelName,
-                bool getterEachTime = false,
                 bool outputIsFloat = true, int conc = 1, string features = "Features") :
-            this(env, File.OpenRead(modelName), getterEachTime, conc, features)
+            this(env, File.OpenRead(modelName), conc, features)
         {
         }
 
@@ -94,7 +92,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="conc">number of concurrency threads</param>
         /// <param name="features">features column</param>
         public ValueMapperPredictionEngine(IHostEnvironment env, Stream modelStream,
-                                           bool getterEachTime = false, int conc = 1, string features = "Features")
+                                           int conc = 1, string features = "Features")
         {
             _env = env;
             if (_env == null)
@@ -117,7 +115,7 @@ namespace Scikit.ML.ProductionPrediction
             var scorer = _env.CreateDefaultScorer(data, _predictor);
             if (scorer == null)
                 throw _env.Except("Cannot create a scorer.");
-            _CreateMapper(scorer, getterEachTime, conc);
+            _CreateMapper(scorer, conc);
         }
 
         /// <summary>
@@ -129,16 +127,15 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
-        public ValueMapperPredictionEngine(IHostEnvironment env, IDataScorerTransform scorer,
-                bool getterEachTime = false, int conc = 1)
+        public ValueMapperPredictionEngine(IHostEnvironment env, IDataScorerTransform scorer, int conc = 1)
         {
             _env = env;
             if (_env == null)
                 throw Contracts.Except("env must not be null");
-            _CreateMapper(scorer, getterEachTime, conc);
+            _CreateMapper(scorer, conc);
         }
 
-        void _CreateMapper(IDataScorerTransform scorer, bool getterEachTime, int conc)
+        void _CreateMapper(IDataScorerTransform scorer, int conc)
         {
             _mapperBinaryClassification = null;
             var schema = scorer.Schema;
@@ -147,7 +144,7 @@ namespace Scikit.ML.ProductionPrediction
                 schema.TryGetColumnIndex("Probability", out i3))
             {
                 var map = new ValueMapperFromTransform<TRowValue, PredictionTypeForBinaryClassification>(_env,
-                                    scorer, getterEachTime: getterEachTime, conc: conc);
+                                    scorer, conc: conc);
                 _mapperBinaryClassification = map.GetMapper<TRowValue, PredictionTypeForBinaryClassification>();
                 _valueMapper = map;
             }
@@ -169,7 +166,7 @@ namespace Scikit.ML.ProductionPrediction
         public void Predict(TRowValue features, ref PredictionTypeForBinaryClassification res)
         {
             if (_mapperBinaryClassification != null)
-                _mapperBinaryClassification(ref features, ref res);
+                _mapperBinaryClassification(in features, ref res);
             else
                 throw _env.Except("Unrecognized machine learn problem.");
         }

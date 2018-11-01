@@ -364,7 +364,7 @@ namespace Scikit.ML.ScikitAPI
         {
             if (_fastValueMapper == null)
                 CreateFastValueMapper(conc);
-            _fastValueMapper(ref df, ref view);
+            _fastValueMapper(in df, ref view);
         }
 
         /// <summary>

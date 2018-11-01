@@ -311,7 +311,7 @@ namespace Scikit.ML.ProductionPrediction
                 return (ref TDst output) =>
                 {
                     getter(ref input);
-                    mapper(ref input, ref output);
+                    mapper(in input, ref output);
                 };
             }
         }

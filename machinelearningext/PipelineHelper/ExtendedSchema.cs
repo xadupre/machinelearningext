@@ -269,12 +269,12 @@ namespace Scikit.ML.PipelineHelper
             {
                 if (typeof(TValue) == typeof(ReadOnlyMemory<char>))
                 {
-                    ValueMapper<string, ReadOnlyMemory<char>> convs = (ref string src, ref ReadOnlyMemory<char> dst) =>
+                    ValueMapper<string, ReadOnlyMemory<char>> convs = (in string src, ref ReadOnlyMemory<char> dst) =>
                     {
                         dst = new ReadOnlyMemory<char>(src.ToCharArray());
                     };
                     var convs2 = convs as ValueMapper<string, TValue>;
-                    convs2(ref kind, ref value);
+                    convs2(in kind, ref value);
                 }
             }
             else

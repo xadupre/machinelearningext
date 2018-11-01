@@ -547,7 +547,7 @@ namespace Scikit.ML.PipelineHelper
             {
                 if (typeof(TDest) == typeof(uint))
                 {
-                    ValueMapper<float, uint> temp = (ref float src, ref uint dst) =>
+                    ValueMapper<float, uint> temp = (in float src, ref uint dst) =>
                     {
                         if (src < 0)
                             throw Contracts.ExceptValue("Unable to converter {0} '{1}' into {2}.", typeof(float).ToString(), src, typeof(uint));
@@ -558,7 +558,7 @@ namespace Scikit.ML.PipelineHelper
                 }
                 else if (typeof(TDest) == typeof(int))
                 {
-                    ValueMapper<float, int> temp = (ref float src, ref int dst) =>
+                    ValueMapper<float, int> temp = (in float src, ref int dst) =>
                     {
                         dst = (int)src;
                     };

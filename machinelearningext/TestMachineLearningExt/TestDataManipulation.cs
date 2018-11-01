@@ -585,7 +585,7 @@ namespace TestMachineLearningExt
             var df = DataFrameIO.ReadStr(text);
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 3));
 
-            df["fAA"] = df["AA"].Apply((ref int vin, ref float vout) => { vout = (float)vin; });
+            df["fAA"] = df["AA"].Apply((in int vin, ref float vout) => { vout = (float)vin; });
             Assert.AreEqual(df.Shape, new Tuple<int, int>(2, 4));
             Assert.AreEqual(df.iloc[0, 3], 0f);
             Assert.AreEqual(df.iloc[1, 3], 1f);

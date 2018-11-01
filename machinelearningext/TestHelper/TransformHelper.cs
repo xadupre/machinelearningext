@@ -112,7 +112,7 @@ namespace Scikit.ML.TestHelper
                     view = LambdaColumnHelper.Create(env,
                                     "Lambda", view, name, name, new VectorType(NumberType.R4),
                                     TextType.Instance,
-                                    (ref VBuffer<float> src, ref ReadOnlyMemory<char> dst) =>
+                                    (in VBuffer<float> src, ref ReadOnlyMemory<char> dst) =>
                                     {
                                         var st = string.Join(";", src.Values.Select(c => c.ToString()));
                                         dst = new ReadOnlyMemory<char>(st.ToCharArray());

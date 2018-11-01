@@ -352,7 +352,7 @@ namespace Scikit.ML.ModelSelection
             for (int i = 1; i < _ratios.Length; ++i)
                 cRatios[i] = cRatios[i - 1] + _ratios[i - 1];
 
-            ValueMapper<float, int> mapper = (ref float src, ref int dst) =>
+            ValueMapper<float, int> mapper = (in float src, ref int dst) =>
             {
                 for (int i = cRatios.Length - 1; i > 0; --i)
                 {

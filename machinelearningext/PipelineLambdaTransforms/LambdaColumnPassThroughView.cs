@@ -202,7 +202,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
                 return (ref TDst dst) =>
                 {
                     getter(ref temp);
-                    _view._mapper(ref temp, ref dst);
+                    _view._mapper(in temp, ref dst);
                 };
             }
         }

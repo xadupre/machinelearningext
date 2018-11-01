@@ -175,31 +175,31 @@ namespace Scikit.ML.MultiClass
             {
                 uint key = (uint)(cls + 1);
                 if (_args.downsampling > 0)
-                    return CreateTrainingView<uint, float>(data, key, 1f, -1f, 0f, NumberType.U4, NumberType.Float, ch);
+                    return CreateTrainingView(data, key, 1f, -1f, 0f, NumberType.U4, NumberType.Float, ch);
                 else
-                    return LambdaColumnMapper.Create<uint, float>(Host, "LabelColumnMapper in oOVA (1)", FilterNA(data.Data, lab.Name),
+                    return LambdaColumnMapper.Create(Host, "LabelColumnMapper in oOVA (1)", FilterNA(data.Data, lab.Name),
                         lab.Name, dstName, NumberType.U4, NumberType.Float,
-                        (ref uint src, ref float dst) => { dst = src == key ? 1 : default(float); });
+                        (in uint src, ref float dst) => { dst = src == key ? 1 : default(float); });
             }
             if (lab.Type == NumberType.R4)
             {
                 float key = cls;
                 if (_args.downsampling > 0)
-                    return CreateTrainingView<Single, float>(data, key, 1f, -1f, 0f, NumberType.R4, NumberType.Float, ch);
+                    return CreateTrainingView(data, key, 1f, -1f, 0f, NumberType.R4, NumberType.Float, ch);
                 else
-                    return LambdaColumnMapper.Create<Single, float>(Host, "LabelColumnMapper in oOVA (2)", FilterNA(data.Data, lab.Name),
+                    return LambdaColumnMapper.Create(Host, "LabelColumnMapper in oOVA (2)", FilterNA(data.Data, lab.Name),
                         lab.Name, dstName, NumberType.R4, NumberType.Float,
-                        (ref float src, ref float dst) => { dst = src == key ? 1 : default(float); });
+                        (in float src, ref float dst) => { dst = src == key ? 1 : default(float); });
             }
             if (lab.Type == NumberType.R8)
             {
-                Double key = cls;
+                double key = cls;
                 if (_args.downsampling > 0)
-                    return CreateTrainingView<Double, float>(data, key, 1f, -1f, 0f, NumberType.R8, NumberType.Float, ch);
+                    return CreateTrainingView(data, key, 1f, -1f, 0f, NumberType.R8, NumberType.Float, ch);
                 else
-                    return LambdaColumnMapper.Create<Double, float>(Host, "LabelColumnMapper in oOVA (3)", FilterNA(data.Data, lab.Name),
+                    return LambdaColumnMapper.Create(Host, "LabelColumnMapper in oOVA (3)", FilterNA(data.Data, lab.Name),
                         lab.Name, dstName, NumberType.R8, NumberType.Float,
-                        (ref Double src, ref float dst) => { dst = src == key ? 1 : default(float); });
+                        (in double src, ref float dst) => { dst = src == key ? 1 : default(float); });
             }
 
             throw Host.ExceptNotSupp("Label column type is not supported by OVA: {0}", lab.Type);
@@ -214,7 +214,7 @@ namespace Scikit.ML.MultiClass
             T1 key = cls;
             var labelMapper = LambdaColumnMapper.Create<T1, T2>(Host, "LabelColumnMapper in oOVA (4)", FilterNA(data.Data, lab.Name),
                 lab.Name, dstName, c1, c2,
-                (ref T1 src, ref T2 dst) =>
+                (in T1 src, ref T2 dst) =>
                 {
                     dst = src.Equals(key) ? one : zero;
                 });

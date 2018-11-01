@@ -87,17 +87,17 @@ namespace Scikit.ML.PipelineHelper
                     break;
                 case DataKind.I4:
                     var temp = SchemaHelper.GetConverter<TLabel, float>(out identity);
-                    mapperI4 = (ref TLabel src, ref int dst) =>
+                    mapperI4 = (in TLabel src, ref int dst) =>
                     {
                         float v = 0f;
-                        temp(ref src, ref v);
+                        temp(in src, ref v);
                         dst = (int)v;
                     };
                     var temp2 = SchemaHelper.GetConverter<float, TLabel>(out identity);
-                    mapperFromI4 = (ref int src, ref TLabel dst) =>
+                    mapperFromI4 = (in int src, ref TLabel dst) =>
                     {
                         float v = (float)src;
-                        temp2(ref v, ref dst);
+                        temp2(in v, ref dst);
                     };
                     break;
                 case DataKind.R4:
@@ -160,23 +160,23 @@ namespace Scikit.ML.PipelineHelper
             switch (_kind)
             {
                 case DataKind.BL:
-                    mapperBL(ref value, ref _bl);
+                    mapperBL(in value, ref _bl);
                     ctx.Writer.Write(_bl);
                     break;
                 case DataKind.U1:
-                    mapperU1(ref value, ref _u1);
+                    mapperU1(in value, ref _u1);
                     ctx.Writer.Write(_u1);
                     break;
                 case DataKind.U2:
-                    mapperU2(ref value, ref _u2);
+                    mapperU2(in value, ref _u2);
                     ctx.Writer.Write(_u2);
                     break;
                 case DataKind.U4:
-                    mapperU4(ref value, ref _u4);
+                    mapperU4(in value, ref _u4);
                     ctx.Writer.Write(_u4);
                     break;
                 case DataKind.R4:
-                    mapperR4(ref value, ref _r4);
+                    mapperR4(in value, ref _r4);
                     ctx.Writer.Write(_r4);
                     break;
                 default:
@@ -190,23 +190,23 @@ namespace Scikit.ML.PipelineHelper
             {
                 case DataKind.BL:
                     var b = ctx.Reader.ReadBoolByte();
-                    mapperFromBL(ref _bl, ref res);
+                    mapperFromBL(in _bl, ref res);
                     break;
                 case DataKind.U1:
                     _u1 = ctx.Reader.ReadByte();
-                    mapperFromU1(ref _u1, ref res);
+                    mapperFromU1(in _u1, ref res);
                     break;
                 case DataKind.U2:
                     _u2 = ctx.Reader.ReadUInt16();
-                    mapperFromU2(ref _u2, ref res);
+                    mapperFromU2(in _u2, ref res);
                     break;
                 case DataKind.U4:
                     _u4 = ctx.Reader.ReadUInt32();
-                    mapperFromU4(ref _u4, ref res);
+                    mapperFromU4(in _u4, ref res);
                     break;
                 case DataKind.R4:
                     _r4 = ctx.Reader.ReadFloat();
-                    mapperFromR4(ref _r4, ref res);
+                    mapperFromR4(in _r4, ref res);
                     break;
                 default:
                     throw Contracts.ExceptNotSupp("Not supported kind {0}", _kind);
