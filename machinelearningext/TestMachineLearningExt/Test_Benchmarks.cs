@@ -28,7 +28,7 @@ namespace TestMachineLearningExt
             var name = FileHelper.GetTestFile("bc-lr.zip");
 
             using (var env = EnvHelper.NewTestEnvironment())
-            using (var engine0 = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: true, conc: 1))
+            using (var engine0 = new ValueMapperPredictionEngineFloat(env, name, conc: 1))
             {
                 var feat = new float[] { 5, 1, 1, 1, 2, 1, 3, 1, 1 };
                 var exp = new float[100];
@@ -46,7 +46,7 @@ namespace TestMachineLearningExt
                 {
                     foreach (int th in new int[] { 2, 0, 1, 3 })
                     {
-                        var engine = new ValueMapperPredictionEngineFloat(env, name, getterEachTime: each, conc: th);
+                        var engine = new ValueMapperPredictionEngineFloat(env, name, conc: th);
                         var sw = new Stopwatch();
                         sw.Start();
                         for (int i = 0; i < exp.Length; ++i)
@@ -60,7 +60,7 @@ namespace TestMachineLearningExt
                     }
                 }
                 Assert.AreEqual(dico.Count, 8);
-                var df = DataFrameIO.Convert(dico, "N", "getterEachTime", "number of threads", "time(s)");
+                var df = DataFrameIO.Convert(dico, "N", "number of threads", "time(s)");
                 var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
                 var filename = FileHelper.GetOutputFile("benchmark_ValueMapperPredictionEngineMultiThread.txt", methodName);
                 df.ToCsv(filename);
@@ -82,19 +82,19 @@ namespace TestMachineLearningExt
                 }
             };
 
-            var args2 = new TextTransform.Arguments()
+            var args2 = new TextFeaturizingEstimator.Arguments()
             {
-                Column = new TextTransform.Column
+                Column = new TextFeaturizingEstimator.Column
                 {
                     Name = "Features",
                     Source = new[] { "SentimentText" }
                 },
                 KeepDiacritics = false,
                 KeepPunctuations = false,
-                TextCase = TextNormalizerEstimator.CaseNormalizationMode.Lower,
+                TextCase = TextNormalizingEstimator.CaseNormalizationMode.Lower,
                 OutputTokens = true,
                 StopWordsRemover = new PredefinedStopWordsRemoverFactory(),
-                VectorNormalizer = normalize ? TextTransform.TextNormKind.L2 : TextTransform.TextNormKind.None,
+                VectorNormalizer = normalize ? TextFeaturizingEstimator.TextNormKind.L2 : TextFeaturizingEstimator.TextNormKind.None,
                 CharFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
                 WordFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
             };
@@ -106,7 +106,7 @@ namespace TestMachineLearningExt
                 // Pipeline
                 var loader = TextLoader.ReadFile(env, args, new MultiFileSource(trainFilename));
 
-                var trans = TextTransform.Create(env, args2, loader);
+                var trans = TextFeaturizingEstimator.Create(env, args2, loader);
 
                 // Train
                 var trainer = new LinearClassificationTrainer(env, new LinearClassificationTrainer.Arguments
@@ -139,7 +139,6 @@ namespace TestMachineLearningExt
 
             var testFilename = FileHelper.GetTestFile("wikipedia-detox-250-line-test.tsv");
             var times = new List<Tuple<int, TimeSpan, int, float[]>>();
-            bool getterEachTime = strategy.Contains("each");
 
             using (var env = EnvHelper.NewTestEnvironment(seed: 1, conc: conc))
             {
@@ -152,14 +151,8 @@ namespace TestMachineLearningExt
                 else
                     cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
                 var testData = cache.AsEnumerable<SentimentData>(env, false);
-
                 var testDataArray = cache.AsEnumerable<SentimentData>(env, false).ToArray();
-
-#if (DEBUG)
                 int N = 1;
-#else
-                int N = getterEachTime ? 1 : 100;
-#endif
 
                 if (engine == "mlnet")
                 {
@@ -167,8 +160,6 @@ namespace TestMachineLearningExt
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {
-                        if (getterEachTime && call >= 2)
-                            break;
                         sw.Reset();
                         var pred = new List<float>();
                         sw.Start();
@@ -193,13 +184,11 @@ namespace TestMachineLearningExt
                 {
                     string allSchema = SchemaHelper.ToString(scorer.Schema);
                     Assert.IsTrue(allSchema.Contains("PredictedLabel:Bool:4; Score:R4:5; Probability:R4:6"));
-                    var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, getterEachTime: getterEachTime, conc: conc);
+                    var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, conc: conc);
                     var output = new ValueMapperPredictionEngine<SentimentData>.PredictionTypeForBinaryClassification();
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {
-                        if (getterEachTime && call >= 2)
-                            break;
                         var pred = new List<float>();
                         sw.Reset();
                         sw.Start();
@@ -237,44 +226,40 @@ namespace TestMachineLearningExt
         {
             var dico = new Dictionary<Tuple<int, string, string, int, int>, double>();
             var scorer = _TrainSentiment();
-            foreach (var each in new[] { false, true })
+            foreach (var cache in new[] { false, true })
             {
-                foreach (var cache in new[] { false, true })
+                for (int th = 1; th <= 3; ++th)
                 {
-                    for (int th = 1; th <= 3; ++th)
+                    var memo = new Dictionary<string, float[]>();
+                    foreach (var engine in new[] { "mlnet", "scikit" })
                     {
-                        var memo = new Dictionary<string, float[]>();
-                        foreach (var engine in new[] { "mlnet", "scikit" })
+                        foreach (var kind in new[] { "array", "stream" })
                         {
-                            foreach (var kind in new[] { "array", "stream" })
-                            {
-                                var strat_ = new[] {
+                            var strat_ = new[] {
                                         cache ? "extcache" : "viewcache",
-                                        each ? "each": "one",
                                         kind,
                                         };
-                                var strat = string.Join("+", strat_);
-                                foreach (var res in _MeasureTime(th, strat, engine, scorer, 2))
-                                {
-                                    dico[new Tuple<int, string, string, int, int>(res.Item1, engine, strat, th, res.Item3)] = res.Item2.TotalSeconds;
-                                    if (res.Item3 == 1)
-                                        memo[engine] = res.Item4;
-                                }
+                            var strat = string.Join("+", strat_);
+                            foreach (var res in _MeasureTime(th, strat, engine, scorer, 2))
+                            {
+                                dico[new Tuple<int, string, string, int, int>(res.Item1, engine, strat, th, res.Item3)] = res.Item2.TotalSeconds;
+                                if (res.Item3 == 1)
+                                    memo[engine] = res.Item4;
                             }
                         }
-                        var p1 = memo["mlnet"];
-                        var p2 = memo["scikit"];
-                        Assert.AreEqual(p1.Length, p2.Length);
-                        for (int ii = 0; ii < p1.Length; ++ii)
-                            Assert.AreEqual(p1[ii], p2[ii]);
                     }
+                    var p1 = memo["mlnet"];
+                    var p2 = memo["scikit"];
+                    Assert.AreEqual(p1.Length, p2.Length);
+                    for (int ii = 0; ii < p1.Length; ++ii)
+                        Assert.AreEqual(p1[ii], p2[ii]);
                 }
             }
             var df = DataFrameIO.Convert(dico, "N", "engine", "strategy", "number of threads", "call", "time(s)");
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var filename = FileHelper.GetOutputFile("benchmark_ValueMapperPredictionEngineMultiThread.txt", methodName);
             df.ToCsv(filename);
-            Assert.AreEqual(dico.Count, 72);
+            Assert.AreEqual(dico.Count, 48);
         }
     }
 }

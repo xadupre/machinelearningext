@@ -470,7 +470,7 @@ namespace Scikit.ML.MultiClass
                         var value = ctx.Reader.ReadInt64();
 
                         TLabel tkey = default(TLabel);
-                        mapper(ref key, ref tkey);
+                        mapper(in key, ref tkey);
                         _labelDistribution[tkey] = value;
                     }
                     using (var ch = _host.Start("Finalize MultiToBinaryState"))

@@ -16,3 +16,12 @@ docs/source/mlnetdocs
 docs/mlext
 docs/mlnet
 docs/buildmd
+docs/source/diabetes_test.csv
+docs/source/diabetes_train.csv
+lr_iris.onnx
+lr_diabete.onnx
+docs/source/lr_diabete_cs.onnx
+docs/source/lr_diabete_cs.zip
+docs/source/lr_iris.zip
+diabetes_test.csv
+diabetes_train.csv

@@ -21,11 +21,11 @@ using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
 using MultiFileSource = Microsoft.ML.Runtime.Data.MultiFileSource;
 using CacheDataView = Microsoft.ML.Runtime.Data.CacheDataView;
 using SignatureDataSaver = Microsoft.ML.Runtime.Data.SignatureDataSaver;
-
 using ModelLoadContext = Microsoft.ML.Runtime.Model.ModelLoadContext;
 using ModelSaveContext = Microsoft.ML.Runtime.Model.ModelSaveContext;
 using VersionInfo = Microsoft.ML.Runtime.Model.VersionInfo;
-
+using ICanSaveOnnx = Microsoft.ML.Runtime.Model.Onnx.ICanSaveOnnx;
+using OnnxContext = Microsoft.ML.Runtime.Model.Onnx.OnnxContext;
 using SchemaHelper = Scikit.ML.PipelineHelper.SchemaHelper;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
@@ -50,7 +50,7 @@ namespace Scikit.ML.PipelineTransforms
     /// This transform can be used to overwrite some values in the middle of the pipeline
     /// while doing prediction.
     /// </summary>
-    public class ExtendedCacheTransform : TransformBase
+    public class ExtendedCacheTransform : TransformBase, ICanSaveOnnx
     {
         #region identification
 
@@ -283,6 +283,20 @@ namespace Scikit.ML.PipelineTransforms
                 var copy = ComponentCreation.CreateTransform(env, "skip{s=0}", loader);
                 return copy;
             }
+        }
+
+        #endregion
+
+        #region onnx
+
+        public bool CanSaveOnnx(OnnxContext ctx)
+        {
+            return true;
+        }
+
+        public void SaveAsOnnx(OnnxContext ctx)
+        {
+            // Nothing to do.
         }
 
         #endregion

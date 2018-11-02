@@ -43,5 +43,9 @@ namespace Scikit.ML.TestHelper
             return NewTestEnvironment(seed: seed, verbose: verbose, sensitivity: sensitivity,
                                       conc: conc, outWriter: sout, errWriter: serr);
         }
+
+        public class EmptyState
+        {
+        }
     }
 }

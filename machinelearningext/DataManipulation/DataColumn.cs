@@ -697,7 +697,7 @@ namespace Scikit.ML.DataManipulation
                 throw new DataValueError("Unexpected input type for this column.");
             var res = new DataColumn<TDst>(Length);
             for (int i = 0; i < res.Length; ++i)
-                maptyped(ref Data[i], ref res.Data[i]);
+                maptyped(in Data[i], ref res.Data[i]);
             return new NumericColumn(res);
         }
 
@@ -709,7 +709,7 @@ namespace Scikit.ML.DataManipulation
             var mapper = GetGenericConverter() as ValueMapper<DType, TSource>;
             var res = AggregateTyped(funcTyped, rows);
             var converted = default(TSource);
-            mapper(ref res, ref converted);
+            mapper(in res, ref converted);
             return converted;
         }
 
@@ -721,13 +721,13 @@ namespace Scikit.ML.DataManipulation
             var mapper = GetGenericConverter() as ValueMapper<DType, TSource>;
             var res = AggregateTyped(funcTyped, rows);
             var converted = default(TSource);
-            mapper(ref res, ref converted);
+            mapper(in res, ref converted);
             return converted;
         }
 
         static ValueMapper<DType, DType> GetGenericConverter()
         {
-            return (ref DType src, ref DType dst) => { dst = src; };
+            return (in DType src, ref DType dst) => { dst = src; };
         }
 
         public DType AggregateTyped(Func<DType, DType, DType> func, int[] rows = null)

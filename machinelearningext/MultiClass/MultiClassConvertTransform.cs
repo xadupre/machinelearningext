@@ -333,7 +333,7 @@ namespace Scikit.ML.MultiClass
                             // Key starts at 1.
                             uint plus = (itemType.IsKey ? (uint)1 : (uint)0) - (typeSrc.IsKey ? (uint)1 : (uint)0);
                             identity = false;
-                            ValueMapper<uint, uint> map_ = (ref uint src, ref uint dst) => { dst = src + plus; };
+                            ValueMapper<uint, uint> map_ = (in uint src, ref uint dst) => { dst = src + plus; };
                             del = (Delegate)map_;
                             if (del == null)
                                 throw Contracts.ExceptNotSupp("Issue with casting");
@@ -346,7 +346,10 @@ namespace Scikit.ML.MultiClass
                 {
                     ulong plus = (itemType.IsKey ? (ulong)1 : (ulong)0) - (typeSrc.IsKey ? (ulong)1 : (ulong)0);
                     identity = false;
-                    ValueMapper<long, ulong> map_ = (ref long src, ref ulong dst) => { CheckRange(src, dst, ectx); dst = (ulong)src + plus; };
+                    ValueMapper<long, ulong> map_ = (in long src, ref ulong dst) =>
+                    {
+                        CheckRange(src, dst, ectx); dst = (ulong)src + plus;
+                    };
                     del = (Delegate)map_;
                     if (del == null)
                         throw Contracts.ExceptNotSupp("Issue with casting");
@@ -355,7 +358,10 @@ namespace Scikit.ML.MultiClass
                 {
                     uint plus = (itemType.IsKey ? (uint)1 : (uint)0) - (typeSrc.IsKey ? (uint)1 : (uint)0);
                     identity = false;
-                    ValueMapper<long, uint> map_ = (ref long src, ref uint dst) => { CheckRange(src, dst, ectx); dst = (uint)src + plus; };
+                    ValueMapper<long, uint> map_ = (in long src, ref uint dst) =>
+                    {
+                        CheckRange(src, dst, ectx); dst = (uint)src + plus;
+                    };
                     del = (Delegate)map_;
                     if (del == null)
                         throw Contracts.ExceptNotSupp("Issue with casting");
@@ -466,7 +472,7 @@ namespace Scikit.ML.MultiClass
                     (ref TDst dst) =>
                     {
                         getter(ref src);
-                        conv(ref src, ref dst);
+                        conv(in src, ref dst);
                     };
             }
         }

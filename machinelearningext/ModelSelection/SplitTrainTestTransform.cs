@@ -10,6 +10,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.PipelineGraphTransforms;
@@ -351,7 +352,7 @@ namespace Scikit.ML.ModelSelection
             for (int i = 1; i < _ratios.Length; ++i)
                 cRatios[i] = cRatios[i - 1] + _ratios[i - 1];
 
-            ValueMapper<float, int> mapper = (ref float src, ref int dst) =>
+            ValueMapper<float, int> mapper = (in float src, ref int dst) =>
             {
                 for (int i = cRatios.Length - 1; i > 0; --i)
                 {
@@ -383,8 +384,7 @@ namespace Scikit.ML.ModelSelection
             currentTr = new ExtendedCacheTransform(Host, args3, view);
 
             // Removing the temporary column.
-            var args4 = new DropColumnsTransform.Arguments() { Column = new string[] { columnName } };
-            var finalTr = new DropColumnsTransform(Host, args4, currentTr);
+            var finalTr = SelectColumnsTransform.CreateDrop(Host, currentTr, new string[] { columnName });
             var taggedViews = new List<Tuple<string, ITaggedDataView>>();
 
             // filenames
@@ -416,8 +416,7 @@ namespace Scikit.ML.ModelSelection
                         if (count == 0)
                             throw Host.Except("Part {0} is empty.", i);
 #endif
-                        var ar2 = new DropColumnsTransform.Arguments() { Column = new string[] { columnName, _newColumn } };
-                        filtView = new DropColumnsTransform(Host, ar2, filtView);
+                        filtView = SelectColumnsTransform.CreateDrop(Host, filtView, new string[] { columnName, _newColumn });
 
                         if (_filenames != null && _filenames.Any())
                         {

@@ -14,7 +14,7 @@ namespace Scikit.ML.ProductionPrediction
 
     interface IInfiniteLoopViewCursor<TRepValue>
     {
-        void Set(ref TRepValue value);
+        void Set(in TRepValue value);
     }
 
     #endregion
@@ -55,11 +55,11 @@ namespace Scikit.ML.ProductionPrediction
         public long? GetRowCount(bool lazy = true) { return null; }
         public Schema Schema { get { return _schema; } }
 
-        public void Set(ref TRepValue value)
+        public void Set(in TRepValue value)
         {
             if (_ownCursor == null)
                 throw Contracts.Except("GetRowCursor on this view was never called. No cursor is registered.");
-            _ownCursor.Set(ref value);
+            _ownCursor.Set(in value);
         }
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
@@ -159,7 +159,7 @@ namespace Scikit.ML.ProductionPrediction
                 return true;
             }
 
-            public void Set(ref TRepValue value)
+            public void Set(in TRepValue value)
             {
                 _container[0] = value;
                 _wait = false;
@@ -284,11 +284,11 @@ namespace Scikit.ML.ProductionPrediction
         public long? GetRowCount(bool lazy = true) { return null; }
         public Schema Schema { get { return _schema; } }
 
-        public void Set(ref TRowValue value)
+        public void Set(in TRowValue value)
         {
             if (_ownCursor == null)
                 throw Contracts.Except("GetRowCursor on this view was never called. No cursor is registered.");
-            _ownCursor.Set(ref value);
+            _ownCursor.Set(in value);
         }
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
@@ -396,7 +396,7 @@ namespace Scikit.ML.ProductionPrediction
                 return true;
             }
 
-            public void Set(ref TRowValue value)
+            public void Set(in TRowValue value)
             {
                 _container[0] = value;
                 _wait = false;

@@ -43,14 +43,13 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="env">environment</param>
         /// <param name="modelName">filename</param>
         /// <param name="output">name of the output column</param>
-        /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
         /// <param name="features">features name</param>
         public ValueMapperPredictionEngineFloat(IHostEnvironment env, string modelName,
-                string output = "Probability", bool getterEachTime = false,
-                bool outputIsFloat = true, int conc = 1, string features = "Features") :
-            this(env, File.OpenRead(modelName), output, getterEachTime, outputIsFloat, conc, features)
+                string output = "Probability", bool outputIsFloat = true, int conc = 1,
+                string features = "Features") :
+            this(env, File.OpenRead(modelName), output, outputIsFloat, conc, features)
         {
         }
 
@@ -60,13 +59,12 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="env">environment</param>
         /// <param name="modelStream">stream</param>
         /// <param name="output">name of the output column</param>
-        /// <param name="getterEachTime">true to create getter each time a prediction is made (multithrading is allowed) or not (no multithreading)</param>
         /// <param name="outputIsFloat">output is a gloat (true) or a vector of floats (false)</param>
         /// <param name="conc">number of concurrency threads</param>
         /// <param name="features">features name</param>
         public ValueMapperPredictionEngineFloat(IHostEnvironment env, Stream modelStream,
-                string output = "Probability", bool getterEachTime = false,
-                bool outputIsFloat = true, int conc = 1, string features = "Features")
+                string output = "Probability", bool outputIsFloat = true, int conc = 1,
+                string features = "Features")
         {
             _env = env;
             if (_env == null)
@@ -91,8 +89,7 @@ namespace Scikit.ML.ProductionPrediction
                 throw _env.Except("Cannot create a scorer.");
 
             _valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(_env,
-                                scorer, features, output, getterEachTime: getterEachTime,
-                                conc: conc);
+                                scorer, features, output, conc: conc);
             if (_valueMapper == null)
                 throw _env.Except("Cannot create a mapper.");
             if (outputIsFloat)
@@ -124,7 +121,7 @@ namespace Scikit.ML.ProductionPrediction
                 throw _env.Except("The mapper is outputting a vector not a float.");
             float res = 0f;
             var buf = new VBuffer<float>(features.Length, features);
-            _mapper(ref buf, ref res);
+            _mapper(in buf, ref res);
             return res;
         }
 
@@ -139,7 +136,7 @@ namespace Scikit.ML.ProductionPrediction
                 throw _env.Except("The mapper is outputting a float not a vector.");
             VBuffer<float> res = new VBuffer<float>();
             var buf = new VBuffer<float>(features.Length, features);
-            _mapperVector(ref buf, ref res);
+            _mapperVector(in buf, ref res);
             if (!res.IsDense)
                 throw _env.Except("The output of the predictor or transform must be dense.");
             return res.DenseValues().ToArray();

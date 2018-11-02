@@ -59,7 +59,7 @@ namespace Scikit.ML.ProductionPrediction
         /// otherwise the provided object is used.</param>
         public void Predict(DataFrame example, ref DataFrame prediction)
         {
-            _fastValueMapper(ref example, ref prediction);
+            _fastValueMapper(in example, ref prediction);
         }
     }
 

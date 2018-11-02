@@ -313,7 +313,7 @@ namespace Scikit.ML.MultiClass
                     maps[i] = _mappers[i].GetMapper<VBuffer<float>, float>();
 
                 return
-                    (ref VBuffer<float> src, ref VBuffer<float> dst) =>
+                    (in VBuffer<float> src, ref VBuffer<float> dst) =>
                     {
                         if (_inputType.VectorSize > 0)
                             Contracts.Check(src.Length == _inputType.VectorSize);
@@ -323,7 +323,7 @@ namespace Scikit.ML.MultiClass
                             values = new float[maps.Length];
 
                         var tmp = src;
-                        Parallel.For(0, maps.Length, i => maps[i](ref tmp, ref values[i]));
+                        Parallel.For(0, maps.Length, i => maps[i](in tmp, ref values[i]));
                         dst = new VBuffer<float>(maps.Length, values, dst.Indices);
                     };
             }
@@ -366,7 +366,7 @@ namespace Scikit.ML.MultiClass
                     maps[i] = _mappers[i].GetMapper<VBuffer<float>, float, float>();
 
                 return
-                    (ref VBuffer<float> src, ref VBuffer<float> dst) =>
+                    (in VBuffer<float> src, ref VBuffer<float> dst) =>
                     {
                         if (_inputType.VectorSize > 0)
                             Contracts.Check(src.Length == _inputType.VectorSize);
@@ -380,7 +380,7 @@ namespace Scikit.ML.MultiClass
                             i =>
                             {
                                 float score = 0;
-                                maps[i](ref tmp, ref score, ref values[i]);
+                                maps[i](in tmp, ref score, ref values[i]);
                             });
                         Normalize(values, maps.Length);
                         dst = new VBuffer<float>(maps.Length, values, dst.Indices);

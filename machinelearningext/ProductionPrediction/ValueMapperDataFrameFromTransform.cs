@@ -33,7 +33,6 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="env">environment like ConsoleEnvironment</param>
         /// <param name="transform">transform to convert</param>
         /// <param name="sourceToReplace">source to replace</param>
-        /// <param name="getterEachTime">create the getter for each computation</param>
         /// <param name="conc">number of concurrency threads</param>
         public ValueMapperDataFrameFromTransform(IHostEnvironment env, IDataTransform transform,
                                                  IDataView sourceToReplace = null,
@@ -99,7 +98,7 @@ namespace Scikit.ML.ProductionPrediction
             {
                 var getRowFiller = DataFrame.GetRowFiller(cur);
 
-                return (ref DataFrame src, ref DataFrame dst) =>
+                return (in DataFrame src, ref DataFrame dst) =>
                 {
                     if (dst is null)
                         dst = new DataFrame(outputView.Schema, src.Length);

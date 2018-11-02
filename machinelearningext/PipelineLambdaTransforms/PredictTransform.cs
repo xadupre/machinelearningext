@@ -218,9 +218,9 @@ namespace Scikit.ML.PipelineLambdaTransforms
             // well preserved (rare bug).
             var view = LambdaColumnHelper.Create(_host, "PredictTransform", Source, inputColumn, outputColumn,
                                 valueMapper.InputType, valueMapper.OutputType,
-                                (ref TSrc src, ref TDst dst) =>
+                                (in TSrc src, ref TDst dst) =>
                                 {
-                                    mapper(ref src, ref dst);
+                                    mapper(in src, ref dst);
                                 });
 
             var args = new PassThroughTransform.Arguments();
@@ -240,9 +240,9 @@ namespace Scikit.ML.PipelineLambdaTransforms
             // well preserved (rare bug).
             var view = LambdaColumnHelper.Create(_host, "PredictTransform", Source, inputColumn, outputColumn,
                                 valueMapper.InputType, valueMapper.DistType,
-                                (ref TSrc src, ref TDist dst) =>
+                                (in TSrc src, ref TDist dst) =>
                                 {
-                                    mapper(ref src, ref temp, ref dst);
+                                    mapper(in src, ref temp, ref dst);
                                 });
 
             transform = new PassThroughTransform(_host, args, view);

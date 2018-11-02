@@ -2,19 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Scikit.ML.RandomTransforms</AssemblyName>
-    <RootNamespace>Scikit.ML.RandomTransforms</RootNamespace>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>DEBUG;CORECLR;TRACE</DefineConstants>
+    <AssemblyName>Scikit.ML.OnnxHelper</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Memory" Version="$(SystemMemoryVersion)" />
+    <PackageReference Include="Google.Protobuf" Version="$(GoogleProtobufPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PipelineGraphTransforms\PipelineGraphTransforms.csproj" />
     <ProjectReference Include="..\PipelineHelper\PipelineHelper.csproj" />
   </ItemGroup>
 
@@ -30,6 +26,12 @@
     </Reference>
     <Reference Include="Microsoft.ML.Api">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.Onnx">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Onnx.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ML.OnnxTransform">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.OnnxTransform.dll</HintPath>
     </Reference>
   </ItemGroup>
 

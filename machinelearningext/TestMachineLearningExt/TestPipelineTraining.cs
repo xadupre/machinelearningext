@@ -13,7 +13,6 @@ namespace TestMachineLearningExt
     [TestClass]
     public class TestPipelineTraining
     {
-
         #region none
 
         static void TrainPrePostProcessTrainer(string modelName, bool checkError, int threads, bool addpre)

@@ -49,3 +49,8 @@ Warning as errors
 The compilation failed due to a couple of warnings treated as error
 on appveyor and Visual Studio 2015. The option was removed:
 `Remove option /WX for native libraries <https://github.com/xadupre/machinelearning/commit/a7eb9efb54a0849bb76279a807ab4fef7b8752d2>`_.
+
+Internal
+========
+
+A couple of classes where duplicated because they are internal.

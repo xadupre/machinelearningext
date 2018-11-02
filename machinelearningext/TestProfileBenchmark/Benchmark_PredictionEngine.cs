@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.TextAnalytics;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms.Text;
 using Scikit.ML.TestHelper;
@@ -34,19 +33,19 @@ namespace TestProfileBenchmark
                 }
             };
 
-            var args2 = new TextTransform.Arguments()
+            var args2 = new TextFeaturizingEstimator.Arguments()
             {
-                Column = new TextTransform.Column
+                Column = new TextFeaturizingEstimator.Column
                 {
                     Name = "Features",
                     Source = new[] { "SentimentText" }
                 },
                 KeepDiacritics = false,
                 KeepPunctuations = false,
-                TextCase = TextNormalizerEstimator.CaseNormalizationMode.Lower,
+                TextCase = TextNormalizingEstimator.CaseNormalizationMode.Lower,
                 OutputTokens = true,
                 StopWordsRemover = new PredefinedStopWordsRemoverFactory(),
-                VectorNormalizer = normalize ? TextTransform.TextNormKind.L2 : TextTransform.TextNormKind.None,
+                VectorNormalizer = normalize ? TextFeaturizingEstimator.TextNormKind.L2 : TextFeaturizingEstimator.TextNormKind.None,
                 CharFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
                 WordFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
             };
@@ -58,7 +57,7 @@ namespace TestProfileBenchmark
                 // Pipeline
                 var loader = TextLoader.ReadFile(env, args, new MultiFileSource(trainFilename));
 
-                var trans = TextTransform.Create(env, args2, loader);
+                var trans = TextFeaturizingEstimator.Create(env, args2, loader);
 
                 // Train
                 var trainer = new LinearClassificationTrainer(env, new LinearClassificationTrainer.Arguments
@@ -76,7 +75,7 @@ namespace TestProfileBenchmark
         }
 
         private static List<Tuple<int, TimeSpan, int>> _MeasureTime(int conc, 
-            bool getterEachTime, string engine, IDataScorerTransform scorer, int N, int ncall, bool cacheScikit)
+                                string engine, IDataScorerTransform scorer, int N, int ncall, bool cacheScikit)
         {
             var args = new TextLoader.Arguments()
             {
@@ -106,7 +105,7 @@ namespace TestProfileBenchmark
 
                 if (engine == "mlnet")
                 {
-                    Console.WriteLine("engine={0} N={1} ncall={2} each={3} cacheScikit={4}", engine, N, ncall, getterEachTime, cacheScikit);
+                    Console.WriteLine("engine={0} N={1} ncall={2} cacheScikit={3}", engine, N, ncall, cacheScikit);
                     var model = env.CreatePredictionEngine<SentimentData, SentimentPrediction>(scorer);
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
@@ -122,14 +121,12 @@ namespace TestProfileBenchmark
                 }
                 else if (engine == "scikit")
                 {
-                    Console.WriteLine("engine={0} N={1} ncall={2} each={3} cacheScikit={4}", engine, N, ncall, getterEachTime, cacheScikit);
-                    var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, getterEachTime: getterEachTime, conc: conc);
+                    Console.WriteLine("engine={0} N={1} ncall={2} cacheScikit={3}", engine, N, ncall, cacheScikit);
+                    var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, conc: conc);
                     var output = new ValueMapperPredictionEngine<SentimentData>.PredictionTypeForBinaryClassification();
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {
-                        if (getterEachTime && call >= 2)
-                            break;
                         sw.Reset();
                         sw.Start();
                         for (int i = 0; i < N; ++i)
@@ -147,12 +144,11 @@ namespace TestProfileBenchmark
 
         public static DataFrame TestScikitAPI_EngineSimpleTrainAndPredict(string engine, int th, int N, int ncall, bool cacheScikit)
         {
-            var dico = new Dictionary<Tuple<int, string, bool, int, int>, double>();
+            var dico = new Dictionary<Tuple<int, string, int, int>, double>();
             var scorer = _TrainSentiment();
-            foreach (var each in new[] { false })
-                foreach (var res in _MeasureTime(th, each, engine, scorer, N, ncall, cacheScikit))
-                    dico[new Tuple<int, string, bool, int, int>(res.Item1, engine, each, th, res.Item3)] = res.Item2.TotalSeconds;
-            var df = DataFrameIO.Convert(dico, "N", "engine", "getterEachTime", "number of threads", "call", "time(s)");
+            foreach (var res in _MeasureTime(th, engine, scorer, N, ncall, cacheScikit))
+                dico[new Tuple<int, string, int, int>(res.Item1, engine, th, res.Item3)] = res.Item2.TotalSeconds;
+            var df = DataFrameIO.Convert(dico, "N", "engine", "number of threads", "call", "time(s)");
             return df;
         }
     }

@@ -6,6 +6,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineLambdaTransforms;
 
@@ -241,7 +242,7 @@ namespace Scikit.ML.TimeSeries
                 slotName = input.Schema.GetTempColumnName() + "in";
                 input = LambdaColumnHelper.Create(Host, "takeslot", input, _args.columns[0].Source, slotName,
                                             new VectorType(NumberType.R4), NumberType.R4,
-                                            (ref VBuffer<float> src, ref float dst) =>
+                                            (in VBuffer<float> src, ref float dst) =>
                                             {
                                                 dst = src.GetItemOrDefault(0);
                                             });
@@ -253,7 +254,7 @@ namespace Scikit.ML.TimeSeries
                 slotTime = input.Schema.GetTempColumnName() + "time";
                 input = LambdaColumnHelper.Create(Host, "makevect", input, _args.timeColumn, slotTime,
                                             NumberType.R4, new VectorType(NumberType.R4, 2),
-                                            (ref float src, ref VBuffer<float> dst) =>
+                                            (in float src, ref VBuffer<float> dst) =>
                                             {
                                                 if (dst.Values != null)
                                                     dst = new VBuffer<float>(2, dst.Values);
@@ -306,7 +307,7 @@ namespace Scikit.ML.TimeSeries
             var lambdaView = LambdaColumnHelper.Create(Host,
                 "DeTrendTransform", concat, tempColumn, _args.columns[0].Name, new VectorType(NumberType.R4, 2),
                 NumberType.R4,
-                (ref VBuffer<float> src, ref float dst) =>
+                (in VBuffer<float> src, ref float dst) =>
                 {
                     dst = src.Values[1] - src.Values[0];
                 });
@@ -319,8 +320,7 @@ namespace Scikit.ML.TimeSeries
                 dropColumns.Add(slotTime);
             dropColumns.Add(tempColumn);
 
-            var dropArgs = new DropColumnsTransform.Arguments { Column = dropColumns.ToArray() };
-            var dropped = new DropColumnsTransform(Host, dropArgs, lambdaView);
+            var dropped = SelectColumnsTransform.CreateDrop(Host, lambdaView, dropColumns.ToArray());
             return dropped;
         }
     }

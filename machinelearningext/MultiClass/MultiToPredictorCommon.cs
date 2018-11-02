@@ -454,7 +454,7 @@ namespace Scikit.ML.MultiClass
 
                     // Only one new column added which contain the label.
                     return
-                        (ref VBuffer<float> src, ref VBuffer<float> dst) =>
+                        (in VBuffer<float> src, ref VBuffer<float> dst) =>
                         {
                             if (dst.Count != maxClass)
                                 dst = new VBuffer<float>(maxClass, _classes.Length, new float[_classes.Length], _dstIndices);
@@ -498,7 +498,7 @@ namespace Scikit.ML.MultiClass
                             for (int i = 0; i < _classes.Length; ++i)
                             {
                                 inputs.Values[src.Count] = labelClasses[i];
-                                mapper(ref inputs, ref dst.Values[i]);
+                                mapper(in inputs, ref dst.Values[i]);
                             }
 
                             // Only if probabilities
@@ -513,7 +513,7 @@ namespace Scikit.ML.MultiClass
 
                             if (mapperFinal != null)
                             {
-                                mapperFinal(ref dst, ref tempOut);
+                                mapperFinal(in dst, ref tempOut);
                                 dst = tempOut;
                             }
                         };
@@ -528,7 +528,7 @@ namespace Scikit.ML.MultiClass
 
                     // One column was added for each class.
                     return
-                        (ref VBuffer<float> src, ref VBuffer<float> dst) =>
+                        (in VBuffer<float> src, ref VBuffer<float> dst) =>
                         {
                             if (dst.Count != maxClass)
                                 dst = new VBuffer<float>(maxClass, _classes.Length, new float[_classes.Length], _dstIndices);
@@ -551,7 +551,7 @@ namespace Scikit.ML.MultiClass
                                 {
                                     k = (int)labelClasses[i] + src.Count;
                                     inputs.Values[k] = 1;
-                                    mapper(ref inputs, ref dst.Values[i]);
+                                    mapper(in inputs, ref dst.Values[i]);
                                     inputs.Values[k] = 0;
                                 }
                             }
@@ -584,7 +584,7 @@ namespace Scikit.ML.MultiClass
                                 {
                                     Contracts.Assert(inputs.Count == nb, "inputs.Count");
                                     inputs.Indices[src.Count] = (int)labelClasses[i] + src.Length;
-                                    mapper(ref inputs, ref dst.Values[i]);
+                                    mapper(in inputs, ref dst.Values[i]);
                                     // If the predictor is called within a LambdaColumnTransform,
                                     // the context is not very well preserved (bug?).
                                     // This second test ensures it passes.
@@ -603,7 +603,7 @@ namespace Scikit.ML.MultiClass
 
                             if (mapperFinal != null)
                             {
-                                mapperFinal(ref dst, ref tempOut);
+                                mapperFinal(in dst, ref tempOut);
                                 dst = tempOut;
                             }
                         };

@@ -6,22 +6,35 @@ namespace TestProfileBenchmark
     {
         static void Main(string[] args)
         {
+#if(DEBUG)
+            int N = 10;
+#else
             int N = 2000;
-            int ncall = 1;
-            for (int th = 2; th <= 2; ++th)
+#endif
+            Console.WriteLine("Test scikit...");
+            for (int ncall = 1; ncall <= 2; ++ncall)
             {
-                foreach (var cache in new[] { true })
+                for (int th = 1; th <= 4; ++th)
                 {
-                    /*
-                    Console.WriteLine("");
-                    Console.WriteLine("Test scikit...");
-                    var df1 = Benchmark_PredictionEngine.TestScikitAPI_EngineSimpleTrainAndPredict("scikit", th, N, ncall, cache);
-                    Console.WriteLine(df1.ToString());
-                    Console.WriteLine("");
-                    */
-                    Console.WriteLine("Test mlnet...");
-                    var df2 = Benchmark_PredictionEngine.TestScikitAPI_EngineSimpleTrainAndPredict("mlnet", th, N, ncall, cache);
-                    Console.WriteLine(df2.ToString());
+                    foreach (var cache in new[] { true, false })
+                    {
+                        var df1 = Benchmark_PredictionEngine.TestScikitAPI_EngineSimpleTrainAndPredict("scikit", th, N, ncall, cache);
+                        Console.WriteLine(df1.ToString());
+                    }
+                }
+            }
+
+            Console.WriteLine("");
+            Console.WriteLine("Test mlnet...");
+            for (int ncall = 1; ncall <= 2; ++ncall)
+            {
+                for (int th = 1; th <= 4; ++th)
+                {
+                    foreach (var cache in new[] { true, false })
+                    {
+                        var df2 = Benchmark_PredictionEngine.TestScikitAPI_EngineSimpleTrainAndPredict("mlnet", th, N, ncall, cache);
+                        Console.WriteLine(df2.ToString());
+                    }
                 }
             }
         }

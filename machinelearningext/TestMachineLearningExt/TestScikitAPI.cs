@@ -2,6 +2,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
@@ -319,6 +320,6 @@ namespace TestMachineLearningExt
             DataFrame pred = null;
             pipe.Predict(df, ref pred);
             Assert.AreEqual(pred.Shape, new ShapeType(150, 9));
-        }
+        }        
     }
 }

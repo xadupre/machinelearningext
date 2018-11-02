@@ -227,14 +227,14 @@ namespace Scikit.ML.PipelineTraining
 
         ValueMapper<TSrc, TDst> GetMapperWithTransform<TSrc, TMiddle, TDst>(IDataTransform trans)
         {
-            var mapperPreVM = new ValueMapperFromTransformFloat<TMiddle>(_host, trans, _inputColumn, _inputColumn, trans.Source, true);
+            var mapperPreVM = new ValueMapperFromTransformFloat<TMiddle>(_host, trans, _inputColumn, _inputColumn, trans.Source);
             var mapperPre = mapperPreVM.GetMapper<TSrc, TMiddle>();
             var mapperPred = (_predictor as IValueMapper).GetMapper<TMiddle, TDst>();
             TMiddle middle = default(TMiddle);
-            return (ref TSrc src, ref TDst dst) =>
+            return (in TSrc src, ref TDst dst) =>
             {
-                mapperPre(ref src, ref middle);
-                mapperPred(ref middle, ref dst);
+                mapperPre(in src, ref middle);
+                mapperPred(in middle, ref dst);
             };
         }
 

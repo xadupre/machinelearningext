@@ -110,7 +110,7 @@ namespace Scikit.ML.TestHelper
 
         ValueMapper<VBuffer<float>, float> GetMapper_()
         {
-            return (ref VBuffer<float> X, ref float y) => { y = X.Values.Sum(); };
+            return (in VBuffer<float> X, ref float y) => { y = X.Values.Sum(); };
         }
     }
 
@@ -137,7 +137,7 @@ namespace Scikit.ML.TestHelper
 
         ValueMapper<VBuffer<float>, float> GetMapper_()
         {
-            return (ref VBuffer<float> X, ref float y) => { y = X.Values.Sum(); };
+            return (in VBuffer<float> X, ref float y) => { y = X.Values.Sum(); };
         }
     }
 
@@ -152,7 +152,7 @@ namespace Scikit.ML.TestHelper
 
         ValueMapper<VBuffer<float>, VBuffer<float>> GetMapper_()
         {
-            return (ref VBuffer<float> X, ref VBuffer<float> y) =>
+            return (in VBuffer<float> X, ref VBuffer<float> y) =>
             {
                 y = new VBuffer<float>(X.Length, X.Values.Select(c => c).ToArray());
             };

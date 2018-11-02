@@ -49,13 +49,62 @@ namespace Scikit.ML.PipelineGraphTransforms
     /// </summary>
     public static class TagHelper
     {
+        public enum GraphPositionEnum
+        {
+            first = 0,
+            middle = 1,
+            last = 2
+        };
+
+        /// <summary>
+        /// Enumerates all views in a pipeline between two views.
+        /// </summary>
+        /// <param name="first">consider as the first view, nothing beyond this point is considered</param>
+        /// <param name="view">last view</param>
+        /// <param name="depth">depth: distance from the last node</param>
+        public static IEnumerable<Tuple<IDataView, GraphPositionEnum>> EnumerateAllViews(IDataView view, IDataView[] first = null, int depth = 0)
+        {
+            bool isfirst = false;
+            if (first != null)
+            {
+                foreach (var v in first)
+                {
+                    if (v == view)
+                    {
+                        isfirst = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isfirst)
+                yield return new Tuple<IDataView, GraphPositionEnum>(view, GraphPositionEnum.first);
+            else
+            {
+                yield return new Tuple<IDataView, GraphPositionEnum>(view, depth == 0 ? GraphPositionEnum.last : GraphPositionEnum.middle);
+                var tagged = view as ITaggedDataView;
+                if (tagged != null)
+                {
+                    foreach (var par in tagged.ParallelViews)
+                        foreach (var v in EnumerateAllViews(par.Item2, first, depth + 1))
+                            yield return v;
+                }
+                else
+                {
+                    var trans = view as IDataTransform;
+                    if (trans != null)
+                        foreach (var v in EnumerateAllViews(trans.Source, first, depth + 1))
+                            yield return v;
+                }
+            }
+        }
+
         /// <summary>
         /// Implements get tagged view.
         /// </summary>
         /// <param name="recursive">recursive enumeration</param>
         /// <param name="view">IDataView</param>
-        public static IEnumerable<Tuple<string, ITaggedDataView>> EnumerateTaggedView(bool recursive,
-                            IDataView view)
+        public static IEnumerable<Tuple<string, ITaggedDataView>> EnumerateTaggedView(bool recursive, IDataView view)
         {
             var taggedCheck = new Dictionary<string, ITaggedDataView>();
             var taggedList = new List<IDataView>();
