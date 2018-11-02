@@ -1,5 +1,6 @@
 """
 Template for documentation.
+See the LICENSE file in the project root for more information.
 """
 
 mddocs_index_template_docs = """
