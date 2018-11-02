@@ -15,7 +15,7 @@ Work in progress.
 
 ## Build
 
-On windows: ``build.cmd``.
+On windows: ``build.cmd`` or ``build ml`` to force rebuilding *machinelearning*.
 
 On Linux: ``build.sh``.
 
