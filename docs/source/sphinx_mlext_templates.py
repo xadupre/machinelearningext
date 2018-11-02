@@ -17,6 +17,9 @@ The following pages were generated from content released in
 """
 
 mddocs_index_template_releases = """
+
+.. _l-mlnet-releases-details:
+
 ML.net releases details
 =======================
 
