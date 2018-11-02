@@ -13,7 +13,7 @@ import csharpy
 project = 'Custom Extensions to ML.net'
 copyright = '2018'
 author = 'Xavier Dupré'
-version = '0.7.0'
+version = '0.8.0'
 release = version
 
 
@@ -52,20 +52,36 @@ html_logo = "project_ico.png"
 owner = "xadupre"
 
 epkg_dictionary = {
+    'AVX': 'https://fr.wikipedia.org/wiki/Advanced_Vector_Extensions',
     'C#': 'https://en.wikipedia.org/wiki/C_Sharp_(programming_language)',
+    'C++': 'https://en.wikipedia.org/wiki/C%2B%2B',
+    'cffi': 'https://cffi.readthedocs.io/en/latest/',
     'DataFrame': 'https://github.com/%s/machinelearningext/blob/master/machinelearningext/DataManipulation/DataFrame.cs' % owner,
     'DBSCAN': 'https://fr.wikipedia.org/wiki/DBSCAN',
     'dotnet/machinelearning': 'https://github.com/dotnet/machinelearning',
+    'Google Protobuf': 'https://developers.google.com/protocol-buffers/',
     'IDataView': 'https://github.com/dotnet/machinelearning/blob/master/docs/code/IDataViewDesignPrinciples.md',
     'Iris': 'http://scikit-learn.org/stable/auto_examples/datasets/plot_iris_dataset.html',
     'LightGBM': 'http://lightgbm.apachecn.org/en/latest/index.html',
+    'lightgbm': 'http://lightgbm.apachecn.org/en/latest/index.html',
+    'linear regression': 'https://en.wikipedia.org/wiki/Linear_regression',
+    'logistic regression': 'https://en.wikipedia.org/wiki/Logistic_regression',
     'Microsoft': 'https://www.microsoft.com/',
     'MIT License': 'https://github.com/dotnet/machinelearning/blob/master/LICENSE',
     'ML.net': 'https://github.com/dotnet/machinelearning',
+    'numba': 'http://numba.pydata.org/',
+    'ONNX': 'https://onnx.ai/',
+    'onnx': 'https://github.com/onnx/onnx',
+    'onnxmltools': 'https://github.com/onnx/onnxmltools',
+    'onnxruntime': 'https://docs.microsoft.com/en-us/python/api/overview/azure/onnx/intro?view=azure-onnx-py',
+    'onnx ml functions': 'https://github.com/onnx/onnx/blob/master/docs/Operators-ml.md',
+    'onnx operators': 'https://github.com/onnx/onnx/blob/master/docs/Operators.md',
     'OPTICS': 'https://fr.wikipedia.org/wiki/OPTICS',
     'PCA': 'https://en.wikipedia.org/wiki/Principal_component_analysis',
     'Python': 'https://www.python.org/',
+    'python': 'https://www.python.org/',
     'R': 'https://www.r-project.org/',
+    'scikit-learn': 'http://scikit-learn.org/',
     'xadupre/machinelearningext': 'https://github.com/xadupre/machinelearningext',
 }
 
@@ -95,3 +111,4 @@ html_sidebars = {
 from recommonmark.parser import CommonMarkParser
 source_parsers = {'.md': CommonMarkParser}
 source_suffix = ['.rst', '.md']
+

@@ -17,11 +17,13 @@ built from it extended with custom code or experiments.
 
     introduction
     dataframe
-    machinelearning_docs
-    concepts
     commandline
     components/index
-    incompatibilities
+    machinelearning_docs
+    concepts
+    apicsharpdoc
+    aonnx
+    incompatibilities    
 
 You can also navigate through the documentation
 with the :ref:`genindex` or the :ref:`search`.

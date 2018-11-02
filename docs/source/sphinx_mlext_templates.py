@@ -3,8 +3,8 @@ Template for documentation.
 """
 
 mddocs_index_template_docs = """
-ML.net implementation details
-=============================
+ML.net details
+==============
 
 The following pages were generated from content released in
 `machinelearning/docs/docs <https://github.com/dotnet/machinelearning/tree/master/docs/code>`_
@@ -26,8 +26,11 @@ ML.net releases details
 """
 
 index_template = """
-ML Components
-=============
+
+.. _l-ml-net-components:
+
+ML.net Components
+=================
 
 .. toctree::
     :maxdepth: 1

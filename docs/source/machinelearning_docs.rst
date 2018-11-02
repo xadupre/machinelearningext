@@ -1,8 +1,8 @@
 
 .. _l-mlnetdoc:
 
-ML.net implementation details
-=============================
+ML.net details
+==============
 
 .. index:: ML.net
 

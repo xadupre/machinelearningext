@@ -100,6 +100,42 @@ namespace Scikit.ML.DocHelperMlExt
 
         #endregion
 
+        #region helpers
+
+        /// <summary>
+        /// Retrieves the list of added components.
+        /// </summary>
+        public static Assembly[] GetAssemblies()
+        {
+            return ComponentHelper.GetAssemblies();
+        }
+
+        static IEnumerable<Assembly> FromAssemblyDependencies(Assembly assembly)
+        {
+            var assemblies = new List<Assembly> { assembly };
+            var dependencyNames = assembly.GetReferencedAssemblies();
+            foreach (var dependencyName in dependencyNames)
+            {
+                try
+                {
+                    assemblies.Add(Assembly.Load(dependencyName));
+                }
+                catch
+                {
+                }
+            }
+
+            foreach (var a in assemblies)
+                yield return a;
+        }
+
+        public static Assembly[] GetReferencedAssemblies()
+        {
+            return FromAssemblyDependencies(Assembly.GetExecutingAssembly()).ToArray();
+        }
+
+        #endregion
+
         #region tests
 
         public static void TestScikitAPITrain(string name = null)
@@ -186,10 +222,58 @@ namespace Scikit.ML.DocHelperMlExt
             }
         }
 
-        public static string[] GetLoadedAssemblies()
+        public static string[] GetLoadedAssemblies(bool env = true)
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => InfoAssembly(x)).OrderBy(c => c);
-            return assemblies.ToArray();
+            if (env)
+            {
+                using (var e = new ConsoleEnvironment())
+                {
+                    ComponentHelper.AddStandardComponents(e);
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => InfoAssembly(x)).OrderBy(c => c);
+                    return assemblies.ToArray();
+                }
+            }
+            else
+            {
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => InfoAssembly(x)).OrderBy(c => c);
+                return assemblies.ToArray();
+            }
+        }
+
+        private static string GetAssemblyLocation(Assembly a)
+        {
+            try
+            {
+                return a.Location;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static string[] GetLoadedAssembliesLocation(bool env = true)
+        {
+            if (env)
+            {
+                using (var e = new ConsoleEnvironment())
+                {
+                    ComponentHelper.AddStandardComponents(e);
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                                                            .Select(x => GetAssemblyLocation(x))
+                                                            .Where(x => !string.IsNullOrEmpty(x))
+                                                            .ToArray();
+                    return assemblies.ToArray();
+                }
+            }
+            else
+            {
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                                                        .Select(x => GetAssemblyLocation(x))
+                                                        .Where(x => !string.IsNullOrEmpty(x))
+                                                        .ToArray();
+                return assemblies.ToArray();
+            }
         }
 
         /// <summary>

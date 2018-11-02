@@ -4,6 +4,7 @@ Extends Sphinx to easily write documentation.
 import sphinx
 from docutils.statemachine import StringList
 from pyquickhelper.sphinxext.sphinx_runpython_extension import RunPythonDirective
+from csharpy.sphinxext import RunCSharpDirective
 
 import os
 import sys
@@ -46,9 +47,9 @@ def copy_missing_dll():
     misses += [os.path.join(rootpkg, "system.memory", "4.5.1", "lib", "netstandard2.0")]
     misses += [os.path.join(rootpkg, "system.runtime.compilerservices.unsafe", "4.5.0", "lib", "netstandard2.0")]
     misses += [os.path.join(rootpkg, "system.collections.immutable", "1.5.0", "lib", "netstandard2.0")]
-    misses += [os.path.join(rootpkg, "system.collections.immutable", "1.5.0", "lib", "netstandard2.0")]
     misses += [os.path.join(rootpkg, "system.numerics.vectors", "4.4.0", "lib", "netstandard2.0")]
-    
+    misses += [os.path.join(rootpkg, "google.protobuf", "3.5.1", "lib", "netstandard1.0")]
+
     skipif = ['testhost', 'TestPlatform']
     for miss in misses:
         cont = True
@@ -300,14 +301,15 @@ def builds_components_pages(epkg):
         
         for comp in comps:
             
-            if comp.Arguments is None:
+            if comp.Arguments is None and "version" not in comp.Name.lower():
                 print("---- SKIP ----", k, comp.Name, comp.Description)
             else:
                 assembly_name = comp.AssemblyName
                 args = {}
-                for arg in comp.Arguments:
-                    dv = process_default(arg.DefaultValue)
-                    args[arg.Name] = dict(Name=arg.Name, ShortName=arg.ShortName or '',
+                if comp.Arguments is not None:
+                    for arg in comp.Arguments:
+                        dv = process_default(arg.DefaultValue)
+                        args[arg.Name] = dict(Name=arg.Name, ShortName=arg.ShortName or '',
                                           Default=refs.get(dv, dv), Description=arg.Help)
                 sorted_params = [v for k, v in sorted(args.items())]
                 aliases = ", ".join(comp.Aliases)
@@ -346,8 +348,78 @@ def write_components_pages(app, env, docnames):
         os.mkdir(dest)
     for k, v in pages.items():
         d = os.path.join(dest, k) + ".rst"
-        with open(d, "w", encoding="utf-8") as f:
-            f.write(v)
+        if os.path.exists(d):
+            with open(d, "r", encoding="utf-8") as f:
+                content = f.read()
+        else:
+            content = None
+            
+        if content != v:
+            with open(d, "w", encoding="utf-8") as f:
+                f.write(v)
+
+
+def get_mlnet_assemblies(chdir=False):
+    """
+    Retrieves assemblies.
+    """
+    if chdir:
+        cur = os.getcwd()
+        os.chdir(dll)
+    res = MamlHelper.GetLoadedAssembliesLocation(True)
+    if chdir:
+        os.chdir(cur)
+    dependencies = []
+    # addition = ["Core", "Data", "Maml", "Api"]
+    # root = os.path.dirname(res[0].Location)
+    # dependencies = [os.path.join(root, "Microsoft.ML.{0}.dll").format(a) for a in addition]
+    dependencies.extend([a for a in res if ".pyd" not in a and ".so" not in a])
+    usings = ["System", "System.Linq", "System.Collections.Generic", "System.IO",
+              "System.Text"]
+    usings.extend([
+            "Microsoft.ML.Runtime",
+            "Microsoft.ML.Runtime.Api",
+            "Microsoft.ML.Runtime.Data",
+            "Microsoft.ML.Runtime.Learners",
+            "Microsoft.ML.Runtime.Ensemble",
+            "Microsoft.ML.Runtime.LightGBM",
+            "Microsoft.ML.Runtime.Model.Onnx",
+            "Microsoft.ML.Runtime.TimeSeriesProcessing",
+            "Microsoft.ML.Runtime.Tools",
+            "Microsoft.ML.Trainers",
+            "Microsoft.ML.Trainers.HalLearners",
+            "Microsoft.ML.Trainers.KMeans",
+            "Microsoft.ML.Trainers.FastTree",
+            "Microsoft.ML.Trainers.Online",
+            "Microsoft.ML.Trainers.PCA",
+            "Microsoft.ML.Transforms",
+            "Microsoft.ML.Transforms.Categorical",
+            "Microsoft.ML.Transforms.Normalizers",
+            "Microsoft.ML.Transforms.Projections",
+            "Microsoft.ML.Transforms.TensorFlow",
+            "Microsoft.ML.Transforms.Text",
+            "Microsoft.ML.Runtime.Sweeper",
+        ])
+    res = MamlHelper.GetAssemblies()
+    usings.extend([a.FullName.split(',')[0] for a in res if "Scikit" in a.FullName])
+    return dependencies, usings
+    
+
+class RunCSharpMLDirective(RunCSharpDirective):
+    """
+    Implicits "and dependencies.
+    """
+
+    def modify_script_before_running(self, script):
+        """
+        The methods modifies the script to *csharpy* to
+        run :epkg:`C#` from :epkg:`Python`.
+        """
+        if not hasattr(RunCSharpDirective, 'deps_using'):
+            RunCSharpDirective.deps_using = get_mlnet_assemblies()
+        dependencies, usings = RunCSharpMLDirective.deps_using
+        return self._modify_script_before_running(script, usings, dependencies)
+    
 
 def setup(app):
     """
@@ -357,6 +429,7 @@ def setup(app):
     copy_missing_dll()
     app.add_directive('mlcmd', MlCmdDirective)
     app.connect("env-before-read-docs", write_components_pages)
+    app.add_directive('runcsharpml', RunCSharpMLDirective)
     return {'version': sphinx.__display_version__, 'parallel_read_safe': True}
 
 
@@ -368,6 +441,8 @@ if __name__ == "__main__":
     from Scikit.ML.DocHelperMlExt import MamlHelper
     class dummy:
         pass
+    deps, uss = get_mlnet_assemblies()
+    
     app = dummy()
     app.config = dummy()
     app.config.epkg_dictionary = {"OPTICS": "http://OPTICS"}

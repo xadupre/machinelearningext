@@ -68,7 +68,7 @@ Help on a particular object
     
     ? lr
 
-.. _l-multi-class-logistic-regression:
+.. _l-cmd-multi-class-logistic-regression:
 
 One example: train a logistic regression
 ========================================
