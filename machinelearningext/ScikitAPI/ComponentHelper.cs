@@ -35,7 +35,6 @@ using Scikit.ML.PipelineTraining;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.RandomTransforms;
-using Scikit.ML.ScikitAPI;
 
 using TensorFlowTransform = Microsoft.ML.Transforms.TensorFlowTransform;
 

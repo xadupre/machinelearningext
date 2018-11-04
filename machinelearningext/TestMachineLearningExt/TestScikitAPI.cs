@@ -2,7 +2,6 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Linq;
 using System.Collections.Generic;
