@@ -3,6 +3,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
@@ -320,6 +322,46 @@ namespace TestMachineLearningExt
             DataFrame pred = null;
             pipe.Predict(df, ref pred);
             Assert.AreEqual(pred.Shape, new ShapeType(150, 9));
-        }        
+        }
+
+        internal static class Mkl
+        {
+            private const string DllName = "MklImports";
+
+            public enum Layout
+            {
+                RowMajor = 101,
+                ColMajor = 102
+            }
+
+            public enum UpLo : byte
+            {
+                Up = (byte)'U',
+                Lo = (byte)'L'
+            }
+
+            [DllImport(DllName, EntryPoint = "LAPACKE_dpptrf")]
+            public static extern int PptrfInternal(Layout layout, UpLo uplo, int n, Double[] ap);
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_MKL()
+        {
+            Mkl.PptrfInternal(Mkl.Layout.ColMajor, Mkl.UpLo.Lo, 2, new double[] { 0.1, 0.3 });
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_TrainingDiabete()
+        {
+            var diab = FileHelper.GetTestFile("diabete.csv");
+            var cols = Enumerable.Range(0, 10).Select(c => NumberType.R4).ToArray();
+            var colsName = string.Join(',', Enumerable.Range(0, 10).Select(c => $"F{c}"));
+            var df = DataFrameIO.ReadCsv(diab, sep: ',', dtypes: cols);
+            var pipe = new ScikitPipeline(new string[] { $"Concat{{col=Features:{colsName}}}" }, "ols");
+            pipe.Train(df, "Features", "Label");
+            DataFrame pred = null;
+            pipe.Predict(df, ref pred);
+            Assert.AreEqual(pred.Shape, new ShapeType(83, 13));
+        }
     }
 }

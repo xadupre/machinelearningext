@@ -33,6 +33,7 @@ copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.StandardLearners\netstandar
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.TensorFlow\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.TimeSeries\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\packages\lightgbm\2.2.1.1\runtimes\win-x64\native machinelearning\bin\x64.Release\Native
+rem copy machinelearning\packages\mlnetmkldeps\0.0.0.7\runtimes\win-x64\native machinelearning\bin\x64.Release\Native
 copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
 
 @echo [build.cmd] Publish Debug
@@ -54,6 +55,7 @@ copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.StandardLearners\netstandard2
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.TimeSeries\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.TensorFlow\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\packages\lightgbm\2.2.1.1\runtimes\win-x64\native machinelearning\bin\x64.Debug\Native
+rem copy machinelearning\packages\mlnetmkldeps\0.0.0.7\runtimes\win-x64\native machinelearning\bin\x64.Debug\Native
 copy machinelearning\bin\x64.Debug\Native\*.dll machinelearning\dist\Debug
 
 @echo [build.cmd] build machinelearningext
@@ -65,6 +67,9 @@ cd ..
 :finalcopy:
 copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\TestProfileBenchmark\netcoreapp2.1
 copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\TestProfileBenchmark\netcoreapp2.1
+
+copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\TestMachineLearningExt\netcoreapp2.1
+copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\TestMachineLearningExt\netcoreapp2.1
 
 :end:
 if not exist machinelearning\bin\x64.Debug @echo [build.cmd] Cannot build.
