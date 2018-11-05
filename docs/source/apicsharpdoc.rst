@@ -88,6 +88,8 @@ Example with Iris DataSet in C#
             var engine = model.MakePredictionFunction<IrisObservation, 
                                                       IrisPrediction>(env);
             var res = engine.Predict(obs);
+            Console.WriteLine("Type of pipeline: {0}", pipeline.GetType());
+            Console.WriteLine("Type of engine: {0}", engine.GetType());
             Console.WriteLine("------------");
             Console.WriteLine("PredictedLabel: {0}", res.PredictedLabel);
             Console.WriteLine("Score: {0}", string.Join(", ", 
