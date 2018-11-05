@@ -60,5 +60,25 @@ namespace TestMachineLearningExt
                 Assert.IsTrue(File.Exists(outfile));
             }
         }
+
+        [TestMethod]
+        public void TestLoadModelFromNimbusML()
+        {
+            var iris = FileHelper.GetTestFile("model_iris.zip");
+            using (var env = EnvHelper.NewTestEnvironment())
+            {
+                try
+                {
+                    using (var pipe2 = new ScikitPipeline(iris, env))
+                    {
+                    }
+                }
+                catch (Exception e)
+                {
+                    Assert.IsTrue(e.ToString().Contains("because the model is too old"));
+                }
+            }
+        }
     }
 }
+
