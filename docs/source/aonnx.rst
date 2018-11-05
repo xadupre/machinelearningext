@@ -76,7 +76,7 @@ and that what be worth having a common solution.
 
 That's where :epkg:`ONNX` takes place. It provides a common way to describe 
 machine learning models with high level functions specialied for
-machine learning: :epkg`onnx ml functions`.
+machine learning: :epkg:`onnx ml functions`.
 
 
 ONNX description of a linear model
