@@ -19,7 +19,7 @@ using PassThroughTransform = Scikit.ML.PipelineTransforms.PassThroughTransform;
 
 [assembly: LoadableClass(PassThroughTransform.Summary, typeof(PassThroughTransform),
     typeof(PassThroughTransform.Arguments), typeof(SignatureDataTransform),
-    "Describe Transform", PassThroughTransform.LoaderSignature, "Pass", "PassThrough", "DumpView")]
+    "Pass Through Transform", PassThroughTransform.LoaderSignature, "Pass", "PassThrough", "DumpView")]
 
 [assembly: LoadableClass(PassThroughTransform.Summary, typeof(PassThroughTransform),
     null, typeof(SignatureLoadDataTransform),
