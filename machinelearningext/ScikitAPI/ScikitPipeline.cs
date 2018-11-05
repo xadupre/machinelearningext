@@ -160,12 +160,18 @@ namespace Scikit.ML.ScikitAPI
             var pred = _env.LoadPredictorOrNull(fs);
 
             IDataView root;
+            for (root = transformPipe; root is IDataTransform && !(root is PassThroughTransform); root = ((IDataTransform)root).Source) ;
+            if (!(root is PassThroughTransform))
+            {
+                var tr = new PassThroughTransform(_env, new PassThroughTransform.Arguments(), root);
+                transformPipe = ApplyTransformUtils.ApplyAllTransformsToData(_env, transformPipe, tr, root);
+            }
+
             var stack = new List<IDataView>();
             for (root = transformPipe; root is IDataTransform; root = ((IDataTransform)root).Source)
                 stack.Add(root);
             stack.Reverse();
-            if (!(stack[0] is PassThroughTransform))
-                stack.Insert(0, new PassThroughTransform(_env, new PassThroughTransform.Arguments(), root));
+
             _transforms = new StepTransform[stack.Count];
             for (int i = 0; i < _transforms.Length; ++i)
                 _transforms[i] = new StepTransform() { transform = stack[i] as IDataTransform, transformSettings = null };
@@ -200,22 +206,40 @@ namespace Scikit.ML.ScikitAPI
         /// <summary>
         /// Saves the pipeline as a filename.
         /// </summary>
-        public void Save(string filename)
+        /// <param name="filename">filename</param>
+        /// <param name="removeFirstTransform">remove the first transform which is a PassThroughTransform</param>
+        public void Save(string filename, bool removeFirstTransform = false)
         {
             using (var fs = File.Create(filename))
                 if (filename.EndsWith(".zip"))
-                    Save(fs);
+                    Save(fs, removeFirstTransform);
                 else
-                    ToOnnx().Save(fs);
+                    ToOnnx(removeFirstTransform ? 1 : 0).Save(fs);
         }
 
         /// <summary>
         /// Saves the pipeline in a stream.
         /// </summary>
-        public void Save(Stream fs)
+        /// <param name="fs">opened stream</param>
+        /// <param name="removeFirstTransform">remove the first transform which is a PassThroughTransform</param>
+        public void Save(Stream fs, bool removeFirstTransform = false)
         {
+            RoleMappedData roleMap = null;
+            if (removeFirstTransform)
+            {
+                var source = _transforms.First().transform;
+                if (!(source is PassThroughTransform))
+                    throw Contracts.ExceptNotSupp($"The first transform should be of type PassThroughTransform.");
+                var replace = (source as PassThroughTransform).Source;
+                var last = _transforms.Last().transform;
+                var newPipe = ApplyTransformUtils.ApplyAllTransformsToData(_env, last, replace, source);
+                var roles = _predictor.roleMapData.Schema.GetColumnRoleNames().ToArray();
+                roleMap = new RoleMappedData(newPipe, roles);
+            }
+            else
+                roleMap = _predictor.roleMapData;
             using (var ch = _env.Start("Save Predictor"))
-                TrainUtils.SaveModel(_env, ch, fs, _predictor.predictor, _predictor.roleMapData);
+                TrainUtils.SaveModel(_env, ch, fs, _predictor.predictor, roleMap);
         }
 
         #endregion
@@ -443,7 +467,7 @@ namespace Scikit.ML.ScikitAPI
         /// <summary>
         /// Exports to onnx.
         /// </summary>
-        /// <param name="stream">stream</param>
+        /// <param name="firstTransform">select the first transform</param>
         /// <param name="inputs">inputs, modified by the function to contains what is actually used</param>
         /// <param name="outputs">outputs, modified by the function to contains what is actually used</param>
         public ScikitOnnxContext ToOnnx(int firstTransform = 0, string[] inputs = null, string[] outputs = null,

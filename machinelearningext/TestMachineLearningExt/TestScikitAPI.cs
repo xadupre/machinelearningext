@@ -53,8 +53,19 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestScikitAPI_SimpleTransform_Load()
         {
+            ScikitAPI_SimpleTransform_Load(false);
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_SimpleTransform_LoadNoPass()
+        {
+            ScikitAPI_SimpleTransform_Load(true);
+        }
+
+        private void ScikitAPI_SimpleTransform_Load(bool removeFirstTransform)
+        {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var output = FileHelper.GetOutputFile("model.zip", methodName);
+            var output = FileHelper.GetOutputFile($"model{removeFirstTransform}.zip", methodName);
             var inputs = new[] {
                 new ExampleA() { X = new float[] { 1, 10, 100 } },
                 new ExampleA() { X = new float[] { 2, 3, 5 } }
@@ -81,7 +92,7 @@ namespace TestMachineLearningExt
                     var dfs2 = dfs.Replace("\n", ";");
                     expected = dfs2;
                     Assert.AreEqual(dfs2, "X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8;-1,-10,-100,1,10,100,100,1000,10000;-2,-3,-5,4,6,10,9,15,25");
-                    pipe.Save(output);
+                    pipe.Save(output, removeFirstTransform);
                 }
             }
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
@@ -137,8 +148,19 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestScikitAPI_SimplePredictor_Load()
         {
+            ScikitAPI_SimplePredictor_Load(false);
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_SimplePredictor_LoadNoPass()
+        {
+            ScikitAPI_SimplePredictor_Load(true);
+        }
+
+        private void ScikitAPI_SimplePredictor_Load(bool removeFirstTransform)
+        {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var output = FileHelper.GetOutputFile("model.zip", methodName);
+            var output = FileHelper.GetOutputFile($"model{removeFirstTransform}.zip", methodName);
             var inputs = new[] {
                 new ExampleA() { X = new float[] { 1, 10, 100 } },
                 new ExampleA() { X = new float[] { 2, 3, 5 } },
@@ -170,7 +192,7 @@ namespace TestMachineLearningExt
                     if (!dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"))
                         throw new Exception($"Wrong starts\n{dfs2}");
                     expected = dfs2;
-                    pipe.Save(output);
+                    pipe.Save(output, removeFirstTransform);
                 }
             }
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
