@@ -37,7 +37,8 @@ def main(args):
         shutil.copy(name, dest)
     
     shutil.copy(os.path.join("machinelearning", "BuildToolsVersion.txt"), dest)
-    
+    shutil.copy(os.path.join("machinelearning", "THIRD-PARTY-NOTICES.TXT"), dest)
+
 
 if __name__ == "__main__":
     args = sys.argv

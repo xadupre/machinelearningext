@@ -1,4 +1,5 @@
-﻿
+﻿
+
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
@@ -33,81 +34,77 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-namespace TestProfileBenchmark
+using System.Text;
+using Scikit.ML.ScikitAPI;
+using Scikit.ML.DataManipulation;
+
+
+namespace TestProfileBenchmark
+
 {
-
-    public static class DynamicCSFunctions_example_iris
+    public static class DynamicCSFunctions_example_diabetes
     {
-
-
-        public class IrisObservation
+        public class TrainTestDiabetesRF
         {
-            [Column("0")]
-            [ColumnName("Label")]
-            public string Label;
+            string _dataset;
+            ScikitPipeline _pipeline;
 
-            [Column("1")]
-            public float Sepal_length;
-
-            [Column("2")]
-            public float Sepal_width;
-
-            [Column("3")]
-            public float Petal_length;
-
-            [Column("4")]
-            public float Petal_width;
-        }
-
-        public class IrisPrediction
-        {
-            public uint PredictedLabel;
-
-            [VectorType(4)]
-            public float[] Score;
-        }
-
-        public static void example_iris()
-        {
-            var iris = "iris.txt";
-
-            using (var env = new ConsoleEnvironment())
+            public TrainTestDiabetesRF(string ds)
             {
-                var reader = new TextLoader(env,
-                                    new TextLoader.Arguments()
-                                    {
-                                        Separator = "	",
-                                        HasHeader = true,
-                                        Column = new[] {
-                                    new TextLoader.Column("Label", DataKind.R4, 0),
-                                    new TextLoader.Column("Sepal_length", DataKind.R4, 1),
-                                    new TextLoader.Column("Sepal_width", DataKind.R4, 2),
-                                    new TextLoader.Column("Petal_length", DataKind.R4, 3),
-                                    new TextLoader.Column("Petal_width", DataKind.R4, 4),
-                                        }
-                                    });
+                _dataset = ds;
+            }
 
-                var pipeline = new ColumnConcatenatingEstimator(env, "Features", "Sepal_length", "Sepal_width", "Petal_length", "Petal_width")
-                       .Append(new KMeansPlusPlusTrainer(env, "Features", clustersCount: 3));
-
-                IDataView trainingDataView = reader.Read(new MultiFileSource(iris));
-                var model = pipeline.Fit(trainingDataView);
-
-                var obs = new IrisObservation()
+            public void Train()
+            {
+                using (var env = new ConsoleEnvironment())
                 {
-                    Sepal_length = 3.3f,
-                    Sepal_width = 1.6f,
-                    Petal_length = 0.2f,
-                    Petal_width = 5.1f,
-                };
+                    var df = DataFrameIO.ReadCsv(_dataset, sep: ',',
+                                                 dtypes: new ColumnType[] { NumberType.R4 });
+                    var concat = "Concat{col=Features:F0,F1,F2,F3,F4,F5,F6,F7,F8,F9}";
+                    var pipe = new ScikitPipeline(new[] { concat }, "ftr{iter=10}");
+                    pipe.Train(df, "Features", "Label");
+                    _pipeline = pipe;
+                }
+            }
 
-                var engine = model.MakePredictionFunction<IrisObservation, IrisPrediction>(env);
-                var res = engine.Predict(obs);
-                Console.WriteLine("PredictedLabel: {0}", res.PredictedLabel);
-                Console.WriteLine("Score: {0}", string.Join(", ", res.Score.Select(c => c.ToString())));
+            public DataFrame Predict(double[] features)
+            {
+                DataFrame pred = null;
+                var df = new DataFrame();
+                df.AddColumn("Label", new float[] { 0f });
+                for (int i = 0; i < features.Length; ++i)
+                    df.AddColumn(string.Format("F{0}", i), new float[] { (float)features[i] });
+                _pipeline.Predict(df, ref pred);
+                return pred;
+            }
+
+            public DataFrame PredictBatch(int nf, double[] features)
+            {
+                DataFrame pred = null;
+                var df = new DataFrame();
+                int N = features.Length / nf;
+                df.AddColumn("Label", Enumerable.Range(0, N).Select(i => (float)features[nf * i]).ToArray());
+                for (int i = 0; i < nf; ++i)
+                    df.AddColumn(string.Format("F{0}", i),
+                                 Enumerable.Range(0, N).Select(k => (float)features[nf * k + i]).ToArray());
+                _pipeline.Predict(df, ref pred);
+                return pred;
+            }
+
+            public void Read(string name)
+            {
+                _pipeline = new ScikitPipeline(name);
+            }
+
+            public void Save(string name)
+            {
+                _pipeline.Save(name, true);
             }
         }
-
-    }
-}
+
+        public static TrainTestDiabetesRF ReturnMLClassRF(string ds)
+        {
+            return new TrainTestDiabetesRF(ds);
+        }
+    }
+}

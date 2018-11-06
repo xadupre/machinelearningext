@@ -26,7 +26,7 @@ a file or multiple files.
 
 
 
-.. code-block:: CSharp
+.. code-block:: C#
 
     var sdf = StreamingDataFrame.ReadCsv(new"iris.txt", sep: '\t');
     var sdf2 = StreamingDataFrame.ReadCsv(new [] {"part1.txt", "part2.txt"}, sep: '\t');
@@ -43,7 +43,7 @@ datascientist are used to in others languages such as
 :epkg:`Python` or :epkg:`R`. It is possible to do basic operations
 on columns:
 
-.. code-block:: CSharp
+.. code-block:: C#
 
     var text = "AA,BB,CC\n0,1,text\n1,1.1,text2";
     var df = DataFrameIO.ReadStr(text);
@@ -58,7 +58,7 @@ on columns:
 
 Or:
 
-.. code-block:: CSharp
+.. code-block:: C#
 
     df["AA2"] = df["AA"] + 10;
     Console.WriteLine(df.ToString());
@@ -72,7 +72,7 @@ Or:
 The next instructions change one value
 based on a condition.
 
-.. code-block:: CSharp
+.. code-block:: C#
 
     df.loc[df["AA"].Filter<DvInt4>(c => (int)c == 1), "CC"] = "changed";
     Console.WriteLine(df.ToString());
@@ -85,7 +85,7 @@ based on a condition.
 
 A specific set of columns or rows can be extracted:
 
-.. code-block:: CSharp
+.. code-block:: C#
 
     var view = df[df.ALL, new [] {"AA", "CC"}];
     Console.WriteLine(view.ToString());
@@ -98,7 +98,7 @@ A specific set of columns or rows can be extracted:
 
 The dataframe also allows basic filtering:
 
-.. code-block:: CSharp
+.. code-block:: C#
 
     var view = df[df["AA"] == 0];
     Console.WriteLine(view.ToString());

@@ -19,6 +19,7 @@ Example with Iris DataSet in C#
 .. runcsharpml::
     :entrypoint: example_iris
     :showcode:
+    :language: C#
 
     public class IrisObservation
     {
@@ -53,23 +54,25 @@ Example with Iris DataSet in C#
         
         using (var env = new ConsoleEnvironment())
         {
-            var reader = new TextLoader(env,
-                                new TextLoader.Arguments()
-                                {
-                                    Separator = "\t",
-                                    HasHeader = true,
-                                    Column = new[] {
-                                        new TextLoader.Column("Label", DataKind.R4, 0),
-                                        new TextLoader.Column("Sepal_length", DataKind.R4, 1),
-                                        new TextLoader.Column("Sepal_width", DataKind.R4, 2),
-                                        new TextLoader.Column("Petal_length", DataKind.R4, 3),
-                                        new TextLoader.Column("Petal_width", DataKind.R4, 4),
-                                    }
-                                });
+            var args = new TextLoader.Arguments()
+                {
+                    Separator = "\t",
+                    HasHeader = true,
+                    Column = new[] {
+                        new TextLoader.Column("Label", DataKind.R4, 0),
+                        new TextLoader.Column("Sepal_length", DataKind.R4, 1),
+                        new TextLoader.Column("Sepal_width", DataKind.R4, 2),
+                        new TextLoader.Column("Petal_length", DataKind.R4, 3),
+                        new TextLoader.Column("Petal_width", DataKind.R4, 4),
+                    }
+                };
 
-            var pipeline = new ColumnConcatenatingEstimator(env, "Features", "Sepal_length",
-                                                            "Sepal_width", "Petal_length", "Petal_width")
-                   .Append(new KMeansPlusPlusTrainer(env, "Features", clustersCount: 3));
+            var reader = new TextLoader(env, args);
+            var concat = new ColumnConcatenatingEstimator(env,
+                                "Features", "Sepal_length",
+                                "Sepal_width", "Petal_length", "Petal_width");
+            var km = new KMeansPlusPlusTrainer(env, "Features", clustersCount: 3);
+            var pipeline = concat.Append(km);
 
             IDataView trainingDataView = reader.Read(new MultiFileSource(iris));
             var model = pipeline.Fit(trainingDataView);
@@ -82,11 +85,15 @@ Example with Iris DataSet in C#
                 Petal_width = 5.1f,
             };
 
-            var engine = model.MakePredictionFunction<IrisObservation, IrisPrediction>(env);
+            var engine = model.MakePredictionFunction<IrisObservation, 
+                                                      IrisPrediction>(env);
             var res = engine.Predict(obs);
+            Console.WriteLine("Type of pipeline: {0}", pipeline.GetType());
+            Console.WriteLine("Type of engine: {0}", engine.GetType());
             Console.WriteLine("------------");
             Console.WriteLine("PredictedLabel: {0}", res.PredictedLabel);
-            Console.WriteLine("Score: {0}", string.Join(", ", res.Score.Select(c => c.ToString())));
+            Console.WriteLine("Score: {0}", string.Join(", ", 
+                                res.Score.Select(c => c.ToString())));
         }
     }
 
@@ -102,6 +109,7 @@ It is a mix between the command line and the :epkg:`C#`.
 .. runcsharpml::
     :entrypoint: dataframe_iris
     :showcode:
+    :language: C#
     
     public static void dataframe_iris()
     {
@@ -109,8 +117,10 @@ It is a mix between the command line and the :epkg:`C#`.
         
         using (var env = new ConsoleEnvironment())
         {
-            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-            var concat = string.Format("Concat{{col=Features:{0},{1}}}", df.Columns[1], df.Columns[2]);
+            var df = DataFrameIO.ReadCsv(iris, sep: '\t', 
+                        dtypes: new ColumnType[] { NumberType.R4 });
+            var concat = string.Format("Concat{{col=Features:{0},{1}}}", 
+                                       df.Columns[1], df.Columns[2]);
             var pipe = new ScikitPipeline(new[] { concat }, "mlr");
             pipe.Train(df, "Features", "Label");
             
@@ -119,4 +129,3 @@ It is a mix between the command line and the :epkg:`C#`.
             Console.WriteLine(pred.Head());
         }
     }
-

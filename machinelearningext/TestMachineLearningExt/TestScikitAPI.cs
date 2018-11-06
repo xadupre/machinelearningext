@@ -2,7 +2,8 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.IO;
+using System.Runtime.InteropServices;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
@@ -52,8 +53,19 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestScikitAPI_SimpleTransform_Load()
         {
+            ScikitAPI_SimpleTransform_Load(false);
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_SimpleTransform_LoadNoPass()
+        {
+            ScikitAPI_SimpleTransform_Load(true);
+        }
+
+        private void ScikitAPI_SimpleTransform_Load(bool removeFirstTransform)
+        {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var output = FileHelper.GetOutputFile("model.zip", methodName);
+            var output = FileHelper.GetOutputFile($"model{removeFirstTransform}.zip", methodName);
             var inputs = new[] {
                 new ExampleA() { X = new float[] { 1, 10, 100 } },
                 new ExampleA() { X = new float[] { 2, 3, 5 } }
@@ -80,7 +92,7 @@ namespace TestMachineLearningExt
                     var dfs2 = dfs.Replace("\n", ";");
                     expected = dfs2;
                     Assert.AreEqual(dfs2, "X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8;-1,-10,-100,1,10,100,100,1000,10000;-2,-3,-5,4,6,10,9,15,25");
-                    pipe.Save(output);
+                    pipe.Save(output, removeFirstTransform);
                 }
             }
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
@@ -136,8 +148,19 @@ namespace TestMachineLearningExt
         [TestMethod]
         public void TestScikitAPI_SimplePredictor_Load()
         {
+            ScikitAPI_SimplePredictor_Load(false);
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_SimplePredictor_LoadNoPass()
+        {
+            ScikitAPI_SimplePredictor_Load(true);
+        }
+
+        private void ScikitAPI_SimplePredictor_Load(bool removeFirstTransform)
+        {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var output = FileHelper.GetOutputFile("model.zip", methodName);
+            var output = FileHelper.GetOutputFile($"model{removeFirstTransform}.zip", methodName);
             var inputs = new[] {
                 new ExampleA() { X = new float[] { 1, 10, 100 } },
                 new ExampleA() { X = new float[] { 2, 3, 5 } },
@@ -169,7 +192,7 @@ namespace TestMachineLearningExt
                     if (!dfs2.StartsWith("X.0,X.1,X.2,X.3,X.4,X.5,X.6,X.7,X.8,PredictedLabel,Score.0,Score.1;-1,-10,-100,1,10,100,100,1000,10000"))
                         throw new Exception($"Wrong starts\n{dfs2}");
                     expected = dfs2;
-                    pipe.Save(output);
+                    pipe.Save(output, removeFirstTransform);
                 }
             }
             using (var host = EnvHelper.NewTestEnvironment(conc: 1))
@@ -320,6 +343,46 @@ namespace TestMachineLearningExt
             DataFrame pred = null;
             pipe.Predict(df, ref pred);
             Assert.AreEqual(pred.Shape, new ShapeType(150, 9));
-        }        
+        }
+
+        internal static class Mkl
+        {
+            private const string DllName = "MklImports";
+
+            public enum Layout
+            {
+                RowMajor = 101,
+                ColMajor = 102
+            }
+
+            public enum UpLo : byte
+            {
+                Up = (byte)'U',
+                Lo = (byte)'L'
+            }
+
+            [DllImport(DllName, EntryPoint = "LAPACKE_dpptrf")]
+            public static extern int PptrfInternal(Layout layout, UpLo uplo, int n, Double[] ap);
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_MKL()
+        {
+            Mkl.PptrfInternal(Mkl.Layout.ColMajor, Mkl.UpLo.Lo, 2, new double[] { 0.1, 0.3 });
+        }
+
+        [TestMethod]
+        public void TestScikitAPI_TrainingDiabete()
+        {
+            var diab = FileHelper.GetTestFile("diabete.csv");
+            var cols = Enumerable.Range(0, 10).Select(c => NumberType.R4).ToArray();
+            var colsName = string.Join(',', Enumerable.Range(0, 10).Select(c => $"F{c}"));
+            var df = DataFrameIO.ReadCsv(diab, sep: ',', dtypes: cols);
+            var pipe = new ScikitPipeline(new string[] { $"Concat{{col=Features:{colsName}}}" }, "ols");
+            pipe.Train(df, "Features", "Label");
+            DataFrame pred = null;
+            pipe.Predict(df, ref pred);
+            Assert.AreEqual(pred.Shape, new ShapeType(83, 13));
+        }
     }
 }

@@ -6,6 +6,12 @@ namespace TestProfileBenchmark
     {
         static void Main(string[] args)
         {
+            var cl = DynamicCSFunctions_example_diabetes.ReturnMLClassRF(@"C:\xavierdupre\__home_\GitHub\jupytalk\_doc\notebooks\2018\msexp\diabetes.csv");
+            cl.Train();
+            cl.Predict(new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+            cl.PredictBatch(10, new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+            cl.Save("f.zip");
+
 #if(DEBUG)
             int N = 10;
 #else
