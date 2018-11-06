@@ -1,4 +1,5 @@
-﻿
+﻿
+
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
@@ -33,8 +34,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;using Scikit.ML.ScikitAPI;using Scikit.ML.DataManipulation;
-namespace TestProfileBenchmark
+using System.Text;
+using Scikit.ML.ScikitAPI;
+using Scikit.ML.DataManipulation;
+
+
+namespace TestProfileBenchmark
+
 {
     public static class DynamicCSFunctions_example_diabetes
     {
@@ -100,4 +106,5 @@ namespace TestProfileBenchmark
         {
             return new TrainTestDiabetesRF(ds);
         }
-    }}
+    }
+}
