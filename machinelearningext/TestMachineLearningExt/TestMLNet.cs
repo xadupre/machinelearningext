@@ -2,12 +2,14 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Text;
 using System.IO;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.ScikitAPI;
+using Scikit.ML.DocHelperMlExt;
 using Legacy = Microsoft.ML.Legacy;
 
 
@@ -79,6 +81,43 @@ namespace TestMachineLearningExt
                 }
             }
         }
+
+        /*
+        [TestMethod]
+        public void TestCommandLine()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var data = FileHelper.GetTestFile("data_train_test.csv");
+            var output = FileHelper.GetOutputFile("model.zip", methodName);
+            var bout = new StringBuilder();
+            var berr = new StringBuilder();
+            ILogWriter stout = new LogWriter(s => bout.Append(s));
+            ILogWriter sderr = new LogWriter(s => berr.Append(s));
+            var cmd = "chain cmd=train{\n" +
+                        "data = __INPUT__\n" +
+                        "loader = text{col=ItemID:I8:0 col=Sentiment:I8:1 col=SentimentSource:TX:2 \n" +
+                        "              col=SentimentText:TX:3 col=RowNum:I8:4 \n" +
+                        "              col=Label:BL:5 col=Train:BL:6 col=Small:BL:7 header=+ sep=,}\n" +
+                        "xf = Text {col=transformed1:SentimentText wordExtractor=NGramExtractorTransform{ngram=2}}\n" +
+                        "xf = Categorical {col=SentimentSource}\n" +
+                        "xf = concat {col=Features:transformed1,SentimentSource}\n" +
+                        "tr = FastTreeBinaryClassification\n" +
+                        "out = __OUTPUT__} \n" +
+                        "cmd = saveonnx{in = __OUTPUT__ \n" +
+                        "onnx = ft_sentiment_cs.onnx\n" +
+                        "domain = ai.onnx.ml idrop = Label,Sentiment,RowNum,Train,Small }";
+            cmd = cmd.Replace("__INPUT__", data);
+            cmd = cmd.Replace("__OUTPUT__", output);
+
+            using (var env = new DelegateEnvironment(outWriter: stout, errWriter: sderr, verbose: 3))
+            {
+                MamlHelper.MamlScript(cmd, false, env);
+                var sout = bout.ToString();
+                Assert.IsTrue(sout.Length > 0);
+                Assert.IsTrue(!sout.Contains("Unknown"));
+            }
+        }
+        */
     }
 }
 
