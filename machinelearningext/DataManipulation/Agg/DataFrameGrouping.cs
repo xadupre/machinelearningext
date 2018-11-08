@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 using DvText = Scikit.ML.PipelineHelper.DvText;
 
 
@@ -68,11 +69,11 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[0]];
             if (icols.Length == 1)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return df.TGroupBy<bool>(icols, sort);
                         case DataKind.I4: return df.TGroupBy<int>(icols, sort);
@@ -88,11 +89,11 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return RecGroupBy<bool>(df, icols, sort);
                         case DataKind.I4: return RecGroupBy<int>(df, icols, sort);
@@ -114,11 +115,11 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[1]];
             if (icols.Length == 2)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return df.TGroupBy<T1, bool>(icols, sort);
                         case DataKind.I4: return df.TGroupBy<T1, int>(icols, sort);
@@ -134,11 +135,11 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return RecGroupBy<T1, bool>(df, icols, sort);
                         case DataKind.I4: return RecGroupBy<T1, int>(df, icols, sort);
@@ -161,11 +162,11 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[2]];
             if (icols.Length == 3)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return df.TGroupBy<T1, T2, bool>(icols, sort);
                         case DataKind.I4: return df.TGroupBy<T1, T2, int>(icols, sort);

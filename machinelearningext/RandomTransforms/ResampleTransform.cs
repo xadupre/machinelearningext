@@ -195,7 +195,7 @@ namespace Scikit.ML.RandomTransforms
                 return new ResampleCursor<float>(this, cursor, predicate, _args.lambda, _args.seed, rand, _cacheReplica, classColumn, float.NaN);
 
             var type = _input.Schema.GetColumnType(classColumn);
-            switch (type.RawKind)
+            switch (type.RawKind())
             {
                 case DataKind.BL:
                     bool clbool;
@@ -243,7 +243,7 @@ namespace Scikit.ML.RandomTransforms
                 return cursors.Select(c => new ResampleCursor<float>(this, c, predicate, _args.lambda, _args.seed, rand, _cacheReplica, classColumn, float.NaN)).ToArray();
 
             var type = _input.Schema.GetColumnType(classColumn);
-            switch (type.RawKind)
+            switch (type.RawKind())
             {
                 case DataKind.BL:
                     bool clbool;
@@ -322,7 +322,7 @@ namespace Scikit.ML.RandomTransforms
                     else
                     {
                         var type = _input.Schema.GetColumnType(indexClass);
-                        switch (type.RawKind)
+                        switch (type.RawKind())
                         {
                             case DataKind.BL:
                                 bool clbool;

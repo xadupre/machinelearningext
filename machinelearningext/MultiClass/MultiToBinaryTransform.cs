@@ -233,7 +233,7 @@ namespace Scikit.ML.MultiClass
                 throw _host.ExceptParam("Column '{0}' was not found in the input schema.", _args.label);
             var typeLabel = _input.Schema.GetColumnType(labelIndex);
 
-            switch (typeLabel.RawKind)
+            switch (typeLabel.RawKind())
             {
                 case DataKind.R4:
                     return new MultiToBinaryState<float, float>(_host, _input, _args);
@@ -246,7 +246,7 @@ namespace Scikit.ML.MultiClass
                 case DataKind.U4:
                     return new MultiToBinaryState<uint, uint>(_host, _input, _args);
                 default:
-                    throw Contracts.ExceptNotSupp("Type '{0}' is not handle for a multi-class label. Try unsigned int.", typeLabel.RawKind);
+                    throw Contracts.ExceptNotSupp("Type '{0}' is not handle for a multi-class label. Try unsigned int.", typeLabel.RawKind());
             };
         }
 
@@ -257,7 +257,7 @@ namespace Scikit.ML.MultiClass
                 throw _host.ExceptParam("Column '{0}' was not found in the input schema.", _args.label);
             var typeLabel = _input.Schema.GetColumnType(labelIndex);
 
-            switch (typeLabel.RawKind)
+            switch (typeLabel.RawKind())
             {
                 case DataKind.R4:
                     return new MultiToBinaryState<float, float>(ctx, _host, _input, _args);
@@ -270,7 +270,7 @@ namespace Scikit.ML.MultiClass
                 case DataKind.U4:
                     return new MultiToBinaryState<uint, uint>(ctx, _host, _input, _args);
                 default:
-                    throw Contracts.ExceptNotSupp("Type '{0}' is not handle for a multi-class label. Try unsigned int.", typeLabel.RawKind);
+                    throw Contracts.ExceptNotSupp("Type '{0}' is not handle for a multi-class label. Try unsigned int.", typeLabel.RawKind());
             }
         }
 

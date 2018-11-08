@@ -99,9 +99,9 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[0]];
             if (icols.Length == 1)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                 {
-                    switch (kind.ItemType.RawKind)
+                    switch (kind.ItemType().RawKind())
                     {
                         case DataKind.BL: df.TSort<VBufferEqSort<bool>>(icols, ascending); break;
                         case DataKind.I4: df.TSort<VBufferEqSort<int>>(icols, ascending); break;
@@ -116,7 +116,7 @@ namespace Scikit.ML.DataManipulation
                 }
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: df.TSort<bool>(icols, ascending); break;
                         case DataKind.I4: df.TSort<int>(icols, ascending); break;
@@ -132,9 +132,9 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                 {
-                    switch (kind.ItemType.RawKind)
+                    switch (kind.ItemType().RawKind())
                     {
                         case DataKind.BL: RecSort<VBufferEqSort<bool>>(df, icols, ascending); break;
                         case DataKind.I4: RecSort<VBufferEqSort<int>>(df, icols, ascending); break;
@@ -149,7 +149,7 @@ namespace Scikit.ML.DataManipulation
                 }
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: RecSort<bool>(df, icols, ascending); break;
                         case DataKind.I4: RecSort<int>(df, icols, ascending); break;
@@ -171,9 +171,9 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[1]];
             if (icols.Length == 2)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                 {
-                    switch (kind.ItemType.RawKind)
+                    switch (kind.ItemType().RawKind())
                     {
                         case DataKind.BL: df.TSort<T1, VBufferEqSort<bool>>(icols, ascending); break;
                         case DataKind.I4: df.TSort<T1, VBufferEqSort<int>>(icols, ascending); break;
@@ -188,7 +188,7 @@ namespace Scikit.ML.DataManipulation
                 }
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: df.TSort<T1, bool>(icols, ascending); break;
                         case DataKind.I4: df.TSort<T1, int>(icols, ascending); break;
@@ -204,9 +204,9 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                 {
-                    switch (kind.ItemType.RawKind)
+                    switch (kind.ItemType().RawKind())
                     {
                         case DataKind.BL: RecSort<T1, VBufferEqSort<bool>>(df, icols, ascending); break;
                         case DataKind.I4: RecSort<T1, VBufferEqSort<int>>(df, icols, ascending); break;
@@ -221,7 +221,7 @@ namespace Scikit.ML.DataManipulation
                 }
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: RecSort<T1, bool>(df, icols, ascending); break;
                         case DataKind.I4: RecSort<T1, int>(df, icols, ascending); break;
@@ -244,9 +244,9 @@ namespace Scikit.ML.DataManipulation
             var kind = df.Kinds[icols[2]];
             if (icols.Length == 3)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                 {
-                    switch (kind.ItemType.RawKind)
+                    switch (kind.ItemType().RawKind())
                     {
                         case DataKind.BL: df.TSort<T1, T2, VBufferEqSort<bool>>(icols, ascending); break;
                         case DataKind.I4: df.TSort<T1, T2, VBufferEqSort<int>>(icols, ascending); break;
@@ -261,7 +261,7 @@ namespace Scikit.ML.DataManipulation
                 }
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: df.TSort<T1, T2, bool>(icols, ascending); break;
                         case DataKind.I4: df.TSort<T1, T2, int>(icols, ascending); break;

@@ -150,10 +150,10 @@ namespace Scikit.ML.TestHelper
                 {
                     #region multiclass
 
-                    if (!ty2.IsKey)
+                    if (!ty2.IsKey())
                         throw new Exception(string.Format("Label='{0}' Predicted={1}'\nSchema: {2}", ty1, ty2, SchemaHelper.ToString(cursor.Schema)));
 
-                    if (ty1.RawKind == DataKind.R4)
+                    if (ty1.RawKind() == DataKind.R4)
                     {
                         var lgetter = cursor.GetGetter<float>(ilabel);
                         var pgetter = cursor.GetGetter<uint>(ipred);
@@ -182,7 +182,7 @@ namespace Scikit.ML.TestHelper
                                 ++dist2[(int)pre];
                         }
                     }
-                    else if (ty1.RawKind == DataKind.U4 && ty1.IsKey)
+                    else if (ty1.RawKind() == DataKind.U4 && ty1.IsKey())
                     {
                         var lgetter = cursor.GetGetter<uint>(ilabel);
                         var pgetter = cursor.GetGetter<uint>(ipred);
@@ -216,10 +216,10 @@ namespace Scikit.ML.TestHelper
                 {
                     #region binary classification
 
-                    if (ty2.RawKind != DataKind.Bool)
+                    if (ty2.RawKind() != DataKind.Bool)
                         throw new Exception(string.Format("Label='{0}' Predicted={1}'\nSchema: {2}", ty1, ty2, SchemaHelper.ToString(cursor.Schema)));
 
-                    if (ty1.RawKind == DataKind.R4)
+                    if (ty1.RawKind() == DataKind.R4)
                     {
                         var lgetter = cursor.GetGetter<float>(ilabel);
                         var pgetter = cursor.GetGetter<bool>(ipred);
@@ -248,7 +248,7 @@ namespace Scikit.ML.TestHelper
                                 ++dist2[pre ? 1 : 0];
                         }
                     }
-                    else if (ty1.RawKind == DataKind.U4)
+                    else if (ty1.RawKind() == DataKind.U4)
                     {
                         var lgetter = cursor.GetGetter<uint>(ilabel);
                         var pgetter = cursor.GetGetter<bool>(ipred);
@@ -258,7 +258,7 @@ namespace Scikit.ML.TestHelper
                         {
                             lgetter(ref ans);
                             pgetter(ref pre);
-                            if (ty1.IsKey)
+                            if (ty1.IsKey())
                                 --ans;
 
                             if (ans != 0 && ans != 1)
@@ -279,7 +279,7 @@ namespace Scikit.ML.TestHelper
                                 ++dist2[pre ? 1 : 0];
                         }
                     }
-                    else if (ty1.RawKind == DataKind.BL)
+                    else if (ty1.RawKind() == DataKind.BL)
                     {
                         var lgetter = cursor.GetGetter<bool>(ilabel);
                         var pgetter = cursor.GetGetter<bool>(ipred);
@@ -315,9 +315,9 @@ namespace Scikit.ML.TestHelper
                 {
                     #region regression
 
-                    if (ty1.RawKind != DataKind.R4)
+                    if (ty1.RawKind() != DataKind.R4)
                         throw new Exception(string.Format("Label='{0}' Predicted={1}'\nSchema: {2}", ty1, ty2, SchemaHelper.ToString(cursor.Schema)));
-                    if (ty2.RawKind != DataKind.R4)
+                    if (ty2.RawKind() != DataKind.R4)
                         throw new Exception(string.Format("Label='{0}' Predicted={1}'\nSchema: {2}", ty1, ty2, SchemaHelper.ToString(cursor.Schema)));
 
                     var lgetter = cursor.GetGetter<float>(ilabel);

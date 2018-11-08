@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Scikit.ML.PipelineHelper;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 
@@ -23,7 +24,7 @@ namespace Scikit.ML.NearestNeighbors
             if (idIndex != -1)
             {
                 var colType = data.Schema.GetColumnType(idIndex);
-                if (idIndex != -1 && (colType.IsVector || colType.RawKind != DataKind.I8))
+                if (idIndex != -1 && (colType.IsVector() || colType.RawKind() != DataKind.I8))
                     throw ch.Except("Column '{0}' must be of type '{1}' not '{2}'", args.colId, DataKind.I8, colType);
             }
 

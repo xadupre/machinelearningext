@@ -241,13 +241,13 @@ namespace Scikit.ML.FeaturesTransforms
                 throw _host.Except("Only one column allowed not '{0}'.", _args.columns.Length);
 
             var typeCol = schema.GetColumnType(index);
-            if (!typeCol.IsVector)
+            if (!typeCol.IsVector())
                 throw _host.Except("Expected a vector as input.");
-            typeCol = typeCol.AsVector.ItemType;
+            typeCol = typeCol.AsVector().ItemType();
 
             // We may consider multiple types here, vector of float, uint, int...
             // Let's do float and int.
-            switch (typeCol.RawKind)
+            switch (typeCol.RawKind())
             {
                 case DataKind.R4:
                     transform = new PolynomialState<float>(_host, transform ?? Source, _args, (a, b) => a * b);
@@ -256,7 +256,7 @@ namespace Scikit.ML.FeaturesTransforms
                     transform = new PolynomialState<UInt32>(_host, transform ?? Source, _args, (a, b) => a * b);
                     break;
                 default:
-                    throw Contracts.ExceptNotSupp("Type '{0}' is not handled yet.", typeCol.RawKind);
+                    throw Contracts.ExceptNotSupp("Type '{0}' is not handled yet.", typeCol.RawKind());
             }
             return transform;
         }
@@ -305,12 +305,12 @@ namespace Scikit.ML.FeaturesTransforms
                     if (!schema.TryGetColumnIndex(column.Source, out _inputCol))
                         throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", column.Source);
                     var type = schema.GetColumnType(_inputCol);
-                    if (!type.IsVector)
+                    if (!type.IsVector())
                         throw _host.Except("Input column type must be a vector.");
-                    int dim = type.AsVector.DimCount;
+                    int dim = type.AsVector().DimCount();
                     if (dim > 1)
                         throw _host.Except("Input column type must be a vector of one dimension.");
-                    int size = dim > 0 ? type.AsVector.GetDim(0) : 0;
+                    int size = dim > 0 ? type.AsVector().GetDim(0) : 0;
                     if (size > 0)
                         size = TotalCumulated[_args.degree](size);
                     ch.Trace("PolynomialTransform {0}->{1}.", dim, size);
@@ -318,7 +318,7 @@ namespace Scikit.ML.FeaturesTransforms
                     // We extend the input schema. The new type has the same type as the input.
                     _schema = Schema.Create(new ExtendedSchema(input.Schema,
                                                     new[] { column.Name },
-                                                    new[] { new VectorType(type.AsVector.ItemType, size) }));
+                                                    new[] { new VectorType(type.AsVector().ItemType(), size) }));
                 }
             }
 

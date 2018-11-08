@@ -11,6 +11,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.UniversalModelFormat.Onnx;
 using Microsoft.ML.Runtime.Data;
 using UniversalModelFormat = Microsoft.ML.Runtime.UniversalModelFormat;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.OnnxHelper
@@ -299,12 +300,12 @@ namespace Scikit.ML.OnnxHelper
 
             TensorProto.Types.DataType dataType = TensorProto.Types.DataType.Undefined;
             DataKind rawKind;
-            if (type.IsVector)
-                rawKind = type.AsVector.ItemType.RawKind;
-            else if (type.IsKey)
-                rawKind = type.AsKey.RawKind;
+            if (type.IsVector())
+                rawKind = type.AsVector().ItemType().RawKind();
+            else if (type.IsKey())
+                rawKind = type.AsKey().RawKind();
             else
-                rawKind = type.RawKind;
+                rawKind = type.RawKind();
 
             switch (rawKind)
             {
@@ -361,17 +362,17 @@ namespace Scikit.ML.OnnxHelper
             else
             {
                 dimsLocal = new List<long>();
-                if (type.ValueCount == 0) //Unknown size.
+                if (type.ValueCount() == 0) //Unknown size.
                 {
                     dimsLocal.Add(1);
                     dimsParamLocal = new List<bool>() { false, true }; //false for batch size, true for dims.
                 }
-                else if (type.ValueCount == 1)
+                else if (type.ValueCount() == 1)
                     dimsLocal.Add(1);
-                else if (type.ValueCount > 1)
+                else if (type.ValueCount() > 1)
                 {
-                    var vec = type.AsVector;
-                    for (int i = 0; i < vec.DimCount; i++)
+                    var vec = type.AsVector();
+                    for (int i = 0; i < vec.DimCount(); i++)
                         dimsLocal.Add(vec.GetDim(i));
                 }
             }

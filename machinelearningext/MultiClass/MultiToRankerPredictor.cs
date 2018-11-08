@@ -3,6 +3,7 @@
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
+using Scikit.ML.PipelineHelper;
 
 using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
 using MultiToRankerPredictor = Scikit.ML.MultiClass.MultiToRankerPredictor;
@@ -67,7 +68,7 @@ namespace Scikit.ML.MultiClass
         protected override void SaveCore(ModelSaveContext ctx)
         {
             base.SaveCore(ctx);
-            ctx.Writer.Write((byte)_impl.LabelType.RawKind);
+            ctx.Writer.Write((byte)_impl.LabelType.RawKind());
             _impl.SaveCore(ctx, Host, GetVersionInfo());
         }
 

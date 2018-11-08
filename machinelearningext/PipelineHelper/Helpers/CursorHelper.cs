@@ -98,9 +98,9 @@ namespace Scikit.ML.PipelineHelper
             if (sch == null)
                 sch = cur.Schema;
             var colType = sch.GetColumnType(col);
-            if (colType.IsVector)
+            if (colType.IsVector())
             {
-                switch (colType.ItemType.RawKind)
+                switch (colType.ItemType().RawKind())
                 {
                     case DataKind.BL: return GetGetterChoice<VBufferEqSort<bool>, VBuffer<bool>>(cur, col);
                     case DataKind.I4: return GetGetterChoice<VBufferEqSort<int>, VBuffer<int>>(cur, col);
@@ -115,7 +115,7 @@ namespace Scikit.ML.PipelineHelper
             }
             else
             {
-                switch (colType.RawKind)
+                switch (colType.RawKind())
                 {
                     case DataKind.BL: return cur.GetGetter<bool>(col);
                     case DataKind.I4: return cur.GetGetter<int>(col);

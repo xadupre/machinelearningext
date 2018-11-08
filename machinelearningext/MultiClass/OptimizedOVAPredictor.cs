@@ -8,6 +8,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Internal.Utilities;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Internal.Internallearn;
+using Scikit.ML.PipelineHelper;
 
 using OptimizedOVAPredictor = Scikit.ML.MultiClass.OptimizedOVAPredictor;
 
@@ -270,15 +271,15 @@ namespace Scikit.ML.MultiClass
                     return false;
                 if (mapper.OutputType != NumberType.Float)
                     return false;
-                if (!mapper.InputType.IsVector || mapper.InputType.ItemType != NumberType.Float)
+                if (!mapper.InputType.IsVector() || mapper.InputType.ItemType() != NumberType.Float)
                     return false;
                 if (inputType == null)
                     inputType = mapper.InputType;
-                else if (inputType.VectorSize != mapper.InputType.VectorSize)
+                else if (inputType.VectorSize() != mapper.InputType.VectorSize())
                 {
-                    if (inputType.VectorSize == 0)
+                    if (inputType.VectorSize() == 0)
                         inputType = mapper.InputType;
-                    else if (mapper.InputType.VectorSize != 0)
+                    else if (mapper.InputType.VectorSize() != 0)
                         return false;
                 }
                 return true;
@@ -315,8 +316,8 @@ namespace Scikit.ML.MultiClass
                 return
                     (in VBuffer<float> src, ref VBuffer<float> dst) =>
                     {
-                        if (_inputType.VectorSize > 0)
-                            Contracts.Check(src.Length == _inputType.VectorSize);
+                        if (_inputType.VectorSize() > 0)
+                            Contracts.Check(src.Length == _inputType.VectorSize());
 
                         var values = dst.Values;
                         if (Utils.Size(values) < maps.Length)
@@ -368,8 +369,8 @@ namespace Scikit.ML.MultiClass
                 return
                     (in VBuffer<float> src, ref VBuffer<float> dst) =>
                     {
-                        if (_inputType.VectorSize > 0)
-                            Contracts.Check(src.Length == _inputType.VectorSize);
+                        if (_inputType.VectorSize() > 0)
+                            Contracts.Check(src.Length == _inputType.VectorSize());
 
                         var values = dst.Values;
                         if (Utils.Size(values) < maps.Length)

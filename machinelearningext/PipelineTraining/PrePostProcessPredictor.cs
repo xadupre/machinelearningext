@@ -89,9 +89,9 @@ namespace Scikit.ML.PipelineTraining
 
             Schema schema;
             IDataView data;
-            if (type.IsVector)
+            if (type.IsVector())
             {
-                switch (type.AsVector.ItemType.RawKind)
+                switch (type.AsVector().ItemType().RawKind())
                 {
                     case DataKind.R4:
                         schema = Schema.Create(new ExtendedSchema(null, new[] { _inputColumn }, new[] { new VectorType(NumberType.R4) }));
@@ -103,7 +103,7 @@ namespace Scikit.ML.PipelineTraining
             }
             else
             {
-                switch (type.RawKind)
+                switch (type.RawKind())
                 {
                     case DataKind.R4:
                         schema = Schema.Create(new ExtendedSchema(null, new[] { _inputColumn }, new[] { NumberType.R4 }));
@@ -201,9 +201,9 @@ namespace Scikit.ML.PipelineTraining
                     outType = _preProcess.Source.Schema.GetColumnType(index);
                 }
 
-                if (outType.IsVector)
+                if (outType.IsVector())
                 {
-                    switch (outType.AsVector.ItemType.RawKind)
+                    switch (outType.AsVector().ItemType().RawKind())
                     {
                         case DataKind.R4:
                             return GetMapperWithTransform<TSrc, VBuffer<float>, TDst>(_preProcess);
@@ -213,7 +213,7 @@ namespace Scikit.ML.PipelineTraining
                 }
                 else
                 {
-                    switch (valuemapper.OutputType.RawKind)
+                    switch (valuemapper.OutputType.RawKind())
                     {
                         case DataKind.R4:
                             return GetMapperWithTransform<TSrc, float, TDst>(_preProcess);

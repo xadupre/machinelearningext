@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using Microsoft.ML.Runtime.Data.Conversion;
 using Microsoft.ML.Runtime.Internal.Utilities;
@@ -63,7 +64,7 @@ namespace Scikit.ML.MultiClass
             {
                 Contracts.AssertValue(type);
                 Contracts.AssertValueOrNull(slotType);
-                Contracts.Assert(slotType == null || type.ItemType.Equals(slotType.ItemType));
+                Contracts.Assert(slotType == null || type.ItemType().Equals(slotType.ItemType()));
 
                 Kind = kind;
                 HasKeyRange = hasKeyRange;
@@ -108,7 +109,7 @@ namespace Scikit.ML.MultiClass
                 }
                 else if (col.KeyRange != null)
                 {
-                    kind = Infos[i].TypeSrc.IsKey ? Infos[i].TypeSrc.RawKind : DataKind.U4;
+                    kind = Infos[i].TypeSrc.IsKey() ? Infos[i].TypeSrc.RawKind() : DataKind.U4;
                     range = col.KeyRange;
                 }
                 else if (args.resultType != null)
@@ -118,7 +119,7 @@ namespace Scikit.ML.MultiClass
                 }
                 else if (args.keyRange != null)
                 {
-                    kind = Infos[i].TypeSrc.IsKey ? Infos[i].TypeSrc.RawKind : DataKind.U4;
+                    kind = Infos[i].TypeSrc.IsKey() ? Infos[i].TypeSrc.RawKind() : DataKind.U4;
                     range = args.keyRange;
                 }
                 else
@@ -133,7 +134,7 @@ namespace Scikit.ML.MultiClass
                 {
                     throw Host.ExceptUserArg("source",
                         "source column '{0}' with item type '{1}' is not compatible with destination type '{2}'",
-                        input.Schema.GetColumnName(Infos[i].Source), Infos[i].TypeSrc.ItemType, itemType);
+                        input.Schema.GetColumnName(Infos[i].Source), Infos[i].TypeSrc.ItemType(), itemType);
                 }
             }
             SetMetadata();
@@ -147,7 +148,7 @@ namespace Scikit.ML.MultiClass
                 var info = Infos[iinfo];
                 using (var bldr = md.BuildMetadata(iinfo, Source.Schema, info.Source, PassThrough))
                 {
-                    if (info.TypeSrc.IsBool && _exes[iinfo].TypeDst.ItemType.IsNumber)
+                    if (info.TypeSrc.IsBool() && _exes[iinfo].TypeDst.ItemType().IsNumber())
                         bldr.AddPrimitive(MetadataUtils.Kinds.IsNormalized, BoolType.Instance, true);
                 }
             }
@@ -164,13 +165,13 @@ namespace Scikit.ML.MultiClass
             switch (kind)
             {
                 case MetadataUtils.Kinds.SlotNames:
-                    Host.Assert(typeSrc.VectorSize == typeDst.VectorSize);
-                    return typeDst.IsKnownSizeVector;
+                    Host.Assert(typeSrc.VectorSize() == typeDst.VectorSize());
+                    return typeDst.IsKnownSizeVector();
                 case MetadataUtils.Kinds.KeyValues:
-                    return typeSrc.ItemType.IsKey && typeDst.ItemType.IsKey && typeSrc.ItemType.KeyCount > 0 &&
-                        typeSrc.ItemType.KeyCount == typeDst.ItemType.KeyCount;
+                    return typeSrc.ItemType().IsKey() && typeDst.ItemType().IsKey() && typeSrc.ItemType().KeyCount() > 0 &&
+                        typeSrc.ItemType().KeyCount() == typeDst.ItemType().KeyCount();
                 case MetadataUtils.Kinds.IsNormalized:
-                    return typeSrc.ItemType.IsNumber && typeDst.ItemType.IsNumber;
+                    return typeSrc.ItemType().IsNumber() && typeDst.ItemType().IsNumber();
             }
             return false;
         }
@@ -243,8 +244,8 @@ namespace Scikit.ML.MultiClass
                     ctx.Writer.Write((byte)ex.Kind);
                 else
                 {
-                    Host.Assert(ex.TypeDst.ItemType.IsKey);
-                    var key = ex.TypeDst.ItemType.AsKey;
+                    Host.Assert(ex.TypeDst.ItemType().IsKey());
+                    var key = ex.TypeDst.ItemType().AsKey();
                     byte b = (byte)ex.Kind;
                     b |= 0x80;
                     ctx.Writer.Write(b);
@@ -294,21 +295,21 @@ namespace Scikit.ML.MultiClass
             if (range != null)
             {
                 itemType = TypeParsingUtils.ConstructKeyType(kind, range);
-                if (!typeSrc.ItemType.IsKey && !typeSrc.ItemType.IsText && typeSrc.ItemType.RawKind != kind &&
-                    !(typeSrc.ItemType.RawKind == DataKind.I8 && (kind == DataKind.U8 || kind == DataKind.U4)))
+                if (!typeSrc.ItemType().IsKey() && !typeSrc.ItemType().IsText() && typeSrc.ItemType().RawKind() != kind &&
+                    !(typeSrc.ItemType().RawKind() == DataKind.I8 && (kind == DataKind.U8 || kind == DataKind.U4)))
                     return false;
             }
-            else if (!typeSrc.ItemType.IsKey)
-                itemType = PrimitiveType.FromKind(kind);
-            else if (!KeyType.IsValidDataKind(kind))
+            else if (!typeSrc.ItemType().IsKey())
+                itemType = ColumnTypeHelper.PrimitiveFromKind(kind);
+            else if (!ColumnTypeHelper.IsValidDataKind(kind))
             {
-                itemType = PrimitiveType.FromKind(kind);
+                itemType = ColumnTypeHelper.PrimitiveFromKind(kind);
                 return false;
             }
             else
             {
-                var key = typeSrc.ItemType.AsKey;
-                ectx.Assert(KeyType.IsValidDataKind(key.RawKind));
+                var key = typeSrc.ItemType().AsKey();
+                ectx.Assert(ColumnTypeHelper.IsValidDataKind(key.RawKind()));
                 int count = key.Count;
                 // Technically, it's an error for the counts not to match, but we'll let the Conversions
                 // code return false below. There's a possibility we'll change the standard conversions to
@@ -316,22 +317,22 @@ namespace Scikit.ML.MultiClass
                 ulong max = kind.ToMaxInt();
                 if ((ulong)count > max)
                     count = (int)max;
-                itemType = new KeyType(kind, key.Min, count, key.Contiguous);
+                itemType = new KeyType(kind.ToType(), key.Min, count, key.Contiguous);
             }
 
             // Ensure that the conversion is legal. We don't actually cache the delegate here. It will get
             // re-fetched by the utils code when needed.
             bool identity;
             Delegate del;
-            if (!Conversions.Instance.TryGetStandardConversion(typeSrc.ItemType, itemType, out del, out identity))
+            if (!Conversions.Instance.TryGetStandardConversion(typeSrc.ItemType(), itemType, out del, out identity))
             {
-                if (typeSrc.ItemType.RawKind == itemType.RawKind)
+                if (typeSrc.ItemType().RawKind() == itemType.RawKind())
                 {
-                    switch (typeSrc.ItemType.RawKind)
+                    switch (typeSrc.ItemType().RawKind())
                     {
                         case DataKind.U4:
                             // Key starts at 1.
-                            uint plus = (itemType.IsKey ? (uint)1 : (uint)0) - (typeSrc.IsKey ? (uint)1 : (uint)0);
+                            uint plus = (itemType.IsKey() ? (uint)1 : (uint)0) - (typeSrc.IsKey() ? (uint)1 : (uint)0);
                             identity = false;
                             ValueMapper<uint, uint> map_ = (in uint src, ref uint dst) => { dst = src + plus; };
                             del = (Delegate)map_;
@@ -339,12 +340,12 @@ namespace Scikit.ML.MultiClass
                                 throw Contracts.ExceptNotSupp("Issue with casting");
                             break;
                         default:
-                            throw Contracts.Except("Not suppoted type {0}", typeSrc.ItemType.RawKind);
+                            throw Contracts.Except("Not suppoted type {0}", typeSrc.ItemType().RawKind());
                     }
                 }
-                else if (typeSrc.ItemType.RawKind == DataKind.I8 && kind == DataKind.U8)
+                else if (typeSrc.ItemType().RawKind() == DataKind.I8 && kind == DataKind.U8)
                 {
-                    ulong plus = (itemType.IsKey ? (ulong)1 : (ulong)0) - (typeSrc.IsKey ? (ulong)1 : (ulong)0);
+                    ulong plus = (itemType.IsKey() ? (ulong)1 : (ulong)0) - (typeSrc.IsKey() ? (ulong)1 : (ulong)0);
                     identity = false;
                     ValueMapper<long, ulong> map_ = (in long src, ref ulong dst) =>
                     {
@@ -354,9 +355,9 @@ namespace Scikit.ML.MultiClass
                     if (del == null)
                         throw Contracts.ExceptNotSupp("Issue with casting");
                 }
-                else if (typeSrc.ItemType.RawKind == DataKind.I8 && kind == DataKind.U4)
+                else if (typeSrc.ItemType().RawKind() == DataKind.I8 && kind == DataKind.U4)
                 {
-                    uint plus = (itemType.IsKey ? (uint)1 : (uint)0) - (typeSrc.IsKey ? (uint)1 : (uint)0);
+                    uint plus = (itemType.IsKey() ? (uint)1 : (uint)0) - (typeSrc.IsKey() ? (uint)1 : (uint)0);
                     identity = false;
                     ValueMapper<long, uint> map_ = (in long src, ref uint dst) =>
                     {
@@ -371,13 +372,13 @@ namespace Scikit.ML.MultiClass
             }
 
             ColumnType typeDst = itemType;
-            if (typeSrc.IsVector)
-                typeDst = new VectorType(itemType, typeSrc.AsVector);
+            if (typeSrc.IsVector())
+                typeDst = new VectorType(itemType, typeSrc.AsVector().Dimensions.ToArray());
 
             // An output column is transposable iff the input column was transposable.
             VectorType slotType = null;
             if (info.SlotTypeSrc != null)
-                slotType = new VectorType(itemType, info.SlotTypeSrc);
+                slotType = new VectorType(itemType, info.SlotTypeSrc.Dimensions.ToArray());
 
             ex = new ColInfoEx(kind, range != null, typeDst, slotType);
             return true;
@@ -393,13 +394,13 @@ namespace Scikit.ML.MultiClass
         public static Delegate GetGetterAs(ColumnType typeDst, IRow row, int col)
         {
             Contracts.CheckValue(typeDst, "typeDst");
-            Contracts.CheckParam(typeDst.IsPrimitive, "typeDst");
+            Contracts.CheckParam(typeDst.IsPrimitive(), "typeDst");
             Contracts.CheckValue(row, "row");
             Contracts.CheckParam(0 <= col && col < row.Schema.ColumnCount, "col");
             Contracts.CheckParam(row.IsColumnActive(col), "col", "column was not active");
 
             var typeSrc = row.Schema.GetColumnType(col);
-            Contracts.Check(typeSrc.IsPrimitive, "Source column type must be primitive");
+            Contracts.Check(typeSrc.IsPrimitive(), "Source column type must be primitive");
 
             Func<ColumnType, ColumnType, IRow, int, ValueGetter<int>> del = GetGetterAsCore<int, int>;
             var methodInfo = del.GetMethodInfo().GetGenericMethodDefinition().MakeGenericMethod(typeSrc.RawType, typeDst.RawType);
@@ -413,10 +414,10 @@ namespace Scikit.ML.MultiClass
 
             bool identity;
 
-            if (typeSrc.RawKind == DataKind.U4 && typeDst.RawKind == DataKind.U4)
+            if (typeSrc.RawKind() == DataKind.U4 && typeDst.RawKind() == DataKind.U4)
             {
                 var getter = row.GetGetter<uint>(col);
-                uint plus = (typeDst.IsKey ? (uint)1 : (uint)0) - (typeSrc.IsKey ? (uint)1 : (uint)0);
+                uint plus = (typeDst.IsKey() ? (uint)1 : (uint)0) - (typeSrc.IsKey() ? (uint)1 : (uint)0);
                 identity = true;
                 var src = default(uint);
                 ValueGetter<uint> mapu =
@@ -427,9 +428,9 @@ namespace Scikit.ML.MultiClass
                     };
                 return mapu as ValueGetter<TDst>;
             }
-            else if (typeSrc.RawKind == DataKind.I8 && typeDst.RawKind == DataKind.U8)
+            else if (typeSrc.RawKind() == DataKind.I8 && typeDst.RawKind() == DataKind.U8)
             {
-                ulong plus = (typeDst.IsKey ? (ulong)1 : (ulong)0) - (typeSrc.IsKey ? (ulong)1 : (ulong)0);
+                ulong plus = (typeDst.IsKey() ? (ulong)1 : (ulong)0) - (typeSrc.IsKey() ? (ulong)1 : (ulong)0);
                 var getter = row.GetGetter<long>(col);
                 identity = true;
                 var src = default(long);
@@ -442,9 +443,9 @@ namespace Scikit.ML.MultiClass
                     };
                 return mapu as ValueGetter<TDst>;
             }
-            else if (typeSrc.RawKind == DataKind.I8 && typeDst.RawKind == DataKind.U4)
+            else if (typeSrc.RawKind() == DataKind.I8 && typeDst.RawKind() == DataKind.U4)
             {
-                uint plus = (typeDst.IsKey ? (uint)1 : (uint)0) - (typeSrc.IsKey ? (uint)1 : (uint)0);
+                uint plus = (typeDst.IsKey() ? (uint)1 : (uint)0) - (typeSrc.IsKey() ? (uint)1 : (uint)0);
                 var getter = row.GetGetter<long>(col);
                 identity = true;
                 var src = default(long);
@@ -487,9 +488,9 @@ namespace Scikit.ML.MultiClass
             var typeSrc = Infos[iinfo].TypeSrc;
             var typeDst = _exes[iinfo].TypeDst;
 
-            if (!typeDst.IsVector)
+            if (!typeDst.IsVector())
                 return GetGetterAs(typeDst, input, Infos[iinfo].Source);
-            return RowCursorUtils.GetVecGetterAs(typeDst.AsVector.ItemType, input, Infos[iinfo].Source);
+            return RowCursorUtils.GetVecGetterAs(typeDst.AsVector().ItemType(), input, Infos[iinfo].Source);
         }
 
         protected override VectorType GetSlotTypeCore(int iinfo)
@@ -519,7 +520,7 @@ namespace Scikit.ML.MultiClass
                 Ch.Assert(Input.Schema.ColumnCount == 1);
                 Ch.Assert(Input.Schema.GetColumnType(0) == cursor.GetSlotType());
                 Ch.AssertValue(typeDst);
-                _getter = RowCursorUtils.GetVecGetterAs(typeDst.ItemType, Input, 0);
+                _getter = RowCursorUtils.GetVecGetterAs(typeDst.ItemType(), Input, 0);
                 _type = typeDst;
             }
 

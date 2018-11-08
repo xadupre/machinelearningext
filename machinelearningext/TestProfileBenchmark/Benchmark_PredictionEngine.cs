@@ -60,7 +60,7 @@ namespace TestProfileBenchmark
                 var trans = TextFeaturizingEstimator.Create(env, args2, loader);
 
                 // Train
-                var trainer = new LinearClassificationTrainer(env, new LinearClassificationTrainer.Arguments
+                var trainer = new SdcaBinaryTrainer(env, new SdcaBinaryTrainer.Arguments
                 {
                     NumThreads = 1
                 });

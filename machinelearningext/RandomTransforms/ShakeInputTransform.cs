@@ -168,18 +168,18 @@ namespace Scikit.ML.RandomTransforms
 
             for (int i = 1; i < _toShake.Length; ++i)
             {
-                if (_toShake[i].OutputType.IsVector && _toShake[i - 1].OutputType.IsVector)
+                if (_toShake[i].OutputType.IsVector() && _toShake[i - 1].OutputType.IsVector())
                 {
-                    if (_toShake[i].OutputType.ItemType != _toShake[i - 1].OutputType.ItemType)
+                    if (_toShake[i].OutputType.ItemType() != _toShake[i - 1].OutputType.ItemType())
                         throw _host.Except("All value mappers must be the same type.");
                 }
                 else if (_toShake[i].OutputType != _toShake[i - 1].OutputType)
                     throw _host.Except("All value mappers must be the same type.");
             }
-            if (_toShake[0].OutputType.IsVector)
+            if (_toShake[0].OutputType.IsVector())
             {
-                var vec = _toShake[0].OutputType.AsVector;
-                if (vec.ItemType.IsVector)
+                var vec = _toShake[0].OutputType.AsVector();
+                if (vec.ItemType().IsVector())
                     throw _host.ExceptNotSupp("Unable to handle vectors of vectors as outputs of the mapper.");
             }
 
@@ -272,11 +272,11 @@ namespace Scikit.ML.RandomTransforms
                 throw _host.Except("Unable to find '{0}'", _args.inputColumn);
 
             var typeCol = _input.Schema.GetColumnType(index);
-            if (!typeCol.IsVector)
+            if (!typeCol.IsVector())
                 throw _host.Except("Expected a vector as input.");
-            typeCol = typeCol.AsVector.ItemType;
+            typeCol = typeCol.AsVector().ItemType();
 
-            switch (typeCol.RawKind)
+            switch (typeCol.RawKind())
             {
                 case DataKind.R4:
                     transform = new ShakeInputState<float>(_host, transform ?? Source, _toShake, _args);
@@ -294,7 +294,7 @@ namespace Scikit.ML.RandomTransforms
                     transform = new ShakeInputState<UInt32>(_host, transform ?? Source, _toShake, _args);
                     break;
                 default:
-                    throw Contracts.ExceptNotSupp("Type '{0}' is not handled yet.", typeCol.RawKind);
+                    throw Contracts.ExceptNotSupp("Type '{0}' is not handled yet.", typeCol.RawKind());
             }
             return transform;
         }
@@ -333,7 +333,7 @@ namespace Scikit.ML.RandomTransforms
 
                 foreach (var vm in toShake)
                 {
-                    if (vm.OutputType.IsVector && vm.OutputType.AsVector.DimCount > 1)
+                    if (vm.OutputType.IsVector() && vm.OutputType.AsVector().DimCount() > 1)
                         throw _host.Except("If a ValueMapper return a vector, it should have one dimension or zero.");
                 }
 
@@ -355,18 +355,18 @@ namespace Scikit.ML.RandomTransforms
                             throw _host.Except("No shaking values ('{0}')", _args.values);
                         foreach (var c in toShake)
                         {
-                            var vt = c.OutputType.IsVector
-                                            ? new VectorType(c.OutputType.ItemType.AsPrimitive, c.OutputType.AsVector.DimCount == 0 ? 0 : c.OutputType.AsVector.GetDim(0) * m)
-                                            : new VectorType(c.OutputType.AsPrimitive, m);
+                            var vt = c.OutputType.IsVector()
+                                            ? new VectorType(c.OutputType.ItemType().AsPrimitive(), c.OutputType.AsVector().DimCount() == 0 ? 0 : c.OutputType.AsVector().GetDim(0) * m)
+                                            : new VectorType(c.OutputType.AsPrimitive(), m);
                             colTypes.Add(vt);
                         }
                         break;
                     case ShakeAggregation.add:
                         foreach (var c in toShake)
                         {
-                            var vt = c.OutputType.IsVector
-                                            ? new VectorType(c.OutputType.ItemType.AsPrimitive, c.OutputType.AsVector.DimCount == 0 ? 0 : c.OutputType.AsVector.GetDim(0))
-                                            : new VectorType(c.OutputType.AsPrimitive, 1);
+                            var vt = c.OutputType.IsVector()
+                                            ? new VectorType(c.OutputType.ItemType().AsPrimitive(), c.OutputType.AsVector().DimCount() == 0 ? 0 : c.OutputType.AsVector().GetDim(0))
+                                            : new VectorType(c.OutputType.AsPrimitive(), 1);
                             colTypes.Add(vt);
                         }
                         break;
@@ -385,7 +385,7 @@ namespace Scikit.ML.RandomTransforms
             {
                 bool identity;
                 var ty = _input.Schema.GetColumnType(_inputCol);
-                var conv = Conversions.Instance.GetStandardConversion<ReadOnlyMemory<char>, TInput>(TextType.Instance, ty.AsVector.ItemType, out identity);
+                var conv = Conversions.Instance.GetStandardConversion<ReadOnlyMemory<char>, TInput>(TextType.Instance, ty.AsVector().ItemType(), out identity);
                 if (string.IsNullOrEmpty(_args.values))
                     throw _host.ExceptParam("_args.values cannot be null.");
                 string[][] values = _args.values.Split(';').Select(c => c.Split(',')).ToArray();
@@ -411,9 +411,9 @@ namespace Scikit.ML.RandomTransforms
 
             public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
             {
-                var kind = _toShake[0].OutputType.IsVector
-                                ? _toShake[0].OutputType.ItemType.RawKind
-                                : _toShake[0].OutputType.RawKind;
+                var kind = _toShake[0].OutputType.IsVector()
+                                ? _toShake[0].OutputType.ItemType().RawKind()
+                                : _toShake[0].OutputType.RawKind();
                 switch (kind)
                 {
                     case DataKind.R4:
@@ -421,17 +421,17 @@ namespace Scikit.ML.RandomTransforms
                         return new ShakeInputCursor<TInput, float>(this, cursor, i => i == _inputCol || predicate(i), _args, _inputCol, _toShake, _shakingValues,
                                         (float x, float y) => { return x + y; });
                     default:
-                        throw _host.Except("Not supported RawKind {0}", _toShake[0].OutputType.RawKind);
+                        throw _host.Except("Not supported RawKind {0}", _toShake[0].OutputType.RawKind());
                 }
             }
 
             public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
             {
                 DataKind kind;
-                if (_toShake[0].OutputType.IsVector)
-                    kind = _toShake[0].OutputType.AsVector.ItemType.RawKind;
+                if (_toShake[0].OutputType.IsVector())
+                    kind = _toShake[0].OutputType.AsVector().ItemType().RawKind();
                 else
-                    kind = _toShake[0].OutputType.RawKind;
+                    kind = _toShake[0].OutputType.RawKind();
 
                 switch (kind)
                 {
@@ -440,7 +440,7 @@ namespace Scikit.ML.RandomTransforms
                         return cursors.Select(c => new ShakeInputCursor<TInput, float>(this, c, predicate, _args, _inputCol, _toShake, _shakingValues,
                                             (float x, float y) => { return x + y; })).ToArray();
                     default:
-                        throw _host.Except("Not supported RawKind {0}", _toShake[0].OutputType.RawKind);
+                        throw _host.Except("Not supported RawKind {0}", _toShake[0].OutputType.RawKind());
                 }
             }
         }
@@ -474,10 +474,10 @@ namespace Scikit.ML.RandomTransforms
                 _toShake = toShake;
                 _inputGetter = cursor.GetGetter<VBuffer<TInput>>(column);
 
-                _mappersV = _toShake.Select(c => !c.OutputType.IsVector
+                _mappersV = _toShake.Select(c => !c.OutputType.IsVector()
                                 ? null
                                 : c.GetMapper<VBuffer<TInput>, VBuffer<TOutput>>()).ToArray();
-                _mappers = _toShake.Select(c => c.OutputType.IsVector
+                _mappers = _toShake.Select(c => c.OutputType.IsVector()
                                 ? null
                                 : c.GetMapper<VBuffer<TInput>, TOutput>()).ToArray();
 
@@ -665,12 +665,12 @@ namespace Scikit.ML.RandomTransforms
                 {
                     int icol = col + _inputCursor.Schema.ColumnCount;
                     var type = sch.GetColumnType(icol);
-                    if (!type.IsVector)
+                    if (!type.IsVector())
                         throw Contracts.Except("Incompatible type '{0}' != '{1}'", type, _collected[col].GetType());
-                    var v = type.AsVector;
-                    if (v.DimCount > 1)
+                    var v = type.AsVector();
+                    if (v.DimCount() > 1)
                         throw Contracts.Except("Incompatible type '{0}' != '{1}'", type, _collected[col].GetType());
-                    if (v.DimCount != 0 && v.GetDim(0) != 0 && v.GetDim(0) != _collected[col].Length)
+                    if (v.DimCount() != 0 && v.GetDim(0) != 0 && v.GetDim(0) != _collected[col].Length)
                         throw Contracts.Except("Incompatible dimension {0} != {1}", v.GetDim(0), _collected[col].Length);
                 }
 #endif
@@ -765,12 +765,12 @@ namespace Scikit.ML.RandomTransforms
                 {
                     int icol = col + _inputCursor.Schema.ColumnCount;
                     var type = sch.GetColumnType(icol);
-                    if (!type.IsVector)
+                    if (!type.IsVector())
                         throw Contracts.Except("Incompatible type '{0}' != '{1}'", type, _collected[col].GetType());
-                    var v = type.AsVector;
-                    if (v.DimCount > 1)
+                    var v = type.AsVector();
+                    if (v.DimCount() > 1)
                         throw Contracts.Except("Incompatible type '{0}' != '{1}'", type, _collected[col].GetType());
-                    if (v.DimCount != 0 && v.GetDim(0) != 0 && v.GetDim(0) != _collected[col].Length)
+                    if (v.DimCount() != 0 && v.GetDim(0) != 0 && v.GetDim(0) != _collected[col].Length)
                         throw Contracts.Except("Incompatible dimension {0} != {1}", v.GetDim(0), _collected[col].Length);
                 }
 #endif

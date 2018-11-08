@@ -288,10 +288,10 @@ namespace Scikit.ML.PipelineHelper
         {
             string name = GetColumnName(col);
             var type = GetColumnType(col);
-            if (type.IsVector)
+            if (type.IsVector())
             {
-                var vec = type.AsVector;
-                if (vec.DimCount != 1)
+                var vec = type.AsVector();
+                if (vec.DimCount() != 1)
                     throw Contracts.ExceptNotImpl("Only one dimension is implemented.");
                 var res = new string[vec.GetDim(0)];
                 for (int i = 0; i < res.Length; ++i)
@@ -313,8 +313,8 @@ namespace Scikit.ML.PipelineHelper
             if (kind == MetadataUtils.Kinds.SlotNames)
             {
                 var ty = GetColumnType(col);
-                if (ty.IsVector && ty.AsVector.DimCount == 1 && ty.AsVector.GetDim(0) > 0)
-                    return new VectorType(TextType.Instance, ty.AsVector.GetDim(0));
+                if (ty.IsVector() && ty.AsVector().DimCount() == 1 && ty.AsVector().GetDim(0) > 0)
+                    return new VectorType(TextType.Instance, ty.AsVector().GetDim(0));
             }
             return null;
         }

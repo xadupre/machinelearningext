@@ -105,52 +105,52 @@ namespace Scikit.ML.ProductionPrediction
 
         IDataTransform CreateMemoryTransform()
         {
-            if (InputType.IsVector)
+            if (InputType.IsVector())
             {
-                switch (InputType.AsVector.ItemType.RawKind)
+                switch (InputType.AsVector().ItemType().RawKind())
                 {
                     case DataKind.R4:
                         return CreateMemoryTransformIn<VBuffer<float>>();
                     default:
-                        throw _host.ExceptNotImpl("Input Type '{0}' is not handled yet.", InputType.AsVector.ItemType.RawKind);
+                        throw _host.ExceptNotImpl("Input Type '{0}' is not handled yet.", InputType.AsVector().ItemType().RawKind());
                 }
             }
             else
             {
-                switch (InputType.RawKind)
+                switch (InputType.RawKind())
                 {
                     case DataKind.R4:
                         return CreateMemoryTransformIn<float>();
                     default:
-                        throw _host.ExceptNotImpl("Input Type '{0}' is not handled yet.", InputType.RawKind);
+                        throw _host.ExceptNotImpl("Input Type '{0}' is not handled yet.", InputType.RawKind());
                 }
             }
         }
 
         IDataTransform CreateMemoryTransformIn<TSrc>()
         {
-            if (OutputType.IsVector)
+            if (OutputType.IsVector())
             {
-                switch (OutputType.AsVector.ItemType.RawKind)
+                switch (OutputType.AsVector().ItemType().RawKind())
                 {
                     case DataKind.U4:
                         return CreateMemoryTransformInOut<TSrc, VBuffer<uint>>();
                     case DataKind.R4:
                         return CreateMemoryTransformInOut<TSrc, VBuffer<float>>();
                     default:
-                        throw _host.ExceptNotImpl("Output Type '{0}' is not handled yet.", OutputType.AsVector.ItemType.RawKind);
+                        throw _host.ExceptNotImpl("Output Type '{0}' is not handled yet.", OutputType.AsVector().ItemType().RawKind());
                 }
             }
             else
             {
-                switch (OutputType.RawKind)
+                switch (OutputType.RawKind())
                 {
                     case DataKind.U4:
                         return CreateMemoryTransformInOut<TSrc, uint>();
                     case DataKind.R4:
                         return CreateMemoryTransformInOut<TSrc, float>();
                     default:
-                        throw _host.ExceptNotImpl("Output Type '{0}' is not handled yet.", OutputType.RawKind);
+                        throw _host.ExceptNotImpl("Output Type '{0}' is not handled yet.", OutputType.RawKind());
                 }
             }
         }

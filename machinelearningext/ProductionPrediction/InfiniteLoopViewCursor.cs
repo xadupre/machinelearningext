@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.ProductionPrediction
@@ -200,9 +201,9 @@ namespace Scikit.ML.ProductionPrediction
                 if (col == _view.ReplacedCol)
                 {
                     var type = _view.Schema.GetColumnType(col);
-                    if (type.IsVector)
+                    if (type.IsVector())
                     {
-                        switch (type.AsVector.ItemType.RawKind)
+                        switch (type.AsVector().ItemType().RawKind())
                         {
                             case DataKind.R4:
                                 return GetGetterPrivateVector<float>(col) as ValueGetter<TRepValue>;

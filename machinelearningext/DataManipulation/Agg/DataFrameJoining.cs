@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 using DvText = Scikit.ML.PipelineHelper.DvText;
 
 
@@ -148,11 +149,11 @@ namespace Scikit.ML.DataManipulation
             var kind = left.Kinds[icolsLeft[0]];
             if (icolsLeft.Length == 1)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return left.TJoin<bool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.I4: return left.TJoin<int>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
@@ -168,11 +169,11 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return RecJoin<bool>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.I4: return RecJoin<int>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
@@ -196,11 +197,11 @@ namespace Scikit.ML.DataManipulation
             var kind = left.Kinds[icolsLeft[1]];
             if (icolsLeft.Length == 2)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return left.TJoin<T1, bool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.I4: return left.TJoin<T1, int>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
@@ -216,11 +217,11 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return RecJoin<T1, bool>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.I4: return RecJoin<T1, int>(left, right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
@@ -245,11 +246,11 @@ namespace Scikit.ML.DataManipulation
             var kind = left.Kinds[icolsLeft[2]];
             if (icolsLeft.Length == 3)
             {
-                if (kind.IsVector)
+                if (kind.IsVector())
                     throw new NotImplementedException();
                 else
                 {
-                    switch (kind.RawKind)
+                    switch (kind.RawKind())
                     {
                         case DataKind.BL: return left.TJoin<T1, T2, bool>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);
                         case DataKind.I4: return left.TJoin<T1, T2, int>(right, icolsLeft, icolsRight, leftSuffix, rightSuffix, joinType, sort);

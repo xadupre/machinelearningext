@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Runtime;
+using Scikit.ML.PipelineHelper;
 using Scikit.ML.DataManipulation;
 
 // This indicates where to find objects in ML.net assemblies.
@@ -119,7 +120,7 @@ namespace Scikit.ML.PipelineTransforms
                 if (!schema.TryGetColumnIndex(args.sortColumn, out index))
                     Contracts.Check(false, "sortColumn not found in input schema.");
                 var type = schema.GetColumnType(index);
-                Host.Check(!type.IsVector, "sortColumn cannot be a vector.");
+                Host.Check(!type.IsVector(), "sortColumn cannot be a vector.");
             }
 
             _reverse = args.reverse;
@@ -161,7 +162,7 @@ namespace Scikit.ML.PipelineTransforms
             if (!schema.TryGetColumnIndex(_sortColumn, out index))
                 Contracts.Check(false, "sortColumn not found in input schema.");
             var type = schema.GetColumnType(index);
-            Host.Check(!type.IsVector, "sortColumn cannot be a vector.");
+            Host.Check(!type.IsVector(), "sortColumn cannot be a vector.");
             _reverse = ctx.Reader.ReadBoolean();
             _numThreads = ctx.Reader.ReadInt32();
             if (_numThreads < 0)
@@ -240,7 +241,7 @@ namespace Scikit.ML.PipelineTransforms
                 if (!schema.TryGetColumnIndex(_sortColumn, out index))
                     Contracts.Check(false, "sortColumn not found in input schema.");
                 var ct = schema.GetColumnType(index);
-                DataKind dk = ct.RawKind;
+                DataKind dk = ct.RawKind();
 
                 // Instantiate the associated instance.
                 switch (dk)
