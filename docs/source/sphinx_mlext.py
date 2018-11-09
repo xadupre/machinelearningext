@@ -50,6 +50,7 @@ def copy_missing_dll():
     misses += [os.path.join(rootpkg, "system.collections.immutable", "1.5.0", "lib", "netstandard2.0")]
     misses += [os.path.join(rootpkg, "system.numerics.vectors", "4.4.0", "lib", "netstandard2.0")]
     misses += [os.path.join(rootpkg, "google.protobuf", "3.5.1", "lib", "netstandard1.0")]
+    misses += [os.path.join(rootpkg, "system.codedom", "4.4.0", "lib", "netstandard2.0")]
 
     skipif = ['testhost', 'TestPlatform']
     for miss in misses:

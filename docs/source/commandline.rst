@@ -1,9 +1,11 @@
 
-.. index:: command line
+.. _l-command-line-doc:
 
 ============
 Command Line
 ============
+
+.. index:: command line, help
 
 :epkg:`ML.net` has a command line available through the following
 syntax:
@@ -26,6 +28,10 @@ List of available commands
     :current:
     
     ?
+
+
+The whole list of commands documented at
+:ref:`l-commands`.
     
 Help on a particulier command
 =============================
@@ -84,3 +90,64 @@ One example: train a logistic regression
     loader=text{col=Label:R4:0 col=Features:R4:1-4 header=+}
     tr=mlr{maxiter=5}
     out=logistic_regression.zip
+
+Chaining a training with an export
+==================================
+
+.. index:: chain
+
+The following command line trains a model then
+exports it to :epkg:`ONNX`
+(see also :ref:`l-onnx`).
+
+.. mlcmd::
+    :toggle: out
+    :showcode:
+    :current:
+
+    chain
+
+    cmd = train{
+        data=iris.txt
+        loader=text{col=Label:R4:0 col=Features:R4:1-4 header=+}
+        tr=mlr{maxiter=5}
+        out=logistic_regression.zip
+    }
+
+    cmd = saveonnx{
+        in = logistic_regression.zip
+        onnx = logistic_regression.onnx
+        domain = ai.onnx.ml
+        idrop = Label
+    }
+
+Produces a C# code to predict
+=============================
+
+.. mlcmd::
+    :toggle: out
+    :showcode:
+    :current:
+
+    chain
+
+    cmd = train{
+        data=iris.txt
+        loader=text{col=Label:R4:0 col=Features:R4:1-4 header=+}
+        tr=mlr{maxiter=5}
+        out=logistic_regression.zip
+    }
+
+    cmd = codegen{
+        in = logistic_regression.zip
+        cs = logistic_regression.cs
+    }
+
+The second command produces a :epkg:`C#` which can be used
+to compute predictions with a C# implementation.
+
+.. runpython::
+    :current:
+    
+    with open("logistic_regression.cs", "r", encoding="utf-8") as f:
+        print(f.read())

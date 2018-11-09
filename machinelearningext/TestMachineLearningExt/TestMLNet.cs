@@ -118,6 +118,37 @@ namespace TestMachineLearningExt
             }
         }
         */
+
+        [TestMethod]
+        public void TestCommandLineCodeGen()
+        {
+            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+            var data = FileHelper.GetTestFile("data_train_test.csv");
+            var output = FileHelper.GetOutputFile("model.zip", methodName);
+            var bout = new StringBuilder();
+            var berr = new StringBuilder();
+            ILogWriter stout = new LogWriter(s => bout.Append(s));
+            ILogWriter sderr = new LogWriter(s => berr.Append(s));
+            var cmd = "chain cmd=train{\n" +
+                        "data = __INPUT__\n" +
+                        "loader = text{col=ItemID:I8:0 col=Sentiment:R4:1 col=SentimentSource:TX:2 \n" +
+                        "              col=SentimentText:TX:3 col=RowNum:R4:4 \n" +
+                        "              col=Label:BL:5 col=Train:BL:6 col=Small:BL:7 header=+ sep=,}\n" +
+                        "xf = concat {col=Features:RowNum,Sentiment}\n" +
+                        "tr = FastTreeBinaryClassification{iter=2}\n" +
+                        "out = __OUTPUT__} \n" +
+                        "cmd = codegen{in=__OUTPUT__ cs=ft_sentiment_cs}";
+            cmd = cmd.Replace("__INPUT__", data);
+            cmd = cmd.Replace("__OUTPUT__", output);
+
+            using (var env = new DelegateEnvironment(outWriter: stout, errWriter: sderr, verbose: 3))
+            {
+                MamlHelper.MamlScript(cmd, false, env);
+                var sout = bout.ToString();
+                Assert.IsTrue(sout.Length > 0);
+                Assert.IsTrue(!sout.Contains("Unknown"));
+            }
+        }
     }
 }
 
