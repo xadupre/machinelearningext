@@ -78,6 +78,7 @@ copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.De
 copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\DocHelperMlExt\netstandard2.0
 copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\DocHelperMlExt\netstandard2.0
 
+rem 4.5.0 or 4.4.0...
 copy machinelearning\packages\system.codedom\4.5.0\lib\netstandard2.0\*.dll machinelearningext\bin\AnyCPU.Release\DocHelperMlExt\netstandard2.0
 copy machinelearning\packages\system.codedom\4.5.0\lib\netstandard2.0\*.dll machinelearningext\bin\AnyCPU.Debug\DocHelperMlExt\netstandard2.0
 
