@@ -116,17 +116,10 @@ namespace Scikit.ML.Clustering
             : base(env, RegistrationName, input)
         {
             Host.CheckValue(args, "args");
-
             if (args.epsilon < 0)
-            {
                 Contracts.Check(false, "Parameter epsilon must be positive or null.");
-            }
-
             if (args.minPoints <= 0)
-            {
                 Contracts.Check(false, "Parameter minPoints must be positive.");
-            }
-
             _args = args;
             _schema = Schema.Create(new ExtendedSchema(input.Schema, new string[] { args.outCluster, args.outScore },
                                                        new ColumnType[] { NumberType.I4, NumberType.R4 }));

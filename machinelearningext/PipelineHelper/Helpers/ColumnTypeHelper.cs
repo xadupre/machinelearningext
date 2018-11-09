@@ -77,7 +77,7 @@ namespace Scikit.ML.PipelineHelper
 
         public static PrimitiveType ItemType(this ColumnType column)
         {
-            return IsVector(column) ? AsVector(column).ItemType() : AsPrimitive(column);
+            return IsVector(column) ? AsVector(column).ItemType : AsPrimitive(column);
         }
 
         public static DataKind RawKind(this ColumnType type)
