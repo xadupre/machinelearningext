@@ -83,8 +83,12 @@ namespace Scikit.ML.PipelineHelper
         public static DataKind RawKind(this ColumnType type)
         {
             DataKind kind;
-            if (DataKindExtensions.TryGetDataKind(type.RawType, out kind))
-                return kind;
+            if (IsVector(type))
+                if (DataKindExtensions.TryGetDataKind(ItemType(type).RawType, out kind))
+                    return kind;
+                else
+                if (DataKindExtensions.TryGetDataKind(type.RawType, out kind))
+                    return kind;
             throw Contracts.ExceptNotSupp($"Unable to guess kind for type {type}.");
         }
 
