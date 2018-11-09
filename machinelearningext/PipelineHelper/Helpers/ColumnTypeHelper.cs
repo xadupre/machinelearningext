@@ -86,9 +86,8 @@ namespace Scikit.ML.PipelineHelper
             if (IsVector(type))
                 if (DataKindExtensions.TryGetDataKind(ItemType(type).RawType, out kind))
                     return kind;
-                else
-                if (DataKindExtensions.TryGetDataKind(type.RawType, out kind))
-                    return kind;
+            if (DataKindExtensions.TryGetDataKind(type.RawType, out kind))
+                return kind;
             throw Contracts.ExceptNotSupp($"Unable to guess kind for type {type}.");
         }
 
