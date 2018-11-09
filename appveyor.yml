@@ -78,7 +78,14 @@ before_test:
   - cmd /C dotnet build -c Debug
   - cmd /C dotnet build -c Release
   - cd ..
-  
+  # final copy
+  - copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\TestProfileBenchmark\netcoreapp2.1
+  - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\TestProfileBenchmark\netcoreapp2.1
+  - copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\TestMachineLearningExt\netcoreapp2.1
+  - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\TestMachineLearningExt\netcoreapp2.1
+  - copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\DocHelperMlExt\netstandard2.0
+  - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\DocHelperMlExt\netstandard2.0
+
 test_script:
   # unit tests for machinelearning (too long)
   # - cd machinelearning
