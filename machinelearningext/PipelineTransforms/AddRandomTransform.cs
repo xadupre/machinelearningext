@@ -274,9 +274,9 @@ namespace Scikit.ML.PipelineTransforms
                 else if (col < _view.Schema.ColumnCount)
                 {
                     var colType = _schema.GetColumnType(_view._columnMapping[col]);
-                    if (colType.IsVector)
+                    if (colType.IsVector())
                     {
-                        switch (colType.ItemType.RawKind)
+                        switch (colType.ItemType().RawKind())
                         {
                             case DataKind.BL: return GetGetterVector(col, false) as ValueGetter<TValue>;
                             case DataKind.I4: return GetGetterVector(col, 0) as ValueGetter<TValue>;
@@ -286,12 +286,12 @@ namespace Scikit.ML.PipelineTransforms
                             case DataKind.R8: return GetGetterVector(col, 0.0) as ValueGetter<TValue>;
                             case DataKind.TX: return GetGetterVector(col, new ReadOnlyMemory<char>()) as ValueGetter<TValue>;
                             default:
-                                throw Contracts.ExceptNotImpl($"Unsupported type '{colType.ItemType.RawKind}'.");
+                                throw Contracts.ExceptNotImpl($"Unsupported type '{colType.ItemType().RawKind()}'.");
                         }
                     }
                     else
                     {
-                        switch (colType.RawKind)
+                        switch (colType.RawKind())
                         {
                             case DataKind.BL: return GetGetter(col, false) as ValueGetter<TValue>;
                             case DataKind.I4: return GetGetter(col, 0) as ValueGetter<TValue>;
@@ -301,7 +301,7 @@ namespace Scikit.ML.PipelineTransforms
                             case DataKind.R8: return GetGetter(col, 0.0) as ValueGetter<TValue>;
                             case DataKind.TX: return GetGetter(col, new ReadOnlyMemory<char>()) as ValueGetter<TValue>;
                             default:
-                                throw Contracts.ExceptNotImpl($"Unsupported type '{colType.ItemType.RawKind}'.");
+                                throw Contracts.ExceptNotImpl($"Unsupported type '{colType.ItemType().RawKind()}'.");
                         }
                     }
                 }

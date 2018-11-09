@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.TextAnalytics;
 using Microsoft.ML.Transforms.Text;
 using Microsoft.ML.Trainers;
+using Microsoft.ML.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
@@ -109,7 +109,7 @@ namespace TestMachineLearningExt
                 var trans = TextFeaturizingEstimator.Create(env, args2, loader);
 
                 // Train
-                var trainer = new LinearClassificationTrainer(env, new LinearClassificationTrainer.Arguments
+                var trainer = new SdcaBinaryTrainer(env, new SdcaBinaryTrainer.Arguments
                 {
                     NumThreads = 1
                 });

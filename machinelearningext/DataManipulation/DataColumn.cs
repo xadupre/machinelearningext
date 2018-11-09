@@ -58,11 +58,11 @@ namespace Scikit.ML.DataManipulation
             var res = new DataColumn<DType>(n);
             if (NA)
             {
-                if (Kind.IsVector)
+                if (Kind.IsVector())
                     res.Set(null);
                 else
                 {
-                    switch (Kind.RawKind)
+                    switch (Kind.RawKind())
                     {
                         case DataKind.Bool: res.Set(false); break;
                         case DataKind.I4: res.Set(0); break;
@@ -312,9 +312,9 @@ namespace Scikit.ML.DataManipulation
         public IDataFrameView Flatten(string name, IEnumerable<int> rows = null)
         {
             var kind = Kind;
-            if (kind.IsVector)
+            if (kind.IsVector())
             {
-                switch (kind.ItemType.RawKind)
+                switch (kind.ItemType().RawKind())
                 {
                     case DataKind.BL: return BuildDataFrame(name, Flatten<bool>(rows));
                     case DataKind.I4: return BuildDataFrame(name, Flatten<int>(rows));
@@ -379,12 +379,12 @@ namespace Scikit.ML.DataManipulation
             if (Length != colt.Length)
                 throw new DataValueError(string.Format("Column have different length {0} != {1}",
                                                        Length, colt.Length));
-            if (Kind.IsVector)
+            if (Kind.IsVector())
             {
                 double oks = 0;
                 for (int i = 0; i < Length; ++i)
                 {
-                    switch (Kind.ItemType.RawKind)
+                    switch (Kind.ItemType().RawKind())
                     {
                         case DataKind.BL:
                             oks += NumericHelper.AssertAlmostEqual((_data as VBufferEqSort<bool>[])[i].DenseValues().ToArray(),
@@ -429,7 +429,7 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                switch (Kind.RawKind)
+                switch (Kind.RawKind())
                 {
                     case DataKind.BL:
                         return NumericHelper.AssertAlmostEqual(_data as bool[], colt._data as bool[], precision, exc, Length, colt.Length);
@@ -460,22 +460,22 @@ namespace Scikit.ML.DataManipulation
         {
             if (Kind == colType)
                 return this;
-            if (Kind.IsVector || colType.IsVector)
+            if (Kind.IsVector() || colType.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (Kind.RawKind)
+                switch (Kind.RawKind())
                 {
                     case DataKind.I4:
-                        switch (colType.RawKind)
+                        switch (colType.RawKind())
                         {
                             case DataKind.R4:
                                 return new DataColumn<float>(NumericHelper.Convert(_data as int[], float.NaN));
                             default:
-                                throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
+                                throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind()}'.");
                         }
                     default:
-                        throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind}'.");
+                        throw new NotImplementedException($"No conversion from '{Kind}' to '{colType.RawKind()}'.");
                 }
             }
         }
@@ -604,11 +604,11 @@ namespace Scikit.ML.DataManipulation
         public ValueGetter<VBuffer<DType2>> GetGetterVector<DType2>(IRowCursor cursor)
         {
             var colType = SchemaHelper.GetColumnType<DType2>();
-            if (colType.IsVector)
-                throw new DataValueError($"Unable to handle vector of kind {colType.ItemType.RawKind}.");
+            if (colType.IsVector())
+                throw new DataValueError($"Unable to handle vector of kind {colType.ItemType().RawKind()}.");
             else
             {
-                switch (colType.ItemType.RawKind)
+                switch (colType.ItemType().RawKind())
                 {
                     case DataKind.BL: return CheckNotEmpty<DType2, bool>(GetGetterVectorEqSort<bool>(cursor));
                     case DataKind.I4: return CheckNotEmpty<DType2, int>(GetGetterVectorEqSort<int>(cursor));
@@ -618,7 +618,7 @@ namespace Scikit.ML.DataManipulation
                     case DataKind.R8: return CheckNotEmpty<DType2, double>(GetGetterVectorEqSort<double>(cursor));
                     case DataKind.TX: return GetGetterVectorEqSortText<DType2>(cursor);
                     default:
-                        throw new DataValueError($"Unable to handle kind {colType.RawKind}.");
+                        throw new DataValueError($"Unable to handle kind {colType.RawKind()}.");
                 }
             }
         }

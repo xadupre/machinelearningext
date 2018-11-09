@@ -277,7 +277,7 @@ namespace Scikit.ML.FeaturesTransforms
                                 throw ch.Except("Unable to find column '{0}' in '{1}'", textCols[i], SchemaHelper.ToString(sch));
                             var ty = sch.GetColumnType(index);
                             if (!(ty == NumberType.R4 || ty == NumberType.U4 || ty == TextType.Instance || ty == BoolType.Instance ||
-                                (ty.IsKey && ty.AsKey.RawKind == DataKind.U4) || (ty.IsVector && ty.AsVector.ItemType == NumberType.R4)))
+                                (ty.IsKey() && ty.AsKey().RawKind() == DataKind.U4) || (ty.IsVector() && ty.AsVector().ItemType() == NumberType.R4)))
                                 throw ch.Except("Only a float or a vector of floats or a uint or a text or a bool is allowed for column {0} (schema={1}).", _args.columns[i], SchemaHelper.ToString(sch));
                             indexesCol.Add(index);
                         }
@@ -290,12 +290,12 @@ namespace Scikit.ML.FeaturesTransforms
                             bool[] isText = requiredIndexes.Select(c => sch.GetColumnType(c) == TextType.Instance).ToArray();
                             bool[] isBool = requiredIndexes.Select(c => sch.GetColumnType(c) == BoolType.Instance).ToArray();
                             bool[] isFloat = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.R4).ToArray();
-                            bool[] isUint = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.U4 || sch.GetColumnType(c).RawKind == DataKind.U4).ToArray();
-                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
-                            ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.U4 || sch.GetColumnType(i).RawKind == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
+                            bool[] isUint = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.U4 || sch.GetColumnType(c).RawKind() == DataKind.U4).ToArray();
+                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind() == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
+                            ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.U4 || sch.GetColumnType(i).RawKind() == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
                             ValueGetter<ReadOnlyMemory<char>>[] textGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == TextType.Instance ? cur.GetGetter<ReadOnlyMemory<char>>(i) : null).ToArray();
                             ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
-                            ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
+                            ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector() ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
 
                             var schema = _input.Schema;
                             for (int i = 0; i < schema.ColumnCount; ++i)
@@ -601,7 +601,7 @@ namespace Scikit.ML.FeaturesTransforms
                 if (_scalingFactors.ContainsKey(col))
                 {
                     var type = schema.GetColumnType(_scalingFactors[col].columnId);
-                    if (type.IsVector)
+                    if (type.IsVector())
                         return GetGetterVector(_scalingFactors[col]) as ValueGetter<TValue>;
                     else
                         return GetGetter(_scalingFactors[col]) as ValueGetter<TValue>;

@@ -212,6 +212,18 @@ jobs:
             cd ..
 
       - run:
+          name: copy native binaries
+          env:
+            DOTNET_CLI_TELEMETRY_OPTOUT:1
+          command: |
+            cp machinelearning/bin/x64.Release/Native/*.so machinelearningext/bin/AnyCPU.Release/TestProfileBenchmark/netcoreapp2.1
+            cp machinelearning/bin/x64.Debug/Native/*.so machinelearningext/bin/AnyCPU.Debug/TestProfileBenchmark/netcoreapp2.1
+            cp machinelearning/bin/x64.Release/Native/*.so machinelearningext/bin/AnyCPU.Release/TestMachineLearningExt/netcoreapp2.1
+            cp machinelearning/bin/x64.Debug/Native/*.so machinelearningext/bin/AnyCPU.Debug/TestMachineLearningExt/netcoreapp2.1
+            cp machinelearning/bin/x64.Release/Native/*.so machinelearningext/bin/AnyCPU.Release/DocHelperMlExt/netstandard2.0
+            cp machinelearning/bin/x64.Debug/Native/*.so machinelearningext/bin/AnyCPU.Debug/DocHelperMlExt/netstandard2.0
+
+      - run:
           name: run tests machinelearningext release
           env:
             DOTNET_CLI_TELEMETRY_OPTOUT:1

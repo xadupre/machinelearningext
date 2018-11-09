@@ -2,6 +2,8 @@
 
 using System;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
+
 
 namespace Scikit.ML.DataManipulation
 {
@@ -27,11 +29,11 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, bool value)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.BL:
                         {
@@ -69,18 +71,18 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, NumericColumn c2)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.BL:
-                        if (c2.Kind.IsVector)
+                        if (c2.Kind.IsVector())
                             throw new NotImplementedException();
                         else
                         {
-                            switch (c2.Kind.RawKind)
+                            switch (c2.Kind.RawKind())
                             {
                                 case DataKind.BL:
                                     {

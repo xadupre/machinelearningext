@@ -1,4 +1,6 @@
 
+.. _l-dataframe-cs:
+
 ================
 DataFrames in C#
 ================
@@ -14,6 +16,8 @@ huge volume of data by implementing a kind of
 and it becomes quite convenient to manipulate it
 with pseudo *SQL* methods. That's what the class
 :ref:`l-cs-dataframe` implements.
+Many examples can be found in unit test
+`TestDataManipulation.cs <https://github.com/xadupre/machinelearningext/blob/master/machinelearningext/TestMachineLearningExt/TestDataManipulation.cs>`_.
 
 StreamingDataFrame
 ==================

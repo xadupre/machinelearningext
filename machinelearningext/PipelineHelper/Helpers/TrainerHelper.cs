@@ -3,9 +3,9 @@
 using System.Linq;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Internal.Calibration;
 using Microsoft.ML.Runtime.Data.IO;
+using Microsoft.ML.Data;
 
 
 namespace Scikit.ML.PipelineHelper

@@ -5,6 +5,7 @@ using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
+using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
 
@@ -181,7 +182,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
             if (!input.Schema.TryGetColumnIndex(feat, out index))
                 throw env.Except("Column '{0}' not in schema.", feat);
             var type = input.Schema.GetColumnType(index);
-            if (!type.IsVector || type.AsVector.ItemType.RawKind != DataKind.R4)
+            if (!type.IsVector() || type.AsVector().ItemType().RawKind() != DataKind.R4)
                 throw env.Except("Features must a vector of floats");
 
             if (args.useProb)
@@ -190,7 +191,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
                 if (valueMapper == null)
                     throw env.Except("Predictor must be a IValueMapper.");
                 var output = valueMapper.DistType;
-                if (output.IsVector)
+                if (output.IsVector())
                     return CreateTransformValueMapperDist<VBuffer<float>, VBuffer<float>, VBuffer<float>>(valueMapper, feat, args.outputColumn);
                 else
                     return CreateTransformValueMapperDist<VBuffer<float>, VBuffer<float>, float>(valueMapper, feat, args.outputColumn);
@@ -201,7 +202,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
                 if (valueMapper == null)
                     throw env.Except("Predictor must be a IValueMapper.");
                 var output = valueMapper.OutputType;
-                if (output.IsVector)
+                if (output.IsVector())
                     return CreateTransformValueMapper<VBuffer<float>, VBuffer<float>>(valueMapper, feat, args.outputColumn);
                 else
                     return CreateTransformValueMapper<VBuffer<float>, float>(valueMapper, feat, args.outputColumn);

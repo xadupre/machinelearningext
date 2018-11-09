@@ -215,17 +215,17 @@ namespace Scikit.ML.TimeSeries
             if (!Source.Schema.TryGetColumnIndex(_args.columns[0].Source, out indexLabel))
                 throw Host.Except("InputColumn does not belong the input schema.");
             typeLabel = Source.Schema.GetColumnType(indexLabel);
-            if (typeLabel.IsVector)
+            if (typeLabel.IsVector())
             {
-                if (typeLabel.AsVector.DimCount != 1 || typeLabel.AsVector.GetDim(0) != 1)
+                if (typeLabel.AsVector().DimCount() != 1 || typeLabel.AsVector().GetDim(0) != 1)
                     throw Host.ExceptNotImpl("Not implemented yet for multiple dimensions.");
             }
-            if (typeLabel.RawKind != DataKind.R4)
+            if (typeLabel.RawKind() != DataKind.R4)
                 throw Host.ExceptNotImpl("InputColumn must be R4.");
             if (!Source.Schema.TryGetColumnIndex(_args.timeColumn, out indexTime))
                 throw Host.Except("Time Column does not belong the input schema.");
             typeTime = Source.Schema.GetColumnType(indexTime);
-            if (typeTime.RawKind != DataKind.R4)
+            if (typeTime.RawKind() != DataKind.R4)
                 throw Host.ExceptNotImpl("Time columne must be R4.");
         }
 
@@ -237,7 +237,7 @@ namespace Scikit.ML.TimeSeries
             IDataView input = Source;
             slotName = _args.columns[0].Source;
 
-            if (train && type.IsVector)
+            if (train && type.IsVector())
             {
                 slotName = input.Schema.GetTempColumnName() + "in";
                 input = LambdaColumnHelper.Create(Host, "takeslot", input, _args.columns[0].Source, slotName,
@@ -249,7 +249,7 @@ namespace Scikit.ML.TimeSeries
             }
 
             slotTime = _args.timeColumn;
-            if (!typeTime.IsVector)
+            if (!typeTime.IsVector())
             {
                 slotTime = input.Schema.GetTempColumnName() + "time";
                 input = LambdaColumnHelper.Create(Host, "makevect", input, _args.timeColumn, slotTime,

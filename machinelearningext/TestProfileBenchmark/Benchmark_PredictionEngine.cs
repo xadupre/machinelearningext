@@ -8,6 +8,7 @@ using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms.Text;
+using Microsoft.ML.Data;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.DataManipulation;
@@ -60,7 +61,7 @@ namespace TestProfileBenchmark
                 var trans = TextFeaturizingEstimator.Create(env, args2, loader);
 
                 // Train
-                var trainer = new LinearClassificationTrainer(env, new LinearClassificationTrainer.Arguments
+                var trainer = new SdcaBinaryTrainer(env, new SdcaBinaryTrainer.Arguments
                 {
                     NumThreads = 1
                 });

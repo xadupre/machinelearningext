@@ -8,6 +8,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Internal.Internallearn;
 using Microsoft.ML.Runtime.Internal.Utilities;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.MultiClass
@@ -36,15 +37,15 @@ namespace Scikit.ML.MultiClass
             get
             {
                 var insideInput = _impl.InputType;
-                Contracts.Assert(insideInput.IsVector);
-                int vs = insideInput.VectorSize;
+                Contracts.Assert(insideInput.IsVector());
+                int vs = insideInput.VectorSize();
                 Contracts.Assert(vs > 0);
                 if (_impl.SingleColumn)
-                    return new VectorType(insideInput.AsVector.ItemType, vs - 1);
+                    return new VectorType(insideInput.AsVector().ItemType(), vs - 1);
                 else
                 {
                     int nb = _impl.MaxClassIndex() + 1;
-                    return new VectorType(insideInput.AsVector.ItemType, vs - nb);
+                    return new VectorType(insideInput.AsVector().ItemType(), vs - nb);
                 }
             }
         }
@@ -73,7 +74,7 @@ namespace Scikit.ML.MultiClass
         public string GetStringClasses(string sep = ",") { return _impl.GetStringClasses(sep); }
         public TLabel[] GetClasses<TLabel>()
         {
-            var dataKind = LabelType.RawKind;
+            var dataKind = LabelType.RawKind();
             switch (dataKind)
             {
                 case DataKind.R4:
@@ -224,15 +225,15 @@ namespace Scikit.ML.MultiClass
                     return false;
                 if (mapper.OutputType != NumberType.Float)
                     return false;
-                if (!mapper.InputType.IsVector || mapper.InputType.ItemType != NumberType.Float)
+                if (!mapper.InputType.IsVector() || mapper.InputType.ItemType() != NumberType.Float)
                     return false;
                 if (inputType == null)
                     inputType = mapper.InputType;
-                else if (inputType.VectorSize != mapper.InputType.VectorSize)
+                else if (inputType.VectorSize() != mapper.InputType.VectorSize())
                 {
-                    if (inputType.VectorSize == 0)
+                    if (inputType.VectorSize() == 0)
                         inputType = mapper.InputType;
-                    else if (mapper.InputType.VectorSize != 0)
+                    else if (mapper.InputType.VectorSize() != 0)
                         return false;
                 }
                 return true;
@@ -245,7 +246,7 @@ namespace Scikit.ML.MultiClass
                 ctx.SetVersionInfo(versionInfo);
                 ctx.Writer.WriteIntArray(Classes.Indices);
                 if (LabelType == NumberType.R4)
-                    ctx.Writer.WriteFloatArray(Classes.Values as float[]);
+                    ctx.Writer.WriteSingleArray(Classes.Values as float[]);
                 else if (LabelType == NumberType.U1)
                     ctx.Writer.WriteByteArray(Classes.Values as byte[]);
                 else if (LabelType == NumberType.U2)

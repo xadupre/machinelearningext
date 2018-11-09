@@ -44,6 +44,8 @@ ML.net Components
 
 kind_template = """
 
+.. _l-{{title.replace(" ", "-").replace(".", "-").replace("(", "").replace(")", "").lower()}}:
+
 {{title}}
 {{"=" * len(title)}}
 

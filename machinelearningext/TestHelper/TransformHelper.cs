@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.PipelineLambdaTransforms;
 
@@ -105,7 +106,7 @@ namespace Scikit.ML.TestHelper
             for (int i = 0; i < schema.ColumnCount; ++i)
             {
                 var ty = schema.GetColumnType(i);
-                if (ty.IsVector)
+                if (ty.IsVector())
                 {
                     var name = schema.GetColumnName(i);
 

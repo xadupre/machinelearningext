@@ -77,13 +77,13 @@ namespace Scikit.ML.PipelineHelper
                                          : Contracts.Except("A vector column needs a dimension");
                     int delta = col.Source[0].Max.Value - col.Source[0].Min + 1;
                     var colType = DataKind2ColumnType(col.Type.Value, ch);
-                    return new VectorType(colType.AsPrimitive, delta);
+                    return new VectorType(colType.AsPrimitive(), delta);
                 }
             }
             if (col.KeyRange != null)
             {
                 var r = col.KeyRange;
-                return new KeyType(col.Type.Value, r.Min,
+                return new KeyType(col.Type.HasValue ? col.Type.Value.ToType() : null, r.Min,
                                     r.Max.HasValue ? (int)(r.Max.Value - r.Min + 1) : 0,
                                     r.Contiguous);
             }
@@ -114,27 +114,27 @@ namespace Scikit.ML.PipelineHelper
                     builder.Append(sep);
                 name = schema.GetColumnName(i);
                 var t = schema.GetColumnType(i);
-                if (vectorVec || (!t.IsVector && !t.IsKey))
+                if (vectorVec || (!t.IsVector() && !t.IsKey()))
                 {
                     type = schema.GetColumnType(i).ToString().Replace(" ", "");
                     si = (i + lag).ToString();
                 }
                 else
                 {
-                    if (t.IsVector)
+                    if (t.IsVector())
                     {
-                        if (t.AsVector.DimCount != 1)
+                        if (t.AsVector().DimCount() != 1)
                             throw Contracts.ExceptNotSupp("Only vector with one dimension are supported.");
-                        type = t.ItemType.RawKind.ToString();
-                        si = string.Format("{0}-{1}", i + lag, i + lag + t.AsVector.GetDim(0) - 1);
-                        lag += t.AsVector.GetDim(0) - 1;
+                        type = t.ItemType().RawKind().ToString();
+                        si = string.Format("{0}-{1}", i + lag, i + lag + t.AsVector().GetDim(0) - 1);
+                        lag += t.AsVector().GetDim(0) - 1;
                     }
-                    else if (t.IsKey && t.AsKey.Contiguous)
+                    else if (t.IsKey() && t.AsKey().Contiguous)
                     {
-                        var k = t.AsKey;
+                        var k = t.AsKey();
                         type = k.Count > 0
-                                    ? string.Format("{0}[{1}-{2}]", k.RawKind, k.Min, k.Min + (ulong)k.Count - 1)
-                                    : string.Format("{0}[{1}-{2}]", k.RawKind, k.Min, "*");
+                                    ? string.Format("{0}[{1}-{2}]", k.RawKind(), k.Min, k.Min + (ulong)k.Count - 1)
+                                    : string.Format("{0}[{1}-{2}]", k.RawKind(), k.Min, "*");
                         si = i.ToString();
                     }
                     else
@@ -189,14 +189,14 @@ namespace Scikit.ML.PipelineHelper
                     var t1 = sch1.GetColumnType(i);
                     var t2 = sch2.GetColumnType(i);
                     bool r = t1 != t2;
-                    if (r && t1.IsVector && t2.IsVector)
+                    if (r && t1.IsVector() && t2.IsVector())
                     {
-                        var v1 = t1.AsVector;
-                        var v2 = t2.AsVector;
-                        r = v1.DimCount != v2.DimCount || v1.KeyCount != v2.KeyCount;
-                        r |= v1.RawKind != v2.RawKind;
-                        r |= v1.ItemType != v2.ItemType;
-                        r |= v1.IsKnownSizeVector != v2.IsKnownSizeVector;
+                        var v1 = t1.AsVector();
+                        var v2 = t2.AsVector();
+                        r = v1.DimCount() != v2.DimCount() || v1.KeyCount() != v2.KeyCount();
+                        r |= v1.RawKind() != v2.RawKind();
+                        r |= v1.ItemType() != v2.ItemType();
+                        r |= v1.IsKnownSizeVector() != v2.IsKnownSizeVector();
                     }
                     if (r)
                     {
@@ -218,18 +218,18 @@ namespace Scikit.ML.PipelineHelper
         /// </summary>
         public static void WriteType(ModelSaveContext ctx, ColumnType type)
         {
-            ctx.Writer.Write(type.IsVector);
-            if (type.IsVector)
+            ctx.Writer.Write(type.IsVector());
+            if (type.IsVector())
             {
-                ctx.Writer.Write(type.AsVector.DimCount);
-                for (int i = 0; i < type.AsVector.DimCount; ++i)
-                    ctx.Writer.Write(type.AsVector.GetDim(i));
-                ctx.Writer.Write((byte)type.AsVector.ItemType.RawKind);
+                ctx.Writer.Write(type.AsVector().DimCount());
+                for (int i = 0; i < type.AsVector().DimCount(); ++i)
+                    ctx.Writer.Write(type.AsVector().GetDim(i));
+                ctx.Writer.Write((byte)type.AsVector().ItemType().RawKind());
             }
-            else if (type.IsKey)
+            else if (type.IsKey())
                 throw Contracts.ExceptNotImpl("Key cannot be serialized yet.");
             else
-                ctx.Writer.Write((byte)type.RawKind);
+                ctx.Writer.Write((byte)type.RawKind());
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace Scikit.ML.PipelineHelper
                 case DataKind.TimeSpan:
                     return TimeSpanType.Instance;
                 default:
-                    return NumberType.FromKind(kind);
+                    return ColumnTypeHelper.NumberFromKind(kind);
             }
         }
 
@@ -264,7 +264,7 @@ namespace Scikit.ML.PipelineHelper
                 for (int i = 0; i < dimCount; ++i)
                     dims[i] = ctx.Reader.ReadInt32();
                 var kind = (DataKind)ctx.Reader.ReadByte();
-                return new VectorType(PrimitiveType.FromKind(kind), dims[0]);
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(kind), dims[0]);
             }
             else
             {
@@ -392,7 +392,7 @@ namespace Scikit.ML.PipelineHelper
                 res[i] = new DataLegacy.TextLoaderColumn()
                 {
                     Name = schema.GetColumnName(i),
-                    Type = DataKind2DataDataKind(schema.GetColumnType(i).RawKind),
+                    Type = DataKind2DataDataKind(schema.GetColumnType(i).RawKind()),
                     Source = new[] { new DataLegacy.TextLoaderRange(i) }
                 };
             }
@@ -429,28 +429,28 @@ namespace Scikit.ML.PipelineHelper
             if (type == typeof(double))
                 return NumberType.R8;
             if (type == typeof(ReadOnlyMemory<char>) || type == typeof(string) || type == typeof(DvText))
-                return PrimitiveType.FromKind(DataKind.TX);
+                return ColumnTypeHelper.PrimitiveFromKind(DataKind.TX);
 
             if (type == typeof(VBuffer<bool>) || type == typeof(VBufferEqSort<bool>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.BL));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.BL));
             if (type == typeof(VBuffer<byte>) || type == typeof(VBufferEqSort<byte>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.U1));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.U1));
             if (type == typeof(VBuffer<ushort>) || type == typeof(VBufferEqSort<ushort>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.U2));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.U2));
             if (type == typeof(VBuffer<uint>) || type == typeof(VBufferEqSort<uint>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.U4));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.U4));
             if (type == typeof(VBuffer<int>) || type == typeof(VBufferEqSort<int>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.I4));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.I4));
             if (type == typeof(VBuffer<Int64>) || type == typeof(VBufferEqSort<Int64>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.I8));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.I8));
             if (type == typeof(VBuffer<float>) || type == typeof(VBufferEqSort<float>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.R4));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.R4));
             if (type == typeof(VBuffer<double>) || type == typeof(VBufferEqSort<double>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.R8));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.R8));
             if (type == typeof(VBuffer<ReadOnlyMemory<char>>) || type == typeof(VBuffer<string>) || type == typeof(VBuffer<DvText>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.TX));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.TX));
             if (type == typeof(VBufferEqSort<string>) || type == typeof(VBufferEqSort<DvText>))
-                return new VectorType(PrimitiveType.FromKind(DataKind.TX));
+                return new VectorType(ColumnTypeHelper.PrimitiveFromKind(DataKind.TX));
 
             throw Contracts.ExceptNotSupp("Unsupported output type {0}.", type);
         }
@@ -464,14 +464,14 @@ namespace Scikit.ML.PipelineHelper
 
         public static Tuple<DataKind, ArrayKind> GetKindArray(ColumnType type)
         {
-            if (type.IsVector)
+            if (type.IsVector())
             {
-                int dc = type.AsVector.DimCount;
-                return new Tuple<DataKind, ArrayKind>(type.ItemType.RawKind, dc == 1 &&
-                                                      type.AsVector.GetDim(0) > 0 ? ArrayKind.Array : ArrayKind.VBuffer);
+                int dc = type.AsVector().DimCount();
+                return new Tuple<DataKind, ArrayKind>(type.ItemType().RawKind(), dc == 1 &&
+                                                      type.AsVector().GetDim(0) > 0 ? ArrayKind.Array : ArrayKind.VBuffer);
             }
             else
-                return new Tuple<DataKind, ArrayKind>(type.RawKind, ArrayKind.None);
+                return new Tuple<DataKind, ArrayKind>(type.RawKind(), ArrayKind.None);
         }
 
         /// <summary>

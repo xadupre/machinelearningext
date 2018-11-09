@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Scikit.ML.PipelineHelper;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Training;
@@ -109,7 +110,7 @@ namespace Scikit.ML.NearestNeighbors
         protected INearestNeighborsPredictor TrainPredictor(IChannel ch, RoleMappedData data)
         {
             var labType = data.Schema.Label.Type;
-            var initialLabKind = labType.RawKind;
+            var initialLabKind = labType.RawKind();
             INearestNeighborsPredictor predictor;
 
             switch (initialLabKind)
@@ -150,7 +151,7 @@ namespace Scikit.ML.NearestNeighbors
             if (idIndex != -1)
             {
                 var colType = data.Schema.Schema.GetColumnType(idIndex);
-                if (colType.IsVector || colType.RawKind != DataKind.I8)
+                if (colType.IsVector() || colType.RawKind() != DataKind.I8)
                     throw ch.Except("Column '{0}' must be of type '{1}' not '{2}'", _args.colId, DataKind.I8, colType);
             }
 

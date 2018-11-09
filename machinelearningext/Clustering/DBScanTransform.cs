@@ -116,17 +116,10 @@ namespace Scikit.ML.Clustering
             : base(env, RegistrationName, input)
         {
             Host.CheckValue(args, "args");
-
             if (args.epsilon < 0)
-            {
                 Contracts.Check(false, "Parameter epsilon must be positive or null.");
-            }
-
             if (args.minPoints <= 0)
-            {
                 Contracts.Check(false, "Parameter minPoints must be positive.");
-            }
-
             _args = args;
             _schema = Schema.Create(new ExtendedSchema(input.Schema, new string[] { args.outCluster, args.outScore },
                                                        new ColumnType[] { NumberType.I4, NumberType.R4 }));
@@ -202,9 +195,9 @@ namespace Scikit.ML.Clustering
             if (!Source.Schema.TryGetColumnIndex(_args.features, out index))
                 throw Host.Except("Features does not belong the input schema.");
             var type = Source.Schema.GetColumnType(index);
-            if (!type.IsVector)
+            if (!type.IsVector())
                 throw Host.Except("Features must be a vector.");
-            switch (type.AsVector.ItemType.RawKind)
+            switch (type.AsVector().ItemType().RawKind())
             {
                 case DataKind.R4:
                     return new DBScanState(Host, this, Source, _args);

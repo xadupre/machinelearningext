@@ -206,9 +206,9 @@ namespace Scikit.ML.ProductionPrediction
             ValueGetter<TValue> GetGetterPrivate<TValue>(int col)
             {
                 var coor = SchemaHelper.GetColumnType<TValue>();
-                if (coor.IsVector)
+                if (coor.IsVector())
                 {
-                    switch (coor.ItemType.RawKind)
+                    switch (coor.ItemType().RawKind())
                     {
                         case DataKind.BL:
                             return typeof(TValue) == typeof(VBufferEqSort<bool>)
@@ -244,7 +244,7 @@ namespace Scikit.ML.ProductionPrediction
                 }
                 else
                 {
-                    switch (coor.RawKind)
+                    switch (coor.RawKind())
                     {
                         case DataKind.BL: return GetGetterPrivateI<bool>(col) as ValueGetter<TValue>;
                         case DataKind.I4: return GetGetterPrivateI<int>(col) as ValueGetter<TValue>;
@@ -260,7 +260,7 @@ namespace Scikit.ML.ProductionPrediction
                                     return GetGetterPrivateIText(col) as ValueGetter<TValue>;
                             }
                         default:
-                            throw new DataTypeError(string.Format("Type {0} is not handled.", coor.RawKind));
+                            throw new DataTypeError(string.Format("Type {0} is not handled.", coor.RawKind()));
                     }
                 }
             }

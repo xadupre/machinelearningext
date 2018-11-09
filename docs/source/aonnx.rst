@@ -1,4 +1,6 @@
 
+.. _l-onnx:
+
 ===============
 ML.net and ONNX
 ===============
@@ -64,8 +66,8 @@ Next figure explores various rewriting of this linear models,
 including :epkg:`C++` ones with :epkg:`numba` or :epkg:`cffi`
 and :epkg:`AVX` instructions.
 
-.. image:: http://www.xavierdupre.fr/app/ensae_teaching_cs/helpsphinx3/_images/cffi_linear_regression_101_1.png
-    :target: http://www.xavierdupre.fr/app/ensae_teaching_cs/helpsphinx3/notebooks/cffi_linear_regression.html
+.. image:: http://www.xavierdupre.fr/app/jupytalk/helpsphinx/_images/onnx_deploy_112_0.png
+    :target: http://www.xavierdupre.fr/app/jupytalk/helpsphinx/notebooks/onnx_deploy.html
 
 This solution is still tied to :epkg:`Python` even though it reduces
 the number of dependencies. It is one option some 

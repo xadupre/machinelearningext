@@ -140,7 +140,7 @@ namespace Scikit.ML.NearestNeighbors
             ctx.Writer.Write(_coordinates.Count);
             if (_coordinates.Length < _coordinates.Count)
                 throw Contracts.Except("Detected inconsistency where serializing.");
-            Utils.WriteFloatArray(ctx.Writer, _coordinates.Values);
+            Utils.WriteSingleArray(ctx.Writer, _coordinates.Values);
             Utils.WriteIntArray(ctx.Writer, _coordinates.Indices);
             ctx.Writer.Write((byte)167);
         }

@@ -203,7 +203,7 @@ namespace Scikit.ML.PipelineHelper
             if (!schema.TryGetColumnIndex(scoreColumnName, out colIndex))
                 return false;
 
-            int expectedLabelCount = schema.GetColumnType(colIndex).ValueCount;
+            int expectedLabelCount = schema.GetColumnType(colIndex).ValueCount();
             if (!schema.HasSlotNames(colIndex, expectedLabelCount))
                 return false;
 

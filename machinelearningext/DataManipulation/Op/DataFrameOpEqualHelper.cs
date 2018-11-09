@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 using DvText = Scikit.ML.PipelineHelper.DvText;
 
 
@@ -29,11 +30,11 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, bool value)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.BL:
                         {
@@ -52,11 +53,11 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, int value)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.I4:
                         {
@@ -102,11 +103,11 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, long value)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.I4:
                         {
@@ -152,11 +153,11 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, float value)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.I4:
                         {
@@ -202,11 +203,11 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, double value)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.I4:
                         {
@@ -253,11 +254,11 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, DvText value)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.TX:
                         {
@@ -295,18 +296,18 @@ namespace Scikit.ML.DataManipulation
 
         public static NumericColumn Operation(NumericColumn c1, NumericColumn c2)
         {
-            if (c1.Kind.IsVector)
+            if (c1.Kind.IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (c1.Kind.RawKind)
+                switch (c1.Kind.RawKind())
                 {
                     case DataKind.BL:
-                        if (c2.Kind.IsVector)
+                        if (c2.Kind.IsVector())
                             throw new NotImplementedException();
                         else
                         {
-                            switch (c2.Kind.RawKind)
+                            switch (c2.Kind.RawKind())
                             {
                                 case DataKind.BL:
                                     {
@@ -323,11 +324,11 @@ namespace Scikit.ML.DataManipulation
                             }
                         }
                     case DataKind.I4:
-                        if (c2.Kind.IsVector)
+                        if (c2.Kind.IsVector())
                             throw new NotImplementedException();
                         else
                         {
-                            switch (c2.Kind.RawKind)
+                            switch (c2.Kind.RawKind())
                             {
                                 case DataKind.I4:
                                     {
@@ -354,11 +355,11 @@ namespace Scikit.ML.DataManipulation
                             }
                         }
                     case DataKind.R4:
-                        if (c2.Kind.IsVector)
+                        if (c2.Kind.IsVector())
                             throw new NotImplementedException();
                         else
                         {
-                            switch (c2.Kind.RawKind)
+                            switch (c2.Kind.RawKind())
                             {
                                 case DataKind.I4:
                                     {
@@ -385,11 +386,11 @@ namespace Scikit.ML.DataManipulation
                             }
                         }
                     case DataKind.TX:
-                        if (c2.Kind.IsVector)
+                        if (c2.Kind.IsVector())
                             throw new NotImplementedException();
                         else
                         {
-                            switch (c2.Kind.RawKind)
+                            switch (c2.Kind.RawKind())
                             {
                                 case DataKind.TX:
                                     {

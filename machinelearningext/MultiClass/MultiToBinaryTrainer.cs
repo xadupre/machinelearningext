@@ -145,7 +145,7 @@ namespace Scikit.ML.MultiClass
             var desc = new DescribeTransform(Host, args3, trans);
 
             IDataView viewI;
-            if (_args.singleColumn && data.Schema.Label.Type.RawKind == DataKind.R4)
+            if (_args.singleColumn && data.Schema.Label.Type.RawKind() == DataKind.R4)
                 viewI = desc;
             else if (_args.singleColumn)
             {
@@ -157,9 +157,9 @@ namespace Scikit.ML.MultiClass
 #endif
                 #endregion
             }
-            else if (data.Schema.Label.Type.IsKey)
+            else if (data.Schema.Label.Type.IsKey())
             {
-                int nb = data.Schema.Label.Type.AsKey.KeyCount;
+                int nb = data.Schema.Label.Type.AsKey().KeyCount();
                 var sch = new TypeReplacementSchema(desc.Schema, new[] { labName }, new[] { new VectorType(NumberType.R4, nb) });
                 viewI = new TypeReplacementDataView(desc, sch);
                 #region debug
@@ -237,7 +237,7 @@ namespace Scikit.ML.MultiClass
                 throw ch.Except("Unable to find column '{0}' in \n{1}", labName, SchemaHelper.ToString(trans.Schema));
 
             var labType = trans.Schema.GetColumnType(indexLab);
-            var initialLabKind = data.Schema.Label.Type.RawKind;
+            var initialLabKind = data.Schema.Label.Type.RawKind();
 
             TVectorPredictor predictor;
             switch (initialLabKind)

@@ -117,7 +117,7 @@ namespace Scikit.ML.MultiClass
             if (!tr.Schema.TryGetColumnIndex(label, out index))
                 throw Contracts.Except("Unable to find column '{0}' in '{1}'", label, SchemaHelper.ToString(tr.Schema));
             var ty = tr.Schema.GetColumnType(index);
-            switch (ty.RawKind)
+            switch (ty.RawKind())
             {
                 case DataKind.R4:
                     // float is 0 based
@@ -140,7 +140,7 @@ namespace Scikit.ML.MultiClass
                     nb = (int)tu.Item2;
                     return new Tuple<int, int>(1, (int)tu.Item2);
                 default:
-                    throw Contracts.ExceptNotImpl("Type '{0}' not implemented", ty.RawKind);
+                    throw Contracts.ExceptNotImpl("Type '{0}' not implemented", ty.RawKind());
             }
         }
 
@@ -163,7 +163,7 @@ namespace Scikit.ML.MultiClass
             if (!viewI.Schema.TryGetColumnIndex(labName, out index))
                 throw Host.Except("Unable to find '{0}' in '{1}'", labName, SchemaHelper.ToString(viewI.Schema));
             var ty = viewI.Schema.GetColumnType(index);
-            Contracts.Assert(ty.IsKey || ty.IsVector || ty.RawKind == DataKind.R4);
+            Contracts.Assert(ty.IsKey() || ty.IsVector() || ty.RawKind() == DataKind.R4);
             using (var cursor = viewI.GetRowCursor(i => i == index))
             {
                 var getter = cursor.GetGetter<VBuffer<float>>(index);
@@ -213,7 +213,7 @@ namespace Scikit.ML.MultiClass
                 }
 
                 var ty = viewI.Schema.GetColumnType(index);
-                if (ty.IsVector && ty.AsVector.ItemType.RawKind == DataKind.R4)
+                if (ty.IsVector() && ty.AsVector().ItemType().RawKind() == DataKind.R4)
                 {
                     var getter = cursor.GetGetter<VBuffer<float>>(index);
                     var value = new VBuffer<float>();
@@ -225,7 +225,7 @@ namespace Scikit.ML.MultiClass
                         ++nbRows;
                     }
                 }
-                else if (!ty.IsVector && ty.RawKind == DataKind.R4)
+                else if (!ty.IsVector() && ty.RawKind() == DataKind.R4)
                 {
                     var getter = cursor.GetGetter<float>(index);
                     var sch = SchemaHelper.ToString(cursor.Schema);
@@ -236,7 +236,7 @@ namespace Scikit.ML.MultiClass
                         ++nbRows;
                     }
                 }
-                else if (ty.IsKey && ty.RawKind == DataKind.U4)
+                else if (ty.IsKey() && ty.RawKind() == DataKind.U4)
                 {
                     var getter = cursor.GetGetter<uint>(index);
                     uint value = 0;
@@ -259,11 +259,11 @@ namespace Scikit.ML.MultiClass
         {
             var cache1 = new MemoryDataView(Host, viewI, numThreads: 1);
             var cache2 = new MemoryDataView(Host, choose, numThreads: 1);
-            var t1 = data.Schema.Feature.Type.AsVector;
-            var t2 = td.Schema.Feature.Type.AsVector;
-            if (t1.DimCount != 1)
+            var t1 = data.Schema.Feature.Type.AsVector();
+            var t2 = td.Schema.Feature.Type.AsVector();
+            if (t1.DimCount()() != 1)
                 throw Host.Except("Expect only 1 dimension.");
-            if (t2.DimCount != 1)
+            if (t2.DimCount()() != 1)
                 throw Host.Except("Expect only 1 dimension.");
             if (singleColumn && t1.GetDim(0) != t2.GetDim(0) - 1)
                 throw Host.Except("Different dimension {0} != {1}-1", t1.GetDim(0), t2.GetDim(0));
@@ -408,13 +408,13 @@ namespace Scikit.ML.MultiClass
         {
             var lab = data.Schema.Label;
             Host.Assert(!data.Schema.Schema.IsHidden(lab.Index));
-            Host.Assert(lab.Type.KeyCount > 0 || lab.Type == NumberType.R4);
+            Host.Assert(lab.Type.KeyCount() > 0 || lab.Type == NumberType.R4);
 
             IDataView source = data.Data;
             if (train)
             {
                 source = FilterNA(source, lab.Name, args.dropNALabel);
-                if (lab.Type.IsKey)
+                if (lab.Type.IsKey())
                 {
                     var uargs = new ULabelToR4LabelTransform.Arguments
                     {

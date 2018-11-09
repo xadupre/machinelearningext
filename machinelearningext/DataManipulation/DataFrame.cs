@@ -216,7 +216,7 @@ namespace Scikit.ML.DataManipulation
         public int AddColumn<DT>(string name, DT[] values)
         {
             var kind = SchemaHelper.GetColumnType<DT>();
-            switch (kind.RawKind)
+            switch (kind.RawKind())
             {
                 case DataKind.BL: return AddColumn(name, values as bool[]);
                 case DataKind.I4: return AddColumn(name, values as int[]);

@@ -184,10 +184,10 @@ namespace Scikit.ML.PipelineTransforms
                 if (!schema.TryGetColumnIndex(_args.columns[i].Source, out index))
                     throw _host.Except("Unable to find '{0}'", _args.columns[i].Source);
                 var typeCol = schema.GetColumnType(index);
-                if (typeCol.IsVector)
+                if (typeCol.IsVector())
                     throw _host.Except("Expected a number as input.");
 
-                switch (typeCol.RawKind)
+                switch (typeCol.RawKind())
                 {
                     case DataKind.R4:
                         view = new PassThroughTransform(_host, new PassThroughTransform.Arguments(),
@@ -204,7 +204,7 @@ namespace Scikit.ML.PipelineTransforms
                                             (in uint src, ref float dst) => { dst = src == 0 ? float.NaN : src - 1; }));
                         break;
                     default:
-                        throw Contracts.ExceptNotSupp("Type '{0}' is not handled yet.", typeCol.RawKind);
+                        throw Contracts.ExceptNotSupp("Type '{0}' is not handled yet.", typeCol.RawKind());
                 }
             }
             return view as IDataTransform;

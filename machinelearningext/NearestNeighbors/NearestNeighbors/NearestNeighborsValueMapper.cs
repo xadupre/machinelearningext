@@ -26,7 +26,7 @@ namespace Scikit.ML.NearestNeighbors
         readonly IHost _host;
         protected Dictionary<long, Tuple<TLabel, float>> _labelWeights;
 
-        public DataKind Kind { get { return SchemaHelper.GetColumnType<TLabel>().RawKind; } }
+        public DataKind Kind { get { return SchemaHelper.GetColumnType<TLabel>().RawKind(); } }
 
         public NearestNeighborsValueMapper(IHost host, Dictionary<long, Tuple<TLabel, float>> labelWeights)
         {

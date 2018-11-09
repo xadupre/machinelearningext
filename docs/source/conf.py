@@ -69,6 +69,8 @@ epkg_dictionary = {
     'Microsoft': 'https://www.microsoft.com/',
     'MIT License': 'https://github.com/dotnet/machinelearning/blob/master/LICENSE',
     'ML.net': 'https://github.com/dotnet/machinelearning',
+    'NimbusML': 'https://github.com/Microsoft/NimbusML',
+    'nimbusml': 'https://github.com/Microsoft/NimbusML',
     'numba': 'http://numba.pydata.org/',
     'ONNX': 'https://onnx.ai/',
     'onnx': 'https://github.com/onnx/onnx',

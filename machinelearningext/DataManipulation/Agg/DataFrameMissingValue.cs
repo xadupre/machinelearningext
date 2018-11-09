@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 using DvText = Scikit.ML.PipelineHelper.DvText;
 
 
@@ -11,11 +12,11 @@ namespace Scikit.ML.DataManipulation
     {
         public static object GetMissingValue(ColumnType kind, object subcase = null)
         {
-            if (kind.IsVector)
+            if (kind.IsVector())
                 return null;
             else
             {
-                switch (kind.RawKind)
+                switch (kind.RawKind())
                 {
                     case DataKind.BL:
                         throw new NotImplementedException("NA is not available for bool");
@@ -39,11 +40,11 @@ namespace Scikit.ML.DataManipulation
 
         public static object GetMissingOrDefaultValue(ColumnType kind, object subcase = null)
         {
-            if (kind.IsVector)
+            if (kind.IsVector())
                 return null;
             else
             {
-                switch (kind.RawKind)
+                switch (kind.RawKind())
                 {
                     case DataKind.BL:
                         return false;
@@ -67,11 +68,11 @@ namespace Scikit.ML.DataManipulation
 
         public static object GetMissingOrDefaultMissingValue(ColumnType kind, object subcase = null)
         {
-            if (kind.IsVector)
+            if (kind.IsVector())
                 return null;
             else
             {
-                switch (kind.RawKind)
+                switch (kind.RawKind())
                 {
                     case DataKind.BL:
                         throw new NotSupportedException("No missing value for boolean. Convert to int.");

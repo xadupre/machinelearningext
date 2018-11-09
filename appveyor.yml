@@ -50,6 +50,7 @@ before_test:
   - copy machinelearning\packages\lightgbm\2.2.1.1\runtimes\win-x64\native machinelearning\bin\x64.Release\Native
   - copy machinelearning\packages\mlnetmkldeps\0.0.0.7\runtimes\win-x64\native machinelearning\bin\x64.Release\Native
   - copy machinelearning\packages\google.protobuf\3.5.1\lib\netstandard1.0 machinelearning\bin\x64.Release\Native
+  - copy machinelearning\packages\system.codedom\4.5.0\lib\netstandard2.0\*.dll machinelearning\dist\Release
   - copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
   # copy debug
   - mkdir machinelearning\dist\Debug
@@ -72,13 +73,21 @@ before_test:
   - copy machinelearning\packages\lightgbm\2.2.1.1\runtimes\win-x64\native machinelearning\bin\x64.Debug\Native
   - copy machinelearning\packages\mlnetmkldeps\0.0.0.7\runtimes\win-x64\native machinelearning\bin\x64.Debug\Native
   - copy machinelearning\packages\google.protobuf\3.5.1\lib\netstandard1.0 machinelearning\bin\x64.Debug\Native
+  - copy machinelearning\packages\system.codedom\4.5.0\lib\netstandard2.0\*.dll machinelearning\dist\Debug
   - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearning\dist\Debug
   # build machinelearningext
   - cd machinelearningext
   - cmd /C dotnet build -c Debug
   - cmd /C dotnet build -c Release
   - cd ..
-  
+  # final copy
+  - copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\TestProfileBenchmark\netcoreapp2.1
+  - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\TestProfileBenchmark\netcoreapp2.1
+  - copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\TestMachineLearningExt\netcoreapp2.1
+  - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\TestMachineLearningExt\netcoreapp2.1
+  - copy machinelearning\bin\x64.Release\Native\*.dll machinelearningext\bin\AnyCPU.Release\DocHelperMlExt\netstandard2.0
+  - copy machinelearning\bin\x64.Debug\Native\*.dll machinelearningext\bin\AnyCPU.Debug\DocHelperMlExt\netstandard2.0
+
 test_script:
   # unit tests for machinelearning (too long)
   # - cd machinelearning

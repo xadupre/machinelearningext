@@ -104,7 +104,7 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         public IEnumerable<int> EnumerateRowsIndex(NumericColumn filter)
         {
-            if (filter.Kind.IsVector || filter.Kind.RawKind != DataKind.Bool)
+            if (filter.Kind.IsVector() || filter.Kind.RawKind() != DataKind.Bool)
                 throw Contracts.ExceptNotSupp("Only boolean column are allowed for operator [].");
             var th = filter.Column as DataColumn<bool>;
             if (th == null)
@@ -202,9 +202,9 @@ namespace Scikit.ML.DataManipulation
         {
             var coor = _mapping[col];
             DataColumn<DType> found = null;
-            if (coor.Item1.IsVector)
+            if (coor.Item1.IsVector())
             {
-                switch (coor.Item1.ItemType.RawKind)
+                switch (coor.Item1.ItemType().RawKind())
                 {
                     case DataKind.BL: found = _colsABL[coor.Item2] as DataColumn<DType>; break;
                     case DataKind.I4: found = _colsAI4[coor.Item2] as DataColumn<DType>; break;
@@ -219,7 +219,7 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                switch (coor.Item1.RawKind)
+                switch (coor.Item1.RawKind())
                 {
                     case DataKind.BL: found = _colsBL[coor.Item2] as DataColumn<DType>; break;
                     case DataKind.I4: found = _colsI4[coor.Item2] as DataColumn<DType>; break;
@@ -257,9 +257,9 @@ namespace Scikit.ML.DataManipulation
         public IDataColumn GetColumn(int col, int[] rows = null)
         {
             var coor = _mapping[col];
-            if (coor.Item1.IsVector)
+            if (coor.Item1.IsVector())
             {
-                switch (coor.Item1.ItemType.RawKind)
+                switch (coor.Item1.ItemType().RawKind())
                 {
                     case DataKind.BL: DataColumn<VBufferEqSort<bool>> objbl; GetTypedColumn(col, out objbl, rows); return objbl;
                     case DataKind.I4: DataColumn<VBufferEqSort<int>> obji4; GetTypedColumn(col, out obji4, rows); return obji4;
@@ -274,7 +274,7 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                switch (coor.Item1.RawKind)
+                switch (coor.Item1.RawKind())
                 {
                     case DataKind.BL: DataColumn<bool> objbl; GetTypedColumn(col, out objbl, rows); return objbl;
                     case DataKind.I4: DataColumn<int> obji4; GetTypedColumn(col, out obji4, rows); return obji4;
@@ -437,9 +437,9 @@ namespace Scikit.ML.DataManipulation
 
         IDataColumn CreateColumn(ColumnType kind, IEnumerable<object> values)
         {
-            if (kind.IsVector)
+            if (kind.IsVector())
                 throw new NotImplementedException();
-            switch (kind.RawKind)
+            switch (kind.RawKind())
             {
                 case DataKind.BL:
                     try
@@ -506,7 +506,7 @@ namespace Scikit.ML.DataManipulation
                 // Works as replacement.
                 var column = GetColumn(name);
                 if (column.Kind == kind ||
-                    (kind.IsKey && !kind.IsVector && !column.Kind.IsVector && column.Kind.RawKind == kind.RawKind))
+                    (kind.IsKey() && !kind.IsVector() && !column.Kind.IsVector() && column.Kind.RawKind() == kind.RawKind()))
                 {
                     if (values == null)
                         column.SetDefault();
@@ -514,7 +514,7 @@ namespace Scikit.ML.DataManipulation
                         column.Set(values);
                     return _naming[name];
                 }
-                else if (column.Kind.IsVector && kind.IsVector && column.Kind.ItemType.RawKind == kind.ItemType.RawKind)
+                else if (column.Kind.IsVector() && kind.IsVector() && column.Kind.ItemType().RawKind() == kind.ItemType().RawKind())
                 {
                     if (values == null)
                         column.SetDefault();
@@ -540,9 +540,9 @@ namespace Scikit.ML.DataManipulation
             int pos = -1;
             int nb = length ?? Length;
             _length = nb;
-            if (kind.IsVector)
+            if (kind.IsVector())
             {
-                switch (kind.ItemType.RawKind)
+                switch (kind.ItemType().RawKind())
                 {
                     case DataKind.BL:
                         if (_colsABL == null)
@@ -587,12 +587,12 @@ namespace Scikit.ML.DataManipulation
                         _colsATX.Add(values ?? new DataColumn<VBufferEqSort<DvText>>(nb));
                         break;
                     default:
-                        throw new DataTypeError(string.Format("Type {0} is not handled.", kind.ItemType));
+                        throw new DataTypeError(string.Format("Type {0} is not handled.", kind.ItemType()));
                 }
             }
             else
             {
-                switch (kind.RawKind)
+                switch (kind.RawKind())
                 {
                     case DataKind.BL:
                         if (_colsBL == null)
@@ -685,11 +685,11 @@ namespace Scikit.ML.DataManipulation
         public void Set(int row, int col, string value)
         {
             var coor = _mapping[col];
-            if (_kinds[col].IsVector)
+            if (_kinds[col].IsVector())
                 throw new NotImplementedException();
             else
             {
-                switch (_kinds[col].RawKind)
+                switch (_kinds[col].RawKind())
                 {
                     case DataKind.BL: _colsBL[coor.Item2].Set(row, (bool)bool.Parse(value)); break;
                     case DataKind.I4: _colsI4[coor.Item2].Set(row, (int)int.Parse(value)); break;
@@ -713,7 +713,7 @@ namespace Scikit.ML.DataManipulation
             foreach (var col in columns)
             {
                 var kind = GetDType(col);
-                if (kind.IsVector)
+                if (kind.IsVector())
                 {
                     var dc2 = GetColumn(col).Flatten(GetColumnName(col), rows);
                     dc.AddColumn(dc2);
@@ -733,7 +733,7 @@ namespace Scikit.ML.DataManipulation
             foreach (var i in columns)
             {
                 var kind = GetDType(i);
-                if (kind.IsVector)
+                if (kind.IsVector())
                     return true;
             }
             return false;
@@ -770,10 +770,10 @@ namespace Scikit.ML.DataManipulation
             {
                 string name = GetColumnName(col);
                 var type = GetColumnType(col);
-                if (type.IsVector)
+                if (type.IsVector())
                 {
-                    var vec = type.AsVector;
-                    if (vec.DimCount != 1)
+                    var vec = type.AsVector();
+                    if (vec.DimCount() != 1)
                         throw Contracts.ExceptNotImpl("Only one dimension is implemented.");
                     var res = new string[vec.GetDim(0)];
                     for (int i = 0; i < res.Length; ++i)
@@ -875,14 +875,14 @@ namespace Scikit.ML.DataManipulation
                 if (sch.IsHidden(i))
                     continue;
                 var ty = sch.GetColumnType(i);
-                if (!keepVectors && ty.IsVector)
+                if (!keepVectors && ty.IsVector())
                 {
-                    var tyv = ty.AsVector;
-                    if (tyv.DimCount != 1)
+                    var tyv = ty.AsVector();
+                    if (tyv.DimCount() != 1)
                         throw new NotSupportedException("Only arrays with one dimension are supported.");
                     for (int j = 0; j < tyv.GetDim(0); ++j)
                     {
-                        AddColumn(string.Format("{0}.{1}", sch.GetColumnName(i), j), tyv.ItemType, (int)numRows.Value);
+                        AddColumn(string.Format("{0}.{1}", sch.GetColumnName(i), j), tyv.ItemType(), (int)numRows.Value);
                         memory[pos++] = new Tuple<int, int>(i, j);
                     }
                 }
@@ -944,9 +944,9 @@ namespace Scikit.ML.DataManipulation
             for (int i = 0; i < _names.Count; ++i)
             {
                 var coor = _mapping[i];
-                if (coor.Item1.IsVector)
+                if (coor.Item1.IsVector())
                 {
-                    switch (coor.Item1.ItemType.RawKind)
+                    switch (coor.Item1.ItemType().RawKind())
                     {
                         case DataKind.BL:
                             getterABL[coor.Item2] = GetGetterCursorVector(cursor, memory[i].Item1, memory[i].Item2, false);
@@ -975,7 +975,7 @@ namespace Scikit.ML.DataManipulation
                 }
                 else
                 {
-                    switch (coor.Item1.RawKind)
+                    switch (coor.Item1.RawKind())
                     {
                         case DataKind.BL:
                             getterBL[coor.Item2] = GetGetterCursor(cursor, memory[i].Item1, memory[i].Item2, false);
@@ -1034,9 +1034,9 @@ namespace Scikit.ML.DataManipulation
                 for (int i = 0; i < _names.Count; ++i)
                 {
                     var coor = _mapping[i];
-                    if (coor.Item1.IsVector)
+                    if (coor.Item1.IsVector())
                     {
-                        switch (coor.Item1.ItemType.RawKind)
+                        switch (coor.Item1.ItemType().RawKind())
                         {
                             case DataKind.BL:
                                 getterABL[coor.Item2](ref avalueBL);
@@ -1079,7 +1079,7 @@ namespace Scikit.ML.DataManipulation
                     }
                     else
                     {
-                        switch (coor.Item1.RawKind)
+                        switch (coor.Item1.RawKind())
                         {
                             case DataKind.BL:
                                 getterBL[coor.Item2](ref valueBL);
@@ -1124,7 +1124,7 @@ namespace Scikit.ML.DataManipulation
         ValueGetter<DType> GetGetterCursor<DType>(IRowCursor cursor, int col, int index, DType defaultValue)
         {
             var dt = cursor.Schema.GetColumnType(col);
-            if (dt.IsVector)
+            if (dt.IsVector())
             {
                 ValueGetter<VBuffer<DType>> getter;
                 try
@@ -1199,7 +1199,7 @@ namespace Scikit.ML.DataManipulation
         ValueGetter<VBuffer<DType>> GetGetterCursorVector<DType>(IRowCursor cursor, int col, int index, DType defaultValue)
         {
             var dt = cursor.Schema.GetColumnType(col);
-            if (dt.IsVector)
+            if (dt.IsVector())
                 return cursor.GetGetter<VBuffer<DType>>(col);
             else
             {
@@ -1257,9 +1257,9 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         public static RowColumnSetterDelegate GetColumnSetter(IRowCursor cur, Delegate getter, int col, ColumnType colType)
         {
-            if (colType.IsVector)
+            if (colType.IsVector())
             {
-                switch (colType.ItemType.RawKind)
+                switch (colType.ItemType().RawKind())
                 {
                     case DataKind.BL: return GetColumnSetterVector<bool>(cur, getter, col);
                     case DataKind.I4: return GetColumnSetterVector<int>(cur, getter, col);
@@ -1274,7 +1274,7 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                switch (colType.RawKind)
+                switch (colType.RawKind())
                 {
                     case DataKind.BL: return GetColumnSetter<bool>(cur, getter, col);
                     case DataKind.I4: return GetColumnSetter<int>(cur, getter, col);
@@ -1561,9 +1561,9 @@ namespace Scikit.ML.DataManipulation
             {
                 col = _colsSet == null ? col : _colsSet[col];
                 var coor = _cont._mapping[col];
-                if (coor.Item1.IsVector)
+                if (coor.Item1.IsVector())
                 {
-                    switch (coor.Item1.ItemType.RawKind)
+                    switch (coor.Item1.ItemType().RawKind())
                     {
                         case DataKind.BL: return _cont._colsABL[coor.Item2].GetGetterVector<bool>(this) as ValueGetter<TValue>;
                         case DataKind.I4: return _cont._colsAI4[coor.Item2].GetGetterVector<int>(this) as ValueGetter<TValue>;
@@ -1578,7 +1578,7 @@ namespace Scikit.ML.DataManipulation
                 }
                 else
                 {
-                    switch (coor.Item1.RawKind)
+                    switch (coor.Item1.RawKind())
                     {
                         case DataKind.BL: return _cont._colsBL[coor.Item2].GetGetter<TValue>(this);
                         case DataKind.I4: return _cont._colsI4[coor.Item2].GetGetter<TValue>(this);

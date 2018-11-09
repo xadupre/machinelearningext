@@ -252,8 +252,8 @@ namespace Scikit.ML.PipelineTransforms
                             if (!(ty == NumberType.R4 || ty == NumberType.U4 ||
                                 ty == NumberType.I4 || ty == TextType.Instance ||
                                 ty == BoolType.Instance || ty == NumberType.I8 ||
-                                (ty.IsKey && ty.AsKey.RawKind == DataKind.U4) ||
-                                (ty.IsVector && ty.AsVector.ItemType == NumberType.R4)))
+                                (ty.IsKey() && ty.AsKey().RawKind() == DataKind.U4) ||
+                                (ty.IsVector() && ty.AsVector().ItemType() == NumberType.R4)))
                                 throw ch.Except("Unsupported type {0} (schema={1}).", _args.columns[i], SchemaHelper.ToString(sch));
                             indexesCol.Add(index);
                         }
@@ -266,17 +266,17 @@ namespace Scikit.ML.PipelineTransforms
                             bool[] isText = requiredIndexes.Select(c => sch.GetColumnType(c) == TextType.Instance).ToArray();
                             bool[] isBool = requiredIndexes.Select(c => sch.GetColumnType(c) == BoolType.Instance).ToArray();
                             bool[] isFloat = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.R4).ToArray();
-                            bool[] isUint = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.U4 || sch.GetColumnType(c).RawKind == DataKind.U4).ToArray();
-                            bool[] isInt = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.I4 || sch.GetColumnType(c).RawKind == DataKind.I4).ToArray();
-                            bool[] isInt8 = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.I8 || sch.GetColumnType(c).RawKind == DataKind.I8).ToArray();
+                            bool[] isUint = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.U4 || sch.GetColumnType(c).RawKind() == DataKind.U4).ToArray();
+                            bool[] isInt = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.I4 || sch.GetColumnType(c).RawKind() == DataKind.I4).ToArray();
+                            bool[] isInt8 = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.I8 || sch.GetColumnType(c).RawKind() == DataKind.I8).ToArray();
 
-                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
-                            ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.U4 || sch.GetColumnType(i).RawKind == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
+                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind() == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
+                            ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.U4 || sch.GetColumnType(i).RawKind() == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
                             ValueGetter<ReadOnlyMemory<char>>[] textGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == TextType.Instance ? cur.GetGetter<ReadOnlyMemory<char>>(i) : null).ToArray();
                             ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
-                            ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
-                            ValueGetter<int>[] intGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I4 || sch.GetColumnType(i).RawKind == DataKind.I4 ? cur.GetGetter<int>(i) : null).ToArray();
-                            ValueGetter<long>[] int8Getters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I8 || sch.GetColumnType(i).RawKind == DataKind.I8 ? cur.GetGetter<long>(i) : null).ToArray();
+                            ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector() ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
+                            ValueGetter<int>[] intGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I4 || sch.GetColumnType(i).RawKind() == DataKind.I4 ? cur.GetGetter<int>(i) : null).ToArray();
+                            ValueGetter<long>[] int8Getters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I8 || sch.GetColumnType(i).RawKind() == DataKind.I8 ? cur.GetGetter<long>(i) : null).ToArray();
 
                             var cols = _args.columns == null ? null : new HashSet<string>(_args.columns);
                             var hists = _args.hists == null ? null : new HashSet<string>(_args.hists);
