@@ -10,7 +10,9 @@ written in :epkg:`C#` and implemented by :epkg:`Microsoft`.
 It contains documentation pages about the :epkg:`ML.net`
 itself taken from the main repository or automatically
 built from it extended with custom code or experiments.
-
+These extensions are not yet available as a nuget package
+but the source can obtained by forking
+`xadupre/machinelearningext <https://github.com/xadupre/machinelearningext>`_.
 
 .. toctree::
     :maxdepth: 2
@@ -27,6 +29,19 @@ built from it extended with custom code or experiments.
 
 You can also navigate through the documentation
 with the :ref:`genindex` or the :ref:`search`.
+The documentation was generating on:
+
+.. runpython::
+
+    from datetime import datetime
+    print(str(datetime.now()).split()[0])
+
+The nuget package
+`Scikit.ML.DataFrame <https://www.nuget.org/packages/Scikit.ML.DataFrame/>`_
+(`github <https://github.com/xadupre/machinelearning_dataframe>`_)
+was built from an early version of this patchwork
+which still includes
+:ref:`Scikit.ML.DataManipulation.DataFrame <l-dataframe-cs>`.
 
 
 .. image:: https://travis-ci.org/sdpython/machinelearningext.svg?branch=master
