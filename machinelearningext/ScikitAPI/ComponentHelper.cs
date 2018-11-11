@@ -35,7 +35,6 @@ using Scikit.ML.PipelineTraining;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.RandomTransforms;
-using Scikit.ML.ScikitAPI;
 
 using TensorFlowTransform = Microsoft.ML.Transforms.TensorFlowTransform;
 
@@ -66,7 +65,7 @@ namespace Scikit.ML.ScikitAPI
             var res = new List<Assembly>();
             res.Add(typeof(TextLoader).Assembly);
             res.Add(typeof(LinearPredictor).Assembly);
-            res.Add(typeof(CategoricalTransform).Assembly);
+            res.Add(typeof(Categorical).Assembly);
             res.Add(typeof(FastTreeBinaryPredictor).Assembly);
             res.Add(typeof(EnsemblePredictor).Assembly);
             res.Add(typeof(KMeansPredictor).Assembly);
