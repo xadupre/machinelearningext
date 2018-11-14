@@ -8,6 +8,6 @@ namespace Scikit.ML.EntryPoints
         /// <summary>
         /// Prefix for every entry point.
         /// </summary>
-        public const string EntryPointPrefix = "ScikitML.";
+        public const string EntryPointPrefix = "EntryPoints.";
     }
 }

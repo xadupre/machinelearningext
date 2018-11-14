@@ -120,7 +120,7 @@ namespace TestMachineLearningExt
         */
 
         [TestMethod]
-        public void TestCommandLineCodeGen()
+        public void TestMamlCodeGen()
         {
             var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
             var data = FileHelper.GetTestFile("data_train_test.csv");

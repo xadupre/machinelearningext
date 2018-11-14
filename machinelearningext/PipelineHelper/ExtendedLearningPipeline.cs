@@ -143,7 +143,7 @@ namespace Scikit.ML.PipelineHelper
         /// <returns>
         /// The IDataView that was returned by the pipeline.
         /// </returns>
-        internal IDataView Execute(IHostEnvironment environment)
+        /*internal*/public new IDataView Execute(IHostEnvironment environment)
         {
             Experiment experiment = environment.CreateExperiment();
             Legacy.ILearningPipelineStep step = null;

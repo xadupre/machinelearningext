@@ -33,7 +33,7 @@ namespace Scikit.ML.EntryPoints
 
     public static class EntryPointResample
     {
-        [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_Resample.Name,
+        [TlcModule.EntryPoint(Name = EP_Resample.Name,
                               Desc = ResampleTransform.Summary,
                               UserName = EP_Resample.Name)]
         public static CommonOutputs.TransformOutput Resample(IHostEnvironment env, ResampleTransform_ArgumentsEntryPoint input)
@@ -66,7 +66,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, Resample input, Resample.Output output)
         {
-            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_Resample.Name, input, output);
+            exp.AddEntryPoint(EP_Resample.Name, input, output);
         }
     }
 
@@ -79,7 +79,7 @@ namespace Scikit.ML.EntryPoints
     /// </summary>
     public sealed partial class Resample : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
-        public const string Name = nameof(Resample);
+        public const string Name = EntryPointsConstants.EntryPointPrefix + nameof(Resample);
 
         /// <summary>
         /// Input dataset

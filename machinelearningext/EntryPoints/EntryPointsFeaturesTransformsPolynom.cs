@@ -34,7 +34,7 @@ namespace Scikit.ML.EntryPoints
 
     public static class EntryPointPolynomial
     {
-        [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_Polynomial.Name,
+        [TlcModule.EntryPoint(Name = EP_Polynomial.Name,
                               Desc = PolynomialTransform.Summary,
                               UserName = EP_Polynomial.Name)]
         public static CommonOutputs.TransformOutput Polynomial(IHostEnvironment env, PolynomialTransform_ArgumentsEntryPoint input)
@@ -66,7 +66,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, Polynomial input, Polynomial.Output output)
         {
-            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_Polynomial.Name, input, output);
+            exp.AddEntryPoint(EP_Polynomial.Name, input, output);
         }
     }
 
@@ -79,7 +79,7 @@ namespace Scikit.ML.EntryPoints
     /// </summary>
     public sealed partial class Polynomial : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
-        public const string Name = nameof(Polynomial);
+        public const string Name = EntryPointsConstants.EntryPointPrefix + nameof(Polynomial);
 
         public Polynomial()
         {

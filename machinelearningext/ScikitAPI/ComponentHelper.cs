@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.ML.Runtime;
@@ -22,6 +23,7 @@ using Microsoft.ML.Runtime.Sweeper;
 using Google.Protobuf;
 using Scikit.ML.Clustering;
 using Scikit.ML.DataManipulation;
+using Scikit.ML.EntryPoints;
 using Scikit.ML.TimeSeries;
 using Scikit.ML.FeaturesTransforms;
 using Scikit.ML.PipelineLambdaTransforms;
@@ -82,6 +84,7 @@ namespace Scikit.ML.ScikitAPI
             res.Add(typeof(JsonParser).Assembly);
             // ext
             res.Add(typeof(DataFrame).Assembly);
+            res.Add(typeof(EntryPointScaler).Assembly);
             res.Add(typeof(DBScan).Assembly);
             res.Add(typeof(DeTrendTransform).Assembly);
             res.Add(typeof(PolynomialTransform).Assembly);
@@ -109,6 +112,21 @@ namespace Scikit.ML.ScikitAPI
             var res = GetAssemblies();
             foreach (var a in res)
                 AddComponent(env, a);
+
+#if DEBUG
+            ComponentCatalog.EntryPointInfo info;
+            string name = "EntryPoints.Polynomial";
+            if (!env.ComponentCatalog.TryFindEntryPoint(name, out info))
+            {
+                var cls = env.ComponentCatalog.GetAllClasses();
+                var sel = cls.Where(c => !string.IsNullOrEmpty(c.UserName))
+                             .Where(c => c.UserName.Contains("olyn"))
+                             .OrderBy(c => c.UserName)
+                             .ToArray();
+                var names = string.Join("\n", sel.Select(c => c.UserName));
+                throw env.Except($"Entry point '{name}' not found in\n{names}");
+            }
+#endif
         }
     }
 }
