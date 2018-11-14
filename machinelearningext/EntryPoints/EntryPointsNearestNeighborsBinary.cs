@@ -42,7 +42,7 @@ namespace Scikit.ML.EntryPoints
     public static partial class EntryPointNearestNeighborsBinary
     {
         [TlcModule.EntryPoint(
-            Name = EntryPointsConstants.EntryPointPrefix + NearestNeighborsBinary.Name,
+            Name = NearestNeighborsBinary.Name,
             Desc = NearestNeighborsBinaryClassificationTrainer.Summary,
             UserName = NearestNeighborsBinary.Name,
             ShortName = NearestNeighborsBinaryClassificationTrainer.ShortName)]
@@ -76,7 +76,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, NearestNeighborsBinary input, NearestNeighborsBinary.Output output)
         {
-            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + NearestNeighborsBinary.Name, input, output);
+            exp.AddEntryPoint(NearestNeighborsBinary.Name, input, output);
         }
     }
 
@@ -89,7 +89,7 @@ namespace Scikit.ML.EntryPoints
     /// </summary>
     public sealed partial class NearestNeighborsBinary : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITrainerInput, Legacy.ILearningPipelineItem
     {
-        public const string Name = nameof(NearestNeighborsBinary);
+        public const string Name = EntryPointsConstants.EntryPointPrefix + nameof(NearestNeighborsBinary);
 
         public NearestNeighborsBinary()
         {

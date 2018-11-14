@@ -41,7 +41,7 @@ namespace Scikit.ML.EntryPoints
     public static partial class EntryPointNearestNeighborsMultiClass
     {
         [TlcModule.EntryPoint(
-            Name = EntryPointsConstants.EntryPointPrefix + NearestNeighborsMultiClass.Name,
+            Name = NearestNeighborsMultiClass.Name,
             Desc = NearestNeighborsMultiClassClassificationTrainer.Summary,
             UserName = NearestNeighborsMultiClass.Name,
             ShortName = NearestNeighborsMultiClassClassificationTrainer.ShortName)]
@@ -75,7 +75,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, NearestNeighborsMultiClass input, NearestNeighborsMultiClass.Output output)
         {
-            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + NearestNeighborsMultiClass.Name, input, output);
+            exp.AddEntryPoint(NearestNeighborsMultiClass.Name, input, output);
         }
     }
 
@@ -88,7 +88,7 @@ namespace Scikit.ML.EntryPoints
     /// </summary>
     public sealed partial class NearestNeighborsMultiClass : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITrainerInput, Legacy.ILearningPipelineItem
     {
-        public const string Name = nameof(NearestNeighborsMultiClass);
+        public const string Name = EntryPointsConstants.EntryPointPrefix + nameof(NearestNeighborsMultiClass);
 
         public NearestNeighborsMultiClass()
         {

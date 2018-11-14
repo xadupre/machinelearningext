@@ -36,7 +36,7 @@ namespace Scikit.ML.EntryPoints
 
     public static class EntryPointNearestNeighborsTransform
     {
-        [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_NearestNeighbors.Name,
+        [TlcModule.EntryPoint(Name = EP_NearestNeighbors.Name,
                               Desc = _NearestNeighborsTransform.Summary,
                               UserName = EP_NearestNeighbors.Name)]
         public static CommonOutputs.TransformOutput NearestNeighbors(IHostEnvironment env, NearestNeighborsTransform_ArgumentsEntryPoint input)
@@ -69,7 +69,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, EP_NearestNeighbors input, EP_NearestNeighbors.Output output)
         {
-            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_NearestNeighbors.Name, input, output);
+            exp.AddEntryPoint(EP_NearestNeighbors.Name, input, output);
         }
     }
 
@@ -100,7 +100,7 @@ namespace Scikit.ML.EntryPoints
     /// </summary>
     public sealed partial class NearestNeighbors : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
-        public const string Name = nameof(NearestNeighbors);
+        public const string Name = EntryPointsConstants.EntryPointPrefix + nameof(NearestNeighbors);
 
         public NearestNeighbors()
         {

@@ -33,7 +33,7 @@ namespace Scikit.ML.EntryPoints
 
     public static class EntryPointPassThrough
     {
-        [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_PassThrough.Name,
+        [TlcModule.EntryPoint(Name = EP_PassThrough.Name,
                               Desc = PassThroughTransform.Summary,
                               UserName = EP_PassThrough.Name)]
         public static CommonOutputs.TransformOutput PassThrough(IHostEnvironment env, PassThroughTransform_ArgumentsEntryPoint input)
@@ -66,7 +66,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, PassThrough input, PassThrough.Output output)
         {
-            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_PassThrough.Name, input, output);
+            exp.AddEntryPoint(EP_PassThrough.Name, input, output);
         }
     }
 
@@ -79,7 +79,7 @@ namespace Scikit.ML.EntryPoints
     /// </summary>
     public sealed partial class PassThrough : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
-        public const string Name = nameof(PassThrough);
+        public const string Name = EntryPointsConstants.EntryPointPrefix + nameof(PassThrough);
 
         /// <summary>
         /// Input dataset

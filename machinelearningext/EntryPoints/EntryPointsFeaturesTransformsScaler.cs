@@ -33,7 +33,7 @@ namespace Scikit.ML.EntryPoints
 
     public static class EntryPointScaler
     {
-        [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_Scaler.Name,
+        [TlcModule.EntryPoint(Name = EP_Scaler.Name,
                               Desc = ScalerTransform.Summary,
                               UserName = EP_Scaler.Name)]
         public static CommonOutputs.TransformOutput Scaler(IHostEnvironment env, ScalerTransform_ArgumentsEntryPoint input)
@@ -66,7 +66,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, Scaler input, Scaler.Output output)
         {
-            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_Scaler.Name, input, output);
+            exp.AddEntryPoint(EP_Scaler.Name, input, output);
         }
     }
 
@@ -85,7 +85,7 @@ namespace Scikit.ML.EntryPoints
     /// </summary>
     public sealed partial class Scaler : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
-        public const string Name = nameof(Scaler);
+        public const string Name = EntryPointsConstants.EntryPointPrefix + nameof(Scaler);
 
         public Scaler()
         {

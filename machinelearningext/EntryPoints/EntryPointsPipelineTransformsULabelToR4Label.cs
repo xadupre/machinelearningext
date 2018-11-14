@@ -33,7 +33,7 @@ namespace Scikit.ML.EntryPoints
 
     public static class EntryPointULabelToR4Label
     {
-        [TlcModule.EntryPoint(Name = EntryPointsConstants.EntryPointPrefix + EP_ULabelToR4Label.Name,
+        [TlcModule.EntryPoint(Name = EP_ULabelToR4Label.Name,
                               Desc = ULabelToR4LabelTransform.Summary,
                               UserName = EP_ULabelToR4Label.Name)]
         public static CommonOutputs.TransformOutput ULabelToR4Label(IHostEnvironment env, ULabelToR4LabelTransform_ArgumentsEntryPoint input)
@@ -66,7 +66,7 @@ namespace Scikit.ML.EntryPoints
 
         public static void Add(this Microsoft.ML.Runtime.Experiment exp, ULabelToR4Label input, ULabelToR4Label.Output output)
         {
-            exp.AddEntryPoint(EntryPointsConstants.EntryPointPrefix + EP_ULabelToR4Label.Name, input, output);
+            exp.AddEntryPoint(EP_ULabelToR4Label.Name, input, output);
         }
     }
 
@@ -79,7 +79,7 @@ namespace Scikit.ML.EntryPoints
     /// </summary>
     public sealed partial class ULabelToR4Label : Microsoft.ML.Runtime.EntryPoints.CommonInputs.ITransformInput, Legacy.ILearningPipelineItem
     {
-        public const string Name = nameof(ULabelToR4Label);
+        public const string Name = EntryPointsConstants.EntryPointPrefix + nameof(ULabelToR4Label);
 
         public ULabelToR4Label()
         {
