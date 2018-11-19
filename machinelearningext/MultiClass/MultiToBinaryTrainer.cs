@@ -2,10 +2,12 @@
 
 using System.Linq;
 using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Training;
+using Microsoft.ML.Legacy.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
@@ -95,7 +97,7 @@ namespace Scikit.ML.MultiClass
             return pred;
         }
 
-        public override TVectorPredictor Train(TrainContext context)
+        protected override TVectorPredictor Train(TrainContext context)
         {
             return Train(context.TrainingSet);
         }
@@ -192,12 +194,8 @@ namespace Scikit.ML.MultiClass
             }
 
             ch.Info("Merging column label '{0}' with features '{1}'", labName, data.Schema.Feature.Name);
-            var colu = new ConcatTransform.Column[] {
-                            ConcatTransform.Column.Parse(string.Format("{0}:{1},{2}",
-                            newFeatures, data.Schema.Feature.Name, labName)) };
-            var args = new ConcatTransform.Arguments { Column = colu };
-
-            IDataView after_concatenation = ConcatTransform.Create(Host, args, viewI);
+            var args = string.Format("Concat{{col={0}:{1},{2}}}", newFeatures, data.Schema.Feature.Name, labName);
+            IDataView after_concatenation = ComponentCreation.CreateTransform(Host, args, viewI);
 
             var roles = data.Schema.GetColumnRoleNames()
                 .Where(kvp => kvp.Key.Value != RoleMappedSchema.ColumnRole.Label.Value)

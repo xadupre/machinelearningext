@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Runtime.PipelineInference;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineLambdaTransforms;
 using Scikit.ML.PipelineTransforms;
@@ -195,20 +196,30 @@ namespace TestMachineLearningExt
             }
         }
 
+        public class FloatOutput
+        {
+            public float Score;
+            public float Probability;
+        }
+
         public class PredictionEngineExample : IDisposable
         {
             IHostEnvironment _env;
-            SimplePredictionEngine _predictor;
+            PredictionEngine<FloatVectorInput, FloatOutput> _predictor;
 
             public PredictionEngineExample(string modelName)
             {
                 _env = EnvHelper.NewTestEnvironment();
-                _predictor = _env.CreateSimplePredictionEngine(File.OpenRead(modelName), 9);
+
+                var pipe = DataViewConstructionUtils.LoadPipeWithPredictor(_env, File.OpenRead(modelName), 
+                                                        new EmptyDataView(_env, null));
+                var transformer = new TransformWrapper(_env, pipe);
+                _predictor = _env.CreatePredictionEngine<FloatVectorInput, FloatOutput>(transformer);
             }
 
             public Tuple<float, float> Predict(float[] features)
             {
-                var res = _predictor.Predict(features);
+                var res = _predictor.Predict(new FloatVectorInput() { Features = features });
                 return new Tuple<float, float>(res.Score, res.Probability);
             }
 

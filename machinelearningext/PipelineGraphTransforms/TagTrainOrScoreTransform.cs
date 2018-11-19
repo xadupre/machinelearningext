@@ -48,7 +48,7 @@ namespace Scikit.ML.PipelineGraphTransforms
                 loaderAssemblyName: typeof(TagTrainOrScoreTransform).Assembly.FullName);
         }
 
-        public new class Arguments : TrainAndScoreTransform.ArgumentsBase
+        public new class Arguments : TrainAndScoreTransformer.ArgumentsBase
         {
             [Argument(ArgumentType.Multiple, HelpText = "Trainer", ShortName = "tr", SignatureType = typeof(SignatureTrainer))]
             public IComponentFactory<ITrainer> trainer = new ScikitSubComponent<ITrainer, SignatureTrainer>("PlattCalibration");
@@ -256,7 +256,7 @@ namespace Scikit.ML.PipelineGraphTransforms
         }
 
         private static RoleMappedData CreateDataFromArgs(IHostEnvironment env, IExceptionContext ectx, IDataView input,
-            TrainAndScoreTransform.ArgumentsBase args, out string feat, out string group)
+            TrainAndScoreTransformer.ArgumentsBase args, out string feat, out string group)
         {
             var schema = input.Schema;
             feat = TrainUtils.MatchNameOrDefaultOrNull(ectx, schema, "FeatureColumn", args.FeatureColumn, DefaultColumnNames.Features);

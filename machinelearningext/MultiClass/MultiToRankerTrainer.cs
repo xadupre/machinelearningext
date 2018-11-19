@@ -2,6 +2,7 @@
 
 using System.Linq;
 using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
@@ -105,7 +106,7 @@ namespace Scikit.ML.MultiClass
             return pred;
         }
 
-        public override TVectorPredictor Train(TrainContext context)
+        protected override TVectorPredictor Train(TrainContext context)
         {
             var data = context.TrainingSet;
             Contracts.CheckValue(data, "data");
@@ -224,11 +225,8 @@ namespace Scikit.ML.MultiClass
             }
 
             ch.Info("Merging column label '{0}' with features '{1}'", labName, data.Schema.Feature.Name);
-            var colu = new ConcatTransform.Column[] {
-                            ConcatTransform.Column.Parse(string.Format("{0}:{1},{2}",
-                            newFeatures, data.Schema.Feature.Name, labName)) };
-            var args = new ConcatTransform.Arguments { Column = colu };
-            var after_concatenation_ = ConcatTransform.Create(Host, args, viewI);
+            var args = string.Format("Concat{{col={0}:{1},{2}}}", newFeatures, data.Schema.Feature.Name, labName);
+            var after_concatenation_ = ComponentCreation.CreateTransform(Host, args, viewI);
 
             #endregion
 

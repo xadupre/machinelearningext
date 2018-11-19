@@ -168,7 +168,7 @@ namespace Scikit.ML.RandomTransforms
         public Schema Schema { get { return Source.Schema; } }
 
         public bool CanShuffle { get { return true; } }
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
             _host.AssertValue(Source, "_input");
             if (_cacheReplica != null)

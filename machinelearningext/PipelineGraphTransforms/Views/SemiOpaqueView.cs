@@ -39,9 +39,9 @@ namespace Scikit.ML.PipelineGraphTransforms
             get { return _newSchema == null ? _source.Schema : _newSchema; }
         }
 
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
-            return _source.GetRowCount(lazy);
+            return _source.GetRowCount();
         }
 
         public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)

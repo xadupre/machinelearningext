@@ -37,9 +37,9 @@ namespace Scikit.ML.PipelineHelper
             get { return _schema; }
         }
 
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
-            return _source.GetRowCount(lazy);
+            return _source.GetRowCount();
         }
 
         public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)

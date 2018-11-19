@@ -34,6 +34,9 @@
     <Reference Include="Microsoft.ML.Api">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Transforms.Legacy">
+      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Legacy.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

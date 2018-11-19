@@ -186,33 +186,12 @@ namespace Scikit.ML.PipelineHelper
                 {
                     EnsureNewLine();
                     WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
-                    if (_verbose > 2)
-                    {
-                        WriteHeader(_out, channel);
-                        _out.WriteLine("Finished.");
-                    }
-                }
-            }
-
-            public void ChannelDisposed(Channel channel, bool active)
-            {
-                if (!channel.Verbose)
-                    return;
-
-                lock (_lock)
-                {
+                    WriteHeader(_out, channel);
+                    _out.WriteLine("Finished.");
                     EnsureNewLine();
-                    if (active)
-                    {
-                        PrintMessage(channel,
-                            new ChannelMessage(ChannelMessageKind.Error, MessageSensitivity.None, "The channel was not properly closed (*)."));
-                    }
                     WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
-                    if (_verbose > 2)
-                    {
-                        WriteHeader(_out, channel);
-                        _out.WriteLine(string.Format("Elapsed {0:c}.", channel.Watch.Elapsed));
-                    }
+                    WriteHeader(_out, channel);
+                    _out.WriteLine(string.Format("Elapsed {0:c}.", channel.Watch.Elapsed));
                 }
             }
 

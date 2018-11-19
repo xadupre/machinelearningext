@@ -83,9 +83,9 @@ namespace Scikit.ML.PipelineLambdaTransforms
             get { return _newSchema; }
         }
 
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
-            return _source.GetRowCount(lazy);
+            return _source.GetRowCount();
         }
 
         /// <summary>

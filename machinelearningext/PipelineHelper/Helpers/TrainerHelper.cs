@@ -96,7 +96,7 @@ namespace Scikit.ML.PipelineHelper
                 inputPredictor = null;
             }
             ch.Assert(validData == null || trainer.Info.SupportsValidation);
-            var predictor = trainer.Train(new TrainContext(data, validData, inputPredictor));
+            var predictor = trainer.Train(new TrainContext(data, validData, null, inputPredictor));
             return CalibratorUtils.TrainCalibratorIfNeeded(env, ch, calibrator, maxCalibrationExamples, trainer, predictor, data);
         }
 

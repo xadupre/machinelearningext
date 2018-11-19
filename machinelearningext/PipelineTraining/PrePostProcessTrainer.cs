@@ -91,7 +91,7 @@ namespace Scikit.ML.PipelineTraining
         public override TrainerInfo Info => new TrainerInfo(false, false, _cache);
         public override PredictionKind PredictionKind { get { Contracts.Assert(_trainer != null); return _trainer.PredictionKind; } }
 
-        public override IPredictor Train(TrainContext ctx)
+        protected override IPredictor Train(TrainContext ctx)
         {
             var data = ctx.TrainingSet;
             Contracts.CheckValue(data, "data");

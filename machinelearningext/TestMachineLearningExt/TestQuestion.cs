@@ -121,47 +121,6 @@ namespace TestMachineLearningExt
         }
 
         [TestMethod]
-        public void TestI_Q_KMeansInnerAPI()
-        {
-            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var outModelFilePath = FileHelper.GetOutputFile("outModelFilePath.zip", methodName);
-            var iris = FileHelper.GetTestFile("iris.txt");
-            using (var env = new ConsoleEnvironment(conc: 1))
-            {
-                ComponentHelper.AddStandardComponents(env);
-
-                var data = env.CreateLoader("Text{col=Label:R4:0 col=Sepal_length:R4:1 col=Sepal_width:R4:2 " +
-                                            "col=Petal_length:R4:3 col=Petal_width:R4:4 header=+}",
-                                            new MultiFileSource(iris));
-                var conc = env.CreateTransform("Concat{col=Features:Sepal_length,Sepal_width}", data);
-                var roleMap = env.CreateExamples(conc, "Features", "Label");
-                var trainer = CreateTrainer(env, "km");
-                IPredictor model;
-                using (var ch = env.Start("Train"))
-                    model = TrainUtils.Train(env, ch, roleMap, trainer, null, 0);
-
-                using (var ch = env.Start("Save"))
-                using (var fs = File.Create(outModelFilePath))
-                    TrainUtils.SaveModel(env, ch, fs, model, roleMap);
-
-                var obs = new IrisObservation()
-                {
-                    Sepal_length = 3.3f,
-                    Sepal_width = 1.6f,
-                    Petal_length = 0.2f,
-                    Petal_width = 5.1f,
-                };
-
-                using (var fs = File.OpenRead(outModelFilePath))
-                {
-                    var engine = env.CreatePredictionEngine<IrisObservation, IrisPrediction>(fs);
-                    var predictions = engine.Predict(obs);
-                    Assert.IsTrue(predictions.PredictedLabel != 0);
-                }
-            }
-        }
-
-        [TestMethod]
         public void TestEP_Q_KMeansEntryPointAPIWithDataFrame()
         {
             var iris = FileHelper.GetTestFile("iris.txt");

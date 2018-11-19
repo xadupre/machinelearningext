@@ -51,7 +51,7 @@ namespace Scikit.ML.DataManipulation
         }
 
         public bool CanShuffle => Source.CanShuffle;
-        public long? GetRowCount(bool lazy = true) { return Source.GetRowCount(lazy); }
+        public long? GetRowCount() { return Source.GetRowCount(); }
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null) { return Source.GetRowCursor(needCol, rand); }
         public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
         {

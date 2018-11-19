@@ -291,10 +291,10 @@ namespace Scikit.ML.ModelSelection
         /// <summary>
         /// Same as the input data view.
         /// </summary>
-        public override long? GetRowCount(bool lazy = true)
+        public override long? GetRowCount()
         {
             Host.AssertValue(Source, "Source");
-            return _pipedTransform.GetRowCount(lazy);
+            return _pipedTransform.GetRowCount();
         }
 
         /// <summary>
@@ -327,14 +327,14 @@ namespace Scikit.ML.ModelSelection
             IDataView current = input;
             if (_shuffleInput)
             {
-                var args1 = new ShuffleTransform.Arguments()
+                var args1 = new RowShufflingTransformer.Arguments()
                 {
                     ForceShuffle = false,
                     ForceShuffleSeed = _seedShuffle,
                     PoolRows = _poolRows,
                     PoolOnly = false,
                 };
-                current = new ShuffleTransform(Host, args1, current);
+                current = new RowShufflingTransformer(Host, args1, current);
             }
 
             // We generate a random number.
@@ -384,7 +384,7 @@ namespace Scikit.ML.ModelSelection
             currentTr = new ExtendedCacheTransform(Host, args3, view);
 
             // Removing the temporary column.
-            var finalTr = SelectColumnsTransform.CreateDrop(Host, currentTr, new string[] { columnName });
+            var finalTr = ColumnSelectingTransformer.CreateDrop(Host, currentTr, new string[] { columnName });
             var taggedViews = new List<Tuple<string, ITaggedDataView>>();
 
             // filenames
@@ -416,7 +416,7 @@ namespace Scikit.ML.ModelSelection
                         if (count == 0)
                             throw Host.Except("Part {0} is empty.", i);
 #endif
-                        filtView = SelectColumnsTransform.CreateDrop(Host, filtView, new string[] { columnName, _newColumn });
+                        filtView = ColumnSelectingTransformer.CreateDrop(Host, filtView, new string[] { columnName, _newColumn });
 
                         if (_filenames != null && _filenames.Any())
                         {

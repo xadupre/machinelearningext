@@ -179,10 +179,10 @@ namespace Scikit.ML.PipelineGraphTransforms
 
         public Schema Schema { get { return _source.Schema; } }
         public bool CanShuffle { get { return _source.CanShuffle; } }
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
             _host.AssertValue(_source, "_input");
-            return _source.GetRowCount(lazy);
+            return _source.GetRowCount();
         }
 
         public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)

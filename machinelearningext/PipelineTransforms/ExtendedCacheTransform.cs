@@ -211,10 +211,10 @@ namespace Scikit.ML.PipelineTransforms
         /// <summary>
         /// Same as the input data view.
         /// </summary>
-        public override long? GetRowCount(bool lazy = true)
+        public override long? GetRowCount()
         {
             Host.AssertValue(Source, "Source");
-            return _pipedTransform.GetRowCount(lazy);
+            return _pipedTransform.GetRowCount();
         }
 
         /// <summary>

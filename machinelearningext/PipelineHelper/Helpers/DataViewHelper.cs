@@ -22,7 +22,7 @@ namespace Scikit.ML.PipelineHelper
         /// <returns>number of rows</returns>
         public static long ComputeRowCount(IDataView view, Func<int, bool> predicate = null)
         {
-            var res = view.GetRowCount(false);
+            var res = view.GetRowCount();
             if (res.HasValue)
                 return res.Value;
             long lres = 0;

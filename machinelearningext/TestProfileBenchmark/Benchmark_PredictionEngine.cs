@@ -4,11 +4,13 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.ML;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms.Text;
 using Microsoft.ML.Data;
+using Microsoft.ML.Core.Data;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ProductionPrediction;
 using Scikit.ML.DataManipulation;
@@ -47,8 +49,8 @@ namespace TestProfileBenchmark
                 OutputTokens = true,
                 StopWordsRemover = new PredefinedStopWordsRemoverFactory(),
                 VectorNormalizer = normalize ? TextFeaturizingEstimator.TextNormKind.L2 : TextFeaturizingEstimator.TextNormKind.None,
-                CharFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
-                WordFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
+                CharFeatureExtractor = new NgramExtractingTransformer.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
+                WordFeatureExtractor = new NgramExtractingTransformer.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
             };
 
             var trainFilename = FileHelper.GetTestFile("wikipedia-detox-250-line-data.tsv");
@@ -63,20 +65,46 @@ namespace TestProfileBenchmark
                 // Train
                 var trainer = new SdcaBinaryTrainer(env, new SdcaBinaryTrainer.Arguments
                 {
-                    NumThreads = 1
+                    NumThreads = 1,
+                    LabelColumn = "Label",
+                    FeatureColumn = "Features"
                 });
 
                 var cached = new CacheDataView(env, trans, prefetch: null);
-                var trainRoles = new RoleMappedData(cached, label: "Label", feature: "Features");
-                var predictor = trainer.Train(new Microsoft.ML.Runtime.TrainContext(trainRoles));
+                var predictor = trainer.Train(cached);
 
+                var trainRoles = new RoleMappedData(cached, label: "Label", feature: "Features");
                 var scoreRoles = new RoleMappedData(trans, label: "Label", feature: "Features");
-                return ScoreUtils.GetScorer(predictor, scoreRoles, env, trainRoles.Schema);
+                return ScoreUtils.GetScorer(predictor.Model, scoreRoles, env, trainRoles.Schema);
             }
         }
 
-        private static List<Tuple<int, TimeSpan, int>> _MeasureTime(int conc, 
-                                string engine, IDataScorerTransform scorer, int N, int ncall, bool cacheScikit)
+        private static ITransformer _TrainSentiment2()
+        {
+            var args = new TextLoader.Arguments()
+            {
+                Separator = "tab",
+                HasHeader = true,
+                Column = new[]
+                           {
+                    new TextLoader.Column("Label", DataKind.BL, 0),
+                    new TextLoader.Column("SentimentText", DataKind.Text, 1)
+                }
+            };
+            var ml = new MLContext(seed: 1, conc: 1);
+            var reader = ml.Data.TextReader(args);
+            var trainFilename = FileHelper.GetTestFile("wikipedia-detox-250-line-data.tsv");
+
+            var data = reader.Read(new MultiFileSource(trainFilename));
+            var pipeline = ml.Transforms.Text.FeaturizeText("SentimentText", "Features")
+                .Append(ml.BinaryClassification.Trainers.StochasticDualCoordinateAscent("Label", "Features", advancedSettings: s => s.NumThreads = 1));
+            var model = pipeline.Fit(data);
+            return model;
+        }
+
+        private static List<Tuple<int, TimeSpan, int>> _MeasureTime(int conc,
+                                string engine, IDataScorerTransform scorer, ITransformer transformer,
+                                int N, int ncall, bool cacheScikit)
         {
             var args = new TextLoader.Arguments()
             {
@@ -107,7 +135,7 @@ namespace TestProfileBenchmark
                 if (engine == "mlnet")
                 {
                     Console.WriteLine("engine={0} N={1} ncall={2} cacheScikit={3}", engine, N, ncall, cacheScikit);
-                    var model = env.CreatePredictionEngine<SentimentData, SentimentPrediction>(scorer);
+                    var fct = transformer.MakePredictionFunction<SentimentData, SentimentPrediction>(env);
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {
@@ -115,7 +143,7 @@ namespace TestProfileBenchmark
                         sw.Start();
                         for (int i = 0; i < N; ++i)
                             foreach (var input in testData)
-                                model.Predict(input);
+                                fct.Predict(input);
                         sw.Stop();
                         times.Add(new Tuple<int, TimeSpan, int>(N, sw.Elapsed, call));
                     }
@@ -147,7 +175,8 @@ namespace TestProfileBenchmark
         {
             var dico = new Dictionary<Tuple<int, string, int, int>, double>();
             var scorer = _TrainSentiment();
-            foreach (var res in _MeasureTime(th, engine, scorer, N, ncall, cacheScikit))
+            var trscorer = _TrainSentiment2();
+            foreach (var res in _MeasureTime(th, engine, scorer, trscorer, N, ncall, cacheScikit))
                 dico[new Tuple<int, string, int, int>(res.Item1, engine, th, res.Item3)] = res.Item2.TotalSeconds;
             var df = DataFrameIO.Convert(dico, "N", "engine", "number of threads", "call", "time(s)");
             return df;
