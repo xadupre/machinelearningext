@@ -63,7 +63,7 @@ namespace TestMachineLearningExt
                         y = inputs[i].Y;
                         if (ans.Count != 2)
                             throw new Exception("Issue with dimension.");
-                        listx.AddRange(ans.Values);
+                        listx.AddRange(ans.GetValues().ToArray());
                         listy.Add((int)y);
                     }
                     if (listy.Count != 2)
@@ -129,7 +129,7 @@ namespace TestMachineLearningExt
                         y = inputs[i].Y;
                         if (ans.Count != 2)
                             throw new Exception("Issue with dimension.");
-                        listx.AddRange(ans.Values);
+                        listx.AddRange(ans.GetValues().ToArray());
                         listy.Add((int)y);
                     }
                     if (listy.Count != 2)
@@ -211,8 +211,9 @@ namespace TestMachineLearningExt
             {
                 _env = EnvHelper.NewTestEnvironment();
 
+                var view = DataViewConstructionUtils.CreateFromEnumerable(_env, new FloatVectorInput[] { });
                 var pipe = DataViewConstructionUtils.LoadPipeWithPredictor(_env, File.OpenRead(modelName), 
-                                                        new EmptyDataView(_env, null));
+                                                        new EmptyDataView(_env, view.Schema));
                 var transformer = new TransformWrapper(_env, pipe);
                 _predictor = _env.CreatePredictionEngine<FloatVectorInput, FloatOutput>(transformer);
             }

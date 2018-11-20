@@ -43,6 +43,10 @@ namespace Scikit.ML.PipelineHelper
 
     public class DelegateEnvironment : HostEnvironmentBase<DelegateEnvironment>
     {
+        private bool _elapsed;
+        public bool Elapsed => _elapsed;
+        public void SetPrintElapsed(bool e) { _elapsed = e; }
+
         /// <summary>
         /// Creates an environment
         /// </summary>
@@ -182,17 +186,18 @@ namespace Scikit.ML.PipelineHelper
                 if (!channel.Verbose)
                     return;
 
-                lock (_lock)
-                {
-                    EnsureNewLine();
-                    WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
-                    WriteHeader(_out, channel);
-                    _out.WriteLine("Finished.");
-                    EnsureNewLine();
-                    WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
-                    WriteHeader(_out, channel);
-                    _out.WriteLine(string.Format("Elapsed {0:c}.", channel.Watch.Elapsed));
-                }
+                if (_parent.Elapsed)
+                    lock (_lock)
+                    {
+                        EnsureNewLine();
+                        WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
+                        WriteHeader(_out, channel);
+                        _out.WriteLine("Finished.");
+                        EnsureNewLine();
+                        WriteAndReturnLinePrefix(MessageSensitivity.None, _out);
+                        WriteHeader(_out, channel);
+                        _out.WriteLine(string.Format("Elapsed {0:c}.", channel.Watch.Elapsed));
+                    }
             }
 
             /// <summary>
@@ -383,6 +388,7 @@ namespace Scikit.ML.PipelineHelper
             ILogWriter outWriter = null, ILogWriter errWriter = null)
             : this(RandomUtils.Create(seed), verbose, sensitivity, conc, outWriter, errWriter)
         {
+            _elapsed = true;
         }
 
         /// <summary>

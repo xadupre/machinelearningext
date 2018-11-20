@@ -9,10 +9,14 @@ it does not directly points to the main repository but
 to modified version of it which will be eventually merged.
 The submodule points to branch *modified* from
 `xadupre/machinelearning <https://github.com/xadupre/machinelearning/tree/modified>`_.
+Many changes changes were introduced and the custom extensions probably 
+would be compile against the current nuget package 
+`Microoft.ML <https://www.nuget.org/packages/Microsoft.ML/>`_
+without a significant amount of work.
+This will wait until :epkg:`ML.net`'s API stabilizes.
 
 .. contents::
     :local:
-
 
 Console.BufferWidth
 ===================
@@ -53,4 +57,7 @@ on appveyor and Visual Studio 2015. The option was removed:
 Internal
 ========
 
-A couple of classes where duplicated because they are internal.
+A couple of classes where duplicated because they became internal and
+then many internal where turned into public due to
+[BestFriendAttribute](https://github.com/dotnet/machinelearning/blob/master/src/Microsoft.ML.Core/BestFriendAttribute.cs).
+
