@@ -292,16 +292,19 @@ namespace Scikit.ML.DocHelperMlExt
                 ILogWriter logout = new LogWriter((string s) =>
                 {
                     keepOut.Append(s);
-                    if (env.VerboseLevel < 2 && s.Contains("Elapsed"))
-                        throw new Exception(string.Format("{0}\n---\n{1}", s, keepOut.ToString()));
+                    //if (env.VerboseLevel <= 2 && s.Contains("Elapsed"))
+                    //    throw new Exception(string.Format("{0}\n---\n{1}", s, keepOut.ToString()));
                     Console.Write(s);
                 });
                 ILogWriter logerr = new LogWriter((string s) =>
                 {
                     keepErr.Append(s);
-                    if (env.VerboseLevel < 2 && s.Contains("Elapsed"))
-                        throw new Exception(string.Format("{0}\n---\n{1}", s, keepErr.ToString()));
-                    Console.Error.Write(s);
+                    //if (env.VerboseLevel <= 2 && s.Contains("Elapsed"))
+                    //    throw new Exception(string.Format("{0}\n---\n{1}", s, keepErr.ToString()));
+                    if (s.Contains("Elapsed"))
+                        Console.Write(s);
+                    else
+                        Console.Error.Write(s);
                 });
                 env = new DelegateEnvironment(verbose: 2, outWriter: logout, errWriter: logerr);
                 dispose = true;

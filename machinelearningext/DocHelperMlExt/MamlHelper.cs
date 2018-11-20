@@ -50,17 +50,20 @@ namespace Scikit.ML.DocHelperMlExt
         {
             ILogWriter logout = new LogWriter((string s) =>
             {
-                if (s.Contains("Elapsed"))
-                    throw new Exception(s);
+                // if (verbose <= 2 && s.Contains("Elapsed"))
+                //    throw new Exception(s);
                 Console.Write(s);
             });
             ILogWriter logerr = new LogWriter((string s) =>
             {
+                // if (verbose <= 2 && s.Contains("Elapsed"))
+                //    throw new Exception(s);
                 if (s.Contains("Elapsed"))
-                    throw new Exception(s);
-                Console.Error.Write(s);
+                    Console.Write(s);
+                else
+                    Console.Error.Write(s);
             });
-            using (var env = new DelegateEnvironment(verbose: 2, outWriter: logout, errWriter: logerr))
+            using (var env = new DelegateEnvironment(verbose: verbose, outWriter: logout, errWriter: logerr))
                 return MamlScript(script, catch_output, env);
         }
 
