@@ -192,10 +192,10 @@ namespace Scikit.ML.FeaturesTransforms
         /// <summary>
         /// Same as the input data view.
         /// </summary>
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
             _host.AssertValue(Source, "_input");
-            return Source.GetRowCount(lazy); // We do not add or remove any row. Same number of rows as the input.
+            return Source.GetRowCount(); // We do not add or remove any row. Same number of rows as the input.
         }
 
         /// <summary>
@@ -329,9 +329,9 @@ namespace Scikit.ML.FeaturesTransforms
 
             public bool CanShuffle { get { return true; } }
 
-            public long? GetRowCount(bool lazy = true)
+            public long? GetRowCount()
             {
-                return _input.GetRowCount(lazy);
+                return _input.GetRowCount();
             }
 
             /// <summary>

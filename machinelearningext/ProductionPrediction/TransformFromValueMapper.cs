@@ -80,7 +80,7 @@ namespace Scikit.ML.ProductionPrediction
         public ValueMapper<TSrc, TDst> GetMapper<TSrc, TDst>() { return _mapper.GetMapper<TSrc, TDst>(); }
         public IDataView Source { get { return _source; } }
         public bool CanShuffle { get { return _source.CanShuffle; } }
-        public long? GetRowCount(bool lazy = true) { return _source.GetRowCount(lazy); }
+        public long? GetRowCount() { return _source.GetRowCount(); }
         public Schema Schema { get { return _schema; } }
 
         public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
@@ -181,7 +181,7 @@ namespace Scikit.ML.ProductionPrediction
             public ValueMapper<TTSrc, TTDst> GetMapper<TTSrc, TTDst>() { return _parent.GetMapper<TTSrc, TTDst>(); }
             public IDataView Source { get { return _parent.Source; } }
             public bool CanShuffle { get { return _parent.CanShuffle; } }
-            public long? GetRowCount(bool lazy = true) { return _parent.GetRowCount(lazy); }
+            public long? GetRowCount() { return _parent.GetRowCount(); }
             public Schema Schema { get { return _parent.Schema; } }
             public void Save(ModelSaveContext ctx) { throw Contracts.ExceptNotSupp("Not meant to be serialized. You need to serialize whatever it takes to instantiate it."); }
 

@@ -125,7 +125,7 @@ namespace Scikit.ML.PipelineTransforms
         }
 
         public virtual bool CanShuffle { get { return _sourcePipe.CanShuffle; } }
-        public virtual long? GetRowCount(bool lazy = true)
+        public virtual long? GetRowCount()
         {
             _host.CheckValue(_sourceCtx, "_sourceCtx");
             if (!IsInitialized())
@@ -135,7 +135,7 @@ namespace Scikit.ML.PipelineTransforms
                         DelayedInitialisationLockFree();
             }
             _host.CheckValue(_sourcePipe, "_sourcePipe");
-            return _sourcePipe.GetRowCount(lazy);
+            return _sourcePipe.GetRowCount();
         }
 
         public virtual IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)

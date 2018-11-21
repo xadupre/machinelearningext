@@ -56,7 +56,7 @@ namespace Scikit.ML.ProductionPrediction
         }
 
         public bool CanShuffle { get { return false; } }
-        public long? GetRowCount(bool lazy = true) { return null; }
+        public long? GetRowCount() { return null; }
         public Schema Schema { get { return _schema; } }
 
         public void Set(DataFrame value, int position = 0)

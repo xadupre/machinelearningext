@@ -170,10 +170,10 @@ namespace Scikit.ML.NearestNeighbors
         /// <summary>
         /// Same as the input data view.
         /// </summary>
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
             _host.AssertValue(Source, "_input");
-            return Source.GetRowCount(lazy);
+            return Source.GetRowCount();
         }
 
         /// <summary>

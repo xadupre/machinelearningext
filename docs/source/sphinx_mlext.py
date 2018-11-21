@@ -145,6 +145,14 @@ def maml_pythonnet(script, chdir=False, verbose=2):
     @param      chdir           to change directory to the DLL location
     @param      verbose         adjust the verbosity
     @return                     stdout and stderr
+    
+    If you get an error message like the following on Windows::
+    
+        Unable to load assembly 'System.CodeDom, Version=4.0.0.0'
+    
+    You should copy the one located in::
+    
+        C:/Users/<user>/.nuget/packages/system.codedom/4.4.0/lib/net461
     """
     if chdir:
         cur = os.getcwd()

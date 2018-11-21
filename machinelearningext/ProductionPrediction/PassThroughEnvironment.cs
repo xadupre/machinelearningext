@@ -23,7 +23,7 @@ namespace Scikit.ML.ProductionPrediction
             }
 
             private void ChannelDisposed()
-                => Dispatch(this, new ChannelMessage(ChannelMessageKind.Trace, MessageSensitivity.None, "Channel finished. Elapsed { 0:c }.", Watch.Elapsed));
+                => Dispatch(this, new ChannelMessage(ChannelMessageKind.Trace, MessageSensitivity.None, "Channel finished. Elapsed { 0:c }."));
 
             protected override void Dispose(bool disposing)
             {

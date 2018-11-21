@@ -285,19 +285,26 @@ namespace Scikit.ML.DocHelperMlExt
         {
             string currentDirectory = Path.GetDirectoryName(typeof(Maml).Module.FullyQualifiedName);
             bool dispose = false;
+            var keepOut = new StringBuilder();
+            var keepErr = new StringBuilder();
             if (env == null)
             {
                 ILogWriter logout = new LogWriter((string s) =>
                 {
-                    if (s.Contains("Elapsed"))
-                        throw new Exception(s);
+                    keepOut.Append(s);
+                    //if (env.VerboseLevel <= 2 && s.Contains("Elapsed"))
+                    //    throw new Exception(string.Format("{0}\n---\n{1}", s, keepOut.ToString()));
                     Console.Write(s);
                 });
                 ILogWriter logerr = new LogWriter((string s) =>
                 {
+                    keepErr.Append(s);
+                    //if (env.VerboseLevel <= 2 && s.Contains("Elapsed"))
+                    //    throw new Exception(string.Format("{0}\n---\n{1}", s, keepErr.ToString()));
                     if (s.Contains("Elapsed"))
-                        throw new Exception(s);
-                    Console.Error.Write(s);
+                        Console.Write(s);
+                    else
+                        Console.Error.Write(s);
                 });
                 env = new DelegateEnvironment(verbose: 2, outWriter: logout, errWriter: logerr);
                 dispose = true;
@@ -348,7 +355,10 @@ namespace Scikit.ML.DocHelperMlExt
                     }
                     var helpC = cmd as HelpCommand;
                     if (helpC == null)
+                    {
+                        env.SetPrintElapsed(true);
                         cmd.Run();
+                    }
                     else
                     {
                         int width = 80;
@@ -359,6 +369,7 @@ namespace Scikit.ML.DocHelperMlExt
                         catch (Exception)
                         {
                         }
+                        env.SetPrintElapsed(false);
                         helpC.Run(width);
                     }
                     result = 0;

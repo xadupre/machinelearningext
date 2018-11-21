@@ -863,7 +863,7 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         public void FillValues(IDataView view, int nrows = -1, bool keepVectors = false, int? numThreads = 1, IHostEnvironment env = null)
         {
-            long? numRows = view.GetRowCount(false);
+            long? numRows = view.GetRowCount();
             if (!numRows.HasValue)
                 numRows = DataViewUtils.ComputeRowCount(view);
 

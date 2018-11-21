@@ -182,10 +182,10 @@ namespace Scikit.ML.PipelineTransforms
         /// <summary>
         /// Same as the input data view.
         /// </summary>
-        public override long? GetRowCount(bool lazy = true)
+        public override long? GetRowCount()
         {
             Host.AssertValue(Source, "Source");
-            return Source.GetRowCount(lazy);
+            return Source.GetRowCount();
         }
 
         /// <summary>
@@ -369,7 +369,7 @@ namespace Scikit.ML.PipelineTransforms
 
             public bool CanShuffle { get { return _canShuffle; } }
 
-            public long? GetRowCount(bool lazy = true)
+            public long? GetRowCount()
             {
                 lock (_lock)
                 {

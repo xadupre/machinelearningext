@@ -139,10 +139,10 @@ namespace Scikit.ML.PipelineTransforms
         public Schema Schema { get { return _transform.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
             _host.AssertValue(Source, "_input");
-            return Source.GetRowCount(lazy); // We do not add or remove any row. Same number of rows as the input.
+            return Source.GetRowCount(); // We do not add or remove any row. Same number of rows as the input.
         }
 
         /// <summary>

@@ -195,7 +195,7 @@ namespace Scikit.ML.MultiClass
         public Schema Schema { get { return _transform.Schema; } }
         public bool CanShuffle { get { return _input.CanShuffle; } }
 
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
             _host.AssertValue(_input, "_input");
             return null;
@@ -654,7 +654,7 @@ namespace Scikit.ML.MultiClass
             }
 
             public bool CanShuffle { get { return true; } }
-            public long? GetRowCount(bool lazy = true) { return null; }
+            public long? GetRowCount() { return null; }
 
             /// <summary>
             /// When the last column is requested, we also need the column used to compute it.

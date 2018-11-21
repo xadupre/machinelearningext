@@ -232,10 +232,10 @@ namespace Scikit.ML.RandomTransforms
         /// <summary>
         /// Same as the input data view.
         /// </summary>
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
             _host.AssertValue(Source, "_input");
-            return Source.GetRowCount(lazy);
+            return Source.GetRowCount();
         }
 
         /// <summary>
@@ -404,7 +404,7 @@ namespace Scikit.ML.RandomTransforms
 
             public bool CanShuffle { get { return true; } }
 
-            public long? GetRowCount(bool lazy = true)
+            public long? GetRowCount()
             {
                 return null;
             }

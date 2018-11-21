@@ -162,10 +162,10 @@ namespace Scikit.ML.Clustering
 
         public override bool CanShuffle { get { return _transform.CanShuffle; } }
 
-        public override long? GetRowCount(bool lazy = true)
+        public override long? GetRowCount()
         {
             Host.AssertValue(Source, "_input");
-            return Source.GetRowCount(lazy);
+            return Source.GetRowCount();
         }
 
         protected override bool? ShouldUseParallelCursors(Func<int, bool> predicate)
@@ -407,9 +407,9 @@ namespace Scikit.ML.Clustering
 
             public bool CanShuffle { get { return true; } }
 
-            public long? GetRowCount(bool lazy = true)
+            public long? GetRowCount()
             {
-                return _input.GetRowCount(lazy);
+                return _input.GetRowCount();
             }
 
             public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)

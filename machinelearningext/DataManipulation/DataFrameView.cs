@@ -47,7 +47,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns the number of rows. lazy is unused as the data is stored in memory.
         /// </summary>
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
             return _rows.Length;
         }

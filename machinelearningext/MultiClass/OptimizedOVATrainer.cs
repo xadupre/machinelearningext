@@ -83,7 +83,7 @@ namespace Scikit.ML.MultiClass
 
         public override PredictionKind PredictionKind { get { return PredictionKind.MultiClassClassification; } }
 
-        public override TVectorPredictor Train(TrainContext ctx)
+        protected override TVectorPredictor Train(TrainContext ctx)
         {
             var data = ctx.TrainingSet;
             Contracts.CheckValue(data, "data");

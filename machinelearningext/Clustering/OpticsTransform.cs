@@ -207,10 +207,10 @@ namespace Scikit.ML.Clustering
         /// <summary>
         /// Same as the input data view.
         /// </summary>
-        public override long? GetRowCount(bool lazy = true)
+        public override long? GetRowCount()
         {
             Host.AssertValue(Source, "Source");
-            return Source.GetRowCount(lazy);
+            return Source.GetRowCount();
         }
 
         /// <summary>
@@ -467,9 +467,9 @@ namespace Scikit.ML.Clustering
 
             public bool CanShuffle { get { return true; } }
 
-            public long? GetRowCount(bool lazy = true)
+            public long? GetRowCount()
             {
-                return _input.GetRowCount(lazy);
+                return _input.GetRowCount();
             }
 
             public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)

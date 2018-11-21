@@ -173,10 +173,10 @@ namespace Scikit.ML.TimeSeries
             get { return Source.CanShuffle; }
         }
 
-        public override long? GetRowCount(bool lazy = true)
+        public override long? GetRowCount()
         {
             Host.AssertValue(Source, "Source");
-            return Source.GetRowCount(lazy);
+            return Source.GetRowCount();
         }
 
         protected override bool? ShouldUseParallelCursors(Func<int, bool> predicate)
@@ -296,13 +296,13 @@ namespace Scikit.ML.TimeSeries
             var args = new PredictTransform.Arguments { featureColumn = slotTime, outputColumn = newName, serialize = false };
             var predict = new PredictTransform(Host, args, roles.Data, trend);
             string tempColumn = predict.Schema.GetTempColumnName() + "ConcatDeTrend";
-            var cargs = new ConcatTransform.Arguments()
+            var cargs = new ColumnConcatenatingTransformer.Arguments()
             {
                 Column = new[] {
-                    ConcatTransform.Column.Parse(string.Format("{0}:{1},{2}", tempColumn, slotName, newName)),
+                    ColumnConcatenatingTransformer.Column.Parse(string.Format("{0}:{1},{2}", tempColumn, slotName, newName)),
                }
             };
-            var concat = ConcatTransform.Create(Host, cargs, predict);
+            var concat = ColumnConcatenatingTransformer.Create(Host, cargs, predict);
 
             var lambdaView = LambdaColumnHelper.Create(Host,
                 "DeTrendTransform", concat, tempColumn, _args.columns[0].Name, new VectorType(NumberType.R4, 2),
@@ -320,7 +320,7 @@ namespace Scikit.ML.TimeSeries
                 dropColumns.Add(slotTime);
             dropColumns.Add(tempColumn);
 
-            var dropped = SelectColumnsTransform.CreateDrop(Host, lambdaView, dropColumns.ToArray());
+            var dropped = ColumnSelectingTransformer.CreateDrop(Host, lambdaView, dropColumns.ToArray());
             return dropped;
         }
     }

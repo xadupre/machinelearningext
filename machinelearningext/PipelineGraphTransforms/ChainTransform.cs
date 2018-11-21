@@ -116,9 +116,9 @@ namespace Scikit.ML.PipelineGraphTransforms
         public Schema Schema { get { return _dataTransforms.Last().Schema; } }
         public bool CanShuffle { get { return _dataTransforms.Select(c => c.CanShuffle).All(c => true); } }
 
-        public long? GetRowCount(bool lazy = true)
+        public long? GetRowCount()
         {
-            return _dataTransforms.Last().GetRowCount(lazy);
+            return _dataTransforms.Last().GetRowCount();
         }
 
         public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
