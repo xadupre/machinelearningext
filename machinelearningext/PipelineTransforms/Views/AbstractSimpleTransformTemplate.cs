@@ -6,6 +6,7 @@
 
 
 using System;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Data;

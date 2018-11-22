@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.DataManipulation;
@@ -16,7 +17,7 @@ using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
 using IDataView = Microsoft.ML.Runtime.Data.IDataView;
 using IRowCursor = Microsoft.ML.Runtime.Data.IRowCursor;
 using IRowCursorConsolidator = Microsoft.ML.Runtime.Data.IRowCursorConsolidator;
-using Schema = Microsoft.ML.Runtime.Data.Schema;
+using Schema = Microsoft.ML.Data.Schema;
 using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
 
 using ModelLoadContext = Microsoft.ML.Runtime.Model.ModelLoadContext;

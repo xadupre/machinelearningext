@@ -3,6 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using Microsoft.ML;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;

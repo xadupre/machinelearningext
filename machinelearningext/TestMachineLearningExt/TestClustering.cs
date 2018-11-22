@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.Clustering;

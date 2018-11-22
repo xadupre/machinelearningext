@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;

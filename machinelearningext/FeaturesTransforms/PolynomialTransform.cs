@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
@@ -356,7 +357,7 @@ namespace Scikit.ML.FeaturesTransforms
                 }
                 else
                     // The new column is not required. We do not need to compute it. But we need to keep the same schema.
-                    return new SameCursor(_input.GetRowCursor(predicate, rand), Schema);
+                    return new SameCursor(_input.GetRowCursor(predicate, rand), this.Schema);
             }
 
             public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
@@ -369,7 +370,7 @@ namespace Scikit.ML.FeaturesTransforms
                 else
                     // The new column is not required. We do not need to compute it. But we need to keep the same schema.
                     return _input.GetRowCursorSet(out consolidator, predicate, n, rand)
-                                 .Select(c => new SameCursor(c, Schema))
+                                 .Select(c => new SameCursor(c, this.Schema))
                                  .ToArray();
             }
         }
