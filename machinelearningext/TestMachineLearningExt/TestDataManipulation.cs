@@ -225,23 +225,6 @@ namespace TestMachineLearningExt
             }
         }
 
-        [TestMethod]
-        public void TestDataFrameScoringMultiEntryPoints2()
-        {
-            var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-
-            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-            var learningPipeline = new GenericLearningPipeline(conc: 1);
-            learningPipeline.Add(importData);
-            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
-            var predictor = learningPipeline.Train();
-            var predictions = predictor.Predict(df);
-            var dfout = DataFrameIO.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
-        }
-
         #endregion
 
         #region DataFrame Operators

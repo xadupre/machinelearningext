@@ -103,29 +103,7 @@ namespace TestMachineLearningExt
                 if (!File.Exists(tempFile))
                     throw new FileNotFoundException(tempFile);
             }
-        }
-
-        [TestMethod]
-        public void TestEP_PassThroughTransform()
-        {
-            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var iris = FileHelper.GetTestFile("iris.txt");
-            var outPass = FileHelper.GetOutputFile("data.idv", methodName);
-            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-
-            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-            var learningPipeline = new GenericLearningPipeline(conc: 1);
-            learningPipeline.Add(importData);
-            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.PassThrough() { Filename = outPass, SaveOnDisk = true });
-            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
-            var predictor = learningPipeline.Train();
-            var predictions = predictor.Predict(df);
-            var dfout = DataFrameIO.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
-            Assert.IsTrue(File.Exists(outPass));
-        }
+        }        
 
         #endregion
 
@@ -157,27 +135,7 @@ namespace TestMachineLearningExt
                                                                      trainer.Trainer.PredictionKind, true, ratio: 0.8f);
                 }
             }
-        }
-
-        [TestMethod]
-        public void TestEP_ULabelToR4LabelTransform()
-        {
-            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-
-            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-            var learningPipeline = new GenericLearningPipeline(conc: 1);
-            learningPipeline.Add(importData);
-            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.Scaler("Features"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.ULabelToR4Label("Label"));
-            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
-            var predictor = learningPipeline.Train();
-            var predictions = predictor.Predict(df);
-            var dfout = DataFrameIO.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 8));
-        }
+        }       
 
         #endregion
 

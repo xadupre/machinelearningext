@@ -49,15 +49,15 @@ namespace Scikit.ML.PipelineGraphTraining
             public string taggedPredictor;
 
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Column to use for features when scorer is not defined",
-                ShortName = "feat", Purpose = SpecialPurpose.ColumnName)]
+                ShortName = "feat")]
             public string featureColumn = DefaultColumnNames.Features;
 
-            [Argument(ArgumentType.AtMostOnce, HelpText = "Group column name", ShortName = "group", Purpose = SpecialPurpose.ColumnName)]
+            [Argument(ArgumentType.AtMostOnce, HelpText = "Group column name", ShortName = "group")]
             public string groupColumn = DefaultColumnNames.GroupId;
 
             [Argument(ArgumentType.Multiple,
                 HelpText = "Input columns: Columns with custom kinds declared through key assignments, e.g., col[Kind]=Name to assign column named 'Name' kind 'Kind'",
-                ShortName = "col", Purpose = SpecialPurpose.ColumnSelector)]
+                ShortName = "col")]
             public string customColumn;
 
             public KeyValuePair<string, string>[] customColumnPair;

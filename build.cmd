@@ -5,6 +5,8 @@ cd machinelearning
 if "%1"=="ml" goto compileml:
 if exist bin\x64.Release goto mldeb:
 :compileml:
+git submodule update --init
+
 cmd /C build.cmd
 cmd /C build.cmd -Release
 :mldeb:

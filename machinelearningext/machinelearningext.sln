@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FeaturesTransforms", "Featu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NearestNeighbors", "NearestNeighbors\NearestNeighbors.csproj", "{D82D8A18-6386-49C8-A43E-412AF399B23B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntryPoints", "EntryPoints\EntryPoints.csproj", "{83B71022-5D12-43AD-9E9A-05956A30BC86}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RandomTransforms", "RandomTransforms\RandomTransforms.csproj", "{424CF939-096C-4EF1-8A19-379C27304DB0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScikitAPI", "ScikitAPI\ScikitAPI.csproj", "{157ED2E5-F163-447D-A214-F5A05FF5C2D9}"
@@ -45,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocHelperMlExt", "DocHelper
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProfileBenchmark", "TestProfileBenchmark\TestProfileBenchmark.csproj", "{B723EAA8-3EC4-46ED-BA17-F520E7729EA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnnxHelper", "OnnxHelper\OnnxHelper.csproj", "{A56DB1D4-4757-4385-8658-F30CB66A2FC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnnxHelper", "OnnxHelper\OnnxHelper.csproj", "{A56DB1D4-4757-4385-8658-F30CB66A2FC5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,10 +79,6 @@ Global
 		{D82D8A18-6386-49C8-A43E-412AF399B23B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D82D8A18-6386-49C8-A43E-412AF399B23B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D82D8A18-6386-49C8-A43E-412AF399B23B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{83B71022-5D12-43AD-9E9A-05956A30BC86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{83B71022-5D12-43AD-9E9A-05956A30BC86}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{83B71022-5D12-43AD-9E9A-05956A30BC86}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{83B71022-5D12-43AD-9E9A-05956A30BC86}.Release|Any CPU.Build.0 = Release|Any CPU
 		{424CF939-096C-4EF1-8A19-379C27304DB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{424CF939-096C-4EF1-8A19-379C27304DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{424CF939-096C-4EF1-8A19-379C27304DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU

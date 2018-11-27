@@ -569,24 +569,6 @@ namespace Scikit.ML.DataManipulation
 
         #endregion
 
-        #region EntryPoints
-
-        public DataLegacy.TextLoader EPTextLoader(string dataPath, char sep = ',', bool header = true)
-        {
-            var loader = new DataLegacy.TextLoader(dataPath)
-            {
-                Arguments = new DataLegacy.TextLoaderArguments()
-                {
-                    Separator = new[] { sep },
-                    HasHeader = header,
-                    Column = SchemaHelper.ToColumnArgArray(Schema)
-                }
-            };
-            return loader;
-        }
-
-        #endregion
-
         #region loc / iloc
 
         /// <summary>

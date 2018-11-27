@@ -47,7 +47,7 @@ namespace TestProfileBenchmark
                 KeepPunctuations = false,
                 TextCase = TextNormalizingEstimator.CaseNormalizationMode.Lower,
                 OutputTokens = true,
-                StopWordsRemover = new PredefinedStopWordsRemoverFactory(),
+                UsePredefinedStopWordRemover = true,
                 VectorNormalizer = normalize ? TextFeaturizingEstimator.TextNormKind.L2 : TextFeaturizingEstimator.TextNormKind.None,
                 CharFeatureExtractor = new NgramExtractingTransformer.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
                 WordFeatureExtractor = new NgramExtractingTransformer.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
@@ -71,7 +71,7 @@ namespace TestProfileBenchmark
                 });
 
                 var cached = new CacheDataView(env, trans, prefetch: null);
-                var predictor = trainer.Train(cached);
+                var predictor = trainer.Fit(cached);
 
                 var trainRoles = new RoleMappedData(cached, label: "Label", feature: "Features");
                 var scoreRoles = new RoleMappedData(trans, label: "Label", feature: "Features");

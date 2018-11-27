@@ -107,41 +107,6 @@ var v = dfout.iloc[0, 7];
 Console.WriteLine("PredictedLabel: {0}", v);
 ```
 
-### Example 3: EntryPoints API
-
-This is the same example based on
-[Iris Classification](https://github.com/dotnet/machinelearning-samples/tree/master/samples/csharp/getting-started/MulticlassClassification_Iris)
-but using the new class DataFrame. It is not necessary anymore
-to create a class specific to the data used to train. It is a
-little bit less efficient for predictions as two consecutive
-calls to method ``Predict`` on generic data requires
-some the pipeline to build new iterators at every call.
-This extra work can be saved when the prediction instance is known.
-
-```CSharp
-var iris = "iris.txt";
-
-// We read the text data and create a dataframe / dataview.
-var df = DataFrameIO.ReadCsv(iris, sep: '\t',
-                             dtypes: new DataKind?[] { DataKind.R4 });
-
-var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-
-var learningPipeline = new ConcatEstimator(env, "Features", new[] { "SepalLength", "SepalWidth", "PetalLength", "PetalWidth" })
-                                 .Append(new SdcaMultiClassTrainer(env, new SdcaMultiClassTrainer.Arguments(),
-                                                             "Features", "Label"));
-                                                                   
-var predictor = learningPipeline.Fit(importData);
-
-var predictionFunct = model.MakePredictionFunctionDataFrame(env, importData.Schema);
-
-var predictions = predictionFunct.Predict(importData);
-
-// And access one value...
-var v = dfout.iloc[0, 7];
-Console.WriteLine("{0}: {1}", vdf.Schema.GetColumnName(7), v.iloc[0, 7]);
-```
-
 ### Example 3: DataFrame in C#
 
 The class ``DataFrame`` replicates some functionalities
