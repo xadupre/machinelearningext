@@ -64,28 +64,5 @@ namespace TestMachineLearningExt
                 }
             }
         }
-
-        [TestMethod]
-        public void TestCSGenerator()
-        {
-            var methodName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-            var basePath = FileHelper.GetOutputFile("CSharpApiExt.cs", methodName);
-            var cmd = $"? generator=cs{{csFilename={basePath} exclude=System.CodeDom.dll}}";
-            var bout = new StringBuilder();
-            var berr = new StringBuilder();
-            ILogWriter stout = new LogWriter(s => bout.Append(s));
-            ILogWriter sderr = new LogWriter(s => berr.Append(s));
-            using (var env = new DelegateEnvironment(outWriter: stout, errWriter: sderr, verbose: 3))
-            {
-                MamlHelper.MamlScript(cmd, false, env: env);
-                var sout = bout.ToString();
-                var serr = berr.ToString();
-                Assert.IsTrue(sout.Length > 0);
-                Assert.IsTrue(serr.Length == 0);
-                Assert.IsFalse(sout.ToLower().Contains("usage"));
-            }
-            var text = File.ReadAllText(basePath);
-            Assert.IsTrue(text.ToLower().Contains("nearest"));
-        }
     }
 }

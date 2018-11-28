@@ -18,22 +18,7 @@ This will wait until :epkg:`ML.net`'s API stabilizes.
 .. contents::
     :local:
 
-Console.BufferWidth
-===================
 
-Commit 
-`catch exception due to Console.BufferWidth <https://github.com/xadupre/machinelearning/commit/7b891369a23bb3955972cee515ce2a7753bcae68>`_.
-`Console.BufferWidth <https://docs.microsoft.com/fr-fr/dotnet/api/system.console.bufferwidth>`_ is not always
-available when the command line is called from an external program.
-The commit catches any exception raised due to that.
-
-OVA
-===
-
-Commit
-`improves ova <https://github.com/xadupre/machinelearning/commit/5fc9981dae162975bba0dfae20f3d8c3eb00d821>`_.
-It does not fix the following issue
-`#1259 <https://github.com/dotnet/machinelearning/issues/1259>`_ but could be part of it.
 
 Warning as errors
 =================
@@ -47,5 +32,11 @@ Internal
 
 A couple of classes where duplicated because they became internal and
 then many internal where turned into public due to
-[BestFriendAttribute](https://github.com/dotnet/machinelearning/blob/master/src/Microsoft.ML.Core/BestFriendAttribute.cs).
+`BestFriendAttribute <https://github.com/dotnet/machinelearning/blob/master/src/Microsoft.ML.Core/BestFriendAttribute.cs>`_.
+See also `Switch internal to public to allow external contributions <https://github.com/xadupre/machinelearning/commit/7cc342326dd0c24504dbf23078d129c3f5da09a0>`_.
+
+Other changes
+=============
+
+* `release one assert <https://github.com/xadupre/machinelearning/commit/6e01e64c2189bfdcf1838fea5a1680452ac853c7>`_
 
