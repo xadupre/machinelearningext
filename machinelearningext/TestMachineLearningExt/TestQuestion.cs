@@ -13,7 +13,6 @@ using Scikit.ML.PipelineHelper;
 using Scikit.ML.ScikitAPI;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ProductionPrediction;
-using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt

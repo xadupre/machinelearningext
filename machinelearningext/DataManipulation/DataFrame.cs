@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
-using DataLegacy = Microsoft.ML.Legacy.Data;
 using Scikit.ML.PipelineHelper;
 
 

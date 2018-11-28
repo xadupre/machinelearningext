@@ -11,7 +11,6 @@ using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.FeaturesTransforms;
 using Scikit.ML.DataManipulation;
-using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt

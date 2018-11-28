@@ -9,7 +9,6 @@ using Microsoft.ML.Runtime.Api;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.NearestNeighbors;
 using Scikit.ML.DataManipulation;
-using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt
