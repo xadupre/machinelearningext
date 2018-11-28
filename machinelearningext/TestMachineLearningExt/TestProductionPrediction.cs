@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.PipelineInference;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineLambdaTransforms;
 using Scikit.ML.PipelineTransforms;
