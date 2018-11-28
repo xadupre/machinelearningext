@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.CommandLine;
 using Scikit.ML.PipelineHelper;
@@ -16,7 +17,7 @@ using IDataSaver = Microsoft.ML.Runtime.Data.IDataSaver;
 using IDataView = Microsoft.ML.Runtime.Data.IDataView;
 using IRowCursor = Microsoft.ML.Runtime.Data.IRowCursor;
 using IRowCursorConsolidator = Microsoft.ML.Runtime.Data.IRowCursorConsolidator;
-using Schema = Microsoft.ML.Runtime.Data.Schema;
+using Schema = Microsoft.ML.Data.Schema;
 using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
 using MultiFileSource = Microsoft.ML.Runtime.Data.MultiFileSource;
 using CacheDataView = Microsoft.ML.Data.CacheDataView;

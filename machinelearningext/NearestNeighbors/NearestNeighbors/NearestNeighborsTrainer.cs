@@ -85,7 +85,7 @@ namespace Scikit.ML.NearestNeighbors
             _args = args;
         }
 
-        protected override INearestNeighborsPredictor Train(TrainContext context)
+        protected override INearestNeighborsPredictor Train(TrainContext context) 
         {
             return Train(context.TrainingSet);
         }

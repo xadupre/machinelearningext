@@ -47,12 +47,10 @@ namespace Scikit.ML.PipelineLambdaTransforms
 
         public new class Arguments
         {
-            [Argument(ArgumentType.LastOccurenceWins, HelpText = "Column to use for features",
-                ShortName = "feat", Purpose = SpecialPurpose.ColumnName)]
+            [Argument(ArgumentType.LastOccurenceWins, HelpText = "Column to use for features", ShortName = "feat")]
             public string featureColumn = DefaultColumnNames.Features;
 
-            [Argument(ArgumentType.LastOccurenceWins, HelpText = "Output column",
-                ShortName = "col", Purpose = SpecialPurpose.ColumnName)]
+            [Argument(ArgumentType.LastOccurenceWins, HelpText = "Output column", ShortName = "col")]
             public string outputColumn = "Predictions";
 
             [Argument(ArgumentType.AtMostOnce, HelpText = "Output probabilities instead of score", ShortName = "p")]

@@ -5,10 +5,11 @@ using System.Text;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
-using Scikit.ML.PipelineHelper;
 using DataLegacy = Microsoft.ML.Legacy.Data;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.DataManipulation
@@ -564,24 +565,6 @@ namespace Scikit.ML.DataManipulation
         public override int GetHashCode()
         {
             throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region EntryPoints
-
-        public DataLegacy.TextLoader EPTextLoader(string dataPath, char sep = ',', bool header = true)
-        {
-            var loader = new DataLegacy.TextLoader(dataPath)
-            {
-                Arguments = new DataLegacy.TextLoaderArguments()
-                {
-                    Separator = new[] { sep },
-                    HasHeader = header,
-                    Column = SchemaHelper.ToColumnArgArray(Schema)
-                }
-            };
-            return loader;
         }
 
         #endregion

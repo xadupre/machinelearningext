@@ -230,64 +230,6 @@ namespace TestMachineLearningExt
             TrainkNNTransformId(1, NearestNeighborsWeights.uniform, 2);
             TrainkNNTransformId(2, NearestNeighborsWeights.uniform, 2);
             TrainkNNTransformId(10, NearestNeighborsWeights.uniform, 2);
-        }
-
-        [TestMethod]
-        public void TestEP_TestNearestNeighborsLPTr()
-        {
-            var iris = FileHelper.GetTestFile("iris.txt");
-            var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-
-            var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-            var learningPipeline = new GenericLearningPipeline(conc: 1);
-            learningPipeline.Add(importData);
-            learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-            learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighbors("Features"));
-            learningPipeline.Add(new Legacy.Trainers.StochasticDualCoordinateAscentRegressor());
-            var predictor = learningPipeline.Train();
-            var predictions = predictor.Predict(df);
-            var dfout = DataFrameIO.ReadView(predictions);
-            Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 18));
-        }
-
-        [TestMethod]
-        public void TestEP_NearestNeighborsLPBc()
-        {
-            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
-            {
-                var iris = FileHelper.GetTestFile("iris_binary.txt");
-                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-
-                var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-                var learningPipeline = new GenericLearningPipeline(conc: 1);
-                learningPipeline.Add(importData);
-                learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Feat", "Sepal_length", "Sepal_width"));
-                var node = new Scikit.ML.EntryPoints.NearestNeighborsBinary("Feat", "Label", null);
-                learningPipeline.Add(node);
-                var predictor = learningPipeline.Train();
-                var predictions = predictor.Predict(df);
-                var dfout = DataFrameIO.ReadView(predictions);
-                Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 9));
-            }
-        }
-
-        [TestMethod]
-        public void TestEP_NearestNeighborsLPMc()
-        {
-            using (var env = EnvHelper.NewTestEnvironment(conc: 1))
-            {
-                var iris = FileHelper.GetTestFile("iris.txt");
-                var df = DataFrameIO.ReadCsv(iris, sep: '\t', dtypes: new ColumnType[] { NumberType.R4 });
-                var importData = df.EPTextLoader(iris, sep: '\t', header: true);
-                var learningPipeline = new GenericLearningPipeline(conc: 1);
-                learningPipeline.Add(importData);
-                learningPipeline.Add(new Legacy.Transforms.ColumnConcatenator("Features", "Sepal_length", "Sepal_width"));
-                learningPipeline.Add(new Scikit.ML.EntryPoints.NearestNeighborsMultiClass());
-                var predictor = learningPipeline.Train();
-                var predictions = predictor.Predict(df);
-                var dfout = DataFrameIO.ReadView(predictions);
-                Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 11));
-            }
-        }
+        }                
     }
 }

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
@@ -374,6 +375,7 @@ namespace Scikit.ML.PipelineHelper
             }
         }
 
+        /*
         public static DataLegacy.DataKind DataKind2DataDataKind(Data.DataKind kind)
         {
             return (DataLegacy.DataKind)kind;
@@ -383,7 +385,8 @@ namespace Scikit.ML.PipelineHelper
         {
             return (Data.DataKind)kind;
         }
-
+        */
+        /*
         public static DataLegacy.TextLoaderColumn[] ToColumnArgArray(ISchema schema)
         {
             var res = new DataLegacy.TextLoaderColumn[schema.ColumnCount];
@@ -398,6 +401,7 @@ namespace Scikit.ML.PipelineHelper
             }
             return res;
         }
+        */
 
         /// <summary>
         /// Returns the data kind based on a type.

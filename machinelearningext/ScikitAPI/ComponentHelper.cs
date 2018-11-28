@@ -23,7 +23,6 @@ using Microsoft.ML.Runtime.Sweeper;
 using Google.Protobuf;
 using Scikit.ML.Clustering;
 using Scikit.ML.DataManipulation;
-using Scikit.ML.EntryPoints;
 using Scikit.ML.TimeSeries;
 using Scikit.ML.FeaturesTransforms;
 using Scikit.ML.PipelineLambdaTransforms;
@@ -77,14 +76,13 @@ namespace Scikit.ML.ScikitAPI
             res.Add(typeof(SlidingWindowTransform).Assembly);
             res.Add(typeof(TextFeaturizingEstimator).Assembly);
             res.Add(typeof(TensorFlowTransform).Assembly);
-            res.Add(typeof(ChainCommand).Assembly);
-            res.Add(typeof(SaveOnnxCommand).Assembly);
-            res.Add(typeof(SweepCommand).Assembly);
+            res.Add(typeof(TrainCommand).Assembly);
+            res.Add(typeof(ICanSaveOnnx).Assembly);
+            res.Add(typeof(SweeperBase).Assembly);
             res.Add(typeof(VectorTypeAttribute).Assembly);
             res.Add(typeof(JsonParser).Assembly);
             // ext
             res.Add(typeof(DataFrame).Assembly);
-            res.Add(typeof(EntryPointScaler).Assembly);
             res.Add(typeof(DBScan).Assembly);
             res.Add(typeof(DeTrendTransform).Assembly);
             res.Add(typeof(PolynomialTransform).Assembly);
@@ -112,21 +110,6 @@ namespace Scikit.ML.ScikitAPI
             var res = GetAssemblies();
             foreach (var a in res)
                 AddComponent(env, a);
-
-#if DEBUG
-            ComponentCatalog.EntryPointInfo info;
-            string name = "EntryPoints.Polynomial";
-            if (!env.ComponentCatalog.TryFindEntryPoint(name, out info))
-            {
-                var cls = env.ComponentCatalog.GetAllClasses();
-                var sel = cls.Where(c => !string.IsNullOrEmpty(c.UserName))
-                             .Where(c => c.UserName.Contains("olyn"))
-                             .OrderBy(c => c.UserName)
-                             .ToArray();
-                var names = string.Join("\n", sel.Select(c => c.UserName));
-                throw env.Except($"Entry point '{name}' not found in\n{names}");
-            }
-#endif
         }
     }
 }
