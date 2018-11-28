@@ -19,7 +19,6 @@ This will wait until :epkg:`ML.net`'s API stabilizes.
     :local:
 
 
-
 Warning as errors
 =================
 
@@ -36,7 +35,4 @@ then many internal where turned into public due to
 See also `Switch internal to public to allow external contributions <https://github.com/xadupre/machinelearning/commit/7cc342326dd0c24504dbf23078d129c3f5da09a0>`_.
 
 Other changes
-=============
-
-* `release one assert <https://github.com/xadupre/machinelearning/commit/6e01e64c2189bfdcf1838fea5a1680452ac853c7>`_
 
