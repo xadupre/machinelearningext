@@ -139,7 +139,7 @@ namespace Scikit.ML.PipelineTransforms
             return _sourcePipe.GetRowCount();
         }
 
-        public virtual IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public virtual IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             _host.CheckValue(_sourceCtx, "_sourceCtx");
             if (!IsInitialized())
@@ -152,7 +152,7 @@ namespace Scikit.ML.PipelineTransforms
             return _sourcePipe.GetRowCursor(predicate, rand);
         }
 
-        public virtual IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public virtual IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_sourceCtx, "_sourceCtx");
             _host.AssertValue(_sourcePipe, "_sourcePipe");

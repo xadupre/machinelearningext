@@ -114,22 +114,22 @@ namespace Scikit.ML.DataManipulation
         public string[] Columns => _data.Columns;
         public ColumnType[] Kinds => _data.Kinds;
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return _data.GetRowCursor(needCol, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return _data.GetRowCursorSet(out consolidator, needCol, n, rand);
         }
 
-        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
         {
             return _data.GetRowCursor(rows, columns, needCol, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return _data.GetRowCursorSet(rows, columns, out consolidator, needCol, n, rand);
         }
@@ -948,7 +948,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a sample.
         /// </summary>
-        public IDataFrameView Sample(int nrows = 5, bool distinct = false, IRandom rand = null)
+        public IDataFrameView Sample(int nrows = 5, bool distinct = false, Random rand = null)
         {
             nrows = Math.Min(Length, nrows);
             return new DataFrameView(this, DataFrameRandom.RandomIntegers(nrows, Length, distinct, rand), null);

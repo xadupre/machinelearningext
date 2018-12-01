@@ -248,13 +248,13 @@ namespace Scikit.ML.RandomTransforms
             return true;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
@@ -410,7 +410,7 @@ namespace Scikit.ML.RandomTransforms
                 return null;
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 var kind = _toShake[0].OutputType.IsVector()
                                 ? _toShake[0].OutputType.ItemType().RawKind()
@@ -426,7 +426,7 @@ namespace Scikit.ML.RandomTransforms
                 }
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 DataKind kind;
                 if (_toShake[0].OutputType.IsVector())

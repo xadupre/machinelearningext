@@ -1401,7 +1401,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a cursor on the data.
         /// </summary>
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return new RowCursor(this, needCol, rand);
         }
@@ -1409,7 +1409,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a cursor on a subset of the data.
         /// </summary>
-        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
         {
             return new RowCursor(this, needCol, rand, rows: rows, columns: columns);
         }
@@ -1427,7 +1427,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a set of aliased cursors on the data.
         /// </summary>
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             return GetRowCursorSet(null, null, out consolidator, predicate, n, rand);
         }
@@ -1435,7 +1435,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a set of aliased cursors on the data.
         /// </summary>
-        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             var host = new ConsoleEnvironment().Register("Estimate n threads");
             n = DataViewUtils.GetThreadCount(host, n);
@@ -1464,7 +1464,7 @@ namespace Scikit.ML.DataManipulation
         {
             DataContainer _cont;
             public long Batch => _first;
-            IRandom _rand;
+            Random _rand;
             Func<int, bool> _needCol;
             long _inc;
             readonly long _first;
@@ -1477,7 +1477,7 @@ namespace Scikit.ML.DataManipulation
             int[] _shuffled;
 
             public RowCursor(DataContainer cont, Func<int, bool> needCol,
-                             IRandom rand = null, int inc = 1, int first = 0,
+                             Random rand = null, int inc = 1, int first = 0,
                              int[] rows = null, int[] columns = null)
             {
                 _cont = cont;

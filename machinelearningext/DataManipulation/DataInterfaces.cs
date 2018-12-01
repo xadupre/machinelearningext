@@ -304,12 +304,12 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Sames a GetRowCursor but on a subset of the data.
         /// </summary>
-        IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null);
+        IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null);
 
         /// <summary>
         /// Sames a GetRowCursorSet but on a subset of the data.
         /// </summary>
-        IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null);
+        IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null);
 
         /// <summary>
         /// Retrieves a column by its name.
@@ -370,7 +370,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a sample.
         /// </summary>
-        IDataFrameView Sample(int nrows = 5, bool distinct = false, IRandom rand = null);
+        IDataFrameView Sample(int nrows = 5, bool distinct = false, Random rand = null);
 
         #endregion
 

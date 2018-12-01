@@ -96,7 +96,7 @@ namespace Scikit.ML.TimeSeries
         Schema _schema;                 // We need the schema the transform outputs.
         object _lock;
 
-        public override Schema Schema { get { return _schema; } }
+        public override Schema OutputSchema { get { return _schema; } }
 
         #endregion
 
@@ -185,7 +185,7 @@ namespace Scikit.ML.TimeSeries
             return null;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, IRandom rand = null)
+        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
         {
             if (_transform == null)
                 lock (_lock)
@@ -196,7 +196,7 @@ namespace Scikit.ML.TimeSeries
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             if (_transform == null)
                 lock (_lock)

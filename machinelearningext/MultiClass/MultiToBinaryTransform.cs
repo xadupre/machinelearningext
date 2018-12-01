@@ -211,13 +211,13 @@ namespace Scikit.ML.MultiClass
             return true;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
@@ -479,7 +479,7 @@ namespace Scikit.ML.MultiClass
                 }
             }
 
-            void TrainTransform(IRandom rand)
+            void TrainTransform(Random rand)
             {
                 lock (_lock)
                 {
@@ -491,7 +491,7 @@ namespace Scikit.ML.MultiClass
                 }
             }
 
-            void ComputeLabelDistribution(IChannel ch, IRandom rand)
+            void ComputeLabelDistribution(IChannel ch, Random rand)
             {
                 IRowCursorConsolidator consolidator;
 
@@ -670,7 +670,7 @@ namespace Scikit.ML.MultiClass
                 return predicate(col);
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 TrainTransform(rand);
                 _host.AssertValue(_labelDistribution, "_labelDistribution");
@@ -687,7 +687,7 @@ namespace Scikit.ML.MultiClass
                 }
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 TrainTransform(rand);
                 _host.AssertValue(_labelDistribution, "_labelDistribution");

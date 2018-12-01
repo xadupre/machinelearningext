@@ -30,7 +30,7 @@ namespace Scikit.ML.NearestNeighbors
 
             int nt = args.numThreads ?? 1;
             IRowCursorConsolidator cons;
-            IRandom rand = RandomUtils.Create(args.seed);
+            Random rand = RandomUtils.Create(args.seed);
             var cursors = (nt == 1)
                                 ? new IRowCursor[] { data.GetRowCursor(i => indexes.Contains(i), rand) }
                                 : data.GetRowCursorSet(out cons, i => indexes.Contains(i), nt, rand);

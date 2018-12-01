@@ -49,8 +49,8 @@ namespace TestProfileBenchmark
                 OutputTokens = true,
                 UsePredefinedStopWordRemover = true,
                 VectorNormalizer = normalize ? TextFeaturizingEstimator.TextNormKind.L2 : TextFeaturizingEstimator.TextNormKind.None,
-                CharFeatureExtractor = new NgramExtractingTransformer.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
-                WordFeatureExtractor = new NgramExtractingTransformer.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
+                CharFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
+                WordFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
             };
 
             var trainFilename = FileHelper.GetTestFile("wikipedia-detox-250-line-data.tsv");

@@ -139,7 +139,7 @@ namespace Scikit.ML.ModelSelection
         IDataTransform _pipedTransform;
         readonly string _saverSettings;
 
-        public override Schema Schema { get { return _pipedTransform.Schema; } }
+        public override Schema OutputSchema { get { return _pipedTransform.Schema; } }
         public IPredictor TaggedPredictor { get { return null; } }
 
         #endregion
@@ -307,13 +307,13 @@ namespace Scikit.ML.ModelSelection
             return true;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> predicate, IRandom rand = null)
+        protected override IRowCursor GetRowCursorCore(Func<int, bool> predicate, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
             return _pipedTransform.GetRowCursor(predicate, rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
             return _pipedTransform.GetRowCursorSet(out consolidator, predicate, n, rand);

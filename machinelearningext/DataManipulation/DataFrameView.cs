@@ -88,22 +88,22 @@ namespace Scikit.ML.DataManipulation
             return i;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return _src.GetRowCursor(_rows, _columns, needCol, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return _src.GetRowCursorSet(_rows, _columns, out consolidator, needCol, n, rand);
         }
 
-        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
         {
             throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrameView.");
         }
 
-        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrame.");
         }
@@ -470,7 +470,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a sample.
         /// </summary>
-        public IDataFrameView Sample(int nrows = 5, bool distinct = false, IRandom rand = null)
+        public IDataFrameView Sample(int nrows = 5, bool distinct = false, Random rand = null)
         {
             nrows = Math.Min(Length, nrows);
             return new DataFrameView(_src, DataFrameRandom.RandomIntegers(nrows, Length, distinct, rand).Select(c => _rows[c]).ToArray(), _columns);
