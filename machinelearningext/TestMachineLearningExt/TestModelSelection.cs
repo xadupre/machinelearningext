@@ -52,8 +52,8 @@ namespace TestMachineLearningExt
                         throw new Exception("null");
                     if (!schema.Contains("Part:I4"))
                         throw new Exception(schema);
-                    var schema2 = SchemaHelper.ToString(transformedData.Schema);
-                    SchemaHelper.CheckSchema(host, transformedData.Schema, cursor.Schema);
+                    var schema2 = SchemaHelper.ToString(transformedData.OutputSchema);
+                    SchemaHelper.CheckSchema(host, transformedData.OutputSchema, cursor.Schema);
                     int got = 0;
                     int part = 0;
                     while (cursor.MoveNext())
@@ -100,8 +100,8 @@ namespace TestMachineLearningExt
                         throw new Exception("null");
                     if (!schema.Contains("Part:I4"))
                         throw new Exception(schema);
-                    var schema2 = SchemaHelper.ToString(transformedData.Schema);
-                    SchemaHelper.CheckSchema(host, transformedData.Schema, cursor.Schema);
+                    var schema2 = SchemaHelper.ToString(transformedData.OutputSchema);
+                    SchemaHelper.CheckSchema(host, transformedData.OutputSchema, cursor.Schema);
                     int index;
                     cursor.Schema.TryGetColumnIndex("Y", out index);
                     var sortColumnGetter = cursor.GetGetter<int>(index);

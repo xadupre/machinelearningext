@@ -10,7 +10,6 @@ using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data.Conversion;
 using Data = Microsoft.ML.Runtime.Data;
-using DataLegacy = Microsoft.ML.Legacy.Data;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -374,34 +373,6 @@ namespace Scikit.ML.PipelineHelper
                     throw Contracts.Except("Unable to build the schema for kind {0}", kind);
             }
         }
-
-        /*
-        public static DataLegacy.DataKind DataKind2DataDataKind(Data.DataKind kind)
-        {
-            return (DataLegacy.DataKind)kind;
-        }
-
-        public static Data.DataKind DataKind2DataDataKind(DataLegacy.DataKind kind)
-        {
-            return (Data.DataKind)kind;
-        }
-        */
-        /*
-        public static DataLegacy.TextLoaderColumn[] ToColumnArgArray(ISchema schema)
-        {
-            var res = new DataLegacy.TextLoaderColumn[schema.ColumnCount];
-            for (int i = 0; i < res.Length; ++i)
-            {
-                res[i] = new DataLegacy.TextLoaderColumn()
-                {
-                    Name = schema.GetColumnName(i),
-                    Type = DataKind2DataDataKind(schema.GetColumnType(i).RawKind()),
-                    Source = new[] { new DataLegacy.TextLoaderRange(i) }
-                };
-            }
-            return res;
-        }
-        */
 
         /// <summary>
         /// Returns the data kind based on a type.

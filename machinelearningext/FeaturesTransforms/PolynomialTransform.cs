@@ -208,14 +208,14 @@ namespace Scikit.ML.FeaturesTransforms
             return true;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             // Fun part we'll see later.
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
@@ -348,7 +348,7 @@ namespace Scikit.ML.FeaturesTransforms
                 return predicate(col);
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 if (predicate(_input.Schema.ColumnCount))
                 {
@@ -360,7 +360,7 @@ namespace Scikit.ML.FeaturesTransforms
                     return new SameCursor(_input.GetRowCursor(predicate, rand), this.Schema);
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 if (predicate(_input.Schema.ColumnCount))
                 {

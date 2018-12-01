@@ -109,7 +109,7 @@ namespace Scikit.ML.PipelineTransforms
         readonly string _saverSettings;
         readonly IDataTransform _pipedTransform;
 
-        public override Schema Schema { get { return Source.Schema; } }
+        public override Schema OutputSchema { get { return Source.Schema; } }
 
         #endregion
 
@@ -227,13 +227,13 @@ namespace Scikit.ML.PipelineTransforms
             return true;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, IRandom rand = null)
+        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
             return _pipedTransform.GetRowCursor(needCol, rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
             return _pipedTransform.GetRowCursorSet(out consolidator, needCol, n, rand);

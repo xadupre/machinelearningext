@@ -1,7 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
 
 
 namespace Scikit.ML.DataManipulation
@@ -16,11 +16,11 @@ namespace Scikit.ML.DataManipulation
         /// They can be distinct or not.
         /// The function is not efficient if n is close to N and distinct is true.
         /// </summary>
-        public static int[] RandomIntegers(int n, int N, bool distinct = false, IRandom rand = null)
+        public static int[] RandomIntegers(int n, int N, bool distinct = false, Random rand = null)
         {
             var res = new int[n];
             if (rand == null)
-                rand = new SysRandom();
+                rand = new Random();
             if (distinct)
             {
                 if (n > N)

@@ -394,7 +394,7 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// This takes ownership of the random number generator.
         /// </summary>
-        public DelegateEnvironment(IRandom rand, int verbose = 0,
+        public DelegateEnvironment(Random rand, int verbose = 0,
             MessageSensitivity sensitivity = MessageSensitivity.All, int conc = 0,
             ILogWriter outWriter = null, ILogWriter errWriter = null)
             : base(rand, verbose > 0, conc, nameof(DelegateEnvironment))
@@ -411,7 +411,7 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// This takes ownership of the random number generator.
         /// </summary>
-        public DelegateEnvironment(IRandom rand, int verbose = 0,
+        public DelegateEnvironment(Random rand, int verbose = 0,
             MessageSensitivity sensitivity = MessageSensitivity.All, int conc = 0,
             WriteType outWriter = null, WriteType errWriter = null)
             : base(rand, verbose > 0, conc, nameof(DelegateEnvironment))
@@ -445,7 +445,7 @@ namespace Scikit.ML.PipelineHelper
             return base.CreateTempFileCore(env, suffix, "MML_" + prefix);
         }
 
-        protected override IHost RegisterCore(HostEnvironmentBase<DelegateEnvironment> source, string shortName, string parentFullName, IRandom rand, bool verbose, int? conc)
+        protected override IHost RegisterCore(HostEnvironmentBase<DelegateEnvironment> source, string shortName, string parentFullName, Random rand, bool verbose, int? conc)
         {
             Contracts.AssertValue(rand);
             Contracts.AssertValueOrNull(parentFullName);
@@ -472,7 +472,7 @@ namespace Scikit.ML.PipelineHelper
 
         private sealed class Host : HostBase
         {
-            public Host(HostEnvironmentBase<DelegateEnvironment> source, string shortName, string parentFullName, IRandom rand, bool verbose, int? conc)
+            public Host(HostEnvironmentBase<DelegateEnvironment> source, string shortName, string parentFullName, Random rand, bool verbose, int? conc)
                 : base(source, shortName, parentFullName, rand, verbose, conc)
             {
                 IsCancelled = source.IsCancelled;
@@ -494,7 +494,8 @@ namespace Scikit.ML.PipelineHelper
                 return new Pipe<TMessage>(parent, name, GetDispatchDelegate<TMessage>());
             }
 
-            protected override IHost RegisterCore(HostEnvironmentBase<DelegateEnvironment> source, string shortName, string parentFullName, IRandom rand, bool verbose, int? conc)
+            protected override IHost RegisterCore(HostEnvironmentBase<DelegateEnvironment> source, string shortName,
+                                                  string parentFullName, Random rand, bool verbose, int? conc)
             {
                 return new Host(source, shortName, parentFullName, rand, verbose, conc);
             }

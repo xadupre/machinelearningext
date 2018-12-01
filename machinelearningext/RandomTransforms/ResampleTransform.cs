@@ -178,7 +178,7 @@ namespace Scikit.ML.RandomTransforms
                 return null;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             int classColumn = -1;
             if (!string.IsNullOrEmpty(_args.column))
@@ -225,7 +225,7 @@ namespace Scikit.ML.RandomTransforms
             }
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             int classColumn = -1;
             if (!string.IsNullOrEmpty(_args.column))
@@ -273,7 +273,7 @@ namespace Scikit.ML.RandomTransforms
             }
         }
 
-        public static int NextPoisson(float lambda, IRandom rand)
+        public static int NextPoisson(float lambda, Random rand)
         {
             var L = Math.Exp(-lambda);
             int k = 0;
@@ -289,7 +289,7 @@ namespace Scikit.ML.RandomTransforms
             return k - 1;
         }
 
-        void LoadCache(IRandom rand)
+        void LoadCache(Random rand)
         {
             if (_cacheReplica != null)
                 // Already done.
@@ -355,7 +355,7 @@ namespace Scikit.ML.RandomTransforms
             }
         }
 
-        void LoadCache<TClass>(IRandom rand, IRowCursor cur, int classColumn, TClass valueClass, IChannel ch)
+        void LoadCache<TClass>(Random rand, IRowCursor cur, int classColumn, TClass valueClass, IChannel ch)
         {
             _cacheReplica = new Dictionary<UInt128, int>();
             var hist = new Dictionary<TClass, long>();
@@ -407,7 +407,7 @@ namespace Scikit.ML.RandomTransforms
         {
             readonly ResampleTransform _view;
             readonly IRowCursor _inputCursor;
-            readonly IRandom _rand;
+            readonly Random _rand;
             readonly Func<int, bool> _predicate;
             readonly float _lambda;
             readonly int _maxReplica;
@@ -422,7 +422,7 @@ namespace Scikit.ML.RandomTransforms
             TClass _currentCl;
 
             public ResampleCursor(ResampleTransform view, IRowCursor cursor, Func<int, bool> predicate,
-                                    float lambda, int? seed, IRandom rand, Dictionary<UInt128, int> cache,
+                                    float lambda, int? seed, Random rand, Dictionary<UInt128, int> cache,
                                     int classColumn, TClass classValue)
             {
                 _view = view;

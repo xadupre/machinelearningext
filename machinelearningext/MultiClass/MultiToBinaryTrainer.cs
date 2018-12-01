@@ -7,7 +7,6 @@ using Microsoft.ML.Runtime.CommandLine;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Training;
-using Microsoft.ML.Legacy.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 

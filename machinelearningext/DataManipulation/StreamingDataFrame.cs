@@ -53,8 +53,8 @@ namespace Scikit.ML.DataManipulation
 
         public bool CanShuffle => Source.CanShuffle;
         public long? GetRowCount() { return Source.GetRowCount(); }
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null) { return Source.GetRowCursor(needCol, rand); }
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null) { return Source.GetRowCursor(needCol, rand); }
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return Source.GetRowCursorSet(out consolidator, needCol, n, rand);
         }

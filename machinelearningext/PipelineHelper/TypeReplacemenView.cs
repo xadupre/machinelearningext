@@ -42,7 +42,7 @@ namespace Scikit.ML.PipelineHelper
             return _source.GetRowCount();
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             var res = new TypeReplacementCursor(_source.GetRowCursor(predicate, rand), Schema);
 #if(DEBUG)
@@ -53,7 +53,7 @@ namespace Scikit.ML.PipelineHelper
         }
 
         public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
-            Func<int, bool> predicate, int n, IRandom rand = null)
+            Func<int, bool> predicate, int n, Random rand = null)
         {
             return _source.GetRowCursorSet(out consolidator, predicate, n, rand).Select(c => new TypeReplacementCursor(c, Schema)).ToArray();
         }

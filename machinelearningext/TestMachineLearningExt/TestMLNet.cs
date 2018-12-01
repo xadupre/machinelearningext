@@ -10,7 +10,6 @@ using Scikit.ML.TestHelper;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.ScikitAPI;
 using Scikit.ML.DocHelperMlExt;
-using Legacy = Microsoft.ML.Legacy;
 
 
 namespace TestMachineLearningExt

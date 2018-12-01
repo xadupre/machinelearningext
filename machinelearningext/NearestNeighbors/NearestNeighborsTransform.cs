@@ -190,7 +190,7 @@ namespace Scikit.ML.NearestNeighbors
             return predicate(col);
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             ComputeNearestNeighbors();
             _host.AssertValue(_input, "_input");
@@ -208,7 +208,7 @@ namespace Scikit.ML.NearestNeighbors
                 return new SameCursor(_input.GetRowCursor(predicate, rand), Schema);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             ComputeNearestNeighbors();
             _host.AssertValue(_input, "_input");

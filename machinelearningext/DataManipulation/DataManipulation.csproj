@@ -15,9 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.ML.Legacy">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Legacy.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.ML.Core">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Core.dll</HintPath>
     </Reference>

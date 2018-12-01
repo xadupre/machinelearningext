@@ -64,7 +64,7 @@ namespace Scikit.ML.ProductionPrediction
             _ownCursor.Set(in value);
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             if (_ownCursor != null)
                 throw Contracts.Except("GetRowCursor was called a second time which probably means this function was called from multiple threads.");
@@ -72,7 +72,7 @@ namespace Scikit.ML.ProductionPrediction
             return _ownCursor;
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
             consolidator = new Consolidator();
@@ -293,7 +293,7 @@ namespace Scikit.ML.ProductionPrediction
             _ownCursor.Set(in value);
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             if (_ownCursor != null)
                 throw Contracts.Except("GetRowCursor was called a second time which probably means this function was called from multiple threads. " +
@@ -302,7 +302,7 @@ namespace Scikit.ML.ProductionPrediction
             return _ownCursor;
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
             consolidator = new Consolidator();

@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup>
-    <BenchmarkDotNetVersion>0.11.1</BenchmarkDotNetVersion>
+    <BenchmarkDotNetVersion>0.11.3</BenchmarkDotNetVersion>
     <GoogleProtobufPackageVersion>3.5.1</GoogleProtobufPackageVersion>
     <LightGBMPackageVersion>2.1.2.2</LightGBMPackageVersion>
-    <MlNetMklDepsPackageVersion>0.0.0.6</MlNetMklDepsPackageVersion>
+    <MlNetMklDepsPackageVersion>0.0.0.7</MlNetMklDepsPackageVersion>
     <MicrosoftMLScoring>1.1.0</MicrosoftMLScoring>
     <MicrosoftCodeAnalysisCSharpVersion>2.9.0</MicrosoftCodeAnalysisCSharpVersion>
     <MicrosoftCSharpVersion>4.5.0</MicrosoftCSharpVersion>
@@ -12,6 +12,7 @@
     <PublishSymbolsPackageVersion>1.0.0-beta-62824-02</PublishSymbolsPackageVersion>
     <SystemCodeDomPackageVersion>4.5.0</SystemCodeDomPackageVersion>
     <SystemCollectionsImmutableVersion>1.5.0</SystemCollectionsImmutableVersion>
+    <SystemComponentModelCompositionVersion>4.5.0</SystemComponentModelCompositionVersion>
     <SystemCompositionVersion>1.2.0</SystemCompositionVersion>
     <SystemDrawingCommonPackageVersion>4.5.0</SystemDrawingCommonPackageVersion>
     <SystemIOFileSystemAccessControl>4.5.0</SystemIOFileSystemAccessControl>

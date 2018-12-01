@@ -117,7 +117,7 @@ namespace Scikit.ML.Clustering
         Arguments _args;                // parameters
         Schema _schema;                 // We need the schema the transform outputs.
 
-        public override Schema Schema { get { return _schema; } }
+        public override Schema OutputSchema { get { return _schema; } }
 
         #endregion
 
@@ -223,13 +223,13 @@ namespace Scikit.ML.Clustering
             return false;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, IRandom rand = null)
+        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
         {
             Host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             Host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursorSet(out consolidator, needCol, n, rand);
@@ -279,7 +279,7 @@ namespace Scikit.ML.Clustering
             object _lock;
 
             public IDataView Source { get { return _input; } }
-            public Schema Schema { get { return _parent.Schema; } }
+            public Schema Schema { get { return _parent.OutputSchema; } }
 
             public OpticsState(IHostEnvironment host, OpticsTransform parent, IDataView input, Arguments args)
             {
@@ -473,7 +473,7 @@ namespace Scikit.ML.Clustering
                 return _input.GetRowCount();
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 TrainTransform();
                 _host.AssertValue(_Results, "_Results");
@@ -481,7 +481,7 @@ namespace Scikit.ML.Clustering
                 return new OpticsCursor(this, cursor, _args.newColumnsNumber);
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 TrainTransform();
                 _host.AssertValue(_Results, "_Results");

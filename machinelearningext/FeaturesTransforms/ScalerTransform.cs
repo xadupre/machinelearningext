@@ -224,7 +224,7 @@ namespace Scikit.ML.FeaturesTransforms
             return predicate(col);
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             ComputeStatistics();
             _host.AssertValue(_input, "_input");
@@ -232,7 +232,7 @@ namespace Scikit.ML.FeaturesTransforms
             return new ScalerCursor(cursor, this, i => PredicatePropagation(i, predicate));
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             ComputeStatistics();
             _host.AssertValue(_input, "_input");

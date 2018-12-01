@@ -39,7 +39,7 @@ namespace Scikit.ML.ProductionPrediction
 
         private sealed class Host : HostBase
         {
-            public Host(HostEnvironmentBase<PassThroughEnvironment> source, string shortName, string parentFullName, IRandom rand, bool verbose, int? conc)
+            public Host(HostEnvironmentBase<PassThroughEnvironment> source, string shortName, string parentFullName, Random rand, bool verbose, int? conc)
                 : base(source, shortName, parentFullName, rand, verbose, conc)
             {
                 IsCancelled = source.IsCancelled;
@@ -61,7 +61,7 @@ namespace Scikit.ML.ProductionPrediction
                 return new Pipe<TMessage>(parent, name, GetDispatchDelegate<TMessage>());
             }
 
-            protected override IHost RegisterCore(HostEnvironmentBase<PassThroughEnvironment> source, string shortName, string parentFullName, IRandom rand, bool verbose, int? conc)
+            protected override IHost RegisterCore(HostEnvironmentBase<PassThroughEnvironment> source, string shortName, string parentFullName, Random rand, bool verbose, int? conc)
             {
                 return new Host(source, shortName, parentFullName, rand, verbose, conc);
             }
@@ -70,7 +70,7 @@ namespace Scikit.ML.ProductionPrediction
         IHostEnvironment _parent;
 
         public PassThroughEnvironment(IHostEnvironment source,
-                                    IRandom rand = null, bool verbose = false,
+                                    Random rand = null, bool verbose = false,
                                     int? conc = null, string shortName = null,
                                     string parentFullName = null)
             : base(rand, verbose, conc.HasValue ? conc.Value : source.ConcurrencyFactor, shortName, parentFullName)
@@ -92,7 +92,7 @@ namespace Scikit.ML.ProductionPrediction
             return new Pipe<TMessage>(parent, name, GetDispatchDelegate<TMessage>());
         }
 
-        protected override IHost RegisterCore(HostEnvironmentBase<PassThroughEnvironment> source, string shortName, string parentFullName, IRandom rand, bool verbose, int? conc)
+        protected override IHost RegisterCore(HostEnvironmentBase<PassThroughEnvironment> source, string shortName, string parentFullName, Random rand, bool verbose, int? conc)
         {
             Contracts.AssertValue(rand);
             Contracts.AssertValueOrNull(parentFullName);

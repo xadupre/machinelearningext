@@ -102,7 +102,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
             return predicate(col);
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             if (predicate(_source.Schema.ColumnCount))
             {
@@ -115,7 +115,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
         }
 
         public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
-            Func<int, bool> predicate, int n, IRandom rand = null)
+            Func<int, bool> predicate, int n, Random rand = null)
         {
             if (predicate(_source.Schema.ColumnCount))
             {

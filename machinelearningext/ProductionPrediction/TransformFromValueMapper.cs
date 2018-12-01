@@ -84,12 +84,12 @@ namespace Scikit.ML.ProductionPrediction
         public long? GetRowCount() { return _source.GetRowCount(); }
         public Schema Schema { get { return _schema; } }
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, IRandom rand = null)
+        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, IRandom rand = null)
+        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return _transform.GetRowCursorSet(out consolidator, needCol, n, rand);
         }
@@ -199,7 +199,7 @@ namespace Scikit.ML.ProductionPrediction
                 return predicate(col);
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, IRandom rand = null)
+            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 int index;
                 if (!Source.Schema.TryGetColumnIndex(_parent.InputName, out index))
@@ -214,7 +214,7 @@ namespace Scikit.ML.ProductionPrediction
                     return new SameCursor(Source.GetRowCursor(predicate, rand), Schema);
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, IRandom rand = null)
+            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 int index;
                 if (!Source.Schema.TryGetColumnIndex(_parent.InputName, out index))
