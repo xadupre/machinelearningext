@@ -411,7 +411,7 @@ def get_mlnet_assemblies(chdir=False):
             "Microsoft.ML.Transforms.Projections",
             "Microsoft.ML.Transforms.TensorFlow",
             "Microsoft.ML.Transforms.Text",
-            "Microsoft.ML.Sweeper",
+            "Microsoft.ML.Runtime.Sweeper",
         ])
     res = MamlHelper.GetAssemblies()
     usings.extend([a.FullName.split(',')[0] for a in res if "Scikit" in a.FullName])
