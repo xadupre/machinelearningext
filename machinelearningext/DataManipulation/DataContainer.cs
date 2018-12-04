@@ -1502,7 +1502,7 @@ namespace Scikit.ML.DataManipulation
                     _shuffled = new int[LastPosition];
                     for (int i = 0; i < _shuffled.Length; ++i)
                         _shuffled[i] = i;
-                    Utils.Shuffle(_rand, _shuffled, 0, _shuffled.Length);
+                    Utils.Shuffle<int>(_rand, _shuffled);
                 }
                 else
                     _shuffled = null;
