@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime.Data.Conversion;
 using Microsoft.ML.Runtime.Internal.Utilities;
 using Microsoft.ML.Runtime;
@@ -391,7 +392,7 @@ namespace Scikit.ML.MultiClass
             return _exes[iinfo].TypeDst;
         }
 
-        public static Delegate GetGetterAs(ColumnType typeDst, IRow row, int col)
+        public static Delegate GetGetterAs(ColumnType typeDst, Row row, int col)
         {
             Contracts.CheckValue(typeDst, "typeDst");
             Contracts.CheckParam(typeDst.IsPrimitive(), "typeDst");
@@ -402,12 +403,12 @@ namespace Scikit.ML.MultiClass
             var typeSrc = row.Schema.GetColumnType(col);
             Contracts.Check(typeSrc.IsPrimitive(), "Source column type must be primitive");
 
-            Func<ColumnType, ColumnType, IRow, int, ValueGetter<int>> del = GetGetterAsCore<int, int>;
+            Func<ColumnType, ColumnType, Row, int, ValueGetter<int>> del = GetGetterAsCore<int, int>;
             var methodInfo = del.GetMethodInfo().GetGenericMethodDefinition().MakeGenericMethod(typeSrc.RawType, typeDst.RawType);
             return (Delegate)methodInfo.Invoke(null, new object[] { typeSrc, typeDst, row, col });
         }
 
-        private static ValueGetter<TDst> GetGetterAsCore<TSrc, TDst>(ColumnType typeSrc, ColumnType typeDst, IRow row, int col)
+        private static ValueGetter<TDst> GetGetterAsCore<TSrc, TDst>(ColumnType typeSrc, ColumnType typeDst, Row row, int col)
         {
             Contracts.Assert(typeof(TSrc) == typeSrc.RawType);
             Contracts.Assert(typeof(TDst) == typeDst.RawType);
@@ -478,7 +479,7 @@ namespace Scikit.ML.MultiClass
             }
         }
 
-        protected override Delegate GetGetterCore(IChannel ch, IRow input, int iinfo, out Action disposer)
+        protected override Delegate GetGetterCore(IChannel ch, Row input, int iinfo, out Action disposer)
         {
             Host.AssertValueOrNull(ch);
             Host.AssertValue(input);
@@ -499,37 +500,35 @@ namespace Scikit.ML.MultiClass
             return _exes[iinfo].SlotTypeDst;
         }
 
-        protected override ISlotCursor GetSlotCursorCore(int iinfo)
+        protected override SlotCursor GetSlotCursorCore(int iinfo)
         {
             Host.Assert(0 <= iinfo && iinfo < Infos.Length);
             Host.AssertValue(Infos[iinfo].SlotTypeSrc);
             Host.AssertValue(_exes[iinfo].SlotTypeDst);
 
-            ISlotCursor cursor = InputTranspose.GetSlotCursor(Infos[iinfo].Source);
-            return new SlotCursor(Host, cursor, _exes[iinfo].SlotTypeDst);
+            SlotCursor cursor = InputTranspose.GetSlotCursor(Infos[iinfo].Source);
+            return new SlotCursorImpl(Host, cursor, _exes[iinfo].SlotTypeDst);
         }
 
-        private sealed class SlotCursor : SynchronizedCursorBase<IRowCursor>, ISlotCursor
+        private sealed class SlotCursorImpl : SlotCursor.SynchronizedSlotCursor
         {
             private readonly Delegate _getter;
             private readonly VectorType _type;
 
-            public SlotCursor(IChannelProvider provider, ISlotCursor cursor, VectorType typeDst)
-                : base(provider, TransposerUtils.GetRowCursorShim(provider, cursor))
+            public SlotCursorImpl(IChannelProvider provider, SlotCursor cursor, VectorType typeDst)
+                : base(provider, cursor)
             {
-                Ch.Assert(Input.Schema.ColumnCount == 1);
-                Ch.Assert(Input.Schema.GetColumnType(0) == cursor.GetSlotType());
                 Ch.AssertValue(typeDst);
-                _getter = RowCursorUtils.GetVecGetterAs(typeDst.ItemType(), Input, 0);
+                _getter = RowCursorUtils.GetLabelGetter(cursor);
                 _type = typeDst;
             }
 
-            public VectorType GetSlotType()
+            public override VectorType GetSlotType()
             {
                 return _type;
             }
 
-            public ValueGetter<VBuffer<TValue>> GetGetter<TValue>()
+            public override ValueGetter<VBuffer<TValue>> GetGetter<TValue>()
             {
                 ValueGetter<VBuffer<TValue>> getter = _getter as ValueGetter<VBuffer<TValue>>;
                 if (getter == null)

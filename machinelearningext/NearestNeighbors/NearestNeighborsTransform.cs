@@ -190,7 +190,7 @@ namespace Scikit.ML.NearestNeighbors
             return predicate(col);
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             ComputeNearestNeighbors();
             _host.AssertValue(_input, "_input");
@@ -208,7 +208,7 @@ namespace Scikit.ML.NearestNeighbors
                 return new SameCursor(_input.GetRowCursor(predicate, rand), Schema);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             ComputeNearestNeighbors();
             _host.AssertValue(_input, "_input");
@@ -236,7 +236,7 @@ namespace Scikit.ML.NearestNeighbors
         {
             private const int _batchShift = 6;
             private const int _batchSize = 1 << _batchShift;
-            public IRowCursor CreateCursor(IChannelProvider provider, IRowCursor[] inputs)
+            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
             {
                 return DataViewUtils.ConsolidateGeneric(provider, inputs, _batchSize);
             }
@@ -279,9 +279,9 @@ namespace Scikit.ML.NearestNeighbors
 
         #region Cursor
 
-        public class NearestNeighborsCursor : IRowCursor
+        public class NearestNeighborsCursor : RowCursor
         {
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
             readonly NearestNeighborsTransform _parent;
             readonly ValueGetter<VBuffer<float>> _getterFeatures;
             readonly NearestNeighborsTrees _trees;
@@ -291,7 +291,7 @@ namespace Scikit.ML.NearestNeighbors
             VBuffer<float> _distance;
             VBuffer<long> _idn;
 
-            public NearestNeighborsCursor(IRowCursor cursor, NearestNeighborsTransform parent, Func<int, bool> predicate, int colFeatures)
+            public NearestNeighborsCursor(RowCursor cursor, NearestNeighborsTransform parent, Func<int, bool> predicate, int colFeatures)
             {
                 _inputCursor = cursor;
                 _parent = parent;
@@ -303,17 +303,17 @@ namespace Scikit.ML.NearestNeighbors
                 _idn = new VBuffer<long>(_k, new long[_k]);
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
                 return (ref UInt128 pos) =>
@@ -322,18 +322,19 @@ namespace Scikit.ML.NearestNeighbors
                 };
             }
 
-            public CursorState State { get { return _inputCursor.State; } }
-            public long Batch { get { return _inputCursor.Batch; } }
-            public long Position { get { return _inputCursor.Position; } }
-            public Schema Schema { get { return _parent.Schema; } }
+            public override CursorState State { get { return _inputCursor.State; } }
+            public override long Batch { get { return _inputCursor.Batch; } }
+            public override long Position { get { return _inputCursor.Position; } }
+            public override Schema Schema { get { return _parent.Schema; } }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 var res = _inputCursor.MoveMany(count);
                 if (!res)
@@ -342,7 +343,7 @@ namespace Scikit.ML.NearestNeighbors
                 return true;
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 var res = _inputCursor.MoveNext();
                 if (!res)
@@ -376,7 +377,7 @@ namespace Scikit.ML.NearestNeighbors
                 Contracts.Assert(_idn.IsDense);
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 var schema = _inputCursor.Schema;
                 ValueGetter<TValue> res;

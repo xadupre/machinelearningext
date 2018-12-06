@@ -32,7 +32,7 @@ namespace Scikit.ML.NearestNeighbors
             IRowCursorConsolidator cons;
             Random rand = RandomUtils.Create(args.seed);
             var cursors = (nt == 1)
-                                ? new IRowCursor[] { data.GetRowCursor(i => indexes.Contains(i), rand) }
+                                ? new RowCursor[] { data.GetRowCursor(i => indexes.Contains(i), rand) }
                                 : data.GetRowCursorSet(out cons, i => indexes.Contains(i), nt, rand);
             KdTree[] kdtrees;
             Dictionary<long, Tuple<TLabel, float>>[] labelsWeights;
@@ -105,7 +105,7 @@ namespace Scikit.ML.NearestNeighbors
             return new NearestNeighborsTrees(ch, kdtrees);
         }
 
-        private static KdTree BuildKDTree<TLabel>(IDataView data, IRowCursor cursor,
+        private static KdTree BuildKDTree<TLabel>(IDataView data, RowCursor cursor,
                         int featureIndex, int labelIndex, int idIndex, int weightIndex,
                         out Dictionary<long, Tuple<TLabel, float>> labelsWeights, NearestNeighborsArguments args)
             where TLabel : IComparable<TLabel>

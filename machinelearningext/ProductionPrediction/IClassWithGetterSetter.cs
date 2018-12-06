@@ -68,7 +68,7 @@ namespace Scikit.ML.ProductionPrediction
     ///     public float[] X;
     ///     public uint Y;
     ///     
-    ///     public Delegate[] GetCursorGetter(IRowCursor cursor)
+    ///     public Delegate[] GetCursorGetter(RowCursor cursor)
     ///     {
     ///         return new Delegate[]
     ///         {
@@ -90,7 +90,7 @@ namespace Scikit.ML.ProductionPrediction
     /// <typeparam name="TRow">itself</typeparam>
     public interface IClassWithSetter<TRow>
     {
-        Delegate[] GetCursorGetter(IRowCursor cursor);
+        Delegate[] GetCursorGetter(RowCursor cursor);
         void Set(Delegate[] delegates);
     }
 

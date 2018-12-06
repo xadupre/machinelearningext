@@ -185,7 +185,7 @@ namespace Scikit.ML.TimeSeries
             return null;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
+        protected override RowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
         {
             if (_transform == null)
                 lock (_lock)
@@ -196,7 +196,7 @@ namespace Scikit.ML.TimeSeries
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             if (_transform == null)
                 lock (_lock)

@@ -88,22 +88,22 @@ namespace Scikit.ML.DataManipulation
             return i;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return _src.GetRowCursor(_rows, _columns, needCol, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return _src.GetRowCursorSet(_rows, _columns, out consolidator, needCol, n, rand);
         }
 
-        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
+        public RowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
         {
             throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrameView.");
         }
 
-        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrame.");
         }

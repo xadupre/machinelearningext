@@ -15,7 +15,7 @@ using ArgumentType = Microsoft.ML.Runtime.CommandLine.ArgumentType;
 using DataKind = Microsoft.ML.Runtime.Data.DataKind;
 using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
 using IDataView = Microsoft.ML.Runtime.Data.IDataView;
-using IRowCursor = Microsoft.ML.Runtime.Data.IRowCursor;
+using RowCursor = Microsoft.ML.Runtime.Data.RowCursor;
 using IRowCursorConsolidator = Microsoft.ML.Runtime.Data.IRowCursorConsolidator;
 using Schema = Microsoft.ML.Data.Schema;
 using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
@@ -198,7 +198,7 @@ namespace Scikit.ML.PipelineTransforms
             return false;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
+        protected override RowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
         {
             Host.Check(string.IsNullOrEmpty(_sortColumn) || rand == null, "Random access is not allowed on sorted data. (5)");
             Host.AssertValue(_transform, "_transform");
@@ -208,7 +208,7 @@ namespace Scikit.ML.PipelineTransforms
             return _transform.GetRowCursor(i => i == sortColumn || needCol(i), rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             Host.Check(string.IsNullOrEmpty(_sortColumn) || rand == null, "Random access is not allowed on sorted data. (6)");
             Host.AssertValue(_transform, "_transform");
@@ -380,7 +380,7 @@ namespace Scikit.ML.PipelineTransforms
                 return _autoView.Length;
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
+            public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
             {
                 FillCacheIfNotFilled();
                 _host.Check(_canShuffle || rand == null, "Random access is not allowed on sorted data (1).");
@@ -388,7 +388,7 @@ namespace Scikit.ML.PipelineTransforms
                 return _autoView.GetRowCursor(needCol, rand);
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
             {
                 FillCacheIfNotFilled();
                 _host.Check(_canShuffle || rand == null, "Random access is not allowed on sorted data (2).");

@@ -551,7 +551,7 @@ namespace Scikit.ML.DataManipulation
         /// Creates a getter on the column. The getter returns the element at
         /// cursor.Position.
         /// </summary>
-        public ValueGetter<DType2> GetGetter<DType2>(IRowCursor cursor)
+        public ValueGetter<DType2> GetGetter<DType2>(RowCursor cursor)
         {
             if (typeof(DType2) == typeof(ReadOnlyMemory<char>))
             {
@@ -575,7 +575,7 @@ namespace Scikit.ML.DataManipulation
             }
         }
 
-        private ValueGetter<ReadOnlyMemory<char>> GetGetterReadOnlyMemory(IRowCursor cursor)
+        private ValueGetter<ReadOnlyMemory<char>> GetGetterReadOnlyMemory(RowCursor cursor)
         {
             var _data2 = _data as DvText[];
             if (_data2 == null)
@@ -601,7 +601,7 @@ namespace Scikit.ML.DataManipulation
         /// Creates a getter on the column. The getter returns the element at
         /// cursor.Position.
         /// </summary>
-        public ValueGetter<VBuffer<DType2>> GetGetterVector<DType2>(IRowCursor cursor)
+        public ValueGetter<VBuffer<DType2>> GetGetterVector<DType2>(RowCursor cursor)
         {
             var colType = SchemaHelper.GetColumnType<DType2>();
             if (colType.IsVector())
@@ -623,7 +623,7 @@ namespace Scikit.ML.DataManipulation
             }
         }
 
-        public ValueGetter<VBuffer<DType2>> GetGetterVectorEqSort<DType2>(IRowCursor cursor)
+        public ValueGetter<VBuffer<DType2>> GetGetterVectorEqSort<DType2>(RowCursor cursor)
             where DType2 : IEquatable<DType2>, IComparable<DType2>
         {
             var _data2 = _data as VBufferEqSort<DType2>[];
@@ -636,7 +636,7 @@ namespace Scikit.ML.DataManipulation
             };
         }
 
-        public ValueGetter<VBuffer<DType2>> GetGetterVectorEqSortText<DType2>(IRowCursor cursor)
+        public ValueGetter<VBuffer<DType2>> GetGetterVectorEqSortText<DType2>(RowCursor cursor)
         {
             if (typeof(DType2) == typeof(DvText))
                 return GetGetterVectorEqSort<DvText>(cursor) as ValueGetter<VBuffer<DType2>>;
@@ -648,7 +648,7 @@ namespace Scikit.ML.DataManipulation
             return getter;
         }
 
-        public ValueGetter<VBuffer<ReadOnlyMemory<char>>> GetGetterVectorEqSortReadOnlyMemoryChar(IRowCursor cursor)
+        public ValueGetter<VBuffer<ReadOnlyMemory<char>>> GetGetterVectorEqSortReadOnlyMemoryChar(RowCursor cursor)
         {
             var _data2 = _data as VBufferEqSort<DvText>[];
             var missing = new VBuffer<ReadOnlyMemory<char>>();

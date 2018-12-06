@@ -22,7 +22,7 @@ namespace Scikit.ML.ProductionPrediction
         readonly int _column;
         readonly TRepValue _value;
         readonly Schema _schema;
-        readonly IRowCursor _otherValues;
+        readonly RowCursor _otherValues;
         readonly bool _ignoreOtherColumn;
 
         public TRepValue Constant => _value;
@@ -35,7 +35,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="column">column to be replaced</param>
         /// <param name="otherValues">cursor which contains the others values</param>
         /// <param name="schema">schema to replace if otherValues is null</param>
-        public TemporaryViewCursorColumn(TRepValue value, int column, Schema schema = null, IRowCursor otherValues = null, bool ignoreOtherColumn = false)
+        public TemporaryViewCursorColumn(TRepValue value, int column, Schema schema = null, RowCursor otherValues = null, bool ignoreOtherColumn = false)
         {
             _column = column;
             _otherValues = otherValues;
@@ -49,19 +49,19 @@ namespace Scikit.ML.ProductionPrediction
         public long? GetRowCount() { return null; }
         public Schema Schema { get { return _schema; } }
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return new CursorType(this, needCol, _otherValues);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
             consolidator = new Consolidator();
             if (n >= 2)
             {
                 // This trick avoids the cursor to be split into multiple later.
-                var res = new IRowCursor[n];
+                var res = new RowCursor[n];
                 var empty = new EmptyCursor(this,
                                     col => col == _column || needCol(col) ||
                                                   (_otherValues != null && _otherValues.IsColumnActive(col)));
@@ -70,26 +70,26 @@ namespace Scikit.ML.ProductionPrediction
                 return res;
             }
             else
-                return new IRowCursor[] { cur };
+                return new RowCursor[] { cur };
         }
 
         class Consolidator : IRowCursorConsolidator
         {
-            public IRowCursor CreateCursor(IChannelProvider provider, IRowCursor[] inputs)
+            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
             {
                 return inputs[0];
             }
         }
 
-        class CursorType : IRowCursor
+        class CursorType : RowCursor
         {
             Func<int, bool> _needCol;
             TemporaryViewCursorColumn<TRepValue> _view;
             CursorState _state;
-            IRowCursor _otherValues;
+            RowCursor _otherValues;
             bool _ignoreOtherColumn;
 
-            public CursorType(TemporaryViewCursorColumn<TRepValue> view, Func<int, bool> needCol, IRowCursor otherValues)
+            public CursorType(TemporaryViewCursorColumn<TRepValue> view, Func<int, bool> needCol, RowCursor otherValues)
             {
                 _needCol = needCol;
                 _view = view;
@@ -98,14 +98,14 @@ namespace Scikit.ML.ProductionPrediction
                 _ignoreOtherColumn = view._ignoreOtherColumn;
             }
 
-            public CursorState State { get { return _state; } }
-            public ICursor GetRootCursor() { return this; }
-            public long Batch { get { return 1; } }
-            public long Position { get { return 0; } }
-            public Schema Schema { get { return _view.Schema; } }
-            public ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
+            public override CursorState State { get { return _state; } }
+            public override RowCursor GetRootCursor() { return this; }
+            public override long Batch { get { return 1; } }
+            public override long Position { get { return 0; } }
+            public override Schema Schema { get { return _view.Schema; } }
+            public override ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
                 if (_otherValues != null)
                 {
@@ -117,12 +117,12 @@ namespace Scikit.ML.ProductionPrediction
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 throw Contracts.ExceptNotSupp();
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 if (State == CursorState.NotStarted)
                 {
@@ -137,12 +137,12 @@ namespace Scikit.ML.ProductionPrediction
                 return false;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 return col == _view._column || _needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col));
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (col == _view.ConstantCol)
                     return GetGetterPrivate(col) as ValueGetter<TValue>;
@@ -213,7 +213,7 @@ namespace Scikit.ML.ProductionPrediction
         readonly int[] _columns;
         TRowValue _value;
         readonly Schema _schema;
-        readonly IRowCursor _otherValues;
+        readonly RowCursor _otherValues;
         readonly SchemaDefinition _columnsSchema;
         readonly Dictionary<string, Delegate> _overwriteRowGetter;
         public TRowValue Constant => _value;
@@ -226,7 +226,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <param name="column">column to be replaced</param>
         /// <param name="otherValues">cursor which contains the others values</param>
         /// <param name="schema">schema to replace if otherValues is null</param>
-        public TemporaryViewCursorRow(TRowValue value, int[] columns = null, Schema schema = null, IRowCursor otherValues = null,
+        public TemporaryViewCursorRow(TRowValue value, int[] columns = null, Schema schema = null, RowCursor otherValues = null,
                                          Dictionary<string, Delegate> overwriteRowGetter = null)
         {
             var columnsSchema = SchemaDefinition.Create(typeof(TRowValue), SchemaDefinition.Direction.Read);
@@ -247,12 +247,12 @@ namespace Scikit.ML.ProductionPrediction
         public long? GetRowCount() { return null; }
         public Schema Schema { get { return _schema; } }
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return new CursorType(this, needCol, _otherValues);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
             consolidator = new Consolidator();
@@ -260,7 +260,7 @@ namespace Scikit.ML.ProductionPrediction
             {
                 // This trick avoids the cursor to be split into multiple later.
                 var setColumns = new HashSet<int>(_columns);
-                var res = new IRowCursor[n];
+                var res = new RowCursor[n];
                 var empty = new EmptyCursor(this,
                                     col => setColumns.Contains(col) || needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col)));
                 for (int i = 0; i < n; ++i)
@@ -268,28 +268,28 @@ namespace Scikit.ML.ProductionPrediction
                 return res;
             }
             else
-                return new IRowCursor[] { cur };
+                return new RowCursor[] { cur };
         }
 
         class Consolidator : IRowCursorConsolidator
         {
-            public IRowCursor CreateCursor(IChannelProvider provider, IRowCursor[] inputs)
+            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
             {
                 return inputs[0];
             }
         }
 
-        class CursorType : IRowCursor
+        class CursorType : RowCursor
         {
             Func<int, bool> _needCol;
             TemporaryViewCursorRow<TRowValue> _view;
             SchemaDefinition _columnsSchema;
             CursorState _state;
-            IRowCursor _otherValues;
+            RowCursor _otherValues;
             Dictionary<int, int> _columns;
             Dictionary<string, Delegate> _overwriteRowGetter;
 
-            public CursorType(TemporaryViewCursorRow<TRowValue> view, Func<int, bool> needCol, IRowCursor otherValues)
+            public CursorType(TemporaryViewCursorRow<TRowValue> view, Func<int, bool> needCol, RowCursor otherValues)
             {
                 _needCol = needCol;
                 _view = view;
@@ -302,14 +302,14 @@ namespace Scikit.ML.ProductionPrediction
                     _columns[view.ConstantCol[i]] = i;
             }
 
-            public CursorState State { get { return _state; } }
-            public ICursor GetRootCursor() { return this; }
-            public long Batch { get { return 1; } }
-            public long Position { get { return 0; } }
-            public Schema Schema { get { return _view.Schema; } }
-            public ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
+            public override CursorState State { get { return _state; } }
+            public override RowCursor GetRootCursor() { return this; }
+            public override long Batch { get { return 1; } }
+            public override long Position { get { return 0; } }
+            public override Schema Schema { get { return _view.Schema; } }
+            public override ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
                 if (_otherValues != null)
                 {
@@ -321,12 +321,12 @@ namespace Scikit.ML.ProductionPrediction
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 throw Contracts.ExceptNotSupp();
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 if (State == CursorState.NotStarted)
                 {
@@ -341,7 +341,7 @@ namespace Scikit.ML.ProductionPrediction
                 return false;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 return _columns.ContainsKey(col) || _needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col));
             }
@@ -354,7 +354,7 @@ namespace Scikit.ML.ProductionPrediction
             /// <typeparam name="TValue">column type</typeparam>
             /// <param name="col">column inde</param>
             /// <returns>ValueGetter</returns>
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (_columns.ContainsKey(col))
                     return GetGetterPrivate<TValue>(col) as ValueGetter<TValue>;

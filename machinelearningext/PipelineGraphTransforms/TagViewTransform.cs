@@ -186,13 +186,13 @@ namespace Scikit.ML.PipelineGraphTransforms
             return _source.GetRowCount();
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             _host.AssertValue(_source, "_source");
             return _source.GetRowCursor(predicate, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_source, "_source");
             return _source.GetRowCursorSet(out consolidator, predicate, n, rand);

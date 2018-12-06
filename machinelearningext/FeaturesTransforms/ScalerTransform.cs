@@ -224,7 +224,7 @@ namespace Scikit.ML.FeaturesTransforms
             return predicate(col);
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             ComputeStatistics();
             _host.AssertValue(_input, "_input");
@@ -232,7 +232,7 @@ namespace Scikit.ML.FeaturesTransforms
             return new ScalerCursor(cursor, this, i => PredicatePropagation(i, predicate));
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             ComputeStatistics();
             _host.AssertValue(_input, "_input");
@@ -246,7 +246,7 @@ namespace Scikit.ML.FeaturesTransforms
         {
             private const int _batchShift = 6;
             private const int _batchSize = 1 << _batchShift;
-            public IRowCursor CreateCursor(IChannelProvider provider, IRowCursor[] inputs)
+            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
             {
                 return DataViewUtils.ConsolidateGeneric(provider, inputs, _batchSize);
             }
@@ -541,13 +541,13 @@ namespace Scikit.ML.FeaturesTransforms
 
         #region Cursor
 
-        public class ScalerCursor : IRowCursor
+        public class ScalerCursor : RowCursor
         {
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
             readonly ScalerTransform _parent;
             readonly Dictionary<int, ScalingFactor> _scalingFactors;
 
-            public ScalerCursor(IRowCursor cursor, ScalerTransform parent, Func<int, bool> predicate)
+            public ScalerCursor(RowCursor cursor, ScalerTransform parent, Func<int, bool> predicate)
             {
                 _inputCursor = cursor;
                 _parent = parent;
@@ -556,17 +556,17 @@ namespace Scikit.ML.FeaturesTransforms
                     throw parent._host.ExceptValue("The transform was never trained. Predictions cannot be computed.");
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
                 return (ref UInt128 pos) =>
@@ -575,28 +575,29 @@ namespace Scikit.ML.FeaturesTransforms
                 };
             }
 
-            public CursorState State { get { return _inputCursor.State; } }
-            public long Batch { get { return _inputCursor.Batch; } }
-            public long Position { get { return _inputCursor.Position; } }
-            public Schema Schema { get { return _parent.Schema; } }
+            public override CursorState State { get { return _inputCursor.State; } }
+            public override long Batch { get { return _inputCursor.Batch; } }
+            public override long Position { get { return _inputCursor.Position; } }
+            public override Schema Schema { get { return _parent.Schema; } }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 return _inputCursor.MoveMany(count);
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 return _inputCursor.MoveNext();
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 var schema = _inputCursor.Schema;
                 if (_scalingFactors.ContainsKey(col))

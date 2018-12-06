@@ -178,7 +178,7 @@ namespace Scikit.ML.RandomTransforms
                 return null;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             int classColumn = -1;
             if (!string.IsNullOrEmpty(_args.column))
@@ -225,7 +225,7 @@ namespace Scikit.ML.RandomTransforms
             }
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             int classColumn = -1;
             if (!string.IsNullOrEmpty(_args.column))
@@ -355,7 +355,7 @@ namespace Scikit.ML.RandomTransforms
             }
         }
 
-        void LoadCache<TClass>(Random rand, IRowCursor cur, int classColumn, TClass valueClass, IChannel ch)
+        void LoadCache<TClass>(Random rand, RowCursor cur, int classColumn, TClass valueClass, IChannel ch)
         {
             _cacheReplica = new Dictionary<UInt128, int>();
             var hist = new Dictionary<TClass, long>();
@@ -403,10 +403,10 @@ namespace Scikit.ML.RandomTransforms
 
         #region Cursor with no cache
 
-        class ResampleCursor<TClass> : IRowCursor
+        class ResampleCursor<TClass> : RowCursor
         {
             readonly ResampleTransform _view;
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
             readonly Random _rand;
             readonly Func<int, bool> _predicate;
             readonly float _lambda;
@@ -421,7 +421,7 @@ namespace Scikit.ML.RandomTransforms
             UInt128 _currentId;
             TClass _currentCl;
 
-            public ResampleCursor(ResampleTransform view, IRowCursor cursor, Func<int, bool> predicate,
+            public ResampleCursor(ResampleTransform view, RowCursor cursor, Func<int, bool> predicate,
                                     float lambda, int? seed, Random rand, Dictionary<UInt128, int> cache,
                                     int classColumn, TClass classValue)
             {
@@ -446,7 +446,7 @@ namespace Scikit.ML.RandomTransforms
                 _classGetter = classColumn >= 0 ? _inputCursor.GetGetter<TClass>(classColumn) : null;
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
 #if (DEBUG)
                 Dictionary<UInt128, int> localCache = new Dictionary<UInt128, int>();
@@ -476,34 +476,35 @@ namespace Scikit.ML.RandomTransforms
                 };
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 // The column is active if is active in the input view or if it the new vector with the polynomial features.
                 return _predicate(col) && _inputCursor.IsColumnActive(col);
             }
 
-            public CursorState State { get { return _inputCursor.State; } } // No change.
-            public long Batch { get { return _inputCursor.Batch; } }        // No change.
-            public long Position { get { return _inputCursor.Position; } }  // No change.
-            public Schema Schema { get { return _view.Schema; } }          // No change.
+            public override CursorState State { get { return _inputCursor.State; } } // No change.
+            public override long Batch { get { return _inputCursor.Batch; } }        // No change.
+            public override long Position { get { return _inputCursor.Position; } }  // No change.
+            public override Schema Schema { get { return _view.Schema; } }          // No change.
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 throw Contracts.ExceptNotImpl();
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 if (_copy > 0)
                 {
@@ -552,7 +553,7 @@ namespace Scikit.ML.RandomTransforms
                 return true;
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
 #if (DEBUG)
                 var getter = _inputCursor.GetGetter<TValue>(col);

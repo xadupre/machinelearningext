@@ -114,22 +114,22 @@ namespace Scikit.ML.DataManipulation
         public string[] Columns => _data.Columns;
         public ColumnType[] Kinds => _data.Kinds;
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return _data.GetRowCursor(needCol, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return _data.GetRowCursorSet(out consolidator, needCol, n, rand);
         }
 
-        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
+        public RowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
         {
             return _data.GetRowCursor(rows, columns, needCol, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return _data.GetRowCursorSet(rows, columns, out consolidator, needCol, n, rand);
         }
@@ -477,7 +477,7 @@ namespace Scikit.ML.DataManipulation
 
         public delegate void RowFillerDelegate(DataFrame df, int row);
 
-        public static RowFillerDelegate GetRowFiller(IRowCursor cur)
+        public static RowFillerDelegate GetRowFiller(RowCursor cur)
         {
             var dele = DataContainer.GetRowFiller(cur);
             return (DataFrame df, int row) => { dele(df._data, row); };
