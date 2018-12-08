@@ -15,7 +15,7 @@ using DataSaverUtils = Microsoft.ML.Runtime.Data.DataSaverUtils;
 using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
 using IDataSaver = Microsoft.ML.Runtime.Data.IDataSaver;
 using IDataView = Microsoft.ML.Runtime.Data.IDataView;
-using IRowCursor = Microsoft.ML.Runtime.Data.IRowCursor;
+using RowCursor = Microsoft.ML.Runtime.Data.RowCursor;
 using IRowCursorConsolidator = Microsoft.ML.Runtime.Data.IRowCursorConsolidator;
 using Schema = Microsoft.ML.Data.Schema;
 using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
@@ -227,13 +227,13 @@ namespace Scikit.ML.PipelineTransforms
             return true;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
+        protected override RowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
             return _pipedTransform.GetRowCursor(needCol, rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
             return _pipedTransform.GetRowCursorSet(out consolidator, needCol, n, rand);

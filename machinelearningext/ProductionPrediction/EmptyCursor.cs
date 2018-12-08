@@ -7,7 +7,7 @@ using Microsoft.ML.Runtime.Data;
 
 namespace Scikit.ML.ProductionPrediction
 {
-    public class EmptyCursor : IRowCursor
+    public class EmptyCursor : RowCursor
     {
         Func<int, bool> _needCol;
         IDataView _view;
@@ -20,31 +20,31 @@ namespace Scikit.ML.ProductionPrediction
             _state = CursorState.NotStarted;
         }
 
-        public CursorState State { get { return _state; } }
-        public ICursor GetRootCursor() { return this; }
-        public long Batch { get { return 0; } }
-        public long Position { get { return 0; } }
-        public Schema Schema { get { return _view.Schema; } }
-        public ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
+        public override CursorState State { get { return _state; } }
+        public override RowCursor GetRootCursor() { return this; }
+        public override long Batch { get { return 0; } }
+        public override long Position { get { return 0; } }
+        public override Schema Schema { get { return _view.Schema; } }
+        public override ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
 
-        void IDisposable.Dispose()
+        protected override void Dispose(bool disposing)
         {
             GC.SuppressFinalize(this);
         }
 
-        public bool MoveMany(long count)
+        public override bool MoveMany(long count)
         {
             _state = CursorState.Done;
             return false;
         }
 
-        public bool MoveNext()
+        public override bool MoveNext()
         {
             _state = CursorState.Done;
             return false;
         }
 
-        public bool IsColumnActive(int col)
+        public override bool IsColumnActive(int col)
         {
             return _needCol(col);
         }
@@ -52,7 +52,7 @@ namespace Scikit.ML.ProductionPrediction
         /// <summary>
         /// The getter return the default value. A null getter usually fails the pipeline.
         /// </summary>
-        public ValueGetter<TValue> GetGetter<TValue>(int col)
+        public override ValueGetter<TValue> GetGetter<TValue>(int col)
         {
             return (ref TValue value) =>
             {

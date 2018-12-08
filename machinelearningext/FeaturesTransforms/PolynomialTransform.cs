@@ -208,14 +208,14 @@ namespace Scikit.ML.FeaturesTransforms
             return true;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             // Fun part we'll see later.
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
@@ -348,7 +348,7 @@ namespace Scikit.ML.FeaturesTransforms
                 return predicate(col);
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+            public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 if (predicate(_input.Schema.ColumnCount))
                 {
@@ -360,7 +360,7 @@ namespace Scikit.ML.FeaturesTransforms
                     return new SameCursor(_input.GetRowCursor(predicate, rand), this.Schema);
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 if (predicate(_input.Schema.ColumnCount))
                 {
@@ -379,16 +379,16 @@ namespace Scikit.ML.FeaturesTransforms
 
         #region Cursor
 
-        class PolynomialCursor<TInput> : IRowCursor
+        class PolynomialCursor<TInput> : RowCursor
         {
             readonly PolynomialState<TInput> _view;
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
             readonly Arguments _args;
             readonly Func<TInput, TInput, TInput> _multiplication;
 
             ValueGetter<VBuffer<TInput>> _inputGetter;
 
-            public PolynomialCursor(PolynomialState<TInput> view, IRowCursor cursor, Func<int, bool> predicate,
+            public PolynomialCursor(PolynomialState<TInput> view, RowCursor cursor, Func<int, bool> predicate,
                                     Arguments args, int column, Func<TInput, TInput, TInput> multiplication)
             {
                 if (!predicate(column))
@@ -400,18 +400,18 @@ namespace Scikit.ML.FeaturesTransforms
                 _multiplication = multiplication;
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 // The column is active if is active in the input view or if it the new vector with the polynomial features.
                 return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 // We do not change the ID (row to row transform).
                 var getId = _inputCursor.GetIdGetter();
@@ -421,28 +421,29 @@ namespace Scikit.ML.FeaturesTransforms
                 };
             }
 
-            public CursorState State => _inputCursor.State; // No change.
-            public long Batch => _inputCursor.Batch;        // No change.
-            public long Position => _inputCursor.Position;  // No change.
-            public Schema Schema => _view.Schema;           // No change.
+            public override CursorState State => _inputCursor.State; // No change.
+            public override long Batch => _inputCursor.Batch;        // No change.
+            public override long Position => _inputCursor.Position;  // No change.
+            public override Schema Schema => _view.Schema;           // No change.
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 return _inputCursor.MoveMany(count);
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 return _inputCursor.MoveNext();
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 // If the column is part of the input view.
                 var schema = _inputCursor.Schema;

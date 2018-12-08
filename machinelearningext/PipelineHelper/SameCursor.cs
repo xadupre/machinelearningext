@@ -11,40 +11,41 @@ namespace Scikit.ML.PipelineHelper
     /// Combines an existing cursor with a schema not necessarily related.
     /// Used in <see cref="ScalerTransform"/>.
     /// </summary>
-    public class SameCursor : IRowCursor
+    public class SameCursor : RowCursor
     {
-        readonly IRowCursor _inputCursor;
+        readonly RowCursor _inputCursor;
         readonly Schema _schema;
         readonly Schema _cursorSchema;
 
-        public SameCursor(IRowCursor cursor, Schema schema)
+        public SameCursor(RowCursor cursor, Schema schema)
         {
             _schema = schema;
             _inputCursor = cursor;
             _cursorSchema = _inputCursor.Schema;
         }
 
-        public bool IsColumnActive(int col)
+        public override bool IsColumnActive(int col)
         {
             if (col < _cursorSchema.ColumnCount)
                 return _inputCursor.IsColumnActive(col);
             return false;
         }
 
-        void IDisposable.Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _inputCursor.Dispose();
+            if (disposing)
+                _inputCursor.Dispose();
             GC.SuppressFinalize(this);
         }
 
-        public ICursor GetRootCursor() { return this; }
-        public ValueGetter<UInt128> GetIdGetter() { return _inputCursor.GetIdGetter(); }
-        public CursorState State { get { return _inputCursor.State; } }
-        public long Batch { get { return _inputCursor.Batch; } }
-        public long Position { get { return _inputCursor.Position; } }
-        public Schema Schema { get { return _schema; } }
-        public bool MoveMany(long count) { return _inputCursor.MoveMany(count); }
-        public bool MoveNext() { return _inputCursor.MoveNext(); }
-        public ValueGetter<TValue> GetGetter<TValue>(int col) { return _inputCursor.GetGetter<TValue>(col); }
+        public override RowCursor GetRootCursor() { return this; }
+        public override ValueGetter<UInt128> GetIdGetter() { return _inputCursor.GetIdGetter(); }
+        public override CursorState State { get { return _inputCursor.State; } }
+        public override long Batch { get { return _inputCursor.Batch; } }
+        public override long Position { get { return _inputCursor.Position; } }
+        public override Schema Schema { get { return _schema; } }
+        public override bool MoveMany(long count) { return _inputCursor.MoveMany(count); }
+        public override bool MoveNext() { return _inputCursor.MoveNext(); }
+        public override ValueGetter<TValue> GetGetter<TValue>(int col) { return _inputCursor.GetGetter<TValue>(col); }
     }
 }

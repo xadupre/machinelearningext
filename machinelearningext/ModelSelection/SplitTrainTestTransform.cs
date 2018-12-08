@@ -307,13 +307,13 @@ namespace Scikit.ML.ModelSelection
             return true;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> predicate, Random rand = null)
+        protected override RowCursor GetRowCursorCore(Func<int, bool> predicate, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
             return _pipedTransform.GetRowCursor(predicate, rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
             return _pipedTransform.GetRowCursorSet(out consolidator, predicate, n, rand);

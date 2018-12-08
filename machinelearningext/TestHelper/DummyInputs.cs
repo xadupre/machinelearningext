@@ -58,7 +58,7 @@ namespace Scikit.ML.TestHelper
             }
         }
 
-        public Delegate[] GetCursorGetter(IRowCursor cursor)
+        public Delegate[] GetCursorGetter(RowCursor cursor)
         {
             return new Delegate[]
             {

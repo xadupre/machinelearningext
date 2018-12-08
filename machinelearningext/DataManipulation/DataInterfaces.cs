@@ -171,7 +171,7 @@ namespace Scikit.ML.DataManipulation
         /// The returned getter returns the element
         /// at position <pre>cursor.Position</pre>
         /// </summary>
-        ValueGetter<DType> GetGetter<DType>(IRowCursor cursor);
+        ValueGetter<DType> GetGetter<DType>(RowCursor cursor);
 
         /// <summary>
         /// Raises an exception if two columns do not have the same
@@ -187,7 +187,7 @@ namespace Scikit.ML.DataManipulation
         /// The returned getter returns the element
         /// at position <pre>cursor.Position</pre>
         /// </summary>
-        ValueGetter<VBuffer<DType>> GetGetterVector<DType>(IRowCursor cursor);
+        ValueGetter<VBuffer<DType>> GetGetterVector<DType>(RowCursor cursor);
 
         /// <summary>
         /// exact comparison
@@ -304,12 +304,12 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Sames a GetRowCursor but on a subset of the data.
         /// </summary>
-        IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null);
+        RowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null);
 
         /// <summary>
         /// Sames a GetRowCursorSet but on a subset of the data.
         /// </summary>
-        IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null);
+        RowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null);
 
         /// <summary>
         /// Retrieves a column by its name.

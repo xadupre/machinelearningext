@@ -42,7 +42,7 @@ namespace Scikit.ML.PipelineHelper
             return _source.GetRowCount();
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             var res = new TypeReplacementCursor(_source.GetRowCursor(predicate, rand), Schema);
 #if(DEBUG)
@@ -52,37 +52,39 @@ namespace Scikit.ML.PipelineHelper
             return res;
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
             Func<int, bool> predicate, int n, Random rand = null)
         {
-            return _source.GetRowCursorSet(out consolidator, predicate, n, rand).Select(c => new TypeReplacementCursor(c, Schema)).ToArray();
+            return _source.GetRowCursorSet(out consolidator, predicate, n, rand)
+                          .Select(c => new TypeReplacementCursor(c, Schema)).ToArray();
         }
 
-        class TypeReplacementCursor : IRowCursor
+        class TypeReplacementCursor : RowCursor
         {
-            IRowCursor _cursor;
+            RowCursor _cursor;
             Schema _schema;
 
-            public TypeReplacementCursor(IRowCursor cursor, ISchema newSchema)
+            public TypeReplacementCursor(RowCursor cursor, ISchema newSchema)
             {
                 _cursor = cursor;
                 _schema = Schema.Create(newSchema);
             }
 
-            public Schema Schema { get { return _schema; } }
-            public ICursor GetRootCursor() { return this; }
-            public bool IsColumnActive(int col) { return _cursor.IsColumnActive(col); }
-            public ValueGetter<UInt128> GetIdGetter() { return _cursor.GetIdGetter(); }
-            public CursorState State { get { return _cursor.State; } }
-            public long Batch { get { return _cursor.Batch; } }
-            public long Position { get { return _cursor.Position; } }
-            public bool MoveMany(long count) { return _cursor.MoveMany(count); }
-            public bool MoveNext() { return _cursor.MoveNext(); }
-            public ValueGetter<TValue> GetGetter<TValue>(int col) { return _cursor.GetGetter<TValue>(col); }
+            public override Schema Schema { get { return _schema; } }
+            public override RowCursor GetRootCursor() { return this; }
+            public override bool IsColumnActive(int col) { return _cursor.IsColumnActive(col); }
+            public override ValueGetter<UInt128> GetIdGetter() { return _cursor.GetIdGetter(); }
+            public override CursorState State { get { return _cursor.State; } }
+            public override long Batch { get { return _cursor.Batch; } }
+            public override long Position { get { return _cursor.Position; } }
+            public override bool MoveMany(long count) { return _cursor.MoveMany(count); }
+            public override bool MoveNext() { return _cursor.MoveNext(); }
+            public override ValueGetter<TValue> GetGetter<TValue>(int col) { return _cursor.GetGetter<TValue>(col); }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _cursor.Dispose();
+                if (disposing)
+                    _cursor.Dispose();
                 GC.SuppressFinalize(this);
             }
         }

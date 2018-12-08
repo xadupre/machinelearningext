@@ -223,13 +223,13 @@ namespace Scikit.ML.Clustering
             return false;
         }
 
-        protected override IRowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
+        protected override RowCursor GetRowCursorCore(Func<int, bool> needCol, Random rand = null)
         {
             Host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public override IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             Host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursorSet(out consolidator, needCol, n, rand);
@@ -473,7 +473,7 @@ namespace Scikit.ML.Clustering
                 return _input.GetRowCount();
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+            public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 TrainTransform();
                 _host.AssertValue(_Results, "_Results");
@@ -481,7 +481,7 @@ namespace Scikit.ML.Clustering
                 return new OpticsCursor(this, cursor, _args.newColumnsNumber);
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 TrainTransform();
                 _host.AssertValue(_Results, "_Results");
@@ -495,32 +495,32 @@ namespace Scikit.ML.Clustering
             }
         }
 
-        public class OpticsCursor : IRowCursor
+        public class OpticsCursor : RowCursor
         {
             readonly OpticsState _view;
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
             readonly int _newColNumber;
 
-            public OpticsCursor(OpticsState view, IRowCursor cursor, int newColNumber)
+            public OpticsCursor(OpticsState view, RowCursor cursor, int newColNumber)
             {
                 _view = view;
                 _inputCursor = cursor;
                 _newColNumber = newColNumber;
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 if (col < _inputCursor.Schema.ColumnCount)
                     return _inputCursor.IsColumnActive(col);
                 return true;
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
                 return (ref UInt128 pos) =>
@@ -529,28 +529,29 @@ namespace Scikit.ML.Clustering
                 };
             }
 
-            public CursorState State { get { return _inputCursor.State; } }
-            public long Batch { get { return _inputCursor.Batch; } }
-            public long Position { get { return _inputCursor.Position; } }
-            public Schema Schema { get { return _view.Schema; } }
+            public override CursorState State { get { return _inputCursor.State; } }
+            public override long Batch { get { return _inputCursor.Batch; } }
+            public override long Position { get { return _inputCursor.Position; } }
+            public override Schema Schema { get { return _view.Schema; } }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 return _inputCursor.MoveMany(count);
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 return _inputCursor.MoveNext();
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (col < _view.Source.Schema.ColumnCount)
                 {

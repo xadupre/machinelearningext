@@ -26,7 +26,7 @@ namespace Scikit.ML.ProductionPrediction
             public float Score;
             public float Probability;
 
-            public Delegate[] GetCursorGetter(IRowCursor cursor)
+            public Delegate[] GetCursorGetter(RowCursor cursor)
             {
                 int indexL;
                 if (!cursor.Schema.TryGetColumnIndex("PredictedLabel", out indexL))

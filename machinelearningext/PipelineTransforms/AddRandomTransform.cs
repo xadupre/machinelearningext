@@ -181,13 +181,13 @@ namespace Scikit.ML.PipelineTransforms
             return true;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             var cur = Source.GetRowCursor(i => predicate(i) || predicate(SchemaHelper.NeedColumn(_columnMapping, i)));
             return new AddRandomCursor(this, cur);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             var host = new ConsoleEnvironment().Register("Estimate n threads");
             n = DataViewUtils.GetThreadCount(host, n);
@@ -195,7 +195,7 @@ namespace Scikit.ML.PipelineTransforms
             if (n <= 1)
             {
                 consolidator = null;
-                return new IRowCursor[] { GetRowCursor(predicate, rand) };
+                return new RowCursor[] { GetRowCursor(predicate, rand) };
             }
             else
             {
@@ -211,14 +211,14 @@ namespace Scikit.ML.PipelineTransforms
 
         #region cursor
 
-        public class AddRandomCursor : IRowCursor
+        public class AddRandomCursor : RowCursor
         {
             readonly AddRandomTransform _view;
             readonly Schema _schema;
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
             Random _rand;
 
-            public AddRandomCursor(AddRandomTransform view, IRowCursor cursor)
+            public AddRandomCursor(AddRandomTransform view, RowCursor cursor)
             {
                 _view = view;
                 _inputCursor = cursor;
@@ -226,19 +226,19 @@ namespace Scikit.ML.PipelineTransforms
                 _rand = new Random(_view._args.seed);
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 if (col < _inputCursor.Schema.ColumnCount)
                     return _inputCursor.IsColumnActive(col);
                 return true;
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
                 return (ref UInt128 pos) =>
@@ -247,28 +247,29 @@ namespace Scikit.ML.PipelineTransforms
                 };
             }
 
-            public CursorState State { get { return _inputCursor.State; } }
-            public long Batch { get { return _inputCursor.Batch; } }
-            public long Position { get { return _inputCursor.Position; } }
-            public Schema Schema { get { return _view.Schema; } }
+            public override CursorState State { get { return _inputCursor.State; } }
+            public override long Batch { get { return _inputCursor.Batch; } }
+            public override long Position { get { return _inputCursor.Position; } }
+            public override Schema Schema { get { return _view.Schema; } }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 return _inputCursor.MoveMany(count);
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 return _inputCursor.MoveNext();
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (col < _view.Source.Schema.ColumnCount)
                     return _inputCursor.GetGetter<TValue>(col);

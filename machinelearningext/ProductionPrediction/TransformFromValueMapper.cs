@@ -84,12 +84,12 @@ namespace Scikit.ML.ProductionPrediction
         public long? GetRowCount() { return _source.GetRowCount(); }
         public Schema Schema { get { return _schema; } }
 
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
         {
             return _transform.GetRowCursorSet(out consolidator, needCol, n, rand);
         }
@@ -199,7 +199,7 @@ namespace Scikit.ML.ProductionPrediction
                 return predicate(col);
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+            public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 int index;
                 if (!Source.Schema.TryGetColumnIndex(_parent.InputName, out index))
@@ -214,7 +214,7 @@ namespace Scikit.ML.ProductionPrediction
                     return new SameCursor(Source.GetRowCursor(predicate, rand), Schema);
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 int index;
                 if (!Source.Schema.TryGetColumnIndex(_parent.InputName, out index))
@@ -236,31 +236,31 @@ namespace Scikit.ML.ProductionPrediction
 
         #region cursor
 
-        class MemoryCursor<TSrc, TDst> : IRowCursor
+        class MemoryCursor<TSrc, TDst> : RowCursor
         {
             readonly MemoryTransform<TSrc, TDst> _view;
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
             readonly int _inputCol;
 
-            public MemoryCursor(MemoryTransform<TSrc, TDst> view, IRowCursor cursor, int inputCol)
+            public MemoryCursor(MemoryTransform<TSrc, TDst> view, RowCursor cursor, int inputCol)
             {
                 _view = view;
                 _inputCursor = cursor;
                 _inputCol = inputCol;
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 // The column is active if is active in the input view or if it the new vector with the polynomial features.
                 return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 // We do not change the ID (row to row transform).
                 var getId = _inputCursor.GetIdGetter();
@@ -270,28 +270,29 @@ namespace Scikit.ML.ProductionPrediction
                 };
             }
 
-            public CursorState State { get { return _inputCursor.State; } } // No change.
-            public long Batch { get { return _inputCursor.Batch; } }        // No change.
-            public long Position { get { return _inputCursor.Position; } }  // No change.
-            public Schema Schema { get { return _view.Schema; } }          // No change.
+            public override CursorState State { get { return _inputCursor.State; } } // No change.
+            public override long Batch { get { return _inputCursor.Batch; } }        // No change.
+            public override long Position { get { return _inputCursor.Position; } }  // No change.
+            public override Schema Schema { get { return _view.Schema; } }          // No change.
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 return _inputCursor.MoveMany(count);
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 return _inputCursor.MoveNext();
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 // If the column is part of the input view.
                 if (col < _inputCursor.Schema.ColumnCount)

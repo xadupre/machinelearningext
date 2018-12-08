@@ -921,10 +921,10 @@ namespace Scikit.ML.DataManipulation
         }
 
         /// <summary>
-        /// Fills the value with values coming from a IRowCursor.
+        /// Fills the value with values coming from a RowCursor.
         /// Called by the previous method.
         /// </summary>
-        void FillValues(IRowCursor cursor, Dictionary<int, Tuple<int, int>> memory)
+        void FillValues(RowCursor cursor, Dictionary<int, Tuple<int, int>> memory)
         {
             var getterBL = new ValueGetter<bool>[_colsBL == null ? 0 : _colsBL.Count];
             var getterI4 = new ValueGetter<int>[_colsI4 == null ? 0 : _colsI4.Count];
@@ -1122,7 +1122,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a getter of a certain type.
         /// </summary>
-        ValueGetter<DType> GetGetterCursor<DType>(IRowCursor cursor, int col, int index, DType defaultValue)
+        ValueGetter<DType> GetGetterCursor<DType>(RowCursor cursor, int col, int index, DType defaultValue)
         {
             var dt = cursor.Schema.GetColumnType(col);
             if (dt.IsVector())
@@ -1197,7 +1197,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a getter of a certain type.
         /// </summary>
-        ValueGetter<VBuffer<DType>> GetGetterCursorVector<DType>(IRowCursor cursor, int col, int index, DType defaultValue)
+        ValueGetter<VBuffer<DType>> GetGetterCursorVector<DType>(RowCursor cursor, int col, int index, DType defaultValue)
         {
             var dt = cursor.Schema.GetColumnType(col);
             if (dt.IsVector())
@@ -1220,7 +1220,7 @@ namespace Scikit.ML.DataManipulation
         public delegate void RowFillerDelegate(DataContainer cont, int row);
         public delegate void RowColumnSetterDelegate(DataContainer cont, int row);
 
-        public static RowFillerDelegate GetRowFiller(IRowCursor cur)
+        public static RowFillerDelegate GetRowFiller(RowCursor cur)
         {
             var setters = GetAllSetters(cur);
 
@@ -1234,7 +1234,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Builds setters for each column in the DataFrame based on the schema of a cursor.
         /// </summary>
-        public static RowColumnSetterDelegate[] GetAllSetters(IRowCursor cur)
+        public static RowColumnSetterDelegate[] GetAllSetters(RowCursor cur)
         {
             var sch = cur.Schema;
             var res = new List<RowColumnSetterDelegate>();
@@ -1256,7 +1256,7 @@ namespace Scikit.ML.DataManipulation
         /// option based on the type. It deals with ambiguities introduced by
         /// DvText and VBufferEqSort.
         /// </summary>
-        public static RowColumnSetterDelegate GetColumnSetter(IRowCursor cur, Delegate getter, int col, ColumnType colType)
+        public static RowColumnSetterDelegate GetColumnSetter(RowCursor cur, Delegate getter, int col, ColumnType colType)
         {
             if (colType.IsVector())
             {
@@ -1290,7 +1290,7 @@ namespace Scikit.ML.DataManipulation
             }
         }
 
-        public static RowColumnSetterDelegate GetColumnSetter<DType>(IRowCursor cur, Delegate getter, int col)
+        public static RowColumnSetterDelegate GetColumnSetter<DType>(RowCursor cur, Delegate getter, int col)
              where DType : IEquatable<DType>, IComparable<DType>
         {
             var typedGetter = getter as ValueGetter<DType>;
@@ -1304,7 +1304,7 @@ namespace Scikit.ML.DataManipulation
             };
         }
 
-        public static RowColumnSetterDelegate GetColumnSetterVector<DType>(IRowCursor cur, Delegate getter, int col)
+        public static RowColumnSetterDelegate GetColumnSetterVector<DType>(RowCursor cur, Delegate getter, int col)
             where DType : IEquatable<DType>, IComparable<DType>
         {
             var typedGetter2 = getter as ValueGetter<VBufferEqSort<DType>>;
@@ -1330,7 +1330,7 @@ namespace Scikit.ML.DataManipulation
             throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type {typeof(DType)}.");
         }
 
-        public static RowColumnSetterDelegate GetColumnSetterVectorText(IRowCursor cur, Delegate getter, int col)
+        public static RowColumnSetterDelegate GetColumnSetterVectorText(RowCursor cur, Delegate getter, int col)
         {
             var typedGetter3 = getter as ValueGetter<VBufferEqSort<DvText>>;
             if (typedGetter3 != null)
@@ -1369,7 +1369,7 @@ namespace Scikit.ML.DataManipulation
             throw new DataTypeError($"Unable to convert a getter {getter.GetType()} for type VBufferEqSort<DvText> or equivalent.");
         }
 
-        public static RowColumnSetterDelegate GetColumnSetterText(IRowCursor cur, Delegate getter, int col)
+        public static RowColumnSetterDelegate GetColumnSetterText(RowCursor cur, Delegate getter, int col)
         {
             var typedGetter2 = getter as ValueGetter<DvText>;
             if (typedGetter2 != null)
@@ -1401,24 +1401,24 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a cursor on the data.
         /// </summary>
-        public IRowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
         {
-            return new RowCursor(this, needCol, rand);
+            return new DataRowCursor(this, needCol, rand);
         }
 
         /// <summary>
         /// Returns a cursor on a subset of the data.
         /// </summary>
-        public IRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
+        public DataRowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
         {
-            return new RowCursor(this, needCol, rand, rows: rows, columns: columns);
+            return new DataRowCursor(this, needCol, rand, rows: rows, columns: columns);
         }
 
         private sealed class Consolidator : IRowCursorConsolidator
         {
             private const int _batchShift = 6;
             private const int _batchSize = 1 << _batchShift;
-            public IRowCursor CreateCursor(IChannelProvider provider, IRowCursor[] inputs)
+            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
             {
                 return DataViewUtils.ConsolidateGeneric(provider, inputs, _batchSize);
             }
@@ -1427,7 +1427,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a set of aliased cursors on the data.
         /// </summary>
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             return GetRowCursorSet(null, null, out consolidator, predicate, n, rand);
         }
@@ -1435,7 +1435,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Returns a set of aliased cursors on the data.
         /// </summary>
-        public IRowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             var host = new ConsoleEnvironment().Register("Estimate n threads");
             n = DataViewUtils.GetThreadCount(host, n);
@@ -1445,13 +1445,13 @@ namespace Scikit.ML.DataManipulation
             if (n <= 1)
             {
                 consolidator = null;
-                return new IRowCursor[] { GetRowCursor(rows, columns, predicate, rand) };
+                return new RowCursor[] { GetRowCursor(rows, columns, predicate, rand) };
             }
             else
             {
-                var cursors = new IRowCursor[n];
+                var cursors = new RowCursor[n];
                 for (int i = 0; i < cursors.Length; ++i)
-                    cursors[i] = new RowCursor(this, predicate, rand, n, i, rows: rows, columns: columns);
+                    cursors[i] = new DataRowCursor(this, predicate, rand, n, i, rows: rows, columns: columns);
                 consolidator = new Consolidator();
                 return cursors;
             }
@@ -1460,10 +1460,10 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Implements a cursor for this container.
         /// </summary>
-        public class RowCursor : IRowCursor
+        public class DataRowCursor : RowCursor
         {
             DataContainer _cont;
-            public long Batch => _first;
+            public override long Batch => _first;
             Random _rand;
             Func<int, bool> _needCol;
             long _inc;
@@ -1476,7 +1476,7 @@ namespace Scikit.ML.DataManipulation
             Schema _schema;
             int[] _shuffled;
 
-            public RowCursor(DataContainer cont, Func<int, bool> needCol,
+            public DataRowCursor(DataContainer cont, Func<int, bool> needCol,
                              Random rand = null, int inc = 1, int first = 0,
                              int[] rows = null, int[] columns = null)
             {
@@ -1508,20 +1508,20 @@ namespace Scikit.ML.DataManipulation
                     _shuffled = null;
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 return (ref UInt128 idrow) => { idrow = new UInt128(Position >= 0 ? (ulong)Position : (ulong)(-Position), Position >= 0 ? (ulong)1 : (ulong)0); };
             }
 
-            public void Dispose()
+            protected override void Dispose(bool disposing)
             {
             }
 
-            public ICursor GetRootCursor() { return this; }
-            public bool IsColumnActive(int col) { return _needCol(col); }
-            public Schema Schema => _colsSet == null ? _cont.Schema : _schema;
+            public override RowCursor GetRootCursor() { return this; }
+            public override bool IsColumnActive(int col) { return _needCol(col); }
+            public override Schema Schema => _colsSet == null ? _cont.Schema : _schema;
 
-            public long Position => _rowsSet == null
+            public override long Position => _rowsSet == null
                                         ? _position
                                         : (_shuffled == null
                                                 ? _rowsSet[_position]
@@ -1530,7 +1530,7 @@ namespace Scikit.ML.DataManipulation
                                                     : _position));
             int LastPosition => _rowsSet == null ? _cont.Length : _rowsSet.Length;
 
-            public CursorState State
+            public override CursorState State
             {
                 get
                 {
@@ -1540,7 +1540,7 @@ namespace Scikit.ML.DataManipulation
                 }
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 if (_position == -1)
                     _position = _inc * (count - 1) + _first;
@@ -1549,7 +1549,7 @@ namespace Scikit.ML.DataManipulation
                 return _position < LastPosition;
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 if (_position == -1)
                     _position = _first;
@@ -1558,7 +1558,7 @@ namespace Scikit.ML.DataManipulation
                 return _position < LastPosition;
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 col = _colsSet == null ? col : _colsSet[col];
                 var coor = _cont._mapping[col];

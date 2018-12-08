@@ -17,7 +17,7 @@ namespace Scikit.ML.PipelineHelper
         /// <summary>
         /// Returns the getters for all columns.
         /// </summary>
-        public static Delegate[] GetAllGetters(IRowCursor cur)
+        public static Delegate[] GetAllGetters(RowCursor cur)
         {
             var sch = cur.Schema;
             var res = new List<Delegate>();
@@ -33,7 +33,7 @@ namespace Scikit.ML.PipelineHelper
             return res.ToArray();
         }
 
-        public static Delegate GetGetterChoice<T1, T2>(IRowCursor cur, int col)
+        public static Delegate GetGetterChoice<T1, T2>(RowCursor cur, int col)
         {
             Delegate res = null;
             try
@@ -59,7 +59,7 @@ namespace Scikit.ML.PipelineHelper
             return res;
         }
 
-        public static Delegate GetGetterChoice<T1, T2, T3>(IRowCursor cur, int col)
+        public static Delegate GetGetterChoice<T1, T2, T3>(RowCursor cur, int col)
         {
             Delegate res = null;
             try
@@ -94,7 +94,7 @@ namespace Scikit.ML.PipelineHelper
             return res;
         }
 
-        public static Delegate GetColumnGetter(IRowCursor cur, int col, Schema sch = null)
+        public static Delegate GetColumnGetter(RowCursor cur, int col, Schema sch = null)
         {
             if (sch == null)
                 sch = cur.Schema;

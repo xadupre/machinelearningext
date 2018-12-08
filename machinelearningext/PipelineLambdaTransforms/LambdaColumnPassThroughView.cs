@@ -102,7 +102,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
             return predicate(col);
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             if (predicate(_source.Schema.ColumnCount))
             {
@@ -114,7 +114,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
                 return new SameCursor(_source.GetRowCursor(predicate, rand), Schema);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
             Func<int, bool> predicate, int n, Random rand = null)
         {
             if (predicate(_source.Schema.ColumnCount))
@@ -129,30 +129,30 @@ namespace Scikit.ML.PipelineLambdaTransforms
                               .ToArray();
         }
 
-        public class LambdaCursor : IRowCursor
+        public class LambdaCursor : RowCursor
         {
             readonly LambdaColumnPassThroughView<TSrc, TDst> _view;
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
 
-            public LambdaCursor(LambdaColumnPassThroughView<TSrc, TDst> view, IRowCursor cursor)
+            public LambdaCursor(LambdaColumnPassThroughView<TSrc, TDst> view, RowCursor cursor)
             {
                 _view = view;
                 _inputCursor = cursor;
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 if (col < _inputCursor.Schema.ColumnCount)
                     return _inputCursor.IsColumnActive(col);
                 return true;
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
                 return (ref UInt128 pos) =>
@@ -161,28 +161,29 @@ namespace Scikit.ML.PipelineLambdaTransforms
                 };
             }
 
-            public CursorState State { get { return _inputCursor.State; } }
-            public long Batch { get { return _inputCursor.Batch; } }
-            public long Position { get { return _inputCursor.Position; } }
-            public Schema Schema { get { return _view.Schema; } }
+            public override CursorState State { get { return _inputCursor.State; } }
+            public override long Batch { get { return _inputCursor.Batch; } }
+            public override long Position { get { return _inputCursor.Position; } }
+            public override Schema Schema { get { return _view.Schema; } }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 return _inputCursor.MoveMany(count);
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 return _inputCursor.MoveNext();
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (col < _view.SourceTags.Schema.ColumnCount)
                 {

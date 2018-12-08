@@ -248,13 +248,13 @@ namespace Scikit.ML.RandomTransforms
             return true;
         }
 
-        public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+        public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
             return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
@@ -410,7 +410,7 @@ namespace Scikit.ML.RandomTransforms
                 return null;
             }
 
-            public IRowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
+            public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
                 var kind = _toShake[0].OutputType.IsVector()
                                 ? _toShake[0].OutputType.ItemType().RawKind()
@@ -426,7 +426,7 @@ namespace Scikit.ML.RandomTransforms
                 }
             }
 
-            public IRowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
             {
                 DataKind kind;
                 if (_toShake[0].OutputType.IsVector())
@@ -450,10 +450,10 @@ namespace Scikit.ML.RandomTransforms
 
         #region Cursor
 
-        public class ShakeInputCursor<TInput, TOutput> : IRowCursor
+        public class ShakeInputCursor<TInput, TOutput> : RowCursor
         {
             readonly ShakeInputState<TInput> _view;
-            readonly IRowCursor _inputCursor;
+            readonly RowCursor _inputCursor;
             readonly Arguments _args;
             readonly TInput[][] _shakingValues;
             readonly IValueMapper[] _toShake;
@@ -465,7 +465,7 @@ namespace Scikit.ML.RandomTransforms
             ValueMapper<VBuffer<TInput>, TOutput>[] _mappers;
             Func<TOutput, TOutput, TOutput> _aggregation;
 
-            public ShakeInputCursor(ShakeInputState<TInput> view, IRowCursor cursor, Func<int, bool> predicate,
+            public ShakeInputCursor(ShakeInputState<TInput> view, RowCursor cursor, Func<int, bool> predicate,
                                     Arguments args, int column, IValueMapper[] toShake, TInput[][] shakingValues,
                                     Func<TOutput, TOutput, TOutput> aggregation)
             {
@@ -492,17 +492,17 @@ namespace Scikit.ML.RandomTransforms
                 _aggregation = aggregation;
             }
 
-            public ICursor GetRootCursor()
+            public override RowCursor GetRootCursor()
             {
                 return this;
             }
 
-            public bool IsColumnActive(int col)
+            public override bool IsColumnActive(int col)
             {
                 return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
             }
 
-            public ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<UInt128> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
                 return (ref UInt128 pos) =>
@@ -511,18 +511,19 @@ namespace Scikit.ML.RandomTransforms
                 };
             }
 
-            public CursorState State { get { return _inputCursor.State; } }
-            public long Batch { get { return _inputCursor.Batch; } }
-            public long Position { get { return _inputCursor.Position; } }
-            public Schema Schema { get { return _view.Schema; } }
+            public override CursorState State { get { return _inputCursor.State; } }
+            public override long Batch { get { return _inputCursor.Batch; } }
+            public override long Position { get { return _inputCursor.Position; } }
+            public override Schema Schema { get { return _view.Schema; } }
 
-            void IDisposable.Dispose()
+            protected override void Dispose(bool disposing)
             {
-                _inputCursor.Dispose();
+                if (disposing)
+                    _inputCursor.Dispose();
                 GC.SuppressFinalize(this);
             }
 
-            public bool MoveMany(long count)
+            public override bool MoveMany(long count)
             {
                 var r = _inputCursor.MoveMany(count);
                 if (!r)
@@ -539,7 +540,7 @@ namespace Scikit.ML.RandomTransforms
                 return true;
             }
 
-            public bool MoveNext()
+            public override bool MoveNext()
             {
                 var r = _inputCursor.MoveNext();
                 if (!r)
@@ -556,7 +557,7 @@ namespace Scikit.ML.RandomTransforms
                 return true;
             }
 
-            public ValueGetter<TValue> GetGetter<TValue>(int col)
+            public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 if (col < _inputCursor.Schema.ColumnCount)
                     return _inputCursor.GetGetter<TValue>(col);
