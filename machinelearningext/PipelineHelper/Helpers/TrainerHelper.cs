@@ -85,13 +85,13 @@ namespace Scikit.ML.PipelineHelper
             ch.CheckValueOrNull(inputPredictor);
 
             AddCacheIfWanted(env, ch, trainer, ref data, cacheData);
-            ch.Trace("Training");
+            ch.Trace(MessageSensitivity.None, "Training");
             if (validData != null)
                 AddCacheIfWanted(env, ch, trainer, ref validData, cacheData);
 
             if (inputPredictor != null && !trainer.Info.SupportsIncrementalTraining)
             {
-                ch.Warning("Ignoring " + nameof(TrainCommand.Arguments.InputModelFile) +
+                ch.Warning(MessageSensitivity.None, "Ignoring " + nameof(TrainCommand.Arguments.InputModelFile) +
                     ": Trainer does not support incremental training.");
                 inputPredictor = null;
             }
@@ -111,14 +111,14 @@ namespace Scikit.ML.PipelineHelper
 
             if (shouldCache)
             {
-                ch.Trace("Caching");
+                ch.Trace(MessageSensitivity.None, "Caching");
                 var prefetch = data.Schema.GetColumnRoles().Select(kc => kc.Value.Index).ToArray();
                 var cacheView = new CacheDataView(env, data.Data, prefetch);
                 // Because the prefetching worked, we know that these are valid columns.
                 data = new RoleMappedData(cacheView, data.Schema.GetColumnRoleNames());
             }
             else
-                ch.Trace("Not caching");
+                ch.Trace(MessageSensitivity.None, "Not caching");
             return shouldCache;
         }
     }

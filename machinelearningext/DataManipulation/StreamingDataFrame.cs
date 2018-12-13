@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Api;
+//using Microsoft.ML.Runtime.Api;
 
 
 namespace Scikit.ML.DataManipulation
@@ -38,7 +38,7 @@ namespace Scikit.ML.DataManipulation
         {
             if (_env == null)
                 throw Contracts.ExceptNotSupp("The class must be initialized with an envrionment to enable that functionality.");
-            var tr = _env.CreateTransform(transform, Source);
+            var tr = ComponentCreation.CreateTransform(_env, transform, Source);
             if (tr == null)
                 throw Contracts.ExceptNotSupp($"Unable to create transform '{transform}'.");
             AddTransform(tr);

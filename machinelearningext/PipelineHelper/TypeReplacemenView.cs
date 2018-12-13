@@ -73,7 +73,7 @@ namespace Scikit.ML.PipelineHelper
             public override Schema Schema { get { return _schema; } }
             public override RowCursor GetRootCursor() { return this; }
             public override bool IsColumnActive(int col) { return _cursor.IsColumnActive(col); }
-            public override ValueGetter<UInt128> GetIdGetter() { return _cursor.GetIdGetter(); }
+            public override ValueGetter<RowId> GetIdGetter() { return _cursor.GetIdGetter(); }
             public override CursorState State { get { return _cursor.State; } }
             public override long Batch { get { return _cursor.Batch; } }
             public override long Position { get { return _cursor.Position; } }

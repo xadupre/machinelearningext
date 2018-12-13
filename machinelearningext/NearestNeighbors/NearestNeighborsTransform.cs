@@ -261,7 +261,7 @@ namespace Scikit.ML.NearestNeighbors
 
                 using (var ch = _host.Start("Build k-d tree"))
                 {
-                    ch.Info("ComputeNearestNeighbors: build a k-d tree.");
+                    ch.Info(MessageSensitivity.None, "ComputeNearestNeighbors: build a k-d tree.");
                     int featureIndex, labelIndex, idIndex, weightIndex;
                     if (!_input.Schema.TryGetColumnIndex(_args.column, out featureIndex))
                         throw ch.Except("Unable to find column '{0}'.", _args.column);
@@ -272,7 +272,7 @@ namespace Scikit.ML.NearestNeighbors
                     Dictionary<long, Tuple<long, float>> merged;
                     _trees = NearestNeighborsBuilder.NearestNeighborsBuild<long>(ch, _input, featureIndex, labelIndex,
                                         idIndex, weightIndex, out merged, _args);
-                    ch.Info("Done. Tree size: {0} points.", _trees.Count());
+                    ch.Info(MessageSensitivity.UserData, "Done. Tree size: {0} points.", _trees.Count());
                 }
             }
         }
@@ -313,10 +313,10 @@ namespace Scikit.ML.NearestNeighbors
                 return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
             }
 
-            public override ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<RowId> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
-                return (ref UInt128 pos) =>
+                return (ref RowId pos) =>
                 {
                     getId(ref pos);
                 };

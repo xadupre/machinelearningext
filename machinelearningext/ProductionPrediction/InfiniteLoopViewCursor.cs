@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
+//using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
@@ -128,7 +128,7 @@ namespace Scikit.ML.ProductionPrediction
             public override long Batch { get { return _batch; } }
             public override long Position { get { return _position; } }
             public override Schema Schema { get { return _view.Schema; } }
-            public override ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
+            public override ValueGetter<RowId> GetIdGetter() { return (ref RowId uid) => { uid = new RowId(0, 1); }; }
 
             protected override void Dispose(bool disposing)
             {
@@ -365,7 +365,7 @@ namespace Scikit.ML.ProductionPrediction
             public override long Batch { get { return _batch; } }
             public override long Position { get { return _position; } }
             public override Schema Schema { get { return _view.Schema; } }
-            public override ValueGetter<UInt128> GetIdGetter() { return (ref UInt128 uid) => { uid = new UInt128(0, 1); }; }
+            public override ValueGetter<RowId> GetIdGetter() { return (ref RowId uid) => { uid = new RowId(0, 1); }; }
 
             protected override void Dispose(bool disposing)
             {

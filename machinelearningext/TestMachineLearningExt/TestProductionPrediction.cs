@@ -6,9 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Transforms;
+//using Microsoft.ML.Runtime.Api;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineLambdaTransforms;
 using Scikit.ML.PipelineTransforms;
@@ -159,7 +161,7 @@ namespace TestMachineLearningExt
 
             IHostEnvironment _env;
             IDataView _transforms;
-            Predictor _predictor;
+            IPredictor _predictor;
             ValueMapper<VBuffer<float>, float> _mapper;
             ValueMapperFromTransformFloat<VBuffer<float>> _valueMapper;
 

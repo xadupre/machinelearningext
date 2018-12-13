@@ -269,10 +269,10 @@ namespace Scikit.ML.PipelineTransforms
                 using (var ch = Host.Start("Caching data..."))
                 {
                     if (_reuse && File.Exists(_cacheFile))
-                        ch.Info("Reusing cache '{0}'", _cacheFile);
+                        ch.Info(MessageSensitivity.UserData, "Reusing cache '{0}'", _cacheFile);
                     else
                     {
-                        ch.Info("Building cache '{0}'", _cacheFile);
+                        ch.Info(MessageSensitivity.UserData, "Building cache '{0}'", _cacheFile);
                         var saver = ComponentCreation.CreateSaver(env, _saverSettings);
                         using (var fs0 = Host.CreateOutputFile(_cacheFile))
                             DataSaverUtils.SaveDataView(ch, saver, input, fs0, true);

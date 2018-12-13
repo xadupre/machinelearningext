@@ -757,22 +757,22 @@ namespace Scikit.ML.MultiClass
                 _copy = -1;
             }
 
-            public override ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<RowId> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
-                return (ref UInt128 pos) =>
+                return (ref RowId pos) =>
                 {
                     if (_shift > 0)
                     {
                         Contracts.Assert(_copy >= 0 && _copy <= _maxReplica);
                         getId(ref pos);
-                        ulong left = pos.Lo << _shift;
+                        ulong left = pos.Low << _shift;
                         left >>= _shift;
-                        left = pos.Lo - left;
-                        ulong lo = pos.Lo << _shift;
-                        ulong hi = pos.Hi << _shift;
+                        left = pos.Low - left;
+                        ulong lo = pos.Low << _shift;
+                        ulong hi = pos.High << _shift;
                         hi += left >> (64 - _shift);
-                        pos = new UInt128(lo + (ulong)_copy, hi);
+                        pos = new RowId(lo + (ulong)_copy, hi);
                     }
                     else
                         Contracts.Assert(_copy == 0);

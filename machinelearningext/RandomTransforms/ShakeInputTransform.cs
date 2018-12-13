@@ -502,10 +502,10 @@ namespace Scikit.ML.RandomTransforms
                 return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
             }
 
-            public override ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<RowId> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
-                return (ref UInt128 pos) =>
+                return (ref RowId pos) =>
                 {
                     getId(ref pos);
                 };

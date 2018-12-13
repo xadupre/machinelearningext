@@ -39,7 +39,7 @@ namespace Scikit.ML.PipelineHelper
         }
 
         public override RowCursor GetRootCursor() { return this; }
-        public override ValueGetter<UInt128> GetIdGetter() { return _inputCursor.GetIdGetter(); }
+        public override ValueGetter<RowId> GetIdGetter() { return _inputCursor.GetIdGetter(); }
         public override CursorState State { get { return _inputCursor.State; } }
         public override long Batch { get { return _inputCursor.Batch; } }
         public override long Position { get { return _inputCursor.Position; } }
