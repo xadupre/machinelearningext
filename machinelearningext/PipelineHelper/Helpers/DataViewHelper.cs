@@ -2,8 +2,8 @@
 
 using System;
 using System.IO;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
 

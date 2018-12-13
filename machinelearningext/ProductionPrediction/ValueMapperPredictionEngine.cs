@@ -3,8 +3,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
@@ -60,7 +60,7 @@ namespace Scikit.ML.ProductionPrediction
 
         readonly IHostEnvironment _env;
         readonly IDataView _transforms;
-        readonly Predictor _predictor;
+        readonly IPredictor _predictor;
 
         ValueMapper<TRowValue, PredictionTypeForBinaryClassification> _mapperBinaryClassification;
         IDisposable _valueMapper;

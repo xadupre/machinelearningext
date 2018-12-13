@@ -2,10 +2,10 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.TestHelper;
-using Microsoft.ML.Runtime.Api;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.NearestNeighbors;
 using Scikit.ML.DataManipulation;

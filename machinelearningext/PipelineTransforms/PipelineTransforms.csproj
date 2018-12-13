@@ -25,9 +25,6 @@
     <Reference Include="Microsoft.ML.Maml">
       <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Maml.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.ML.Api">
-      <HintPath>..\..\machinelearning\dist\$(Configuration)\Microsoft.ML.Api.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

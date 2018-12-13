@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.ML;
 using Microsoft.ML.Core.Data;
-//using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Transforms.Text;
 using Microsoft.ML.Trainers;

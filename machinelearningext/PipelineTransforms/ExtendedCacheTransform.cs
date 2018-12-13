@@ -10,7 +10,6 @@ using Scikit.ML.PipelineHelper;
 
 
 // This indicates where to find objects in ML.net assemblies.
-using ComponentCreation = Microsoft.ML.Runtime.Api.ComponentCreation;
 using DataSaverUtils = Microsoft.ML.Runtime.Data.DataSaverUtils;
 using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
 using IDataSaver = Microsoft.ML.Runtime.Data.IDataSaver;

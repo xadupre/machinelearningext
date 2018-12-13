@@ -4,9 +4,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Model;
 using Microsoft.ML.Runtime.Model.Onnx;
 using Scikit.ML.DataManipulation;
@@ -157,7 +157,7 @@ namespace Scikit.ML.ScikitAPI
         protected void Load(Stream fs)
         {
             var transformPipe = ModelFileUtils.LoadPipeline(_env, fs, new MultiFileSource(null), true);
-            var pred = _env.LoadPredictorOrNull(fs);
+            var ipred = _env.LoadPredictorOrNull(fs);
 
             IDataView root;
             for (root = transformPipe; root is IDataTransform && !(root is PassThroughTransform); root = ((IDataTransform)root).Source) ;
@@ -176,13 +176,10 @@ namespace Scikit.ML.ScikitAPI
             for (int i = 0; i < _transforms.Length; ++i)
                 _transforms[i] = new StepTransform() { transform = stack[i] as IDataTransform, transformSettings = null };
 
-            if (pred == null)
+            if (ipred == null)
                 _predictor = new StepPredictor() { predictor = null, roleMapData = null, trainer = null, trainerSettings = null };
             else
             {
-#pragma warning disable CS0618
-                var ipred = pred.GetPredictorObject() as IPredictor;
-#pragma warning restore CS0618
                 _roles = ModelFileUtils.LoadRoleMappingsOrNull(_env, fs).ToList();
                 var data = new RoleMappedData(transformPipe, _roles);
                 _predictor = new StepPredictor() { predictor = ipred, roleMapData = data, trainer = null, trainerSettings = null };

@@ -8,9 +8,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Api;
 using Scikit.ML.PipelineTransforms;
 
 
@@ -165,11 +165,7 @@ namespace Scikit.ML.PipelineGraphTransforms
             {
                 using (Stream modelStream = new FileStream(tag, FileMode.Open, FileAccess.Read))
                 {
-                    var pred = ComponentCreation.LoadPredictorOrNull(env, modelStream);
-#pragma warning disable CS0618
-                    var obj = pred.GetPredictorObject() as IPredictor;
-#pragma warning restore CS0618
-                    var ipred = obj as IPredictor;
+                    var ipred = ComponentCreation.LoadPredictorOrNull(env, modelStream);
                     return ipred;
                 }
             }
