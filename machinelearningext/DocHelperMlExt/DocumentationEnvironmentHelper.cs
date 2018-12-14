@@ -299,8 +299,10 @@ namespace Scikit.ML.DocHelperMlExt
                 ILogWriter logerr = new LogWriter((string s) =>
                 {
                     keepErr.Append(s);
-                    //if (env.VerboseLevel <= 2 && s.Contains("Elapsed"))
-                    //    throw new Exception(string.Format("{0}\n---\n{1}", s, keepErr.ToString()));
+                    if (env.VerboseLevel <= 2 && s.Contains("Elapsed"))
+                    { 
+                        // We do nothing.
+                    }
                     if (s.Contains("Elapsed"))
                         Console.Write(s);
                     else

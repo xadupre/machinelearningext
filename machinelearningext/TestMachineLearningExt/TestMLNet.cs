@@ -113,7 +113,7 @@ namespace TestMachineLearningExt
                         "xf = concat {col=Features:RowNum,Sentiment}\n" +
                         "tr = FastTreeBinaryClassification{iter=2}\n" +
                         "out = __OUTPUT__} \n" +
-                        "cmd = codegen{in=__OUTPUT__ cs=ft_sentiment_cs}";
+                        "cmd = saveas{in=__OUTPUT__ code=ft_sentiment_cs}";
             cmd = cmd.Replace("__INPUT__", data);
             cmd = cmd.Replace("__OUTPUT__", output);
 
