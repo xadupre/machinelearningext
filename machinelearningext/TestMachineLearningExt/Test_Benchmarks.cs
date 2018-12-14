@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.ML;
 using Microsoft.ML.Core.Data;
-using Microsoft.ML.Runtime.Api;
+using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Transforms.Text;
 using Microsoft.ML.Trainers;
@@ -95,7 +95,7 @@ namespace TestMachineLearningExt
                 KeepPunctuations = false,
                 TextCase = TextNormalizingEstimator.CaseNormalizationMode.Lower,
                 OutputTokens = true,
-                UsePredefinedStopWordRemover=true,
+                UsePredefinedStopWordRemover = true,
                 VectorNormalizer = normalize ? TextFeaturizingEstimator.TextNormKind.L2 : TextFeaturizingEstimator.TextNormKind.None,
                 CharFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 3, AllLengths = false },
                 WordFeatureExtractor = new NgramExtractorTransform.NgramExtractorArguments() { NgramLength = 2, AllLengths = true },
@@ -106,7 +106,7 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(seed: 1, conc: 1))
             {
                 // Pipeline
-                var loader = TextLoader.ReadFile(env, args, new MultiFileSource(trainFilename));
+                var loader = new TextLoader(env, args).Read(new MultiFileSource(trainFilename));
 
                 var trans = TextFeaturizingEstimator.Create(env, args2, loader);
 
@@ -138,10 +138,10 @@ namespace TestMachineLearningExt
                 }
             };
             var ml = new MLContext(seed: 1, conc: 1);
-            var reader = ml.Data.TextReader(args);
+            //var reader = ml.Data.TextReader(args);
             var trainFilename = FileHelper.GetTestFile("wikipedia-detox-250-line-data.tsv");
 
-            var data = reader.Read(new MultiFileSource(trainFilename));
+            var data = ml.Data.ReadFromTextFile(trainFilename, args);
             var pipeline = ml.Transforms.Text.FeaturizeText("SentimentText", "Features")
                 .Append(ml.BinaryClassification.Trainers.StochasticDualCoordinateAscent("Label", "Features", advancedSettings: s => s.NumThreads = 1));
             var model = pipeline.Fit(data);
@@ -169,7 +169,7 @@ namespace TestMachineLearningExt
             {
 
                 // Take a couple examples out of the test data and run predictions on top.
-                var testLoader = TextLoader.ReadFile(env, args, new MultiFileSource(testFilename));
+                var testLoader = new TextLoader(env, args).Read(new MultiFileSource(testFilename));
                 IDataView cache;
                 if (strategy.Contains("extcache"))
                     cache = new ExtendedCacheTransform(env, new ExtendedCacheTransform.Arguments(), testLoader);

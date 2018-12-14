@@ -1,7 +1,6 @@
 ﻿
 
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 //using Microsoft.ML.Runtime.Ensemble;
 using Microsoft.ML.Runtime.Learners;

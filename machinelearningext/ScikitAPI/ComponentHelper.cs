@@ -4,8 +4,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Runtime.Learners;
 using Microsoft.ML.Runtime.Ensemble;
@@ -65,13 +65,13 @@ namespace Scikit.ML.ScikitAPI
         {
             var res = new List<Assembly>();
             res.Add(typeof(TextLoader).Assembly);
-            res.Add(typeof(LinearPredictor).Assembly);
+            res.Add(typeof(LinearModelStatistics).Assembly);
             res.Add(typeof(Categorical).Assembly);
-            res.Add(typeof(FastTreeBinaryPredictor).Assembly);
+            res.Add(typeof(FastTreeRankingTrainer).Assembly);
             res.Add(typeof(EnsemblePredictor).Assembly);
             res.Add(typeof(KMeansPlusPlusTrainer).Assembly);
             res.Add(typeof(LightGbm).Assembly);
-            res.Add(typeof(OlsLinearRegressionPredictor).Assembly);
+            res.Add(typeof(OlsLinearRegressionTrainer).Assembly);
             res.Add(typeof(PcaPredictor).Assembly);
             res.Add(typeof(SlidingWindowTransform).Assembly);
             res.Add(typeof(TextFeaturizingEstimator).Assembly);

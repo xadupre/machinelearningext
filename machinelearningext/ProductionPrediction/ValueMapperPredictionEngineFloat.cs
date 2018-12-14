@@ -3,8 +3,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
 
@@ -27,7 +27,7 @@ namespace Scikit.ML.ProductionPrediction
     {
         readonly IHostEnvironment _env;
         readonly IDataView _transforms;
-        readonly Predictor _predictor;
+        readonly IPredictor _predictor;
         readonly ValueMapper<VBuffer<float>, float> _mapper;
         readonly ValueMapper<VBuffer<float>, VBuffer<float>> _mapperVector;
         ValueMapperFromTransformFloat<VBuffer<float>> _valueMapper;

@@ -7,7 +7,7 @@ using System.Linq;
 using System.IO;
 using Microsoft.ML.Data;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Api;
+//using Microsoft.ML.Runtime.Api;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;

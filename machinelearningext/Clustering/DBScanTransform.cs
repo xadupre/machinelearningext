@@ -258,12 +258,12 @@ namespace Scikit.ML.Clustering
                         }
 
                         // Caching data.
-                        ch.Info("Caching the data.");
+                        ch.Info(MessageSensitivity.None, "Caching the data.");
                         using (var cursor = _input.GetRowCursor(i => i == index))
                         {
                             var getter = cursor.GetGetter<VBuffer<float>>(index);
                             var getterId = cursor.GetIdGetter();
-                            UInt128 id = new UInt128();
+                            RowId id = new RowId();
 
                             VBuffer<float> tmp = new VBuffer<float>();
 
@@ -290,12 +290,12 @@ namespace Scikit.ML.Clustering
                         {
                             float mind, maxd;
                             distance = EstimateDistance(ch, points, out mind, out maxd);
-                            ch.Info("epsilon (=Radius) was estimating on random couples of points: {0} in [{1}, {2}]", distance, mind, maxd);
+                            ch.Info(MessageSensitivity.UserData, "epsilon (=Radius) was estimating on random couples of points: {0} in [{1}, {2}]", distance, mind, maxd);
                         }
 
                         DBScan dbscanAlgo = new DBScan(points, _args.seed);
                         // Clustering.
-                        ch.Info("Clustering {0} points.", points.Count);
+                        ch.Info(MessageSensitivity.UserData, "Clustering {0} points.", points.Count);
 
                         int nPoints = points.Count;
                         int cyclesBetweenLogging = Math.Min(1000, nPoints / 10);
@@ -303,20 +303,18 @@ namespace Scikit.ML.Clustering
                         Action<int> progressLogger = nClusters =>
                         {
                             if (++currentIteration % cyclesBetweenLogging == 0)
-                            {
-                                ch.Info("Processing  {0}/{1} - NbClusters={2}", currentIteration, nPoints, nClusters);
-                            }
+                                ch.Info(MessageSensitivity.UserData, "Processing  {0}/{1} - NbClusters={2}", currentIteration, nPoints, nClusters);
                         };
 
                         Dictionary<long, int> results = dbscanAlgo.Cluster(
                             distance,
                             _args.minPoints,
                             seed: _args.seed,
-                            onShuffle: msg => ch.Info(msg),
+                            onShuffle: msg => ch.Info(MessageSensitivity.UserData, msg),
                             onPointProcessing: progressLogger);
 
                         // Cleaning small clusters.
-                        ch.Info("Removing clusters with less than {0} points.", _args.minPoints);
+                        ch.Info(MessageSensitivity.UserData, "Removing clusters with less than {0} points.", _args.minPoints);
                         var finalCounts_ = results.GroupBy(c => c.Value, (key, g) => new { key = key, nb = g.Count() });
                         var finalCounts = finalCounts_.ToDictionary(c => c.key, d => d.nb);
                         results = results.Select(c => new KeyValuePair<long, int>(c.Key, finalCounts[c.Value] < _args.minPoints ? -1 : c.Value))
@@ -324,7 +322,7 @@ namespace Scikit.ML.Clustering
 
                         _reversedMapping = new Dictionary<long, Tuple<int, float>>();
 
-                        ch.Info("Compute scores.");
+                        ch.Info(MessageSensitivity.None, "Compute scores.");
                         HashSet<int> clusterIds = new HashSet<int>();
                         for (int i = 0; i < results.Count; ++i)
                         {
@@ -358,9 +356,9 @@ namespace Scikit.ML.Clustering
                         if (_reversedMapping.Count != points.Count)
                             throw ch.Except("Mismatch between the number of points. This means some ids are not unique {0} != {1}.", _reversedMapping.Count, points.Count);
 
-                        ch.Info("Found {0} clusters.", mapprev.Select(c => c.Value).Where(c => c >= 0).Distinct().Count());
+                        ch.Info(MessageSensitivity.UserData, "Found {0} clusters.", mapprev.Select(c => c.Value).Where(c => c >= 0).Distinct().Count());
                         sw.Stop();
-                        ch.Info("'DBScan' finished in {0}.", sw.Elapsed);
+                        ch.Info(MessageSensitivity.UserData, "'DBScan' finished in {0}.", sw.Elapsed);
                     }
                 }
             }
@@ -368,7 +366,7 @@ namespace Scikit.ML.Clustering
             public float EstimateDistance(IChannel ch, List<IPointIdFloat> points,
                                            out float minDistance, out float maxDistance)
             {
-                ch.Info("Estimating epsilon based on the data. We pick up two random random computes the average distance.");
+                ch.Info(MessageSensitivity.UserData, "Estimating epsilon based on the data. We pick up two random random computes the average distance.");
                 var rand = _args.seed.HasValue ? new Random(_args.seed.Value) : new Random();
                 var stack = new List<float>();
                 float sum = 0, sum2 = 0;
@@ -464,10 +462,10 @@ namespace Scikit.ML.Clustering
                 return true;
             }
 
-            public override ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<RowId> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
-                return (ref UInt128 pos) =>
+                return (ref RowId pos) =>
                 {
                     getId(ref pos);
                 };

@@ -1,8 +1,8 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;

@@ -278,7 +278,7 @@ namespace Scikit.ML.Clustering
                         {
                             var getter = cursor.GetGetter<VBuffer<float>>(index);
                             var getterId = cursor.GetIdGetter();
-                            UInt128 id = new UInt128();
+                            RowId id = new RowId();
 
                             VBuffer<float> tmp = new VBuffer<float>();
 
@@ -303,12 +303,12 @@ namespace Scikit.ML.Clustering
                         {
                             float mind, maxd;
                             distance = EstimateDistance(ch, points, out mind, out maxd);
-                            ch.Info("epsilon (=Radius) was estimating on random couples of points: {0} in [{1}, {2}]", distance, mind, maxd);
+                            ch.Info(MessageSensitivity.UserData, "epsilon (=Radius) was estimating on random couples of points: {0} in [{1}, {2}]", distance, mind, maxd);
                         }
 
                         Optics opticsAlgo = new Optics(points, _args.seed);
                         //Ordering
-                        ch.Info("Generating OPTICS ordering for {0} points.", points.Count);
+                        ch.Info(MessageSensitivity.UserData, "Generating OPTICS ordering for {0} points.", points.Count);
                         int nPoints = points.Count;
                         int cyclesBetweenLogging = Math.Min(1000, nPoints / 10);
                         int currentIteration = 0;
@@ -316,16 +316,14 @@ namespace Scikit.ML.Clustering
                         Action progressLogger = () =>
                         {
                             if (++currentIteration % cyclesBetweenLogging == 0)
-                            {
-                                ch.Info("Processing {0}/{1}", currentIteration, nPoints);
-                            }
+                                ch.Info(MessageSensitivity.None, "Processing {0}/{1}", currentIteration, nPoints);
                         };
 
                         OpticsOrdering opticsOrdering = opticsAlgo.Ordering(
                             distance,
                             _args.minPoints,
                             seed: _args.seed,
-                            onShuffle: msg => ch.Info(msg),
+                            onShuffle: msg => ch.Info(MessageSensitivity.UserData, msg),
                             onPointProcessing: progressLogger);
                         IReadOnlyDictionary<long, long> results = opticsOrdering.orderingMapping;
                         var reachabilityDs = opticsOrdering.reachabilityDistances;
@@ -340,7 +338,7 @@ namespace Scikit.ML.Clustering
                         _reversedMapping = mapprev;
 
                         // Cleaning.
-                        ch.Info("Cleaning.");
+                        ch.Info(MessageSensitivity.None, "Cleaning.");
                         // We replace by the original labels.
                         _Results = new OpticsOrderingResult[results.Count];
 
@@ -360,9 +358,9 @@ namespace Scikit.ML.Clustering
                                 core = (float)cd.GetValueOrDefault(float.PositiveInfinity)
                             };
                         }
-                        ch.Info("Ordered {0} points.", _Results.Count());
+                        ch.Info(MessageSensitivity.UserData, "Ordered {0} points.", _Results.Count());
                         sw.Stop();
-                        ch.Info("'OpticsOrdering' finished in {0}.", sw.Elapsed);
+                        ch.Info(MessageSensitivity.None, "'OpticsOrdering' finished in {0}.", sw.Elapsed);
                     }
                 }
             }
@@ -467,10 +465,10 @@ namespace Scikit.ML.Clustering
                 return true;
             }
 
-            public override ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<RowId> GetIdGetter()
             {
                 var getId = _inputCursor.GetIdGetter();
-                return (ref UInt128 pos) =>
+                return (ref RowId pos) =>
                 {
                     getId(ref pos);
                 };

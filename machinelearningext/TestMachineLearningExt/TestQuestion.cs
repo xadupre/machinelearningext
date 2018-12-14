@@ -4,8 +4,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using Microsoft.ML;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Trainers.KMeans;
 using Microsoft.ML.Transforms;
@@ -76,13 +76,11 @@ namespace TestMachineLearningExt
                 using (var fs = File.Create(outModelFilePath))
                     TrainUtils.SaveModel(env, ch, fs, model, roleMap);
 
-                Predictor pred;
+                IPredictor ipred;
                 using (var fs = File.OpenRead(outModelFilePath))
-                    pred = env.LoadPredictorOrNull(fs);
+                    ipred = env.LoadPredictorOrNull(fs);
 
-#pragma warning disable CS0618
-                var scorer = ScoreUtils.GetScorer(pred.GetPredictorObject() as IPredictor, roleMap, env, null);
-#pragma warning restore CS0618
+                var scorer = ScoreUtils.GetScorer(ipred, roleMap, env, null);
                 var dfout = Scikit.ML.DataManipulation.DataFrameIO.ReadView(scorer);
                 Assert.AreEqual(dfout.Shape, new Tuple<int, int>(150, 13));
             }

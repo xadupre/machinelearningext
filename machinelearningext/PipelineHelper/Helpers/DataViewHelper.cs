@@ -2,8 +2,8 @@
 
 using System;
 using System.IO;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
 
@@ -50,7 +50,7 @@ namespace Scikit.ML.PipelineHelper
             string full_output = Path.GetFullPath(filename);
             using (var ch = host.Start("ToCsv"))
             {
-                ch.Info("Saving data into file '{0}' or '{1}'.", filename, full_output);
+                ch.Info(MessageSensitivity.None, "Saving data into file '{0}' or '{1}'.", filename, full_output);
                 using (var fs0 = host.CreateOutputFile(full_output))
                     DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
             }
@@ -69,7 +69,7 @@ namespace Scikit.ML.PipelineHelper
             string full_output = Path.GetFullPath(filename);
             using (var ch = host.Start("ToIdv"))
             {
-                ch.Info("Saving data into file '{0}' or '{1}'.", filename, full_output);
+                ch.Info(MessageSensitivity.None, "Saving data into file '{0}' or '{1}'.", filename, full_output);
                 using (var fs0 = host.CreateOutputFile(full_output))
                     DataSaverUtils.SaveDataView(ch, saver, view, fs0, true);
             }

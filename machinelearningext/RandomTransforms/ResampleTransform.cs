@@ -99,7 +99,7 @@ namespace Scikit.ML.RandomTransforms
         IDataTransform _transform;          // templated transform (not the serialized version)
         Arguments _args;
         IHost _host;
-        Dictionary<UInt128, int> _cacheReplica;
+        Dictionary<RowId, int> _cacheReplica;
 
         public IDataView Source { get { return _input; } }
 
@@ -309,9 +309,9 @@ namespace Scikit.ML.RandomTransforms
                 {
                     if (string.IsNullOrEmpty(_args.column))
                     {
-                        _cacheReplica = new Dictionary<UInt128, int>();
+                        _cacheReplica = new Dictionary<RowId, int>();
                         var gid = cur.GetIdGetter();
-                        UInt128 did = default(UInt128);
+                        RowId did = default(RowId);
                         int rep;
                         while (cur.MoveNext())
                         {
@@ -357,11 +357,11 @@ namespace Scikit.ML.RandomTransforms
 
         void LoadCache<TClass>(Random rand, RowCursor cur, int classColumn, TClass valueClass, IChannel ch)
         {
-            _cacheReplica = new Dictionary<UInt128, int>();
+            _cacheReplica = new Dictionary<RowId, int>();
             var hist = new Dictionary<TClass, long>();
             var gid = cur.GetIdGetter();
             var gcl = cur.GetGetter<TClass>(classColumn);
-            UInt128 did = default(UInt128);
+            RowId did = default(RowId);
             TClass cl = default(TClass);
             long nbIn = 0;
             long nbOut = 0;
@@ -387,7 +387,7 @@ namespace Scikit.ML.RandomTransforms
                 _cacheReplica[did] = rep;
             }
             if (nbIn == 0)
-                ch.Warning("Resample on a condition never happened: nbIn={0} nbOut={1}", nbIn, nbOut);
+                ch.Warning(MessageSensitivity.UserData, "Resample on a condition never happened: nbIn={0} nbOut={1}", nbIn, nbOut);
         }
 
         #endregion
@@ -412,17 +412,17 @@ namespace Scikit.ML.RandomTransforms
             readonly float _lambda;
             readonly int _maxReplica;
             readonly int _shift;
-            readonly Dictionary<UInt128, int> _cache;
-            readonly ValueGetter<UInt128> _idGetter;
+            readonly Dictionary<RowId, int> _cache;
+            readonly ValueGetter<RowId> _idGetter;
             readonly ValueGetter<TClass> _classGetter;
             readonly TClass _classValue;
 
             int _copy;
-            UInt128 _currentId;
+            RowId _currentId;
             TClass _currentCl;
 
             public ResampleCursor(ResampleTransform view, RowCursor cursor, Func<int, bool> predicate,
-                                    float lambda, int? seed, Random rand, Dictionary<UInt128, int> cache,
+                                    float lambda, int? seed, Random rand, Dictionary<RowId, int> cache,
                                     int classColumn, TClass classValue)
             {
                 _view = view;
@@ -446,26 +446,26 @@ namespace Scikit.ML.RandomTransforms
                 _classGetter = classColumn >= 0 ? _inputCursor.GetGetter<TClass>(classColumn) : null;
             }
 
-            public override ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<RowId> GetIdGetter()
             {
 #if (DEBUG)
-                Dictionary<UInt128, int> localCache = new Dictionary<UInt128, int>();
+                Dictionary<RowId, int> localCache = new Dictionary<RowId, int>();
 #endif
                 // We do not change the ID (row to row transform).
                 var getId = _inputCursor.GetIdGetter();
-                return (ref UInt128 pos) =>
+                return (ref RowId pos) =>
                 {
                     getId(ref pos);
                     if (_shift > 0)
                     {
                         Contracts.Assert(_copy >= 0 && _copy <= _maxReplica);
-                        ulong left = pos.Lo << _shift;
+                        ulong left = pos.Low << _shift;
                         left >>= _shift;
-                        left = pos.Lo - left;
-                        ulong lo = pos.Lo << _shift;
-                        ulong hi = pos.Hi << _shift;
+                        left = pos.Low - left;
+                        ulong lo = pos.Low << _shift;
+                        ulong hi = pos.High << _shift;
                         hi += left >> (64 - _shift);
-                        pos = new UInt128(lo + (ulong)_copy, hi);
+                        pos = new RowId(lo + (ulong)_copy, hi);
 #if (DEBUG)
                         if (localCache.ContainsKey(pos))
                             throw Contracts.Except("Id already taken: {0}", pos);

@@ -1508,9 +1508,9 @@ namespace Scikit.ML.DataManipulation
                     _shuffled = null;
             }
 
-            public override ValueGetter<UInt128> GetIdGetter()
+            public override ValueGetter<RowId> GetIdGetter()
             {
-                return (ref UInt128 idrow) => { idrow = new UInt128(Position >= 0 ? (ulong)Position : (ulong)(-Position), Position >= 0 ? (ulong)1 : (ulong)0); };
+                return (ref RowId idrow) => { idrow = new RowId(Position >= 0 ? (ulong)Position : (ulong)(-Position), Position >= 0 ? (ulong)1 : (ulong)0); };
             }
 
             protected override void Dispose(bool disposing)

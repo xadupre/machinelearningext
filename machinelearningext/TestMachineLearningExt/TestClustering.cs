@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime.Api;
+//using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.Clustering;
 using Scikit.ML.NearestNeighbors;
@@ -227,13 +227,12 @@ namespace TestMachineLearningExt
             using (var env = EnvHelper.NewTestEnvironment(conc: 1))
             {
                 //var loader = env.CreateLoader("text{col=RowId:I4:0 col=Features:R4:1-2 header=+}", new MultiFileSource(dataFilePath));
-                var loader = TextLoader.Create(env, new TextLoader.Arguments()
+                var loader = new TextLoader(env, new TextLoader.Arguments()
                 {
                     HasHeader = true,
                     Column = new[] { TextLoader.Column.Parse("RowId:R4:0"),
                                      TextLoader.Column.Parse("Features:R4:1-2")}
-                },
-                    new MultiFileSource(dataFilePath));
+                }).Read(new MultiFileSource(dataFilePath));
                 var xf = env.CreateTransform("DBScan{col=Features}", loader);
 
                 string schema = SchemaHelper.ToString(xf.Schema);

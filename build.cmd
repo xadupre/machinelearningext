@@ -18,7 +18,6 @@ if not exist machinelearning\bin\x64.Debug goto end:
 :docopy:
 @echo [build.cmd] Publish Release
 if not exist machinelearning\dist\Release mkdir machinelearning\dist\Release
-copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.Ensemble\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.FastTree\netstandard2.0\*.dll machinelearning\dist\Release
 copy machinelearning\bin\AnyCPU.Release\Microsoft.ML.HalLearners\netstandard2.0\*.dll machinelearning\dist\Release
@@ -43,7 +42,6 @@ copy machinelearning\bin\x64.Release\Native\*.dll machinelearning\dist\Release
 
 @echo [build.cmd] Publish Debug
 if not exist machinelearning\dist\Debug mkdir machinelearning\dist\Debug
-copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Api\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.Ensemble\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.FastTree\netstandard2.0\*.dll machinelearning\dist\Debug
 copy machinelearning\bin\AnyCPU.Debug\Microsoft.ML.HalLearners\netstandard2.0\*.dll machinelearning\dist\Debug

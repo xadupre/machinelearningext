@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.ML.Data;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
@@ -15,21 +15,7 @@ namespace Scikit.ML.TestHelper
     public static class TestTrainerHelper
     {
         /// <summary>
-        /// Convert a Predictor into a IPredictor with method GetPredictorObject.
-        /// As it generates a warning, all functions needing this conversion should call this
-        /// function to minimize the number of raised warnings.
-        /// </summary>
-        public static IPredictor IPredictorFromPredictor(Predictor pred)
-        {
-#pragma warning disable CS0618
-            var res = pred.GetPredictorObject() as IPredictor;
-#pragma warning restore CS0618
-            Contracts.Assert(res != null);
-            return res;
-        }
-
-        /// <summary>
-        /// Finalize the test on a predictor, calls the predictor with a scorer,
+        /// Finalizes the test on a predictor, calls the predictor with a scorer,
         /// saves the data, saves the models, loads it back, saves the data again,
         /// checks the output is the same.
         /// </summary>
@@ -66,7 +52,7 @@ namespace Scikit.ML.TestHelper
                 var pred_local = env.LoadPredictorOrNull(fs);
                 if (pred_local == null)
                     throw new Exception(string.Format("Unable to load '{0}'", outModelFilePath));
-                if (predictor.GetType() != IPredictorFromPredictor(pred_local).GetType())
+                if (predictor.GetType() != pred_local.GetType())
                     throw new Exception(string.Format("Type mismatch {0} != {1}", predictor.GetType(), pred_local.GetType()));
             }
 
@@ -93,7 +79,7 @@ namespace Scikit.ML.TestHelper
             using (var fs = File.OpenRead(outModelFilePath))
             {
                 var model = env.LoadPredictorOrNull(fs);
-                scorer = PredictorHelper.CreateDefaultScorer(env, roles, IPredictorFromPredictor(model));
+                scorer = PredictorHelper.CreateDefaultScorer(env, roles, model);
                 saver = env.CreateSaver("Text");
                 using (var fs2 = File.Create(outData2))
                     saver.SaveData(fs2, scorer, columns);
