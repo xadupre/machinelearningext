@@ -164,7 +164,7 @@ namespace Scikit.ML.MultiClass
         private IDataView MapLabels(RoleMappedData data, int cls, out string dstName, IChannel ch)
         {
             var lab = data.Schema.Label;
-            Host.Assert(!data.Schema.Schema.IsHidden(lab.Index));
+            Host.Assert(!data.Schema.Schema[lab.Index].IsHidden);
             Host.Assert(lab.Type.KeyCount() > 0 || lab.Type == NumberType.R4 || lab.Type == NumberType.R8);
 
             // Get the destination label column name.

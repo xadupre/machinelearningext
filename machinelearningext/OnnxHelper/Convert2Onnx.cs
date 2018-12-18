@@ -99,7 +99,7 @@ namespace Scikit.ML.OnnxHelper
             {
                 var sch = view.Schema;
                 outputs = Enumerable.Range(0, sch.ColumnCount)
-                                    .Where(c => hidden || !sch.IsHidden(c))
+                                    .Where(c => hidden || !sch[c].IsHidden)
                                     .Select(c => sch.GetColumnName(c)).ToArray();
             }
             else

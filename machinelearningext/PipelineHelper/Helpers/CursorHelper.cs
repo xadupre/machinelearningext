@@ -23,7 +23,7 @@ namespace Scikit.ML.PipelineHelper
             var res = new List<Delegate>();
             for (int i = 0; i < sch.ColumnCount; ++i)
             {
-                if (sch.IsHidden(i))
+                if (sch[i].IsHidden)
                     continue;
                 var getter = GetColumnGetter(cur, i, sch);
                 if (getter == null)

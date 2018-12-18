@@ -407,7 +407,7 @@ namespace Scikit.ML.MultiClass
                                 out string dstName, out string labName, int count, bool train, Arguments args)
         {
             var lab = data.Schema.Label;
-            Host.Assert(!data.Schema.Schema.IsHidden(lab.Index));
+            Host.Assert(!data.Schema.Schema[lab.Index].IsHidden);
             Host.Assert(lab.Type.KeyCount() > 0 || lab.Type == NumberType.R4);
 
             IDataView source = data.Data;

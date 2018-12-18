@@ -199,7 +199,7 @@ namespace Scikit.ML.PipelineTransforms
                     var columnsList = new List<int>();
                     var schema = _input.Schema;
                     for (int i = 0; i < schema.ColumnCount; ++i)
-                        columnsList.Add(saver.IsColumnSavable(schema.GetColumnType(i)) && schema.IsHidden(i) ? i : -1);
+                        columnsList.Add(saver.IsColumnSavable(schema.GetColumnType(i)) && schema[i].IsHidden ? i : -1);
                     var columns = columnsList.Where(c => c >= 0).ToArray();
                     ch.Info("Save columns: {0}", string.Join(", ", columns.Select(c => c.ToString())));
                     using (var fs2 = File.Create(_args.filename))

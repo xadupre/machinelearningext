@@ -108,7 +108,7 @@ namespace Scikit.ML.PipelineHelper
             int lag = 0;
             for (int i = 0; i < schema.ColumnCount; ++i)
             {
-                if (!keepHidden && schema.IsHidden(i))
+                if (!keepHidden && schema[i].IsHidden)
                     continue;
                 if (builder.Length > 0)
                     builder.Append(sep);

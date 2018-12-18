@@ -873,7 +873,7 @@ namespace Scikit.ML.DataManipulation
             int pos = 0;
             for (int i = 0; i < sch.ColumnCount; ++i)
             {
-                if (sch.IsHidden(i))
+                if (sch[i].IsHidden)
                     continue;
                 var ty = sch.GetColumnType(i);
                 if (!keepVectors && ty.IsVector())
@@ -1242,7 +1242,7 @@ namespace Scikit.ML.DataManipulation
             int pos = 0;
             for (int i = 0; i < sch.ColumnCount; ++i)
             {
-                if (sch.IsHidden(i))
+                if (sch[i].IsHidden)
                     continue;
                 var getter = getters[pos];
                 res.Add(GetColumnSetter(cur, getter, pos, sch.GetColumnType(i)));

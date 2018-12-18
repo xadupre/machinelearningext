@@ -16,7 +16,7 @@ namespace Scikit.ML.TestHelper
         public static int[] GetColumnsIndex(Schema schema, IEnumerable<string> subsetColumns = null)
         {
             if (subsetColumns == null)
-                return Enumerable.Range(0, schema.ColumnCount).Where(c => !schema.IsHidden(c)).ToArray();
+                return Enumerable.Range(0, schema.ColumnCount).Where(c => !schema[c].IsHidden).ToArray();
             else
                 return subsetColumns.Select(c => { int ind; schema.TryGetColumnIndex(c, out ind); return ind; })
                                     .ToArray();
