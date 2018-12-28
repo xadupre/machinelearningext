@@ -6,7 +6,6 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Data;
-using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.RandomTransforms;
 using Scikit.ML.TestHelper;

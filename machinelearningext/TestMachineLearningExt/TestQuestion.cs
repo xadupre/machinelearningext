@@ -5,12 +5,9 @@ using System;
 using System.IO;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Trainers.KMeans;
-using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.ScikitAPI;
 using Scikit.ML.TestHelper;
-using Scikit.ML.ProductionPrediction;
 
 
 namespace TestMachineLearningExt

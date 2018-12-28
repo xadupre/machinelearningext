@@ -4,7 +4,6 @@ using System;
 using System.Text;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-//using Microsoft.ML.Api;
 
 
 namespace Scikit.ML.DataManipulation

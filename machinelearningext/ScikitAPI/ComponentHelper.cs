@@ -1,7 +1,6 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.ML;
@@ -11,7 +10,6 @@ using Microsoft.ML.Ensemble;
 using Microsoft.ML.LightGBM;
 using Microsoft.ML.Model.Onnx;
 using Microsoft.ML.TimeSeriesProcessing;
-using Microsoft.ML.Tools;
 using Microsoft.ML.Trainers.HalLearners;
 using Microsoft.ML.Trainers.KMeans;
 using Microsoft.ML.Trainers.PCA;

@@ -1,8 +1,5 @@
 ﻿// See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using Scikit.ML.DataManipulation;

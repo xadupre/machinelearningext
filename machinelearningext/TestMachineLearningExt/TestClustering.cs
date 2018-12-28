@@ -10,7 +10,6 @@ using Scikit.ML.Clustering;
 using Scikit.ML.NearestNeighbors;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;
-using Scikit.ML.DocHelperMlExt;
 
 namespace TestMachineLearningExt
 {

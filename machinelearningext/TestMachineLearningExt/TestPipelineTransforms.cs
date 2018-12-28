@@ -7,7 +7,6 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Data;
 using Microsoft.ML.Transforms;
-using Scikit.ML.DataManipulation;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
