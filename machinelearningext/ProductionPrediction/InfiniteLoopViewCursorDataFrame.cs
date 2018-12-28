@@ -78,6 +78,7 @@ namespace Scikit.ML.ProductionPrediction
         public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
+            /*
             if (n >= 2)
             {
                 var setColumns = new HashSet<int>(_columns);
@@ -89,6 +90,7 @@ namespace Scikit.ML.ProductionPrediction
                 return res.Take(1).ToArray();
             }
             else
+            */
                 return new RowCursor[] { cur };
         }
 

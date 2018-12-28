@@ -28,7 +28,7 @@ namespace Scikit.ML.MultiClass
         public const string LoaderSignature = "MultiToBinaryPredictor";
         public const string RegistrationName = "MultiToBinaryPredictor";
 
-        private static VersionInfo GetVersionInfo()
+        public static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
                 modelSignature: "MULBINPR",

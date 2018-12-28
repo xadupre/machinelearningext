@@ -401,12 +401,14 @@ namespace Scikit.ML.MultiClass
                     case MultiplicationAlgorithm.Reweight:
                         _schema = Schema.Create(new ExtendedSchema(input.Schema,
                                                 new string[] { _args.newColumn },
-                                                new ColumnType[] { BoolType.Instance }));
+                                                new ColumnType[] { BoolType.Instance },
+                                                true, true));
                         break;
                     case MultiplicationAlgorithm.Ranking:
                         _schema = Schema.Create(new ExtendedSchema(input.Schema,
                                                 new string[] { _args.newColumn },
-                                                new ColumnType[] { NumberType.U4 }));
+                                                new ColumnType[] { NumberType.U4 },
+                                                true, true));
                         break;
                     default:
                         throw _host.ExceptNotSupp("Unsupported algorithm {0}", _args.algo);
@@ -1058,7 +1060,19 @@ namespace Scikit.ML.MultiClass
                     }
                 }
                 else if (col < _view.Source.Schema.Count)
-                    return _inputCursor.GetGetter<TValue>(col);
+                {
+                    try
+                    {
+                        var getter = _inputCursor.GetGetter<TValue>(col);
+                        if (getter == null)
+                            throw Contracts.Except($"Unable to create a getter of type '{typeof(TValue)}' for column {col}:{_view.Source.Schema[col].Name} of type {_view.Source.Schema[col].Type}.");
+                        return getter;
+                    }
+                    catch (Exception e)
+                    {
+                        throw Contracts.Except($"Unable to create a getter of type '{typeof(TValue)}' for column {col}:{_view.Source.Schema[col].Name} of type {_view.Source.Schema[col].Type} due to {e}");
+                    }
+                }
                 else if (col == _view.Source.Schema.Count)
                 {
                     ValueGetter<TLabelInter> getter = (ref TLabelInter value) =>

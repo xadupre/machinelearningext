@@ -28,7 +28,7 @@ namespace Scikit.ML.MultiClass
         public const string LoaderSignature = "MultiToRankerPredictor";
         public const string RegistrationName = "MultiToRankerPredictor";
 
-        private static VersionInfo GetVersionInfo()
+        public static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
                 modelSignature: "MULRNKPR",

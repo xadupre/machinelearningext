@@ -35,7 +35,7 @@ namespace Scikit.ML.MultiClass
         public const string LoaderSignature = "OptimizedOVAExec";
         public const string RegistrationName = "OptimizedOVAPredictor";
 
-        private static VersionInfo GetVersionInfo()
+        public static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
                 modelSignature: "ORNDOVA ",

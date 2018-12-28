@@ -117,7 +117,6 @@ namespace Scikit.ML.PipelineTransforms
             {
                 var schema = input.Schema;
                 int index = SchemaHelper.GetColumnIndex(schema, args.sortColumn);
-                    Contracts.Check(false, "sortColumn not found in input schema.");
                 var type = schema[index].Type;
                 Host.Check(!type.IsVector(), "sortColumn cannot be a vector.");
             }

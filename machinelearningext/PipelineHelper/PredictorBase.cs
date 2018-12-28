@@ -1,6 +1,7 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System;
+using System.Reflection;
 using Microsoft.ML;
 using Microsoft.ML.Model;
 
@@ -22,7 +23,11 @@ namespace Scikit.ML.PipelineHelper
         {
             Host = env.Register(registrationName);
             Host.AssertValue(ctx);
-            var over = GetType().GetMethod("GetVersionInfo").Invoke(null, null);
+            var ty = GetType();
+            var meth = ty.GetMethod("GetVersionInfo", BindingFlags.Public | BindingFlags.Static);
+            if (meth == null)
+                throw Contracts.Except($"Type '{ty}' does not have a public static method 'GetVersionInfo'.");
+            var over = meth.Invoke(null, null);
             var ver = (VersionInfo)over;
             Host.CheckValue(ctx, nameof(ctx));
             ctx.CheckAtModel(ver);
