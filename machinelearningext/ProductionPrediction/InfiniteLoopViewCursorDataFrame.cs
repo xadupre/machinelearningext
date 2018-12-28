@@ -86,7 +86,7 @@ namespace Scikit.ML.ProductionPrediction
                                     col => setColumns.Contains(col) || needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col)));
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
-                return res;
+                return res.Take(1).ToArray();
             }
             else
                 return new RowCursor[] { cur };

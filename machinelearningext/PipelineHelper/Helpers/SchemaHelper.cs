@@ -639,11 +639,11 @@ namespace Scikit.ML.PipelineHelper
             return index;
         }
 
-        public static int GetColumnIndex(Schema schema, string name, bool allowNull = false)
+        public static int GetColumnIndex(Schema schema, string name, bool allowNull = false, bool allowHidden = false)
         {
             int index;
             for (index = 0; index < schema.Count; ++index)
-                if (schema[index].Name == name)
+                if (schema[index].Name == name && (allowHidden || !schema[index].IsHidden))
                     return index;
             if (allowNull)
                 return -1;

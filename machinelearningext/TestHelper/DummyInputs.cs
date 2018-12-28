@@ -26,6 +26,24 @@ namespace Scikit.ML.TestHelper
         }
     }
 
+    public class InputOutputOut
+    {
+        [VectorType(2)]
+        public float[] Xout;
+        public int Yout;
+
+        public static InputOutputOut[] CreateInputs()
+        {
+            var inputs = new InputOutputOut[] {
+                new InputOutputOut() { Xout = new float[] { 0, 1 }, Yout = 1 },
+                new InputOutputOut() { Xout = new float[] { 0, 1 }, Yout = 0 },
+                new InputOutputOut() { Xout = new float[] { 0, 1 }, Yout = 2 },
+                new InputOutputOut() { Xout = new float[] { 0, 1 }, Yout = 3 },
+            };
+            return inputs;
+        }
+    }
+
     public class InputOutput2
     {
         [VectorType(2)]

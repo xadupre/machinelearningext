@@ -64,7 +64,7 @@ namespace Scikit.ML.ProductionPrediction
                                                   (_otherValues != null && _otherValues.IsColumnActive(col)));
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
-                return res;
+                return res.Take(1).ToArray();
             }
             else
                 return new RowCursor[] { cur };
@@ -253,7 +253,7 @@ namespace Scikit.ML.ProductionPrediction
                                     col => setColumns.Contains(col) || needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col)));
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
-                return res;
+                return res.Take(1).ToArray();
             }
             else
                 return new RowCursor[] { cur };
@@ -282,6 +282,7 @@ namespace Scikit.ML.ProductionPrediction
                     _columns[view.ConstantCol[i]] = i;
             }
 
+            public override int Count() { return 1; }
             public override CursorState State { get { return _state; } }
             public override RowCursor GetRootCursor() { return this; }
             public override long Batch { get { return 1; } }

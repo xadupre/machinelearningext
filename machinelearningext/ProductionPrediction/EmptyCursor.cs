@@ -19,6 +19,7 @@ namespace Scikit.ML.ProductionPrediction
             _state = CursorState.NotStarted;
         }
 
+        public override int Count() { return 0; }
         public override CursorState State { get { return _state; } }
         public override RowCursor GetRootCursor() { return this; }
         public override long Batch { get { return 0; } }
