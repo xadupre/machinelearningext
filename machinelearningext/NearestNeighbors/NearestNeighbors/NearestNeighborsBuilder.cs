@@ -5,8 +5,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Scikit.ML.PipelineHelper;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 
 
 namespace Scikit.ML.NearestNeighbors
@@ -23,17 +23,16 @@ namespace Scikit.ML.NearestNeighbors
 
             if (idIndex != -1)
             {
-                var colType = data.Schema.GetColumnType(idIndex);
+                var colType = data.Schema[idIndex].Type;
                 if (idIndex != -1 && (colType.IsVector() || colType.RawKind() != DataKind.I8))
                     throw ch.Except("Column '{0}' must be of type '{1}' not '{2}'", args.colId, DataKind.I8, colType);
             }
 
             int nt = args.numThreads ?? 1;
-            IRowCursorConsolidator cons;
             Random rand = RandomUtils.Create(args.seed);
             var cursors = (nt == 1)
                                 ? new RowCursor[] { data.GetRowCursor(i => indexes.Contains(i), rand) }
-                                : data.GetRowCursorSet(out cons, i => indexes.Contains(i), nt, rand);
+                                : data.GetRowCursorSet(i => indexes.Contains(i), nt, rand);
             KdTree[] kdtrees;
             Dictionary<long, Tuple<TLabel, float>>[] labelsWeights;
             if (nt == 1)

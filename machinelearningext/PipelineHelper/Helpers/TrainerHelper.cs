@@ -1,11 +1,10 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System.Linq;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Internal.Calibration;
-using Microsoft.ML.Runtime.Data.IO;
+using Microsoft.ML;
 using Microsoft.ML.Data;
+using Microsoft.ML.Data.IO;
+using Microsoft.ML.Internal.Calibration;
 
 
 namespace Scikit.ML.PipelineHelper

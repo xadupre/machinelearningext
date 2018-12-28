@@ -2,9 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using ISchema = Microsoft.ML.Runtime.Data.ISchema;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -42,6 +41,31 @@ namespace Scikit.ML.PipelineHelper
                     throw Contracts.Except("Unable to find column '{0}' in '{1}'", names[i], SchemaHelper.ToString(inputSchema));
                 _types[index] = types[i];
                 _mappedColumns[inputSchema.ColumnCount + i] = index;
+            }
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="inputSchema">existing schema</param>
+        /// <param name="names">new columns</param>
+        /// <param name="types">corresponding types</param>
+        public TypeReplacementSchema(Schema inputSchema, string[] names, ColumnType[] types)
+        {
+            _schemaInput = new ExtendedSchema(inputSchema);
+            if (names == null || names.Length == 0)
+                throw Contracts.ExceptEmpty("The extended schema must contain new names.");
+            if (types == null || types.Length != names.Length)
+                throw Contracts.Except("names and types must have the same length.");
+            _types = new Dictionary<int, ColumnType>();
+            _mappedColumns = new Dictionary<int, int>();
+            Contracts.Assert(types.Length == names.Length);
+            int index;
+            for (int i = 0; i < names.Length; ++i)
+            {
+                index = SchemaHelper.GetColumnIndex(inputSchema, names[i]);
+                _types[index] = types[i];
+                _mappedColumns[inputSchema.Count + i] = index;
             }
         }
 

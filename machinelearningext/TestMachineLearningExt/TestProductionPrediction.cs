@@ -6,11 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Transforms;
-//using Microsoft.ML.Runtime.Api;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineLambdaTransforms;
 using Scikit.ML.PipelineTransforms;
@@ -52,6 +50,71 @@ namespace TestMachineLearningExt
                 var ans = new VBuffer<float>();
 
                 using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, "X", "X", ignoreOtherColumn: true))
+                {
+                    var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
+
+                    var listy = new List<int>();
+                    var listx = new List<float>();
+                    int y = 0;
+                    for (int i = 0; i < inputs.Length; ++i)
+                    {
+                        mapper(in inob, ref ans);
+                        y = inputs[i].Y;
+                        if (ans.Count != 2)
+                            throw new Exception("Issue with dimension.");
+                        listx.AddRange(ans.GetValues().ToArray());
+                        listy.Add((int)y);
+                    }
+                    if (listy.Count != 2)
+                        throw new Exception("Issue with dimension.");
+                    if (listy[0] != 10 || listy[1] != 100)
+                        throw new Exception("Issue with values.");
+                    if (listx.Count != 4)
+                        throw new Exception("Issue with dimension.");
+                    if (listx[0] != -4)
+                        throw new Exception("Issue with values.");
+                    if (listx[1] != -6)
+                        throw new Exception("Issue with values.");
+                    if (listx[2] != -4)
+                        throw new Exception("Issue with values.");
+                    if (listx[3] != -6)
+                        throw new Exception("Issue with values.");
+                    if (inob.Count != 2)
+                        throw new Exception("Issue with dimension.");
+                    if (inob.Values[0] != -5)
+                        throw new Exception("Values were overwritten.");
+                    if (inob.Values[0] != -5)
+                        throw new Exception("Values were overwritten.");
+                }
+            }
+        }
+
+
+        [TestMethod]
+        public void TestTransform2ValueMapperMultiThreadOut()
+        {
+            using (var env = EnvHelper.NewTestEnvironment())
+            {
+                var host = env.Register("unittest");
+
+                var inputs = new[] {
+                    new InputOutput { X = new float[] { 0, 1 }, Y=10 },
+                    new InputOutput { X = new float[] { 2, 3 }, Y=100 }
+                };
+
+                var data = host.CreateStreamingDataView(inputs);
+
+                var trv = LambdaTransform.CreateMap(host, data,
+                                            (InputOutput src, InputOutputOut dst, EnvHelper.EmptyState state) =>
+                                            {
+                                                dst.Xout = new float[] { src.X[0] + 1f, src.X[1] - 1f };
+                                            }, (EnvHelper.EmptyState state) => { });
+
+                var ino = new InputOutput { X = new float[] { -5, -5 }, Y = 3 };
+                var inob = new VBuffer<float>(2, ino.X);
+                var ans = new VBuffer<float>();
+
+                using (var valueMapper = new ValueMapperFromTransformFloat<VBuffer<float>>(host, trv, "X", "Xout", ignoreOtherColumn: true))
                 {
                     var mapper = valueMapper.GetMapper<VBuffer<float>, VBuffer<float>>();
 

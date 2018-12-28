@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Data;
 using DvText = Scikit.ML.PipelineHelper.DvText;
 
 

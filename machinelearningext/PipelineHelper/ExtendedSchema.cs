@@ -3,9 +3,8 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -26,9 +25,53 @@ namespace Scikit.ML.PipelineHelper
         /// <param name="inputSchema">existing schema</param>
         /// <param name="names">new columns</param>
         /// <param name="types">corresponding types</param>
-        public ExtendedSchema(ISchema inputSchema, string[] names, ColumnType[] types)
+        public ExtendedSchema(ISchema inputSchema, string[] names, ColumnType[] types, bool makeUnique = false)
         {
             _schemaInput = inputSchema;
+            if (names == null || names.Length == 0)
+                throw Contracts.ExceptEmpty("The extended schema must contain new names.");
+            if (types == null || types.Length != names.Length)
+                throw Contracts.Except("names and types must have the same length.");
+            _names = names;
+            _types = types;
+            _maprev = new Dictionary<string, int>();
+            for (int i = 0; i < _names.Length; ++i)
+            {
+                if (_maprev.ContainsKey(_names[i]))
+                {
+                    if (makeUnique)
+                    {
+                        int k = _maprev[_names[i]];
+                        var prefix = _names[i];
+                        int t = 2;
+                        while(_maprev.ContainsKey(_names[k]))
+                        {
+                            _names[k] = $"{prefix}_{t}";
+                            ++t;
+                        }
+                        _maprev[_names[k]] = k;
+                    }
+                    else
+                        throw Contracts.Except("Column '{0}' was added twice. This is not allowed.", _names[i]);
+                }
+                _maprev[_names[i]] = i;
+            }
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="inputSchema">existing schema</param>
+        /// <param name="names">new columns</param>
+        /// <param name="types">corresponding types</param>
+        /// <param name="keepHidden">keep hidden columns</param>
+        public ExtendedSchema(Schema inputSchema, string[] names, ColumnType[] types, bool keepHidden = false, bool makeUnique = false)
+        {
+            _schemaInput = inputSchema == null
+                            ? null
+                            : new ExtendedSchema((ISchema)null, inputSchema.Where(c => keepHidden || !c.IsHidden).Select(c => c.Name).ToArray(),
+                                                 inputSchema.Where(c => keepHidden || !c.IsHidden).Select(c => c.Type).ToArray(),
+                                                 makeUnique);
             if (names == null || names.Length == 0)
                 throw Contracts.ExceptEmpty("The extended schema must contain new names.");
             if (types == null || types.Length != names.Length)
@@ -42,6 +85,24 @@ namespace Scikit.ML.PipelineHelper
                     throw Contracts.Except("Column '{0}' was added twice. This is not allowed.", _names[i]);
                 _maprev[_names[i]] = i;
             }
+        }
+
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="inputSchema">existing schema</param>
+        /// <param name="names">new columns</param>
+        /// <param name="types">corresponding types</param>
+        public ExtendedSchema(Schema inputSchema)
+        {
+            _schemaInput = inputSchema == null
+                            ? null
+                            : new ExtendedSchema((ISchema)null, inputSchema.Where(c => !c.IsHidden).Select(c => c.Name).ToArray(),
+                                                 inputSchema.Where(c => !c.IsHidden).Select(c => c.Type).ToArray());
+            _names = null;
+            _types = null;
+            _maprev = new Dictionary<string, int>();
         }
 
         public ExtendedSchema(ISchema inputSchema, SchemaDefinition sdef)
@@ -157,14 +218,14 @@ namespace Scikit.ML.PipelineHelper
                                      : Contracts.Except("Unable to parse '{0}' or '{1}'", cols[i], string.Format("{0}:{1}", cols[i], i));
                 tlcols.Add(t);
             }
-            return new ExtendedSchema(null, tlcols.Select(c => c.Name).ToArray(), 
+            return new ExtendedSchema((ISchema)null, tlcols.Select(c => c.Name).ToArray(),
                                       tlcols.Select(c => SchemaHelper.Convert(c, ch)).ToArray());
         }
 
         /// <summary>
         /// Returns the extended number of columns.
         /// </summary>
-        public int ColumnCount { get { return (_schemaInput == null ? 0 : _schemaInput.ColumnCount) + _names.Length; } }
+        public int ColumnCount { get { return (_schemaInput == null ? 0 : _schemaInput.ColumnCount) + (_names == null ? 0 : _names.Length); } }
 
         /// <summary>
         /// Returns the index of a column. If multiple columns

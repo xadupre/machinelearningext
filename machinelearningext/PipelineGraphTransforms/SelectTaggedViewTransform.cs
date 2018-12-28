@@ -3,17 +3,17 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Data.IO;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model;
+using Microsoft.ML.Data.IO;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using SelectTaggedViewTransform = Scikit.ML.PipelineGraphTransforms.SelectTaggedViewTransform;
 
 [assembly: LoadableClass(SelectTaggedViewTransform.Summary, typeof(SelectTaggedViewTransform),
@@ -196,7 +196,7 @@ namespace Scikit.ML.PipelineGraphTransforms
                 tagged.AddRange(new[] { new Tuple<string, ITaggedDataView>(args.selectTag, newInput) });
 
                 var schema = loader.Schema;
-                if (schema.ColumnCount == 0)
+                if (schema.Count == 0)
                     throw env.Except("The loaded view '{0}' is empty (empty schema).", args.filename);
                 return newInput;
             }

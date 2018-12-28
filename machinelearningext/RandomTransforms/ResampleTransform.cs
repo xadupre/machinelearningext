@@ -3,16 +3,15 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using ResampleTransform = Scikit.ML.RandomTransforms.ResampleTransform;
 
 [assembly: LoadableClass(ResampleTransform.Summary, typeof(ResampleTransform),
@@ -120,9 +119,7 @@ namespace Scikit.ML.RandomTransforms
 
             if (!string.IsNullOrEmpty(_args.column))
             {
-                int index;
-                if (!_input.Schema.TryGetColumnIndex(_args.column, out index))
-                    throw _host.Except("Unable to find column '{0}' in\n'{1}'.", _args.column, SchemaHelper.ToString(_input.Schema));
+                int index = SchemaHelper.GetColumnIndex(_input.Schema, _args.column);
                 if (string.IsNullOrEmpty(_args.classValue))
                     throw _host.Except("Class value cannot be null.");
             }
@@ -182,10 +179,7 @@ namespace Scikit.ML.RandomTransforms
         {
             int classColumn = -1;
             if (!string.IsNullOrEmpty(_args.column))
-            {
-                if (!_input.Schema.TryGetColumnIndex(_args.column, out classColumn))
-                    throw _host.Except("Unable to find column '{0}'.", _args.column);
-            }
+                classColumn = SchemaHelper.GetColumnIndex(_input.Schema, _args.column);
             if (_args.cache)
                 LoadCache(rand);
             else
@@ -195,7 +189,7 @@ namespace Scikit.ML.RandomTransforms
             if (classColumn == -1)
                 return new ResampleCursor<float>(this, cursor, predicate, _args.lambda, _args.seed, rand, _cacheReplica, classColumn, float.NaN);
 
-            var type = _input.Schema.GetColumnType(classColumn);
+            var type = _input.Schema[classColumn].Type;
             switch (type.RawKind())
             {
                 case DataKind.BL:
@@ -225,25 +219,22 @@ namespace Scikit.ML.RandomTransforms
             }
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             int classColumn = -1;
             if (!string.IsNullOrEmpty(_args.column))
-            {
-                if (!_input.Schema.TryGetColumnIndex(_args.column, out classColumn))
-                    throw _host.Except("Unable to find column '{0}'.", _args.column);
-            }
+                classColumn = SchemaHelper.GetColumnIndex(_input.Schema, _args.column);
             if (_args.cache)
                 LoadCache(rand);
             else
                 Contracts.Assert(_cacheReplica == null);
 
-            var cursors = _input.GetRowCursorSet(out consolidator, predicate, n, rand);
+            var cursors = _input.GetRowCursorSet(predicate, n, rand);
 
             if (classColumn == -1)
                 return cursors.Select(c => new ResampleCursor<float>(this, c, predicate, _args.lambda, _args.seed, rand, _cacheReplica, classColumn, float.NaN)).ToArray();
 
-            var type = _input.Schema.GetColumnType(classColumn);
+            var type = _input.Schema[classColumn].Type;
             switch (type.RawKind())
             {
                 case DataKind.BL:
@@ -301,9 +292,7 @@ namespace Scikit.ML.RandomTransforms
 
             using (var ch = _host.Start("Resample: fill the cache"))
             {
-                int indexClass = -1;
-                if (!string.IsNullOrEmpty(_args.column) && !_input.Schema.TryGetColumnIndex(_args.column, out indexClass))
-                    throw ch.Except("Unable to find column '{0}'.", _args.column);
+                int indexClass = SchemaHelper.GetColumnIndex(_input.Schema, _args.column, true);
 
                 using (var cur = _input.GetRowCursor(i => i == indexClass))
                 {
@@ -322,7 +311,7 @@ namespace Scikit.ML.RandomTransforms
                     }
                     else
                     {
-                        var type = _input.Schema.GetColumnType(indexClass);
+                        var type = _input.Schema[indexClass].Type;
                         switch (type.RawKind())
                         {
                             case DataKind.BL:

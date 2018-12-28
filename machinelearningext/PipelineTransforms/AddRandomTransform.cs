@@ -3,16 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using AddRandomTransform = Scikit.ML.PipelineTransforms.AddRandomTransform;
 
 
@@ -100,11 +99,9 @@ namespace Scikit.ML.PipelineTransforms
 
             _input = input;
 
-            int ind;
             var schema = _input.Schema;
             for (int i = 0; i < args.columns.Length; ++i)
-                if (!schema.TryGetColumnIndex(args.columns[i].Source, out ind))
-                    throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.columns[i].Source);
+                SchemaHelper.GetColumnIndex(_input.Schema, args.columns[i].Source);
             _args = args;
             _schema = BuildSchema();
             _columnMapping = BuildMapping();
@@ -187,19 +184,16 @@ namespace Scikit.ML.PipelineTransforms
             return new AddRandomCursor(this, cur);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             var host = new ConsoleEnvironment().Register("Estimate n threads");
             n = DataViewUtils.GetThreadCount(host, n);
 
             if (n <= 1)
-            {
-                consolidator = null;
                 return new RowCursor[] { GetRowCursor(predicate, rand) };
-            }
             else
             {
-                var cursors = Source.GetRowCursorSet(out consolidator, i => predicate(i) || predicate(SchemaHelper.NeedColumn(_columnMapping, i)),
+                var cursors = Source.GetRowCursorSet(i => predicate(i) || predicate(SchemaHelper.NeedColumn(_columnMapping, i)),
                                                      n, rand);
                 for (int i = 0; i < cursors.Length; ++i)
                     cursors[i] = new AddRandomCursor(this, cursors[i]);
@@ -233,7 +227,7 @@ namespace Scikit.ML.PipelineTransforms
 
             public override bool IsColumnActive(int col)
             {
-                if (col < _inputCursor.Schema.ColumnCount)
+                if (col < _inputCursor.Schema.Count)
                     return _inputCursor.IsColumnActive(col);
                 return true;
             }
@@ -271,11 +265,11 @@ namespace Scikit.ML.PipelineTransforms
 
             public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
-                if (col < _view.Source.Schema.ColumnCount)
+                if (col < _view.Source.Schema.Count)
                     return _inputCursor.GetGetter<TValue>(col);
-                else if (col < _view.Schema.ColumnCount)
+                else if (col < _view.Schema.Count)
                 {
-                    var colType = _schema.GetColumnType(_view._columnMapping[col]);
+                    var colType = _schema[_view._columnMapping[col]].Type;
                     if (colType.IsVector())
                     {
                         switch (colType.ItemType().RawKind())

@@ -5,9 +5,8 @@
 //------------------------------------------------------------------------------
 
 using System;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 
 
 namespace Scikit.ML.PipelineGraphTransforms
@@ -50,10 +49,9 @@ namespace Scikit.ML.PipelineGraphTransforms
             return _source.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
-            Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
-            return _source.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _source.GetRowCursorSet(predicate, n, rand);
         }
     }
 }

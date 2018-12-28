@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime.Data;
-//using Microsoft.ML.Runtime.Api;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;
@@ -35,10 +33,10 @@ namespace TestMachineLearningExt
             var df = sdf.ToDataFrame();
             Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
             var sch = df.Schema;
-            Assert.AreEqual(sch.GetColumnName(0), "Label");
-            Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
-            Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
-            Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
+            Assert.AreEqual(sch[0].Name, "Label");
+            Assert.AreEqual(sch[1].Name, "Sepal_length");
+            Assert.AreEqual(sch[0].Type, NumberType.I4);
+            Assert.AreEqual(sch[1].Type, NumberType.R4);
         }
 
         [TestMethod]
@@ -48,10 +46,10 @@ namespace TestMachineLearningExt
             var df = DataFrameIO.ReadCsv(iris, sep: '\t');
             Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
             var sch = df.Schema;
-            Assert.AreEqual(sch.GetColumnName(0), "Label");
-            Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
-            Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
-            Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
+            Assert.AreEqual(sch[0].Name, "Label");
+            Assert.AreEqual(sch[1].Name, "Sepal_length");
+            Assert.AreEqual(sch[0].Type, NumberType.I4);
+            Assert.AreEqual(sch[1].Type, NumberType.R4);
             Assert.AreEqual(df.iloc[0, 0], (int)0);
             Assert.AreEqual(df.iloc[1, 0], (int)0);
             Assert.AreEqual(df.iloc[140, 0], (int)2);
@@ -81,10 +79,10 @@ namespace TestMachineLearningExt
                 var df = DataFrameIO.ReadView(loader);
                 Assert.AreEqual(df.Shape, new Tuple<int, int>(150, 5));
                 var sch = df.Schema;
-                Assert.AreEqual(sch.GetColumnName(0), "Label");
-                Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
-                Assert.AreEqual(sch.GetColumnType(0), NumberType.I4);
-                Assert.AreEqual(sch.GetColumnType(1), NumberType.R4);
+                Assert.AreEqual(sch[0].Name, "Label");
+                Assert.AreEqual(sch[1].Name, "Sepal_length");
+                Assert.AreEqual(sch[0].Type, NumberType.I4);
+                Assert.AreEqual(sch[1].Type, NumberType.R4);
                 Assert.AreEqual(df.iloc[0, 0], (int)0);
                 Assert.AreEqual(df.iloc[1, 0], (int)0);
                 Assert.AreEqual(df.iloc[140, 0], (int)2);
@@ -109,9 +107,9 @@ namespace TestMachineLearningExt
             var iris = FileHelper.GetTestFile("iris.txt");
             var loader = DataFrameIO.ReadCsvToTextLoader(iris, sep: '\t');
             var sch = loader.Schema;
-            Assert.AreEqual(sch.ColumnCount, 5);
-            Assert.AreEqual(sch.GetColumnName(0), "Label");
-            Assert.AreEqual(sch.GetColumnName(1), "Sepal_length");
+            Assert.AreEqual(sch.Count, 5);
+            Assert.AreEqual(sch[0].Name, "Label");
+            Assert.AreEqual(sch[1].Name, "Sepal_length");
         }
 
         [TestMethod]
@@ -166,9 +164,9 @@ namespace TestMachineLearningExt
                     var predictions = DataFrameIO.ReadView(scorer);
                     var v = predictions.iloc[0, 7];
                     Assert.AreEqual(v, (uint)1);
-                    Assert.AreEqual(predictions.Schema.GetColumnName(5), "Features.0");
-                    Assert.AreEqual(predictions.Schema.GetColumnName(6), "Features.1");
-                    Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
+                    Assert.AreEqual(predictions.Schema[5].Name, "Features.0");
+                    Assert.AreEqual(predictions.Schema[6].Name, "Features.1");
+                    Assert.AreEqual(predictions.Schema[7].Name, "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 11));
                 }
             }
@@ -191,9 +189,9 @@ namespace TestMachineLearningExt
                     var predictions = DataFrameIO.ReadView(scorer);
                     var v = predictions.iloc[0, 7];
                     Assert.AreEqual(v, false);
-                    Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
-                    Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
-                    Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
+                    Assert.AreEqual(predictions.Schema[5].Name, "Feature.0");
+                    Assert.AreEqual(predictions.Schema[6].Name, "Feature.1");
+                    Assert.AreEqual(predictions.Schema[7].Name, "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
                 }
             }
@@ -216,9 +214,9 @@ namespace TestMachineLearningExt
                     var predictions = DataFrameIO.ReadView(viewpred);
                     var v = predictions.iloc[0, 7];
                     Assert.AreEqual(v, false);
-                    Assert.AreEqual(predictions.Schema.GetColumnName(5), "Feature.0");
-                    Assert.AreEqual(predictions.Schema.GetColumnName(6), "Feature.1");
-                    Assert.AreEqual(predictions.Schema.GetColumnName(7), "PredictedLabel");
+                    Assert.AreEqual(predictions.Schema[5].Name, "Feature.0");
+                    Assert.AreEqual(predictions.Schema[6].Name, "Feature.1");
+                    Assert.AreEqual(predictions.Schema[7].Name, "PredictedLabel");
                     Assert.AreEqual(predictions.Shape, new Tuple<int, int>(150, 10));
                 }
             }

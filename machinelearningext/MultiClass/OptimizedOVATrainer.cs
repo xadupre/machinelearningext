@@ -2,11 +2,11 @@
 
 using System;
 using System.Linq;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Training;
-using Microsoft.ML.Runtime.Internal.Calibration;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Data;
+using Microsoft.ML.Training;
+using Microsoft.ML.Internal.Calibration;
 using Microsoft.ML.Transforms;
 using Scikit.ML.RandomTransforms;
 using Scikit.ML.PipelineHelper;
@@ -56,7 +56,7 @@ namespace Scikit.ML.MultiClass
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Drop missing labels.", ShortName = "na")]
             public bool dropNALabel = true;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Add a cache transform before training. That might required if cursor happen to be in an unstable state", 
+            [Argument(ArgumentType.Multiple, HelpText = "Add a cache transform before training. That might required if cursor happen to be in an unstable state",
                 ShortName = "cache", NullName = "<None>", SignatureType = typeof(SignatureDataTransform))]
             public IComponentFactory<IDataTransform> cacheTransform = null;
         }
@@ -128,7 +128,7 @@ namespace Scikit.ML.MultiClass
             {
                 var sub = ScikitSubComponent<IDataTransform, SignatureDataTransform>.AsSubComponent(_args.cacheTransform);
                 view = sub.CreateInstance(Host, view);
-            } 
+            }
 
             var roles = data.Schema.GetColumnRoleNames()
                 .Where(kvp => kvp.Key.Value != CR.Label.Value)
@@ -163,8 +163,8 @@ namespace Scikit.ML.MultiClass
 
         private IDataView MapLabels(RoleMappedData data, int cls, out string dstName, IChannel ch)
         {
-            var lab = data.Schema.Label;
-            Host.Assert(!data.Schema.Schema.IsHidden(lab.Index));
+            var lab = data.Schema.Label.Value;
+            Host.Assert(!data.Schema.Schema[lab.Index].IsHidden);
             Host.Assert(lab.Type.KeyCount() > 0 || lab.Type == NumberType.R4 || lab.Type == NumberType.R8);
 
             // Get the destination label column name.
@@ -210,7 +210,7 @@ namespace Scikit.ML.MultiClass
             where T2 : IEquatable<T2>
         {
             var dstName = data.Schema.Schema.GetTempColumnName();
-            var lab = data.Schema.Label;
+            var lab = data.Schema.Label.Value;
             T1 key = cls;
             var labelMapper = LambdaColumnMapper.Create<T1, T2>(Host, "LabelColumnMapper in oOVA (4)", FilterNA(data.Data, lab.Name),
                 lab.Name, dstName, c1, c2,

@@ -2,10 +2,9 @@
 
 using System;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
 
@@ -50,12 +49,12 @@ namespace Scikit.ML.ProductionPrediction
             if (string.IsNullOrEmpty(inputColumn))
             {
                 var inputType = mapper.InputType;
-                for (int i = source.Schema.ColumnCount - 1; i >= 0; --i)
+                for (int i = source.Schema.Count - 1; i >= 0; --i)
                 {
-                    var ty = source.Schema.GetColumnType(i);
+                    var ty = source.Schema[i].Type;
                     if (ty.SameSizeAndItemType(inputType))
                     {
-                        inputColumn = source.Schema.GetColumnName(i);
+                        inputColumn = source.Schema[i].Name;
                         break;
                     }
                 }
@@ -63,12 +62,8 @@ namespace Scikit.ML.ProductionPrediction
 
             _source = source;
             _mapper = mapper;
-            int index;
-            if (!_source.Schema.TryGetColumnIndex(inputColumn, out index))
-                throw env.Except("Unable to find column '{0}' in input schema.", inputColumn);
+            int index = SchemaHelper.GetColumnIndex(_source.Schema, inputColumn);
             _inputColumn = inputColumn;
-            if (_source.Schema.TryGetColumnIndex(outputColumn, out index))
-                throw env.Except("Column '{0}' already present in input schema.", outputColumn);
             _outputColumn = outputColumn;
             _schema = Schema.Create(new ExtendedSchema(source.Schema, new[] { outputColumn }, new[] { mapper.OutputType }));
             _transform = CreateMemoryTransform();
@@ -89,9 +84,9 @@ namespace Scikit.ML.ProductionPrediction
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
-            return _transform.GetRowCursorSet(out consolidator, needCol, n, rand);
+            return _transform.GetRowCursorSet(needCol, n, rand);
         }
 
         public void Save(ModelSaveContext ctx)
@@ -195,15 +190,13 @@ namespace Scikit.ML.ProductionPrediction
                 if (predicate(col))
                     return true;
                 if (col == index)
-                    return predicate(_parent.Source.Schema.ColumnCount);
+                    return predicate(_parent.Source.Schema.Count);
                 return predicate(col);
             }
 
             public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
-                int index;
-                if (!Source.Schema.TryGetColumnIndex(_parent.InputName, out index))
-                    throw _host.Except("Unable to find column '{0}' in input schema.", _parent.InputName);
+                int index = SchemaHelper.GetColumnIndex(Source.Schema, _parent.InputName);
                 if (predicate(index))
                 {
                     var cursor = Source.GetRowCursor(i => PredicatePropagation(i, index, predicate), rand);
@@ -214,19 +207,17 @@ namespace Scikit.ML.ProductionPrediction
                     return new SameCursor(Source.GetRowCursor(predicate, rand), Schema);
             }
 
-            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
             {
-                int index;
-                if (!Source.Schema.TryGetColumnIndex(_parent.InputName, out index))
-                    throw _host.Except("Unable to find column '{0}' in input schema.", _parent.InputName);
+                int index = SchemaHelper.GetColumnIndex(Source.Schema, _parent.InputName);
                 if (predicate(index))
                 {
-                    var cursors = Source.GetRowCursorSet(out consolidator, i => PredicatePropagation(i, index, predicate), n, rand);
+                    var cursors = Source.GetRowCursorSet(i => PredicatePropagation(i, index, predicate), n, rand);
                     return cursors.Select(c => new MemoryCursor<TSrc, TDst>(this, c, index)).ToArray();
                 }
                 else
                     // The new column is not required. We do not need to compute it. But we need to keep the same schema.
-                    return Source.GetRowCursorSet(out consolidator, predicate, n, rand)
+                    return Source.GetRowCursorSet(predicate, n, rand)
                                  .Select(c => new SameCursor(c, Schema))
                                  .ToArray();
             }
@@ -257,7 +248,7 @@ namespace Scikit.ML.ProductionPrediction
             public override bool IsColumnActive(int col)
             {
                 // The column is active if is active in the input view or if it the new vector with the polynomial features.
-                return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
+                return col >= _inputCursor.Schema.Count || _inputCursor.IsColumnActive(col);
             }
 
             public override ValueGetter<RowId> GetIdGetter()
@@ -295,14 +286,14 @@ namespace Scikit.ML.ProductionPrediction
             public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
                 // If the column is part of the input view.
-                if (col < _inputCursor.Schema.ColumnCount)
+                if (col < _inputCursor.Schema.Count)
                     return _inputCursor.GetGetter<TValue>(col);
                 // If it is the added column.
-                else if (col == _inputCursor.Schema.ColumnCount)
+                else if (col == _inputCursor.Schema.Count)
                     return GetGetterMapper() as ValueGetter<TValue>;
                 // Otherwise, it is an error.
                 else
-                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, _inputCursor.Schema.ColumnCount);
+                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, _inputCursor.Schema.Count);
             }
 
             ValueGetter<TDst> GetGetterMapper()

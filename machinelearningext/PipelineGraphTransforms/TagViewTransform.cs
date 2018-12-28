@@ -3,15 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using TagViewTransform = Scikit.ML.PipelineGraphTransforms.TagViewTransform;
 
 
@@ -192,10 +191,10 @@ namespace Scikit.ML.PipelineGraphTransforms
             return _source.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_source, "_source");
-            return _source.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _source.GetRowCursorSet(predicate, n, rand);
         }
 
         #endregion

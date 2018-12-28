@@ -4,9 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
 
@@ -35,14 +34,14 @@ namespace Scikit.ML.TestHelper
                             PredictionKind kind, bool checkError = true,
                             float ratio = 0.8f, float ratioReadSave = 0.06f)
         {
-            string labelColumn = kind != PredictionKind.Clustering ? roles.Schema.Label.Name : null;
+            string labelColumn = kind != PredictionKind.Clustering ? roles.Schema.Label.Value.Name : null;
 
             #region save, reading, running
 
             // Saves model.
             using (var ch = env.Start("Save"))
-                using (var fs = File.Create(outModelFilePath))
-                    TrainUtils.SaveModel(env, ch, fs, predictor, roles);
+            using (var fs = File.Create(outModelFilePath))
+                TrainUtils.SaveModel(env, ch, fs, predictor, roles);
             if (!File.Exists(outModelFilePath))
                 throw new FileNotFoundException(outModelFilePath);
 
@@ -65,9 +64,9 @@ namespace Scikit.ML.TestHelper
                 throw new Exception("Empty schemas");
 
             var saver = env.CreateSaver("Text");
-            var columns = new int[scorer.Schema.ColumnCount];
+            var columns = new int[scorer.Schema.Count];
             for (int i = 0; i < columns.Length; ++i)
-                columns[i] = saver.IsColumnSavable(scorer.Schema.GetColumnType(i)) ? i : -1;
+                columns[i] = saver.IsColumnSavable(scorer.Schema[i].Type) ? i : -1;
             columns = columns.Where(c => c >= 0).ToArray();
             using (var fs2 = File.Create(outData))
                 saver.SaveData(fs2, scorer, columns);
@@ -120,14 +119,10 @@ namespace Scikit.ML.TestHelper
             using (var cursor = scorer.GetRowCursor(i => true))
             {
                 int ilabel, ipred;
-                if (!cursor.Schema.TryGetColumnIndex(labelColumn, out ilabel))
-                    throw new Exception(string.Format("Unable to find column '{0}' in {1}'", "Label", SchemaHelper.ToString(cursor.Schema)));
-
-                if (!cursor.Schema.TryGetColumnIndex(expectedOuput, out ipred))
-                    throw new Exception(string.Format("Unable to find column '{0}' in {1}'", expectedOuput, SchemaHelper.ToString(cursor.Schema)));
-
-                var ty1 = cursor.Schema.GetColumnType(ilabel);
-                var ty2 = cursor.Schema.GetColumnType(ipred);
+                ilabel = SchemaHelper.GetColumnIndex(cursor.Schema, labelColumn);
+                ipred = SchemaHelper.GetColumnIndex(cursor.Schema, expectedOuput);
+                var ty1 = cursor.Schema[ilabel].Type;
+                var ty2 = cursor.Schema[ipred].Type;
                 var dist1 = new Dictionary<int, int>();
                 var dist2 = new Dictionary<int, int>();
                 var conf = new Dictionary<Tuple<int, int>, long>();

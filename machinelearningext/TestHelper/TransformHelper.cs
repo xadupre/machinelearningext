@@ -3,9 +3,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.PipelineLambdaTransforms;
@@ -53,7 +52,7 @@ namespace Scikit.ML.TestHelper
 
             // Checks the outputs.
             var saver = env.CreateSaver(forceDense ? "Text{dense=+}" : "Text");
-            var columns = new int[transform.Schema.ColumnCount];
+            var columns = new int[transform.Schema.Count];
             for (int i = 0; i < columns.Length; ++i)
                 columns[i] = i;
             using (var fs2 = File.Create(outData))
@@ -103,13 +102,12 @@ namespace Scikit.ML.TestHelper
         {
             IDataTransform res = null;
             var schema = view.Schema;
-            for (int i = 0; i < schema.ColumnCount; ++i)
+            for (int i = 0; i < schema.Count; ++i)
             {
-                var ty = schema.GetColumnType(i);
+                var ty = schema[i].Type;
                 if (ty.IsVector())
                 {
-                    var name = schema.GetColumnName(i);
-
+                    var name = schema[i].Name;
                     view = LambdaColumnHelper.Create(env,
                                     "Lambda", view, name, name, new VectorType(NumberType.R4),
                                     TextType.Instance,

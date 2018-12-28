@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms.Text;
 using Microsoft.ML.Core.Data;
@@ -110,8 +108,7 @@ namespace TestProfileBenchmark
             {
                 Separator = "tab",
                 HasHeader = true,
-                Column = new[]
-                {
+                Column = new[] {
                     new TextLoader.Column("Label", DataKind.BL, 0),
                     new TextLoader.Column("SentimentText", DataKind.Text, 1)
                 }
@@ -129,13 +126,13 @@ namespace TestProfileBenchmark
                 if (cacheScikit)
                     cache = new ExtendedCacheTransform(env, new ExtendedCacheTransform.Arguments(), testLoader);
                 else
-                    cache = new Microsoft.ML.Data.CacheDataView(env, testLoader, new[] { 0, 1 });
-                var testData = cache.AsEnumerable<SentimentData>(env, false);
+                    cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
+                var testData = cache.AsEnumerable<SentimentDataBoolFloat>(env, false);
 
                 if (engine == "mlnet")
                 {
                     Console.WriteLine("engine={0} N={1} ncall={2} cacheScikit={3}", engine, N, ncall, cacheScikit);
-                    var fct = transformer.MakePredictionFunction<SentimentData, SentimentPrediction>(env);
+                    var fct = ComponentCreation.CreatePredictionEngine<SentimentDataBoolFloat, SentimentPrediction>(env, transformer);
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {
@@ -151,8 +148,8 @@ namespace TestProfileBenchmark
                 else if (engine == "scikit")
                 {
                     Console.WriteLine("engine={0} N={1} ncall={2} cacheScikit={3}", engine, N, ncall, cacheScikit);
-                    var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, conc: conc);
-                    var output = new ValueMapperPredictionEngine<SentimentData>.PredictionTypeForBinaryClassification();
+                    var model = new ValueMapperPredictionEngine<SentimentDataBoolFloat>(env, scorer, conc: conc);
+                    var output = new ValueMapperPredictionEngine<SentimentDataBoolFloat>.PredictionTypeForBinaryClassification();
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {

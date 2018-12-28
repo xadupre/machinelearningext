@@ -3,11 +3,11 @@
 using System;
 using System.Collections.Generic;
 using Scikit.ML.PipelineHelper;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Training;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.EntryPoints;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Training;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.EntryPoints;
 
 
 namespace Scikit.ML.NearestNeighbors
@@ -109,7 +109,7 @@ namespace Scikit.ML.NearestNeighbors
         /// </summary>
         protected INearestNeighborsPredictor TrainPredictor(IChannel ch, RoleMappedData data)
         {
-            var labType = data.Schema.Label.Type;
+            var labType = data.Schema.Label.Value.Type;
             var initialLabKind = labType.RawKind();
             INearestNeighborsPredictor predictor;
 
@@ -141,16 +141,16 @@ namespace Scikit.ML.NearestNeighbors
         private INearestNeighborsPredictor TrainPredictorLabel<TLabel>(IChannel ch, RoleMappedData data)
             where TLabel : IComparable<TLabel>
         {
-            int featureIndex = data.Schema.Feature.Index;
-            int labelIndex = data.Schema.Label.Index;
-            int idIndex = -1;
-            int weightIndex = data.Schema.Weight == null ? -1 : data.Schema.Weight.Index;
+            int featureIndex = data.Schema.Feature.Value.Index;
+            int labelIndex = data.Schema.Label.Value.Index;
+            int idIndex = SchemaHelper.GetColumnIndex(data.Schema.Schema, _args.colId, true);
+            int weightIndex = data.Schema.Weight == null ? -1 : data.Schema.Weight.Value.Index;
             var indexes = new HashSet<int>() { featureIndex, labelIndex, weightIndex };
-            if (!string.IsNullOrEmpty(_args.colId) && data.Schema.Schema.TryGetColumnIndex(_args.colId, out idIndex))
+            if (!string.IsNullOrEmpty(_args.colId) && idIndex != -1)
                 indexes.Add(idIndex);
             if (idIndex != -1)
             {
-                var colType = data.Schema.Schema.GetColumnType(idIndex);
+                var colType = data.Schema.Schema[idIndex].Type;
                 if (colType.IsVector() || colType.RawKind() != DataKind.I8)
                     throw ch.Except("Column '{0}' must be of type '{1}' not '{2}'", _args.colId, DataKind.I8, colType);
             }

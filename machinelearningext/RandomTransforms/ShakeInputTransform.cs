@@ -3,12 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Data.Conversion;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Data.Conversion;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
 
@@ -160,10 +159,7 @@ namespace Scikit.ML.RandomTransforms
             _toShake = toShake;
             _input = input;
 
-            int ind;
-            if (!input.Schema.TryGetColumnIndex(args.inputColumn, out ind))
-                throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.inputColumn);
-
+            int ind = SchemaHelper.GetColumnIndex(input.Schema, args.inputColumn);
             if (toShake.Length != args.outputColumns.Length)
                 throw _host.ExceptParam("outputColumns", "toShake and outputColumns must have the same length");
 
@@ -254,10 +250,10 @@ namespace Scikit.ML.RandomTransforms
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
-            return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _transform.GetRowCursorSet(predicate, n, rand);
         }
 
         #endregion
@@ -268,11 +264,8 @@ namespace Scikit.ML.RandomTransforms
         {
             IDataTransform transform = null;
 
-            int index;
-            if (!_input.Schema.TryGetColumnIndex(_args.inputColumn, out index))
-                throw _host.Except("Unable to find '{0}'", _args.inputColumn);
-
-            var typeCol = _input.Schema.GetColumnType(index);
+            int index = SchemaHelper.GetColumnIndex(_input.Schema, _args.inputColumn);
+            var typeCol = _input.Schema[index].Type;
             if (!typeCol.IsVector())
                 throw _host.Except("Expected a vector as input.");
             typeCol = typeCol.AsVector().ItemType();
@@ -338,8 +331,7 @@ namespace Scikit.ML.RandomTransforms
                         throw _host.Except("If a ValueMapper return a vector, it should have one dimension or zero.");
                 }
 
-                if (!_input.Schema.TryGetColumnIndex(_args.inputColumn, out _inputCol))
-                    throw _host.Except("Unable to find '{0}'", _args.inputColumn);
+                _inputCol = SchemaHelper.GetColumnIndex(_input.Schema, _args.inputColumn);
                 _shakingValues = ExtractShakingValues();
                 if (_shakingValues.Length != _args.inputFeaturesInt.Length)
                     throw _host.Except("Shaking Values and columns to shake do not have the same dimension {0} and '{1}'.", _args.inputFeaturesInt.Length, _args.values);
@@ -385,7 +377,7 @@ namespace Scikit.ML.RandomTransforms
             TInput[][] ExtractShakingValues()
             {
                 bool identity;
-                var ty = _input.Schema.GetColumnType(_inputCol);
+                var ty = _input.Schema[_inputCol].Type;
                 var conv = Conversions.Instance.GetStandardConversion<ReadOnlyMemory<char>, TInput>(TextType.Instance, ty.AsVector().ItemType(), out identity);
                 if (string.IsNullOrEmpty(_args.values))
                     throw _host.ExceptParam("_args.values cannot be null.");
@@ -426,7 +418,7 @@ namespace Scikit.ML.RandomTransforms
                 }
             }
 
-            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
             {
                 DataKind kind;
                 if (_toShake[0].OutputType.IsVector())
@@ -437,7 +429,7 @@ namespace Scikit.ML.RandomTransforms
                 switch (kind)
                 {
                     case DataKind.R4:
-                        var cursors = _input.GetRowCursorSet(out consolidator, i => i == _inputCol || predicate(i), n, rand);
+                        var cursors = _input.GetRowCursorSet(i => i == _inputCol || predicate(i), n, rand);
                         return cursors.Select(c => new ShakeInputCursor<TInput, float>(this, c, predicate, _args, _inputCol, _toShake, _shakingValues,
                                             (float x, float y) => { return x + y; })).ToArray();
                     default:
@@ -499,7 +491,7 @@ namespace Scikit.ML.RandomTransforms
 
             public override bool IsColumnActive(int col)
             {
-                return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
+                return col >= _inputCursor.Schema.Count || _inputCursor.IsColumnActive(col);
             }
 
             public override ValueGetter<RowId> GetIdGetter()
@@ -559,16 +551,16 @@ namespace Scikit.ML.RandomTransforms
 
             public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
-                if (col < _inputCursor.Schema.ColumnCount)
+                if (col < _inputCursor.Schema.Count)
                     return _inputCursor.GetGetter<TValue>(col);
-                else if (col - _inputCursor.Schema.ColumnCount >= _collected.Length)
-                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, _collected.Length + _inputCursor.Schema.ColumnCount);
+                else if (col - _inputCursor.Schema.Count >= _collected.Length)
+                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, _collected.Length + _inputCursor.Schema.Count);
                 return GetBufferGetter(col) as ValueGetter<TValue>;
             }
 
             ValueGetter<VBuffer<TOutput>> GetBufferGetter(int col)
             {
-                int diff = col - _inputCursor.Schema.ColumnCount;
+                int diff = col - _inputCursor.Schema.Count;
                 return (ref VBuffer<TOutput> output) =>
                 {
                     output = _collected[diff];
@@ -587,7 +579,6 @@ namespace Scikit.ML.RandomTransforms
                         break;
                     default:
                         throw Contracts.Except("Unkown aggregation strategy {0}", _args.aggregation);
-
                 }
             }
 
@@ -665,8 +656,8 @@ namespace Scikit.ML.RandomTransforms
                 var sch = Schema;
                 for (int col = 0; col < _collected.Length; ++col)
                 {
-                    int icol = col + _inputCursor.Schema.ColumnCount;
-                    var type = sch.GetColumnType(icol);
+                    int icol = col + _inputCursor.Schema.Count;
+                    var type = sch[icol].Type;
                     if (!type.IsVector())
                         throw Contracts.Except("Incompatible type '{0}' != '{1}'", type, _collected[col].GetType());
                     var v = type.AsVector();
@@ -765,8 +756,8 @@ namespace Scikit.ML.RandomTransforms
                 var sch = Schema;
                 for (int col = 0; col < _collected.Length; ++col)
                 {
-                    int icol = col + _inputCursor.Schema.ColumnCount;
-                    var type = sch.GetColumnType(icol);
+                    int icol = col + _inputCursor.Schema.Count;
+                    var type = sch[icol].Type;
                     if (!type.IsVector())
                         throw Contracts.Except("Incompatible type '{0}' != '{1}'", type, _collected[col].GetType());
                     var v = type.AsVector();

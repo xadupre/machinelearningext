@@ -3,7 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using System.IO;
-using Microsoft.ML.Runtime.Tools;
+using Microsoft.ML.Tools;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.DocHelperMlExt;

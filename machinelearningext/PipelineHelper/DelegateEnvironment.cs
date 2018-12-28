@@ -6,8 +6,8 @@ using System;
 using System.Text;
 using System.IO;
 using System.Linq;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 
 
 namespace Scikit.ML.PipelineHelper

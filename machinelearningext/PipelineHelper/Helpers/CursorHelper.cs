@@ -2,9 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -21,9 +20,9 @@ namespace Scikit.ML.PipelineHelper
         {
             var sch = cur.Schema;
             var res = new List<Delegate>();
-            for (int i = 0; i < sch.ColumnCount; ++i)
+            for (int i = 0; i < sch.Count; ++i)
             {
-                if (sch.IsHidden(i))
+                if (sch[i].IsHidden)
                     continue;
                 var getter = GetColumnGetter(cur, i, sch);
                 if (getter == null)
@@ -98,7 +97,7 @@ namespace Scikit.ML.PipelineHelper
         {
             if (sch == null)
                 sch = cur.Schema;
-            var colType = sch.GetColumnType(col);
+            var colType = sch[col].Type;
             if (colType.IsVector())
             {
                 switch (colType.ItemType().RawKind())

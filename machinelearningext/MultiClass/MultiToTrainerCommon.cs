@@ -2,10 +2,10 @@
 
 using System;
 using System.Linq;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Training;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Data;
+using Microsoft.ML.Training;
 using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
@@ -50,7 +50,7 @@ namespace Scikit.ML.MultiClass
             [Argument(ArgumentType.LastOccurenceWins, HelpText = "Drop missing labels.", ShortName = "na")]
             public bool dropNALabel = true;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Reclassification using output from the first tree", ShortName = "rp", 
+            [Argument(ArgumentType.Multiple, HelpText = "Reclassification using output from the first tree", ShortName = "rp",
                 SortOrder = 1, SignatureType = typeof(SignatureTrainer))]
             public IComponentFactory<ITrainer> reclassicationPredictor = null;
 
@@ -113,10 +113,8 @@ namespace Scikit.ML.MultiClass
         /// </summary>
         protected Tuple<int, int> MinMaxLabelOverDataSet(MultiToBinaryTransform tr, string label, out int nb)
         {
-            int index;
-            if (!tr.Schema.TryGetColumnIndex(label, out index))
-                throw Contracts.Except("Unable to find column '{0}' in '{1}'", label, SchemaHelper.ToString(tr.Schema));
-            var ty = tr.Schema.GetColumnType(index);
+            int index = SchemaHelper.GetColumnIndex(tr.Schema, label);
+            var ty = tr.Schema[index].Type;
             switch (ty.RawKind())
             {
                 case DataKind.R4:
@@ -159,10 +157,8 @@ namespace Scikit.ML.MultiClass
 
         protected void DebugChecking0Vfloat(IDataView viewI, string labName, int count)
         {
-            int index;
-            if (!viewI.Schema.TryGetColumnIndex(labName, out index))
-                throw Host.Except("Unable to find '{0}' in '{1}'", labName, SchemaHelper.ToString(viewI.Schema));
-            var ty = viewI.Schema.GetColumnType(index);
+            int index = SchemaHelper.GetColumnIndex(viewI.Schema, labName);
+            var ty = viewI.Schema[index].Type;
             Contracts.Assert(ty.IsKey() || ty.IsVector() || ty.RawKind() == DataKind.R4);
             using (var cursor = viewI.GetRowCursor(i => i == index))
             {
@@ -199,10 +195,8 @@ namespace Scikit.ML.MultiClass
 
         protected void DebugChecking0(IDataView viewI, string labName, bool oneO)
         {
-            int index;
+            int index = SchemaHelper.GetColumnIndex(viewI.Schema, labName);
             int nbRows = 0;
-            if (!viewI.Schema.TryGetColumnIndex(labName, out index))
-                throw Host.Except("Unable to find '{0}' in '{1}'", labName, SchemaHelper.ToString(viewI.Schema));
             using (var cursor = viewI.GetRowCursor(i => i == index))
             {
                 if (oneO)
@@ -212,7 +206,7 @@ namespace Scikit.ML.MultiClass
                     Contracts.Assert(gfu != null || gff != null);
                 }
 
-                var ty = viewI.Schema.GetColumnType(index);
+                var ty = viewI.Schema[index].Type;
                 if (ty.IsVector() && ty.AsVector().ItemType().RawKind() == DataKind.R4)
                 {
                     var getter = cursor.GetGetter<VBuffer<float>>(index);
@@ -406,8 +400,8 @@ namespace Scikit.ML.MultiClass
         protected MultiToBinaryTransform MapLabelsAndInsertTransform(IChannel ch, RoleMappedData data,
                                 out string dstName, out string labName, int count, bool train, Arguments args)
         {
-            var lab = data.Schema.Label;
-            Host.Assert(!data.Schema.Schema.IsHidden(lab.Index));
+            var lab = data.Schema.Label.Value;
+            Host.Assert(!data.Schema.Schema[lab.Index].IsHidden);
             Host.Assert(lab.Type.KeyCount() > 0 || lab.Type == NumberType.R4);
 
             IDataView source = data.Data;
@@ -474,13 +468,13 @@ namespace Scikit.ML.MultiClass
 
                 var args = new PredictTransform.Arguments
                 {
-                    featureColumn = trainer_input.Schema.Feature.Name,
+                    featureColumn = trainer_input.Schema.Feature.Value.Name,
                     outputColumn = DataViewUtils.GetTempColumnName(trainer_input.Data.Schema)
                 };
 
                 var data = new PredictTransform(Host, args, trainer_input.Data, predictor);
                 var roles = new[] { RoleMappedSchema.ColumnRole.Feature.Bind(args.outputColumn),
-                                     RoleMappedSchema.ColumnRole.Label.Bind(trainer_input.Schema.Label.Name)};
+                                     RoleMappedSchema.ColumnRole.Label.Bind(trainer_input.Schema.Label.Value.Name)};
                 var data_roles = new RoleMappedData(data, roles);
                 var trainerRoles = trainer as ITrainer<TVectorPredictor>;
                 if (trainerRoles == null)

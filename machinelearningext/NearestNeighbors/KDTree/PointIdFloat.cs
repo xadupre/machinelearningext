@@ -3,10 +3,10 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Internal.Utilities;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model;
+using Microsoft.ML.Internal.Utilities;
 
 
 namespace Scikit.ML.NearestNeighbors

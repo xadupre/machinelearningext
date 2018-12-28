@@ -6,11 +6,10 @@
 
 
 using System;
+using Microsoft.ML;
+using Microsoft.ML.Model;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.CommandLine;
 
 
 namespace Scikit.ML.PipelineTransforms
@@ -152,11 +151,11 @@ namespace Scikit.ML.PipelineTransforms
             return _sourcePipe.GetRowCursor(predicate, rand);
         }
 
-        public virtual RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public virtual RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_sourceCtx, "_sourceCtx");
             _host.AssertValue(_sourcePipe, "_sourcePipe");
-            return _sourcePipe.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _sourcePipe.GetRowCursorSet(predicate, n, rand);
         }
 
         public abstract void Save(ModelSaveContext ctx);

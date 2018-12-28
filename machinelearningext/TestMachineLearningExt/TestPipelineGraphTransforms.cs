@@ -5,9 +5,8 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ScikitAPI;
@@ -75,7 +74,7 @@ namespace TestMachineLearningExt
 
                     // Save the outcome
                     var text = env.CreateSaver("Text");
-                    var columns = new int[merged.Schema.ColumnCount];
+                    var columns = new int[merged.Schema.Count];
                     for (int i = 0; i < columns.Length; ++i)
                         columns[i] = i;
                     using (var fs2 = File.Create(outData))

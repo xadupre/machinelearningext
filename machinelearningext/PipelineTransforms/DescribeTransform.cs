@@ -3,18 +3,17 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Model.Onnx;
+using Microsoft.ML.Model;
+using Microsoft.ML.Model.Onnx;
 using Scikit.ML.PipelineHelper;
 
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using DescribeTransform = Scikit.ML.PipelineTransforms.DescribeTransform;
 
 [assembly: LoadableClass(DescribeTransform.Summary, typeof(DescribeTransform),
@@ -199,11 +198,11 @@ namespace Scikit.ML.PipelineTransforms
             return _input.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             ComputeStatistics();
             _host.AssertValue(_input, "_input");
-            return _input.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _input.GetRowCursorSet(predicate, n, rand);
         }
 
         private void ComputeStatistics()
@@ -246,10 +245,8 @@ namespace Scikit.ML.PipelineTransforms
 
                         for (int i = 0; i < textCols.Count; ++i)
                         {
-                            int index;
-                            if (!sch.TryGetColumnIndex(textCols[i], out index))
-                                throw ch.Except("Unable to find column '{0}' in '{1}'", textCols[i], SchemaHelper.ToString(sch));
-                            var ty = sch.GetColumnType(index);
+                            int index = SchemaHelper.GetColumnIndex(sch, textCols[i]);
+                            var ty = sch[index].Type;
                             if (!(ty == NumberType.R4 || ty == NumberType.U4 ||
                                 ty == NumberType.I4 || ty == TextType.Instance ||
                                 ty == BoolType.Instance || ty == NumberType.I8 ||
@@ -264,28 +261,28 @@ namespace Scikit.ML.PipelineTransforms
                         var requiredIndexes = required.OrderBy(c => c).ToArray();
                         using (var cur = _input.GetRowCursor(i => required.Contains(i)))
                         {
-                            bool[] isText = requiredIndexes.Select(c => sch.GetColumnType(c) == TextType.Instance).ToArray();
-                            bool[] isBool = requiredIndexes.Select(c => sch.GetColumnType(c) == BoolType.Instance).ToArray();
-                            bool[] isFloat = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.R4).ToArray();
-                            bool[] isUint = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.U4 || sch.GetColumnType(c).RawKind() == DataKind.U4).ToArray();
-                            bool[] isInt = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.I4 || sch.GetColumnType(c).RawKind() == DataKind.I4).ToArray();
-                            bool[] isInt8 = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.I8 || sch.GetColumnType(c).RawKind() == DataKind.I8).ToArray();
+                            bool[] isText = requiredIndexes.Select(c => sch[c].Type == TextType.Instance).ToArray();
+                            bool[] isBool = requiredIndexes.Select(c => sch[c].Type == BoolType.Instance).ToArray();
+                            bool[] isFloat = requiredIndexes.Select(c => sch[c].Type == NumberType.R4).ToArray();
+                            bool[] isUint = requiredIndexes.Select(c => sch[c].Type == NumberType.U4 || sch[c].Type.RawKind() == DataKind.U4).ToArray();
+                            bool[] isInt = requiredIndexes.Select(c => sch[c].Type == NumberType.I4 || sch[c].Type.RawKind() == DataKind.I4).ToArray();
+                            bool[] isInt8 = requiredIndexes.Select(c => sch[c].Type == NumberType.I8 || sch[c].Type.RawKind() == DataKind.I8).ToArray();
 
-                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind() == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
-                            ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.U4 || sch.GetColumnType(i).RawKind() == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
-                            ValueGetter<ReadOnlyMemory<char>>[] textGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == TextType.Instance ? cur.GetGetter<ReadOnlyMemory<char>>(i) : null).ToArray();
-                            ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
-                            ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector() ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
-                            ValueGetter<int>[] intGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I4 || sch.GetColumnType(i).RawKind() == DataKind.I4 ? cur.GetGetter<int>(i) : null).ToArray();
-                            ValueGetter<long>[] int8Getters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.I8 || sch.GetColumnType(i).RawKind() == DataKind.I8 ? cur.GetGetter<long>(i) : null).ToArray();
+                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch[i].Type == BoolType.Instance || sch[i].Type.RawKind() == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
+                            ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch[i].Type == NumberType.U4 || sch[i].Type.RawKind() == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
+                            ValueGetter<ReadOnlyMemory<char>>[] textGetters = requiredIndexes.Select(i => sch[i].Type == TextType.Instance ? cur.GetGetter<ReadOnlyMemory<char>>(i) : null).ToArray();
+                            ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch[i].Type == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
+                            ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch[i].Type.IsVector() ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
+                            ValueGetter<int>[] intGetters = requiredIndexes.Select(i => sch[i].Type == NumberType.I4 || sch[i].Type.RawKind() == DataKind.I4 ? cur.GetGetter<int>(i) : null).ToArray();
+                            ValueGetter<long>[] int8Getters = requiredIndexes.Select(i => sch[i].Type == NumberType.I8 || sch[i].Type.RawKind() == DataKind.I8 ? cur.GetGetter<long>(i) : null).ToArray();
 
                             var cols = _args.columns == null ? null : new HashSet<string>(_args.columns);
                             var hists = _args.hists == null ? null : new HashSet<string>(_args.hists);
                             var schema = _input.Schema;
 
-                            for (int i = 0; i < schema.ColumnCount; ++i)
+                            for (int i = 0; i < schema.Count; ++i)
                             {
-                                string name = schema.GetColumnName(i);
+                                string name = schema[i].Name;
                                 if (!required.Contains(i))
                                     continue;
                                 stats[name] = new List<ColumnStatObs>();
@@ -314,7 +311,7 @@ namespace Scikit.ML.PipelineTransforms
                             {
                                 for (int i = 0; i < requiredIndexes.Length; ++i)
                                 {
-                                    string name = cur.Schema.GetColumnName(requiredIndexes[i]);
+                                    string name = cur.Schema[requiredIndexes[i]].Name;
                                     if (!stats.ContainsKey(name))
                                         continue;
                                     if (isFloat[i])

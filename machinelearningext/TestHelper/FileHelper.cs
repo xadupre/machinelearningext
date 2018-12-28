@@ -3,7 +3,7 @@
 
 using System.IO;
 using System.Reflection;
-using Microsoft.ML.Runtime.Tools;
+using Microsoft.ML.Tools;
 
 
 namespace Scikit.ML.TestHelper

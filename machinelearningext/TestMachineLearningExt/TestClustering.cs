@@ -6,13 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.ML.Data;
-//using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.Clustering;
 using Scikit.ML.NearestNeighbors;
 using Scikit.ML.TestHelper;
 using Scikit.ML.PipelineHelper;
-using Scikit.ML.DocHelperMlExt;
 
 namespace TestMachineLearningExt
 {

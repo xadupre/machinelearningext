@@ -6,9 +6,8 @@
 
 using System;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
 
@@ -70,8 +69,8 @@ namespace Scikit.ML.PipelineLambdaTransforms
             _typeDst = typeDst;
             _typeSrc = typeSrc;
             _newSchema = Schema.Create(new ExtendedSchema(_source.Schema, new[] { dst }, new[] { typeDst }));
-            if (!_source.Schema.TryGetColumnIndex(_columnSrc, out _srcIndex))
-                _host.Except("Unable to find column '{0}' in input schema.", _columnSrc);
+            _srcIndex = SchemaHelper.GetColumnIndex(_source.Schema, _columnSrc);
+            _host.Except("Unable to find column '{0}' in input schema.", _columnSrc);
         }
 
         public bool CanShuffle
@@ -98,13 +97,13 @@ namespace Scikit.ML.PipelineLambdaTransforms
             if (predicate(col))
                 return true;
             if (col == _srcIndex)
-                return predicate(_source.Schema.ColumnCount);
+                return predicate(_source.Schema.Count);
             return predicate(col);
         }
 
         public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
         {
-            if (predicate(_source.Schema.ColumnCount))
+            if (predicate(_source.Schema.Count))
             {
                 var cursor = _source.GetRowCursor(i => PredicatePropagation(i, predicate), rand);
                 return new LambdaCursor(this, cursor);
@@ -114,17 +113,16 @@ namespace Scikit.ML.PipelineLambdaTransforms
                 return new SameCursor(_source.GetRowCursor(predicate, rand), Schema);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
-            Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
-            if (predicate(_source.Schema.ColumnCount))
+            if (predicate(_source.Schema.Count))
             {
-                var cursors = _source.GetRowCursorSet(out consolidator, i => PredicatePropagation(i, predicate), n, rand);
+                var cursors = _source.GetRowCursorSet(i => PredicatePropagation(i, predicate), n, rand);
                 return cursors.Select(c => new LambdaCursor(this, c)).ToArray();
             }
             else
                 // The new column is not required. We do not need to compute it. But we need to keep the same schema.
-                return _source.GetRowCursorSet(out consolidator, predicate, n, rand)
+                return _source.GetRowCursorSet(predicate, n, rand)
                               .Select(c => new SameCursor(c, Schema))
                               .ToArray();
         }
@@ -147,7 +145,7 @@ namespace Scikit.ML.PipelineLambdaTransforms
 
             public override bool IsColumnActive(int col)
             {
-                if (col < _inputCursor.Schema.ColumnCount)
+                if (col < _inputCursor.Schema.Count)
                     return _inputCursor.IsColumnActive(col);
                 return true;
             }
@@ -185,14 +183,10 @@ namespace Scikit.ML.PipelineLambdaTransforms
 
             public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
-                if (col < _view.SourceTags.Schema.ColumnCount)
-                {
+                if (col < _view.SourceTags.Schema.Count)
                     return _inputCursor.GetGetter<TValue>(col);
-                }
-                else if (col == _view.SourceTags.Schema.ColumnCount)
-                {
+                else if (col == _view.SourceTags.Schema.Count)
                     return GetLambdaGetter() as ValueGetter<TValue>;
-                }
                 else
                     throw _view.Host.Except("Column index {0} does not exist.", col);
             }

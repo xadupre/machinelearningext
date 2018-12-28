@@ -6,7 +6,6 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ModelSelection;
@@ -42,10 +41,9 @@ namespace TestMachineLearningExt
                 var counter1 = new Dictionary<int, List<int>>();
                 using (var cursor = transformedData.GetRowCursor(i => true))
                 {
-                    int index;
-                    cursor.Schema.TryGetColumnIndex("Y", out index);
+                    int index = SchemaHelper.GetColumnIndex(cursor.Schema, "Y");
                     var sortColumnGetter = cursor.GetGetter<int>(index);
-                    cursor.Schema.TryGetColumnIndex(args.newColumn, out index);
+                    index = SchemaHelper.GetColumnIndex(cursor.Schema, args.newColumn);
                     var partGetter = cursor.GetGetter<int>(index);
                     var schema = SchemaHelper.ToString(cursor.Schema);
                     if (string.IsNullOrEmpty(schema))
@@ -102,10 +100,9 @@ namespace TestMachineLearningExt
                         throw new Exception(schema);
                     var schema2 = SchemaHelper.ToString(transformedData.OutputSchema);
                     SchemaHelper.CheckSchema(host, transformedData.OutputSchema, cursor.Schema);
-                    int index;
-                    cursor.Schema.TryGetColumnIndex("Y", out index);
+                    int index = SchemaHelper.GetColumnIndex(cursor.Schema, "Y");
                     var sortColumnGetter = cursor.GetGetter<int>(index);
-                    cursor.Schema.TryGetColumnIndex(args.newColumn, out index);
+                    index = SchemaHelper.GetColumnIndex(cursor.Schema, args.newColumn);
                     var partGetter = cursor.GetGetter<int>(index);
                     int got = 0;
                     int part = 0;
@@ -164,7 +161,7 @@ namespace TestMachineLearningExt
                 {
                     var deserializedData = env.LoadTransforms(fs, loader);
                     var saver = env.CreateSaver("Text");
-                    var columns = new int[deserializedData.Schema.ColumnCount];
+                    var columns = new int[deserializedData.Schema.Count];
                     for (int i = 0; i < columns.Length; ++i)
                         columns[i] = i;
                     using (var fs2 = File.Create(outData))
@@ -200,7 +197,7 @@ namespace TestMachineLearningExt
                 var transformedData = env.CreateTransform(trans, loader);
 
                 var saver = env.CreateSaver("Text");
-                var columns = new int[transformedData.Schema.ColumnCount];
+                var columns = new int[transformedData.Schema.Count];
                 for (int i = 0; i < columns.Length; ++i)
                     columns[i] = i;
                 using (var fs2 = File.Create(outData))
@@ -233,7 +230,7 @@ namespace TestMachineLearningExt
                 var transformedData = env.CreateTransform(trans, resample);
 
                 var saver = env.CreateSaver("Text");
-                var columns = new int[transformedData.Schema.ColumnCount];
+                var columns = new int[transformedData.Schema.Count];
                 for (int i = 0; i < columns.Length; ++i)
                     columns[i] = i;
                 using (var fs2 = File.Create(outData))

@@ -36,3 +36,13 @@ See also `Switch internal to public to allow external contributions <https://git
 
 Other changes
 
+Empty cursor
+============
+
+The following commit
+`Avoids splitting a cursor if the set it walks through is empty or very small <https://github.com/xadupre/machinelearning/commit/b137aa9f0a131d92b440d28c9c280c0be3cb2cc2>`_
+avoids splitting a single cursor in multiple thread if the cursor
+contains only one row even if requested.
+This is needed by the InfiniteLoopView cursor which outputs
+only one row each time.
+

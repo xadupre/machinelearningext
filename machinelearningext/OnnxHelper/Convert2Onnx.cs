@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model.Onnx;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model.Onnx;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineGraphTransforms;
 
@@ -36,9 +36,9 @@ namespace Scikit.ML.OnnxHelper
             foreach (var view in TagHelper.EnumerateAllViews(trans, begin))
             {
                 var sch = view.Item1.Schema;
-                for (int i = 0; i < sch.ColumnCount; ++i)
+                for (int i = 0; i < sch.Count; ++i)
                 {
-                    var name = sch.GetColumnName(i);
+                    var name = sch[i].Name;
                     var prop = name;
                     int k = 1;
                     while (unique.Contains(prop))
@@ -53,7 +53,7 @@ namespace Scikit.ML.OnnxHelper
                         variableName = name,
                         view = view.Item1,
                         position = view.Item2,
-                        variableType = sch.GetColumnType(i)
+                        variableType = sch[i].Type
                     };
                 }
             }
@@ -98,19 +98,15 @@ namespace Scikit.ML.OnnxHelper
             if (outputs == null)
             {
                 var sch = view.Schema;
-                outputs = Enumerable.Range(0, sch.ColumnCount)
-                                    .Where(c => hidden || !sch.IsHidden(c))
-                                    .Select(c => sch.GetColumnName(c)).ToArray();
+                outputs = Enumerable.Range(0, sch.Count)
+                                    .Where(c => hidden || !sch[c].IsHidden)
+                                    .Select(c => sch[c].Name).ToArray();
             }
             else
             {
                 var sch = view.Schema;
-                int index;
                 foreach (var name in outputs)
-                {
-                    if (!sch.TryGetColumnIndex(name, out index))
-                        throw Contracts.Except($"Unable to find column '{name}' in\n{SchemaHelper.ToString(sch)}.");
-                }
+                    SchemaHelper.GetColumnIndex(sch, name);
             }
         }
 

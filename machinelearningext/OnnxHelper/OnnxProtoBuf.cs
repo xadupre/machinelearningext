@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Google.Protobuf;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.UniversalModelFormat.Onnx;
-using Microsoft.ML.Runtime.Data;
-using UniversalModelFormat = Microsoft.ML.Runtime.UniversalModelFormat;
+using Microsoft.ML;
+using Microsoft.ML.UniversalModelFormat.Onnx;
+using Microsoft.ML.Data;
+using UniversalModelFormat = Microsoft.ML.UniversalModelFormat;
 using Scikit.ML.PipelineHelper;
 
 

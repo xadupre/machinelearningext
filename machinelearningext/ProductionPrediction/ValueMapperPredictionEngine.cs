@@ -3,9 +3,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
 
@@ -28,15 +27,9 @@ namespace Scikit.ML.ProductionPrediction
 
             public Delegate[] GetCursorGetter(RowCursor cursor)
             {
-                int indexL;
-                if (!cursor.Schema.TryGetColumnIndex("PredictedLabel", out indexL))
-                    throw Contracts.Except($"Cannot find column 'PredictedLabel' in\n{SchemaHelper.ToString(cursor.Schema)}.");
-                int indexS;
-                if (!cursor.Schema.TryGetColumnIndex("Score", out indexS))
-                    throw Contracts.Except($"Cannot find column 'Score' in\n{SchemaHelper.ToString(cursor.Schema)}.");
-                int indexP;
-                if (!cursor.Schema.TryGetColumnIndex("Probability", out indexP))
-                    throw Contracts.Except($"Cannot find column 'Probability' in\n{SchemaHelper.ToString(cursor.Schema)}.");
+                int indexL = SchemaHelper.GetColumnIndex(cursor.Schema, "PredictedLabel");
+                int indexS = SchemaHelper.GetColumnIndex(cursor.Schema, "Score");
+                int indexP = SchemaHelper.GetColumnIndex(cursor.Schema, "Probability");
                 return new Delegate[]
                 {
                     cursor.GetGetter<bool>(indexL),
@@ -138,16 +131,13 @@ namespace Scikit.ML.ProductionPrediction
             _mapperBinaryClassification = null;
             var schema = scorer.Schema;
             int i1, i2, i3;
-            if (schema.TryGetColumnIndex("PredictedLabel", out i1) && schema.TryGetColumnIndex("Score", out i2) &&
-                schema.TryGetColumnIndex("Probability", out i3))
-            {
-                var map = new ValueMapperFromTransform<TRowValue, PredictionTypeForBinaryClassification>(_env,
-                                    scorer, conc: conc);
-                _mapperBinaryClassification = map.GetMapper<TRowValue, PredictionTypeForBinaryClassification>();
-                _valueMapper = map;
-            }
-            else
-                throw Contracts.Except($"Unable to guess the prediction task from schema '{SchemaHelper.ToString(schema)}'.");
+            i1 = SchemaHelper.GetColumnIndex(schema, "PredictedLabel");
+            i2 = SchemaHelper.GetColumnIndex(schema, "Score");
+            i3 = SchemaHelper.GetColumnIndex(schema, "Probability");
+            var map = new ValueMapperFromTransform<TRowValue, PredictionTypeForBinaryClassification>(_env,
+                                scorer, conc: conc);
+            _mapperBinaryClassification = map.GetMapper<TRowValue, PredictionTypeForBinaryClassification>();
+            _valueMapper = map;
         }
 
         public void Dispose()

@@ -1,9 +1,9 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System.IO;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model.Onnx;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model.Onnx;
 using Microsoft.ML.Transforms;
 
 

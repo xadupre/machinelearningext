@@ -1,10 +1,10 @@
 ﻿// See the LICENSE file in the project root for more information.
 
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
 using WrappedPredictorWithNoDistInterface = Scikit.ML.PipelineGraphTransforms.WrappedPredictorWithNoDistInterface;
 
 

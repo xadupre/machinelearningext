@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.ProductionPrediction;
 
 
@@ -22,6 +21,24 @@ namespace Scikit.ML.TestHelper
                 new InputOutput() { X = new float[] { 0, 1 }, Y = 0 },
                 new InputOutput() { X = new float[] { 0, 1 }, Y = 2 },
                 new InputOutput() { X = new float[] { 0, 1 }, Y = 3 },
+            };
+            return inputs;
+        }
+    }
+
+    public class InputOutputOut
+    {
+        [VectorType(2)]
+        public float[] Xout;
+        public int Yout;
+
+        public static InputOutputOut[] CreateInputs()
+        {
+            var inputs = new InputOutputOut[] {
+                new InputOutputOut() { Xout = new float[] { 0, 1 }, Yout = 1 },
+                new InputOutputOut() { Xout = new float[] { 0, 1 }, Yout = 0 },
+                new InputOutputOut() { Xout = new float[] { 0, 1 }, Yout = 2 },
+                new InputOutputOut() { Xout = new float[] { 0, 1 }, Yout = 3 },
             };
             return inputs;
         }
@@ -159,7 +176,7 @@ namespace Scikit.ML.TestHelper
         }
     }
 
-    public class SentimentData : IClassWithGetter<SentimentData>
+    public class SentimentDataBoolFloat : IClassWithGetter<SentimentDataBoolFloat>
     {
         [ColumnName("Label")]
         public bool Sentiment;
@@ -171,14 +188,70 @@ namespace Scikit.ML.TestHelper
             {
                 case 0:
                     {
-                        ValueGetterInstance<SentimentData, float> dele =
-                            (ref SentimentData self, ref float x) => { x = self.Sentiment ? 1f : 0f; };
+                        ValueGetterInstance<SentimentDataBoolFloat, float> dele =
+                            (ref SentimentDataBoolFloat self, ref float x) => { x = self.Sentiment ? 1f : 0f; };
                         return dele;
                     }
                 case 1:
                     {
-                        ValueGetterInstance<SentimentData, ReadOnlyMemory<char>> dele =
-                            (ref SentimentData self, ref ReadOnlyMemory<char> x) => { x = new ReadOnlyMemory<char>(self.SentimentText.ToCharArray()); };
+                        ValueGetterInstance<SentimentDataBoolFloat, ReadOnlyMemory<char>> dele =
+                            (ref SentimentDataBoolFloat self, ref ReadOnlyMemory<char> x) => { x = new ReadOnlyMemory<char>(self.SentimentText.ToCharArray()); };
+                        return dele;
+                    }
+                default:
+                    throw new Exception($"No available column for index {col}.");
+            }
+        }
+    }
+
+    public class SentimentDataFloat : IClassWithGetter<SentimentDataFloat>
+    {
+        [ColumnName("Label")]
+        public float Sentiment;
+        public string SentimentText;
+
+        public Delegate GetGetter(int col)
+        {
+            switch (col)
+            {
+                case 0:
+                    {
+                        ValueGetterInstance<SentimentDataFloat, float> dele =
+                            (ref SentimentDataFloat self, ref float x) => { x = self.Sentiment; };
+                        return dele;
+                    }
+                case 1:
+                    {
+                        ValueGetterInstance<SentimentDataFloat, ReadOnlyMemory<char>> dele =
+                            (ref SentimentDataFloat self, ref ReadOnlyMemory<char> x) => { x = new ReadOnlyMemory<char>(self.SentimentText.ToCharArray()); };
+                        return dele;
+                    }
+                default:
+                    throw new Exception($"No available column for index {col}.");
+            }
+        }
+    }
+
+    public class SentimentDataBool : IClassWithGetter<SentimentDataBool>
+    {
+        [ColumnName("Label")]
+        public bool Sentiment;
+        public string SentimentText;
+
+        public Delegate GetGetter(int col)
+        {
+            switch (col)
+            {
+                case 0:
+                    {
+                        ValueGetterInstance<SentimentDataBool, bool> dele =
+                            (ref SentimentDataBool self, ref bool x) => { x = self.Sentiment; };
+                        return dele;
+                    }
+                case 1:
+                    {
+                        ValueGetterInstance<SentimentDataBool, ReadOnlyMemory<char>> dele =
+                            (ref SentimentDataBool self, ref ReadOnlyMemory<char> x) => { x = new ReadOnlyMemory<char>(self.SentimentText.ToCharArray()); };
                         return dele;
                     }
                 default:

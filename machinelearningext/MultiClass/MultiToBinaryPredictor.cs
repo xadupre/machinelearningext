@@ -1,11 +1,11 @@
 ﻿// See the LICENSE file in the project root for more information.
 
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
 using MultiToBinaryPredictor = Scikit.ML.MultiClass.MultiToBinaryPredictor;
 
 [assembly: LoadableClass(typeof(MultiToBinaryPredictor), null, typeof(SignatureLoadModel),
@@ -28,7 +28,7 @@ namespace Scikit.ML.MultiClass
         public const string LoaderSignature = "MultiToBinaryPredictor";
         public const string RegistrationName = "MultiToBinaryPredictor";
 
-        private static VersionInfo GetVersionInfo()
+        public static VersionInfo GetVersionInfo()
         {
             return new VersionInfo(
                 modelSignature: "MULBINPR",

@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Training;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Training;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
 using NearestNeighborsTrainer = Scikit.ML.NearestNeighbors.NearestNeighborsTrainer;
 using NearestNeighborsBinaryClassificationTrainer = Scikit.ML.NearestNeighbors.NearestNeighborsBinaryClassificationTrainer;
 using NearestNeighborsMultiClassClassificationTrainer = Scikit.ML.NearestNeighbors.NearestNeighborsMultiClassClassificationTrainer;

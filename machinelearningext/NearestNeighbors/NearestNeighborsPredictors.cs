@@ -3,9 +3,9 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model;
 
 using NearestNeighborsBinaryClassifierPredictor = Scikit.ML.NearestNeighbors.NearestNeighborsBinaryClassifierPredictor;
 using NearestNeighborsMultiClassClassifierPredictor = Scikit.ML.NearestNeighbors.NearestNeighborsMultiClassClassifierPredictor;

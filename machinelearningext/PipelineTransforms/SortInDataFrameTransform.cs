@@ -4,31 +4,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
+using Microsoft.ML;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.DataManipulation;
 
 // This indicates where to find objects in ML.net assemblies.
-using ArgumentAttribute = Microsoft.ML.Runtime.CommandLine.ArgumentAttribute;
-using ArgumentType = Microsoft.ML.Runtime.CommandLine.ArgumentType;
+using ArgumentAttribute = Microsoft.ML.CommandLine.ArgumentAttribute;
+using ArgumentType = Microsoft.ML.CommandLine.ArgumentType;
 
-using DataKind = Microsoft.ML.Runtime.Data.DataKind;
-using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
-using IDataView = Microsoft.ML.Runtime.Data.IDataView;
-using RowCursor = Microsoft.ML.Runtime.Data.RowCursor;
-using IRowCursorConsolidator = Microsoft.ML.Runtime.Data.IRowCursorConsolidator;
+using DataKind = Microsoft.ML.Data.DataKind;
+using IDataTransform = Microsoft.ML.Data.IDataTransform;
+using IDataView = Microsoft.ML.Data.IDataView;
+using RowCursor = Microsoft.ML.Data.RowCursor;
 using Schema = Microsoft.ML.Data.Schema;
-using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
+using TransformBase = Microsoft.ML.Data.TransformBase;
 
-using ModelLoadContext = Microsoft.ML.Runtime.Model.ModelLoadContext;
-using ModelSaveContext = Microsoft.ML.Runtime.Model.ModelSaveContext;
-using VersionInfo = Microsoft.ML.Runtime.Model.VersionInfo;
+using ModelLoadContext = Microsoft.ML.Model.ModelLoadContext;
+using ModelSaveContext = Microsoft.ML.Model.ModelSaveContext;
+using VersionInfo = Microsoft.ML.Model.VersionInfo;
 
 using DvText = Scikit.ML.PipelineHelper.DvText;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using SortInDataFrameTransform = Scikit.ML.PipelineTransforms.SortInDataFrameTransform;
 
 [assembly: LoadableClass(SortInDataFrameTransform.Summary, typeof(SortInDataFrameTransform),
@@ -116,11 +115,9 @@ namespace Scikit.ML.PipelineTransforms
 
             if (!string.IsNullOrEmpty(args.sortColumn))
             {
-                int index;
                 var schema = input.Schema;
-                if (!schema.TryGetColumnIndex(args.sortColumn, out index))
-                    Contracts.Check(false, "sortColumn not found in input schema.");
-                var type = schema.GetColumnType(index);
+                int index = SchemaHelper.GetColumnIndex(schema, args.sortColumn);
+                var type = schema[index].Type;
                 Host.Check(!type.IsVector(), "sortColumn cannot be a vector.");
             }
 
@@ -158,11 +155,9 @@ namespace Scikit.ML.PipelineTransforms
 
             _sortColumn = ctx.Reader.ReadString();
             Host.AssertValue(_sortColumn);
-            int index;
             var schema = input.Schema;
-            if (!schema.TryGetColumnIndex(_sortColumn, out index))
-                Contracts.Check(false, "sortColumn not found in input schema.");
-            var type = schema.GetColumnType(index);
+            int index = SchemaHelper.GetColumnIndex(schema, _sortColumn);
+            var type = schema[index].Type;
             Host.Check(!type.IsVector(), "sortColumn cannot be a vector.");
             _reverse = ctx.Reader.ReadBoolean();
             _numThreads = ctx.Reader.ReadInt32();
@@ -204,21 +199,20 @@ namespace Scikit.ML.PipelineTransforms
             Host.AssertValue(_transform, "_transform");
             int sortColumn = -1;
             if (!string.IsNullOrEmpty(_sortColumn))
-                Source.Schema.TryGetColumnIndex(_sortColumn, out sortColumn);
+                sortColumn = SchemaHelper.GetColumnIndex(Source.Schema, _sortColumn);
             return _transform.GetRowCursor(i => i == sortColumn || needCol(i), rand);
         }
 
-        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             Host.Check(string.IsNullOrEmpty(_sortColumn) || rand == null, "Random access is not allowed on sorted data. (6)");
             Host.AssertValue(_transform, "_transform");
             if (string.IsNullOrEmpty(_sortColumn))
-                return _transform.GetRowCursorSet(out consolidator, needCol, n, rand);
+                return _transform.GetRowCursorSet(needCol, n, rand);
             else
             {
-                int sortColumn;
-                Source.Schema.TryGetColumnIndex(_sortColumn, out sortColumn);
-                return _transform.GetRowCursorSet(out consolidator, i => i == sortColumn || needCol(i), n, rand);
+                int sortColumn = SchemaHelper.GetColumnIndex(Source.Schema, _sortColumn);
+                return _transform.GetRowCursorSet(i => i == sortColumn || needCol(i), n, rand);
             }
         }
 
@@ -238,10 +232,8 @@ namespace Scikit.ML.PipelineTransforms
                 return CreateTransformNoSort();
             else
             {
-                int index;
-                if (!schema.TryGetColumnIndex(_sortColumn, out index))
-                    Contracts.Check(false, "sortColumn not found in input schema.");
-                var ct = schema.GetColumnType(index);
+                int index = SchemaHelper.GetColumnIndex(schema, _sortColumn);
+                var ct = schema[index].Type;
                 DataKind dk = ct.RawKind();
 
                 // Instantiate the associated instance.
@@ -287,11 +279,7 @@ namespace Scikit.ML.PipelineTransforms
         private IDataTransform CreateTransform<TValue>()
             where TValue : IComparable<TValue>
         {
-            int col;
-            var r = Source.Schema.TryGetColumnIndex(_sortColumn, out col);
-            if (!r)
-                throw Contracts.Except("Unable to find column '{0}' in input schema.", _sortColumn);
-
+            int col = SchemaHelper.GetColumnIndex(Source.Schema, _sortColumn);
             return new SortInDataFrameState<TValue>(Host, Source, col, _reverse, _numThreads);
         }
 
@@ -388,12 +376,12 @@ namespace Scikit.ML.PipelineTransforms
                 return _autoView.GetRowCursor(needCol, rand);
             }
 
-            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
             {
                 FillCacheIfNotFilled();
                 _host.Check(_canShuffle || rand == null, "Random access is not allowed on sorted data (2).");
                 _host.AssertValue(_autoView, "_autoView");
-                return _autoView.GetRowCursorSet(out consolidator, needCol, n, rand);
+                return _autoView.GetRowCursorSet(needCol, n, rand);
             }
 
             private int CompareTo(KeyValuePair<TValue, long> a, KeyValuePair<TValue, long> b)

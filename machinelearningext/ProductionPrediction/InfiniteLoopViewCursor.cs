@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-//using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
 
@@ -54,7 +52,7 @@ namespace Scikit.ML.ProductionPrediction
         }
 
         public bool CanShuffle { get { return false; } }
-        public long? GetRowCount() { return null; }
+        public long? GetRowCount() { return 1; }
         public Schema Schema { get { return _schema; } }
 
         public void Set(in TRepValue value)
@@ -72,30 +70,24 @@ namespace Scikit.ML.ProductionPrediction
             return _ownCursor;
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            consolidator = new Consolidator();
             if (n >= 2)
             {
                 // This trick avoids the cursor to be split into multiple later.
+                /*
                 var res = new RowCursor[n];
                 var empty = new EmptyCursor(this,
                                     col => col == _column || needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col)));
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
                 return res;
+                */
+                return new RowCursor[] { cur };
             }
             else
                 return new RowCursor[] { cur };
-        }
-
-        class Consolidator : IRowCursorConsolidator
-        {
-            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
-            {
-                return inputs[0];
-            }
         }
 
         class CursorType : RowCursor
@@ -123,6 +115,7 @@ namespace Scikit.ML.ProductionPrediction
                 _ignoreOtherColumn = view._ignoreOtherColumn;
             }
 
+            public override int Count() { return 1; }
             public override CursorState State { get { return _state; } }
             public override RowCursor GetRootCursor() { return this; }
             public override long Batch { get { return _batch; } }
@@ -201,7 +194,7 @@ namespace Scikit.ML.ProductionPrediction
             {
                 if (col == _view.ReplacedCol)
                 {
-                    var type = _view.Schema.GetColumnType(col);
+                    var type = _view.Schema[col].Type;
                     if (type.IsVector())
                     {
                         switch (type.AsVector().ItemType().RawKind())
@@ -272,7 +265,7 @@ namespace Scikit.ML.ProductionPrediction
             if (columns == null)
                 columns = columnsSchema.Select((c, i) => i).ToArray();
             if (columns.Length != columnsSchema.Count)
-                throw Contracts.Except($"Dimension mismatch expected columns is {columns.Length}, number of fields for {typeof(TRowValue)} is {columnsSchema.Count}.");
+                throw Contracts.Except($"Dimension mismatch, expected columns is {columns.Length}, number of fields for {typeof(TRowValue)} is {columnsSchema.Count}.");
             _columns = columns;
             _otherValues = otherValues;
             _schema = otherValues == null ? schema : otherValues.Schema;
@@ -302,12 +295,12 @@ namespace Scikit.ML.ProductionPrediction
             return _ownCursor;
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            consolidator = new Consolidator();
             if (n >= 2)
             {
+                /*
                 // This trick avoids the cursor to be split into multiple later.
                 var setColumns = new HashSet<int>(_columns);
                 var res = new RowCursor[n];
@@ -316,17 +309,11 @@ namespace Scikit.ML.ProductionPrediction
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
                 return res;
+                */
+                return new RowCursor[] { cur };
             }
             else
                 return new RowCursor[] { cur };
-        }
-
-        class Consolidator : IRowCursorConsolidator
-        {
-            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
-            {
-                return inputs[0];
-            }
         }
 
         class CursorType : RowCursor
@@ -360,6 +347,7 @@ namespace Scikit.ML.ProductionPrediction
                     _columns[view.ReplacedCol[i]] = i;
             }
 
+            public override int Count() { return 1; }
             public override CursorState State { get { return _state; } }
             public override RowCursor GetRootCursor() { return this; }
             public override long Batch { get { return _batch; } }

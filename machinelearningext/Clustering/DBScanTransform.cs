@@ -4,20 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.NearestNeighbors;
 
 
 // The following files makes the object visible to maml.
 // This way, it can be added to any pipeline.
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using DBScanTransform = Scikit.ML.Clustering.DBScanTransform;
 
 
@@ -180,10 +179,10 @@ namespace Scikit.ML.Clustering
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             Host.AssertValue(_transform, "_transform");
-            return _transform.GetRowCursorSet(out consolidator, needCol, n, rand);
+            return _transform.GetRowCursorSet(needCol, n, rand);
         }
 
         #endregion
@@ -192,10 +191,8 @@ namespace Scikit.ML.Clustering
 
         private IDataTransform CreateTemplatedTransform()
         {
-            int index;
-            if (!Source.Schema.TryGetColumnIndex(_args.features, out index))
-                throw Host.Except("Features does not belong the input schema.");
-            var type = Source.Schema.GetColumnType(index);
+            int index = SchemaHelper.GetColumnIndex(Source.Schema, _args.features);
+            var type = Source.Schema[index].Type;
             if (!type.IsVector())
                 throw Host.Except("Features must be a vector.");
             switch (type.AsVector().ItemType().RawKind())
@@ -250,12 +247,7 @@ namespace Scikit.ML.Clustering
                         var sw = Stopwatch.StartNew();
                         sw.Start();
                         var points = new List<IPointIdFloat>();
-
-                        int index;
-                        if (!_input.Schema.TryGetColumnIndex(_args.features, out index))
-                        {
-                            ch.Except("Unable to find column '{0}'", _args.features);
-                        }
+                        int index = SchemaHelper.GetColumnIndex(_input.Schema, _args.features);
 
                         // Caching data.
                         ch.Info(MessageSensitivity.None, "Caching the data.");
@@ -419,11 +411,11 @@ namespace Scikit.ML.Clustering
                 return new DBScanCursor(this, cursor);
             }
 
-            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
             {
                 TrainTransform();
                 _host.AssertValue(_reversedMapping, "_reversedMapping");
-                var cursors = _input.GetRowCursorSet(out consolidator, predicate, n, rand);
+                var cursors = _input.GetRowCursorSet(predicate, n, rand);
                 return cursors.Select(c => new DBScanCursor(this, c)).ToArray();
             }
 
@@ -444,7 +436,7 @@ namespace Scikit.ML.Clustering
             public DBScanCursor(DBScanState view, RowCursor cursor)
             {
                 _view = view;
-                _colCluster = view.Source.Schema.ColumnCount;
+                _colCluster = view.Source.Schema.Count;
                 _colScore = _colCluster + 1;
                 _colName = _colScore + 1;
                 _inputCursor = cursor;
@@ -457,7 +449,7 @@ namespace Scikit.ML.Clustering
 
             public override bool IsColumnActive(int col)
             {
-                if (col < _inputCursor.Schema.ColumnCount)
+                if (col < _inputCursor.Schema.Count)
                     return _inputCursor.IsColumnActive(col);
                 return true;
             }
@@ -495,22 +487,14 @@ namespace Scikit.ML.Clustering
 
             public override ValueGetter<TValue> GetGetter<TValue>(int col)
             {
-                if (col < _view.Source.Schema.ColumnCount)
-                {
+                if (col < _view.Source.Schema.Count)
                     return _inputCursor.GetGetter<TValue>(col);
-                }
-                else if (col == _view.Source.Schema.ColumnCount) // Cluster
-                {
+                else if (col == _view.Source.Schema.Count) // Cluster
                     return GetGetterCluster() as ValueGetter<TValue>;
-                }
-                else if (col == _view.Source.Schema.ColumnCount + 1) // Score
-                {
+                else if (col == _view.Source.Schema.Count + 1) // Score
                     return GetGetterScore() as ValueGetter<TValue>;
-                }
                 else
-                {
                     throw new IndexOutOfRangeException();
-                }
             }
 
             ValueGetter<int> GetGetterCluster()

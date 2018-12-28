@@ -5,9 +5,9 @@ using System.Text;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Data.IO;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Data.IO;
 
 
 namespace Scikit.ML.DataManipulation
@@ -207,7 +207,7 @@ namespace Scikit.ML.DataManipulation
                 OutputHeader = header,
                 Silent = silent
             });
-            var columns = new int[view.Schema.ColumnCount];
+            var columns = new int[view.Schema.Count];
             for (int i = 0; i < columns.Length; ++i)
                 columns[i] = i;
             saver.SaveData(st, view, columns);
@@ -250,7 +250,7 @@ namespace Scikit.ML.DataManipulation
             var df = ReadCsv(filenames[0], sep: sep, header: header, names: names, dtypes: dtypes,
                              nrows: guess_rows, guess_rows: guess_rows, encoding: encoding, index: index);
             var sch = df.Schema;
-            var cols = new TextLoader.Column[sch.ColumnCount];
+            var cols = new TextLoader.Column[sch.Count];
             for (int i = 0; i < cols.Length; ++i)
                 cols[i] = TextLoader.Column.Parse(df.NameType(i));
 
