@@ -161,7 +161,8 @@ namespace Scikit.ML.ModelSelection
             Host.CheckUserArg(!args.numThreads.HasValue || args.numThreads.Value > 0, "numThreads cannot be negative.");
             var sum = args.fratios.Sum();
             Host.CheckUserArg(Math.Abs(sum - 1f) < 1e-5, "Sum of ratios must be 1.");
-            int col = SchemaHelper.GetColumnIndex(input.Schema, args.newColumn);
+            int col = SchemaHelper.GetColumnIndex(input.Schema, args.newColumn, true);
+            Host.Check(col == -1, $"Column '{args.newColumn}' should not exist.");
 
             _newColumn = args.newColumn;
             _shuffleInput = args.shuffleInput;

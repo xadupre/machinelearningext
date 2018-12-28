@@ -292,7 +292,7 @@ namespace Scikit.ML.RandomTransforms
 
             using (var ch = _host.Start("Resample: fill the cache"))
             {
-                int indexClass = SchemaHelper.GetColumnIndex(_input.Schema, _args.column);
+                int indexClass = SchemaHelper.GetColumnIndex(_input.Schema, _args.column, true);
 
                 using (var cur = _input.GetRowCursor(i => i == indexClass))
                 {

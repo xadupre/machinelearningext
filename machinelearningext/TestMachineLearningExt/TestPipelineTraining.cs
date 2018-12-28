@@ -29,10 +29,10 @@ namespace TestMachineLearningExt
                 var loader = env.CreateLoader("Text{col=Label:R4:0 col=Slength:R4:1 col=Swidth:R4:2 col=Plength:R4:3 col=Pwidth:R4:4 header=+}",
                     new MultiFileSource(dataFilePath));
                 var xf = env.CreateTransform("shuffle{force=+}", loader); // We shuffle because Iris is order by label.
-                xf = env.CreateTransform("concat{col=Features:Slength,Swidth}", xf);
-                var roles = env.CreateExamples(xf, "Features", "Label");
+                xf = env.CreateTransform("concat{col=RawFeatures:Slength,Swidth}", xf);
+                var roles = env.CreateExamples(xf, "RawFeatures", "Label");
 
-                string pred = addpre ? "PrePost{pre=poly{col=Features} p=___ pret=Take{n=80}}" : "PrePost{p=___ pret=Take{n=80}}";
+                string pred = addpre ? "PrePost{pre=poly{col=Feature:RawFeatures} p=___ pret=Take{n=80}}" : "PrePost{p=___ pret=Take{n=80}}";
                 pred = pred.Replace("___", modelName);
                 var trainer = env.CreateTrainer(pred);
                 using (var ch = env.Start("Train"))

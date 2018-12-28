@@ -53,8 +53,8 @@ namespace Scikit.ML.PipelineHelper
         {
             _schemaInput = inputSchema == null
                             ? null
-                            : new ExtendedSchema((ISchema)null, inputSchema.Select(c => c.Name).ToArray(),
-                                                 inputSchema.Select(c => c.Type).ToArray());
+                            : new ExtendedSchema((ISchema)null, inputSchema.Where(c => !c.IsHidden).Select(c => c.Name).ToArray(),
+                                                 inputSchema.Where(c => !c.IsHidden).Select(c => c.Type).ToArray());
             if (names == null || names.Length == 0)
                 throw Contracts.ExceptEmpty("The extended schema must contain new names.");
             if (types == null || types.Length != names.Length)
@@ -81,8 +81,8 @@ namespace Scikit.ML.PipelineHelper
         {
             _schemaInput = inputSchema == null
                             ? null
-                            : new ExtendedSchema((ISchema)null, inputSchema.Select(c => c.Name).ToArray(),
-                                                 inputSchema.Select(c => c.Type).ToArray());
+                            : new ExtendedSchema((ISchema)null, inputSchema.Where(c => !c.IsHidden).Select(c => c.Name).ToArray(),
+                                                 inputSchema.Where(c => !c.IsHidden).Select(c => c.Type).ToArray());
             _names = null;
             _types = null;
             _maprev = new Dictionary<string, int>();

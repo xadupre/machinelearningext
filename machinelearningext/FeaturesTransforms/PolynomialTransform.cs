@@ -227,15 +227,15 @@ namespace Scikit.ML.FeaturesTransforms
         /// </summary>
         private IDataTransform CreateTemplatedTransform()
         {
-            IDataTransform transform = null;
+            if (_args.columns.Length != 1)
+                throw _host.Except("Only one column allowed not '{0}'.", _args.columns.Length);
 
             // The column is a vector.
+            IDataTransform transform = null;
             int index = -1;
             var schema = _input.Schema;
             foreach (var col in _args.columns)
-                SchemaHelper.GetColumnIndex(schema, col.Source);
-            if (_args.columns.Length != 1)
-                throw _host.Except("Only one column allowed not '{0}'.", _args.columns.Length);
+                index = SchemaHelper.GetColumnIndex(schema, col.Source);
 
             var typeCol = schema[index].Type;
             if (!typeCol.IsVector())
