@@ -1,11 +1,11 @@
 ﻿// See the LICENSE file in the project root for more information.
 
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
 using MultiToRankerPredictor = Scikit.ML.MultiClass.MultiToRankerPredictor;
 
 [assembly: LoadableClass(typeof(MultiToRankerPredictor), null, typeof(SignatureLoadModel),

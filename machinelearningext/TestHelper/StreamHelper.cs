@@ -3,10 +3,9 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-//using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.TestHelper
@@ -16,9 +15,9 @@ namespace Scikit.ML.TestHelper
         public static int[] GetColumnsIndex(Schema schema, IEnumerable<string> subsetColumns = null)
         {
             if (subsetColumns == null)
-                return Enumerable.Range(0, schema.ColumnCount).Where(c => !schema[c].IsHidden).ToArray();
+                return Enumerable.Range(0, schema.Count).Where(c => !schema[c].IsHidden).ToArray();
             else
-                return subsetColumns.Select(c => { int ind; schema.TryGetColumnIndex(c, out ind); return ind; })
+                return subsetColumns.Select(c => SchemaHelper.GetColumnIndex(schema, c))
                                     .ToArray();
         }
 

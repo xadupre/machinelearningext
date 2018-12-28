@@ -1,7 +1,8 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Data;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.DataManipulation
@@ -18,6 +19,21 @@ namespace Scikit.ML.DataManipulation
         public DataFrameViewSchema(ISchema schema, IEnumerable<int> colIndices)
         {
             _schema = schema;
+            _mapping = new Dictionary<int, int>();
+            var li = new List<int>();
+            int c = 0;
+            foreach (var col in colIndices)
+            {
+                _mapping[col] = c;
+                li.Add(col);
+                ++c;
+            }
+            _revmapping = li.ToArray();
+        }
+
+        public DataFrameViewSchema(Schema schema, IEnumerable<int> colIndices)
+        {
+            _schema = new ExtendedSchema(schema);
             _mapping = new Dictionary<int, int>();
             var li = new List<int>();
             int c = 0;

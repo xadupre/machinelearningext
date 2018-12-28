@@ -2,16 +2,15 @@
 
 using System;
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using ChainTransform = Scikit.ML.PipelineGraphTransforms.ChainTransform;
 
 [assembly: LoadableClass(ChainTransform.Summary, typeof(ChainTransform),
@@ -128,10 +127,10 @@ namespace Scikit.ML.PipelineGraphTransforms
             return _dataTransforms.Last().GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_dataTransforms, "_dataTransforms");
-            return _dataTransforms.Last().GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _dataTransforms.Last().GetRowCursorSet(predicate, n, rand);
         }
     }
 }

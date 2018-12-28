@@ -4,9 +4,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 
 
 namespace Scikit.ML.DataManipulation
@@ -82,10 +82,7 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         public int GetColumnIndex(string name)
         {
-            int i;
-            if (!Schema.TryGetColumnIndex(name, out i))
-                throw new DataNameError($"Unable to find column '{name}'.");
-            return i;
+            return SchemaHelper.GetColumnIndex(Schema, name);
         }
 
         public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null)
@@ -93,9 +90,9 @@ namespace Scikit.ML.DataManipulation
             return _src.GetRowCursor(_rows, _columns, needCol, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
-            return _src.GetRowCursorSet(_rows, _columns, out consolidator, needCol, n, rand);
+            return _src.GetRowCursorSet(_rows, _columns, needCol, n, rand);
         }
 
         public RowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
@@ -103,7 +100,7 @@ namespace Scikit.ML.DataManipulation
             throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrameView.");
         }
 
-        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, Func<int, bool> needCol, int n, Random rand = null)
         {
             throw Contracts.ExceptNotSupp("Not applicable here, consider building a DataFrame.");
         }
@@ -230,7 +227,7 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         public DataFrameView Drop(IEnumerable<string> colNames)
         {
-            var idrop = new HashSet<int>(colNames.Select(c => { int col; Schema.TryGetColumnIndex(c, out col); return col; }));
+            var idrop = new HashSet<int>(colNames.Select(c => SchemaHelper.GetColumnIndex(Schema, c)));
             var ikeep = Enumerable.Range(0, ColumnCount).Where(c => !idrop.Contains(c));
             return new DataFrameView(_src, _rows, ikeep);
         }
@@ -623,7 +620,7 @@ namespace Scikit.ML.DataManipulation
         {
             int[] order = _rows.Select(c => c).ToArray();
             var icols = cols.ToArray();
-            var scols = icols.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scols = icols.Select(c => Schema[c].Name).ToArray();
             return DataFrameGrouping.TGroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1>(icols),
                                               ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
         }
@@ -634,7 +631,7 @@ namespace Scikit.ML.DataManipulation
         {
             int[] order = _rows.Select(c => c).ToArray();
             var icols = cols.ToArray();
-            var scols = icols.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scols = icols.Select(c => Schema[c].Name).ToArray();
             return DataFrameGrouping.TGroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1, T2>(icols),
                                               ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
         }
@@ -646,7 +643,7 @@ namespace Scikit.ML.DataManipulation
         {
             int[] order = _rows.Select(c => c).ToArray();
             var icols = cols.ToArray();
-            var scols = icols.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scols = icols.Select(c => Schema[c].Name).ToArray();
             return DataFrameGrouping.TGroupBy(this, order, _columns, icols, true, GetMultiGetterAt<T1, T2, T3>(icols),
                                               ke => ke.ToImTuple(), ke => DataFrameGroupKey.Create(scols, ke));
         }
@@ -713,7 +710,7 @@ namespace Scikit.ML.DataManipulation
             int[] columnsRight = right.ColumnsSet;
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
-            var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scolsLeft = icolsLeft.Select(c => Schema[c].Name).ToArray();
             var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,
@@ -738,7 +735,7 @@ namespace Scikit.ML.DataManipulation
             int[] columnsRight = (right as DataFrame) is null ? (right as DataFrameView)._columns : null;
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
-            var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scolsLeft = icolsLeft.Select(c => Schema[c].Name).ToArray();
             var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,
@@ -764,7 +761,7 @@ namespace Scikit.ML.DataManipulation
             int[] columnsRight = (right as DataFrame) is null ? (right as DataFrameView)._columns : null;
             var icolsLeft = colsLeft.ToArray();
             var icolsRight = colsRight.ToArray();
-            var scolsLeft = icolsLeft.Select(c => Schema.GetColumnName(c)).ToArray();
+            var scolsLeft = icolsLeft.Select(c => Schema[c].Name).ToArray();
             var scolsRight = icolsRight.Select(c => right.SchemaI.GetColumnName(c)).ToArray();
 
             return DataFrameJoining.TJoin(this, right,

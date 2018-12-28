@@ -2,10 +2,9 @@
 
 using System;
 using System.Text;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-//using Microsoft.ML.Runtime.Api;
+//using Microsoft.ML.Api;
 
 
 namespace Scikit.ML.DataManipulation
@@ -54,9 +53,9 @@ namespace Scikit.ML.DataManipulation
         public bool CanShuffle => Source.CanShuffle;
         public long? GetRowCount() { return Source.GetRowCount(); }
         public RowCursor GetRowCursor(Func<int, bool> needCol, Random rand = null) { return Source.GetRowCursor(needCol, rand); }
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
-            return Source.GetRowCursorSet(out consolidator, needCol, n, rand);
+            return Source.GetRowCursorSet(needCol, n, rand);
         }
 
         public static StreamingDataFrame ReadCsv(string filename,

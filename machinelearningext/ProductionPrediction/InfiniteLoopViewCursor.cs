@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-//using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
 
@@ -72,10 +70,9 @@ namespace Scikit.ML.ProductionPrediction
             return _ownCursor;
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            consolidator = new Consolidator();
             if (n >= 2)
             {
                 // This trick avoids the cursor to be split into multiple later.
@@ -88,14 +85,6 @@ namespace Scikit.ML.ProductionPrediction
             }
             else
                 return new RowCursor[] { cur };
-        }
-
-        class Consolidator : IRowCursorConsolidator
-        {
-            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
-            {
-                return inputs[0];
-            }
         }
 
         class CursorType : RowCursor
@@ -201,7 +190,7 @@ namespace Scikit.ML.ProductionPrediction
             {
                 if (col == _view.ReplacedCol)
                 {
-                    var type = _view.Schema.GetColumnType(col);
+                    var type = _view.Schema[col].Type;
                     if (type.IsVector())
                     {
                         switch (type.AsVector().ItemType().RawKind())
@@ -302,10 +291,9 @@ namespace Scikit.ML.ProductionPrediction
             return _ownCursor;
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            consolidator = new Consolidator();
             if (n >= 2)
             {
                 // This trick avoids the cursor to be split into multiple later.
@@ -319,14 +307,6 @@ namespace Scikit.ML.ProductionPrediction
             }
             else
                 return new RowCursor[] { cur };
-        }
-
-        class Consolidator : IRowCursorConsolidator
-        {
-            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
-            {
-                return inputs[0];
-            }
         }
 
         class CursorType : RowCursor

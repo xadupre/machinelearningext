@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Trainers;
 using Microsoft.ML.Transforms.Text;
 using Microsoft.ML.Core.Data;
@@ -135,7 +133,7 @@ namespace TestProfileBenchmark
                 if (engine == "mlnet")
                 {
                     Console.WriteLine("engine={0} N={1} ncall={2} cacheScikit={3}", engine, N, ncall, cacheScikit);
-                    var fct = transformer.MakePredictionFunction<SentimentData, SentimentPrediction>(env);
+                    var fct = ComponentCreation.CreatePredictionEngine<SentimentData, SentimentPrediction>(env, transformer);
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {

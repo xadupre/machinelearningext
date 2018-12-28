@@ -4,18 +4,17 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
+//using Microsoft.ML.Api;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-//using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Model.Onnx;
+using Microsoft.ML.Model;
+using Microsoft.ML.Model.Onnx;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using PassThroughTransform = Scikit.ML.PipelineTransforms.PassThroughTransform;
 
 [assembly: LoadableClass(PassThroughTransform.Summary, typeof(PassThroughTransform),
@@ -175,11 +174,11 @@ namespace Scikit.ML.PipelineTransforms
             return Source.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_input, "_input");
             DumpView();
-            return Source.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return Source.GetRowCursorSet(predicate, n, rand);
         }
 
         public void DumpView()
@@ -198,8 +197,8 @@ namespace Scikit.ML.PipelineTransforms
 
                     var columnsList = new List<int>();
                     var schema = _input.Schema;
-                    for (int i = 0; i < schema.ColumnCount; ++i)
-                        columnsList.Add(saver.IsColumnSavable(schema.GetColumnType(i)) && schema[i].IsHidden ? i : -1);
+                    for (int i = 0; i < schema.Count; ++i)
+                        columnsList.Add(saver.IsColumnSavable(schema[i].Type) && schema[i].IsHidden ? i : -1);
                     var columns = columnsList.Where(c => c >= 0).ToArray();
                     ch.Info("Save columns: {0}", string.Join(", ", columns.Select(c => c.ToString())));
                     using (var fs2 = File.Create(_args.filename))

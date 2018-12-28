@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime.Data;
+using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;
 using Scikit.ML.DataManipulation;
 using Scikit.ML.TimeSeries;
@@ -79,9 +79,8 @@ namespace TestMachineLearningExt
                 using (var cursor = scaled.GetRowCursor(i => true))
                 {
                     var outValues = new List<float>();
-                    int pos;
-                    cursor.Schema.TryGetColumnIndex("Y", out pos);
-                    var type = cursor.Schema.GetColumnType(pos);
+                    int pos = SchemaHelper.GetColumnIndex(cursor.Schema, "Y");
+                    var type = cursor.Schema[pos].Type;
                     if (type != NumberType.R4)
                         throw new Exception("Unexpected type");
                     var colGetter = cursor.GetGetter<float>(pos);
@@ -125,9 +124,8 @@ namespace TestMachineLearningExt
                 using (var cursor = scaled.GetRowCursor(i => true))
                 {
                     var outValues = new List<float>();
-                    int pos;
-                    cursor.Schema.TryGetColumnIndex("Y", out pos);
-                    var type = cursor.Schema.GetColumnType(pos);
+                    int pos = SchemaHelper.GetColumnIndex(cursor.Schema, "Y");
+                    var type = cursor.Schema[pos].Type;
                     if (type != NumberType.R4)
                         throw new Exception("Unexpected type");
                     var colGetter = cursor.GetGetter<float>(pos);
@@ -170,9 +168,8 @@ namespace TestMachineLearningExt
                 using (var cursor = scaled.GetRowCursor(i => true))
                 {
                     var outValues = new List<float>();
-                    int pos;
-                    cursor.Schema.TryGetColumnIndex("Y", out pos);
-                    var type = cursor.Schema.GetColumnType(pos);
+                    int pos = SchemaHelper.GetColumnIndex(cursor.Schema, "Y");
+                    var type = cursor.Schema[pos].Type;
                     if (type != NumberType.R4)
                         throw new Exception("Unexpected type");
                     var colGetter = cursor.GetGetter<float>(pos);
@@ -221,9 +218,8 @@ namespace TestMachineLearningExt
                 using (var cursor = scaled.GetRowCursor(i => true))
                 {
                     var outValues = new List<float>();
-                    int pos;
-                    cursor.Schema.TryGetColumnIndex("Y", out pos);
-                    var type = cursor.Schema.GetColumnType(pos);
+                    int pos = SchemaHelper.GetColumnIndex(cursor.Schema, "Y");
+                    var type = cursor.Schema[pos].Type;
                     if (type != NumberType.R4)
                         throw new Exception("Unexpected type");
                     var colGetter = cursor.GetGetter<float>(pos);

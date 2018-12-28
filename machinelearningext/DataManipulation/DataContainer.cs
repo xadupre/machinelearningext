@@ -3,10 +3,9 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Internal.Utilities;
+using Microsoft.ML.Internal.Utilities;
 using Scikit.ML.PipelineHelper;
 
 
@@ -358,26 +357,26 @@ namespace Scikit.ML.DataManipulation
         public DataContainer(Schema schema, int nb = 1)
         {
             _init();
-            for (int i = 0; i < schema.ColumnCount; ++i)
+            for (int i = 0; i < schema.Count; ++i)
             {
-                var name = schema.GetColumnName(i);
-                var type = schema.GetColumnType(i);
+                var name = schema[i].Name;
+                var type = schema[i].Type;
                 AddColumn(name, type, nb);
             }
         }
 
         public bool CheckSharedSchema(Schema schema)
         {
-            if (schema.ColumnCount != ColumnCount)
-                throw Contracts.Except($"Different number of columns ${ColumnCount} != ${schema.ColumnCount}.");
+            if (schema.Count != ColumnCount)
+                throw Contracts.Except($"Different number of columns ${ColumnCount} != ${schema.Count}.");
             string name;
             ColumnType colType;
             for (int i = 0; i < ColumnCount; ++i)
             {
-                name = schema.GetColumnName(i);
+                name = schema[i].Name;
                 if (name != _names[i])
                     throw Contracts.Except($"Different column name at position ${i}: ${_names[i]} != ${name}.");
-                colType = schema.GetColumnType(i);
+                colType = schema[i].Type;
                 if (colType != _kinds[i])
                     throw Contracts.Except($"Different column type at position ${i}: ${_kinds[i]} != ${colType}.");
             }
@@ -835,13 +834,13 @@ namespace Scikit.ML.DataManipulation
             {
                 lock (_lock)
                 {
-                    if (_schemaCache == null || _schemaCache.ColumnCount != _schema.ColumnCount)
+                    if (_schemaCache == null || _schemaCache.Count != _schema.ColumnCount)
                     {
                         _schemaCache = Schema.Create(_schema);
                         return _schemaCache;
                     }
-                    if (Enumerable.Range(0, _schema.ColumnCount).Where(i => _schema.GetColumnName(i) != _schemaCache.GetColumnName(i)).Any() ||
-                        Enumerable.Range(0, _schema.ColumnCount).Where(i => _schema.GetColumnType(i) != _schemaCache.GetColumnType(i)).Any())
+                    if (Enumerable.Range(0, _schema.ColumnCount).Where(i => _schema.GetColumnName(i) != _schemaCache[i].Name).Any() ||
+                        Enumerable.Range(0, _schema.ColumnCount).Where(i => _schema.GetColumnType(i) != _schemaCache[i].Type).Any())
                     {
                         _schemaCache = Schema.Create(_schema);
                         return _schemaCache;
@@ -871,11 +870,11 @@ namespace Scikit.ML.DataManipulation
             var memory = new Dictionary<int, Tuple<int, int>>();
             var sch = view.Schema;
             int pos = 0;
-            for (int i = 0; i < sch.ColumnCount; ++i)
+            for (int i = 0; i < sch.Count; ++i)
             {
                 if (sch[i].IsHidden)
                     continue;
-                var ty = sch.GetColumnType(i);
+                var ty = sch[i].Type;
                 if (!keepVectors && ty.IsVector())
                 {
                     var tyv = ty.AsVector();
@@ -883,14 +882,14 @@ namespace Scikit.ML.DataManipulation
                         throw new NotSupportedException("Only arrays with one dimension are supported.");
                     for (int j = 0; j < tyv.GetDim(0); ++j)
                     {
-                        AddColumn(string.Format("{0}.{1}", sch.GetColumnName(i), j), tyv.ItemType(), (int)numRows.Value);
+                        AddColumn(string.Format("{0}.{1}", sch[i].Name, j), tyv.ItemType(), (int)numRows.Value);
                         memory[pos++] = new Tuple<int, int>(i, j);
                     }
                 }
                 else
                 {
                     memory[pos] = new Tuple<int, int>(i, -1);
-                    AddColumn(sch.GetColumnName(i), ty, (int)numRows.Value);
+                    AddColumn(sch[i].Name, ty, (int)numRows.Value);
                     ++pos;
                 }
             }
@@ -913,8 +912,7 @@ namespace Scikit.ML.DataManipulation
             }
             else
             {
-                IRowCursorConsolidator cursor;
-                var cursors = view.GetRowCursorSet(out cursor, i => true, nth);
+                var cursors = view.GetRowCursorSet(i => true, nth);
                 // FillValues(cursors, memory);
                 throw new NotImplementedException();
             }
@@ -1124,7 +1122,7 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         ValueGetter<DType> GetGetterCursor<DType>(RowCursor cursor, int col, int index, DType defaultValue)
         {
-            var dt = cursor.Schema.GetColumnType(col);
+            var dt = cursor.Schema[col].Type;
             if (dt.IsVector())
             {
                 ValueGetter<VBuffer<DType>> getter;
@@ -1199,7 +1197,7 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         ValueGetter<VBuffer<DType>> GetGetterCursorVector<DType>(RowCursor cursor, int col, int index, DType defaultValue)
         {
-            var dt = cursor.Schema.GetColumnType(col);
+            var dt = cursor.Schema[col].Type;
             if (dt.IsVector())
                 return cursor.GetGetter<VBuffer<DType>>(col);
             else
@@ -1240,12 +1238,12 @@ namespace Scikit.ML.DataManipulation
             var res = new List<RowColumnSetterDelegate>();
             var getters = CursorHelper.GetAllGetters(cur);
             int pos = 0;
-            for (int i = 0; i < sch.ColumnCount; ++i)
+            for (int i = 0; i < sch.Count; ++i)
             {
                 if (sch[i].IsHidden)
                     continue;
                 var getter = getters[pos];
-                res.Add(GetColumnSetter(cur, getter, pos, sch.GetColumnType(i)));
+                res.Add(GetColumnSetter(cur, getter, pos, sch[i].Type));
                 ++pos;
             }
             return res.ToArray();
@@ -1414,28 +1412,18 @@ namespace Scikit.ML.DataManipulation
             return new DataRowCursor(this, needCol, rand, rows: rows, columns: columns);
         }
 
-        private sealed class Consolidator : IRowCursorConsolidator
+        /// <summary>
+        /// Returns a set of aliased cursors on the data.
+        /// </summary>
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
-            private const int _batchShift = 6;
-            private const int _batchSize = 1 << _batchShift;
-            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
-            {
-                return DataViewUtils.ConsolidateGeneric(provider, inputs, _batchSize);
-            }
+            return GetRowCursorSet(null, null, predicate, n, rand);
         }
 
         /// <summary>
         /// Returns a set of aliased cursors on the data.
         /// </summary>
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
-        {
-            return GetRowCursorSet(null, null, out consolidator, predicate, n, rand);
-        }
-
-        /// <summary>
-        /// Returns a set of aliased cursors on the data.
-        /// </summary>
-        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, Func<int, bool> predicate, int n, Random rand = null)
         {
             var host = new ConsoleEnvironment().Register("Estimate n threads");
             n = DataViewUtils.GetThreadCount(host, n);
@@ -1443,16 +1431,12 @@ namespace Scikit.ML.DataManipulation
                 n = Length;
 
             if (n <= 1)
-            {
-                consolidator = null;
                 return new RowCursor[] { GetRowCursor(rows, columns, predicate, rand) };
-            }
             else
             {
                 var cursors = new RowCursor[n];
                 for (int i = 0; i < cursors.Length; ++i)
                     cursors[i] = new DataRowCursor(this, predicate, rand, n, i, rows: rows, columns: columns);
-                consolidator = new Consolidator();
                 return cursors;
             }
         }
@@ -1748,8 +1732,8 @@ namespace Scikit.ML.DataManipulation
             for (int i = 0; i < Math.Max(Shape.Item1, c.Shape.Item1); ++i)
             {
                 var row = new List<string>();
-                if (i < Schema.ColumnCount)
-                    row.Add($"'{Schema.GetColumnName(i)}':{Schema.GetColumnType(i)}");
+                if (i < Schema.Count)
+                    row.Add($"'{Schema[i].Name}':{Schema[i].Type}");
                 else
                     row.Add("###");
                 if (i < c.SchemaI.ColumnCount)

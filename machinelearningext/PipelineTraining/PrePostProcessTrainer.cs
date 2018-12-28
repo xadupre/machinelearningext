@@ -1,10 +1,10 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System.Linq;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Training;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Data;
+using Microsoft.ML.Training;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.ProductionPrediction;
@@ -39,7 +39,7 @@ namespace Scikit.ML.PipelineTraining
                 SignatureType = typeof(SignatureDataTransform))]
             public IComponentFactory<IDataTransform> preType = null;
 
-            [Argument(ArgumentType.Multiple, HelpText = "Transform which preprocesses the data before training and only before training (can be null)", 
+            [Argument(ArgumentType.Multiple, HelpText = "Transform which preprocesses the data before training and only before training (can be null)",
                 ShortName = "pret", SignatureType = typeof(SignatureDataTransform))]
             public IComponentFactory<IDataTransform> preTrainType = null;
 
@@ -133,13 +133,13 @@ namespace Scikit.ML.PipelineTraining
                 .Where(kvp => kvp.Key.Value != CR.Name.Value)
                 .Where(kvp => kvp.Key.Value != CR.Weight.Value);
             if (data.Schema.Feature != null)
-                roles = roles.Prepend(CR.Feature.Bind(data.Schema.Feature.Name));
+                roles = roles.Prepend(CR.Feature.Bind(data.Schema.Feature.Value.Name));
             if (data.Schema.Group != null)
-                roles = roles.Prepend(CR.Group.Bind(data.Schema.Group.Name));
+                roles = roles.Prepend(CR.Group.Bind(data.Schema.Group.Value.Name));
             if (data.Schema.Label != null)
-                roles = roles.Prepend(CR.Label.Bind(data.Schema.Label.Name));
+                roles = roles.Prepend(CR.Label.Bind(data.Schema.Label.Value.Name));
             if (data.Schema.Weight != null)
-                roles = roles.Prepend(CR.Weight.Bind(data.Schema.Weight.Name));
+                roles = roles.Prepend(CR.Weight.Bind(data.Schema.Weight.Value.Name));
             var td = new RoleMappedData(view, roles);
 
             // Train.
@@ -161,9 +161,9 @@ namespace Scikit.ML.PipelineTraining
                 using (var ch2 = Host.Start("Predictor as Transform"))
                 {
                     ch2.Info("Creates a transfrom from a predictor");
-                    _inputColumn = td.Schema.Feature.Name;
+                    _inputColumn = td.Schema.Feature.Value.Name;
                     _predictorAsTransform = new TransformFromValueMapper(Host, _predictor as IValueMapper,
-                                                              view, td.Schema.Feature.Name, _outputColumn);
+                                                              view, td.Schema.Feature.Value.Name, _outputColumn);
                 }
                 view = _predictorAsTransform;
             }

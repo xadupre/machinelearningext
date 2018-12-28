@@ -4,7 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.TestHelper;
 
@@ -46,9 +45,9 @@ namespace TestMachineLearningExt
 
                 // Checks the outputs.
                 var saver = env.CreateSaver("Text");
-                var columns = new string[pipe.Schema.ColumnCount];
+                var columns = new string[pipe.Schema.Count];
                 for (int i = 0; i < columns.Length; ++i)
-                    columns[i] = pipe.Schema.GetColumnName(i);
+                    columns[i] = pipe.Schema[i].Name;
                 using (var fs2 = File.Create(outData))
                     saver.SaveData(fs2, pipe, StreamHelper.GetColumnsIndex(pipe.Schema));
 
@@ -94,9 +93,9 @@ namespace TestMachineLearningExt
 
                 // Checks the outputs.
                 var saver = env.CreateSaver("Text");
-                var columns = new string[pipe.Schema.ColumnCount];
+                var columns = new string[pipe.Schema.Count];
                 for (int i = 0; i < columns.Length; ++i)
-                    columns[i] = pipe.Schema.GetColumnName(i);
+                    columns[i] = pipe.Schema[i].Name;
                 using (var fs2 = File.Create(outData))
                     saver.SaveData(fs2, pipe, StreamHelper.GetColumnsIndex(pipe.Schema));
 

@@ -3,16 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using PolynomialTransform = Scikit.ML.FeaturesTransforms.PolynomialTransform;
 
 [assembly: LoadableClass(PolynomialTransform.Summary, typeof(PolynomialTransform),
@@ -139,11 +138,9 @@ namespace Scikit.ML.FeaturesTransforms
 
             _input = input;
 
-            int ind;
             var schema = input.Schema;
             foreach (var col in args.columns)
-                if (!schema.TryGetColumnIndex(col.Source, out ind))
-                    throw _host.ExceptParam("columns", "Column '{0}' not found in schema.", col.Source);
+                SchemaHelper.GetColumnIndex(schema, col.Source);
             _args = args;
             _transform = CreateTemplatedTransform();
         }
@@ -215,10 +212,10 @@ namespace Scikit.ML.FeaturesTransforms
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
-            return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _transform.GetRowCursorSet(predicate, n, rand);
         }
 
         #endregion
@@ -236,12 +233,11 @@ namespace Scikit.ML.FeaturesTransforms
             int index = -1;
             var schema = _input.Schema;
             foreach (var col in _args.columns)
-                if (!schema.TryGetColumnIndex(col.Source, out index))
-                    throw _host.Except("Unable to find '{0}'", col.Source);
+                SchemaHelper.GetColumnIndex(schema, col.Source);
             if (_args.columns.Length != 1)
                 throw _host.Except("Only one column allowed not '{0}'.", _args.columns.Length);
 
-            var typeCol = schema.GetColumnType(index);
+            var typeCol = schema[index].Type;
             if (!typeCol.IsVector())
                 throw _host.Except("Expected a vector as input.");
             typeCol = typeCol.AsVector().ItemType();
@@ -303,9 +299,8 @@ namespace Scikit.ML.FeaturesTransforms
                 var schema = input.Schema;
                 using (var ch = _host.Start("PolynomialState"))
                 {
-                    if (!schema.TryGetColumnIndex(column.Source, out _inputCol))
-                        throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", column.Source);
-                    var type = schema.GetColumnType(_inputCol);
+                    _inputCol = SchemaHelper.GetColumnIndex(schema, column.Source);
+                    var type = schema[_inputCol].Type;
                     if (!type.IsVector())
                         throw _host.Except("Input column type must be a vector.");
                     int dim = type.AsVector().DimCount();
@@ -344,13 +339,13 @@ namespace Scikit.ML.FeaturesTransforms
                 if (predicate(col))
                     return true;
                 if (col == _inputCol)
-                    return predicate(Source.Schema.ColumnCount);
+                    return predicate(Source.Schema.Count);
                 return predicate(col);
             }
 
             public RowCursor GetRowCursor(Func<int, bool> predicate, Random rand = null)
             {
-                if (predicate(_input.Schema.ColumnCount))
+                if (predicate(_input.Schema.Count))
                 {
                     var cursor = _input.GetRowCursor(i => PredicatePropagation(i, predicate), rand);
                     return new PolynomialCursor<TInput>(this, cursor, i => PredicatePropagation(i, predicate), _args, _inputCol, _multiplication);
@@ -360,16 +355,16 @@ namespace Scikit.ML.FeaturesTransforms
                     return new SameCursor(_input.GetRowCursor(predicate, rand), this.Schema);
             }
 
-            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
             {
-                if (predicate(_input.Schema.ColumnCount))
+                if (predicate(_input.Schema.Count))
                 {
-                    var cursors = _input.GetRowCursorSet(out consolidator, i => PredicatePropagation(i, predicate), n, rand);
+                    var cursors = _input.GetRowCursorSet(i => PredicatePropagation(i, predicate), n, rand);
                     return cursors.Select(c => new PolynomialCursor<TInput>(this, c, i => PredicatePropagation(i, predicate), _args, _inputCol, _multiplication)).ToArray();
                 }
                 else
                     // The new column is not required. We do not need to compute it. But we need to keep the same schema.
-                    return _input.GetRowCursorSet(out consolidator, predicate, n, rand)
+                    return _input.GetRowCursorSet(predicate, n, rand)
                                  .Select(c => new SameCursor(c, this.Schema))
                                  .ToArray();
             }
@@ -408,7 +403,7 @@ namespace Scikit.ML.FeaturesTransforms
             public override bool IsColumnActive(int col)
             {
                 // The column is active if is active in the input view or if it the new vector with the polynomial features.
-                return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
+                return col >= _inputCursor.Schema.Count || _inputCursor.IsColumnActive(col);
             }
 
             public override ValueGetter<RowId> GetIdGetter()
@@ -447,14 +442,14 @@ namespace Scikit.ML.FeaturesTransforms
             {
                 // If the column is part of the input view.
                 var schema = _inputCursor.Schema;
-                if (col < schema.ColumnCount)
+                if (col < schema.Count)
                     return _inputCursor.GetGetter<TValue>(col);
                 // If it is the added column.
-                else if (col == schema.ColumnCount)
+                else if (col == schema.Count)
                     return PolynomialBuilder() as ValueGetter<TValue>;
                 // Otherwise, it is an error.
                 else
-                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, schema.ColumnCount);
+                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, schema.Count);
             }
 
             /// <summary>

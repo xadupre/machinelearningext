@@ -1,17 +1,17 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System.Linq;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using PredictTransform = Scikit.ML.PipelineLambdaTransforms.PredictTransform;
 
 
@@ -176,10 +176,8 @@ namespace Scikit.ML.PipelineLambdaTransforms
 
             string feat = TrainUtils.MatchNameOrDefaultOrNull(env, input.Schema,
                     "featureColumn", args.featureColumn, DefaultColumnNames.Features);
-            int index;
-            if (!input.Schema.TryGetColumnIndex(feat, out index))
-                throw env.Except("Column '{0}' not in schema.", feat);
-            var type = input.Schema.GetColumnType(index);
+            int index = SchemaHelper.GetColumnIndex(input.Schema, feat);
+            var type = input.Schema[index].Type;
             if (!type.IsVector() || type.AsVector().ItemType().RawKind() != DataKind.R4)
                 throw env.Except("Features must a vector of floats");
 

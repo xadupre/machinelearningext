@@ -4,21 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-//using Microsoft.ML.Runtime.Api;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Internal.Utilities;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML.Internal.Utilities;
+using Microsoft.ML.Model;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.PipelineGraphTransforms;
 
 
-using ArgumentAttribute = Microsoft.ML.Runtime.CommandLine.ArgumentAttribute;
-using ArgumentType = Microsoft.ML.Runtime.CommandLine.ArgumentType;
+using ArgumentAttribute = Microsoft.ML.CommandLine.ArgumentAttribute;
+using ArgumentType = Microsoft.ML.CommandLine.ArgumentType;
 
 using SplitTrainTestTransform = Scikit.ML.ModelSelection.SplitTrainTestTransform;
 [assembly: LoadableClass(SplitTrainTestTransform.Summary, typeof(SplitTrainTestTransform),
@@ -163,9 +161,7 @@ namespace Scikit.ML.ModelSelection
             Host.CheckUserArg(!args.numThreads.HasValue || args.numThreads.Value > 0, "numThreads cannot be negative.");
             var sum = args.fratios.Sum();
             Host.CheckUserArg(Math.Abs(sum - 1f) < 1e-5, "Sum of ratios must be 1.");
-            int col;
-            Host.CheckUserArg(!input.Schema.TryGetColumnIndex(args.newColumn, out col), "newColumn must not exist in the input schema.");
-
+            int col = SchemaHelper.GetColumnIndex(input.Schema, args.newColumn);
 
             _newColumn = args.newColumn;
             _shuffleInput = args.shuffleInput;
@@ -313,10 +309,10 @@ namespace Scikit.ML.ModelSelection
             return _pipedTransform.GetRowCursor(predicate, rand);
         }
 
-        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
-            return _pipedTransform.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _pipedTransform.GetRowCursorSet(predicate, n, rand);
         }
 
         #endregion
@@ -368,9 +364,8 @@ namespace Scikit.ML.ModelSelection
 
             // Get location of columnName
 
-            int index;
-            currentTr.Schema.TryGetColumnIndex(columnName, out index);
-            var ct = currentTr.Schema.GetColumnType(index);
+            int index = SchemaHelper.GetColumnIndex(currentTr.Schema, columnName);
+            var ct = currentTr.Schema[index].Type;
             var view = LambdaColumnMapper.Create(Host, "Key to part mapper", currentTr,
                                     columnName, _newColumn, ct, NumberType.I4, mapper);
 

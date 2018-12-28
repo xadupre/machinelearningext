@@ -2,15 +2,15 @@
 
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Data;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.PipelineGraphTransforms;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
 using TaggedScoreTransform = Scikit.ML.PipelineGraphTraining.TaggedScoreTransform;
 
 [assembly: LoadableClass(TaggedScoreTransform.Summary, typeof(TaggedScoreTransform),

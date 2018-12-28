@@ -5,8 +5,6 @@ using System;
 using System.IO;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Trainers.KMeans;
 using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;

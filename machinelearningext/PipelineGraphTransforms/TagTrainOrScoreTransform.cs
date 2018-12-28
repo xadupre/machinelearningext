@@ -3,17 +3,16 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Internal.Calibration;
+using Microsoft.ML.Model;
+using Microsoft.ML.Internal.Calibration;
 using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
 using TagTrainOrScoreTransform = Scikit.ML.PipelineGraphTransforms.TagTrainOrScoreTransform;
 
 
@@ -217,8 +216,8 @@ namespace Scikit.ML.PipelineGraphTransforms
                 string feat;
                 string group;
                 var data = CreateDataFromArgs(_host, ch, new OpaqueDataView(input), args, out feat, out group);
-                ICalibratorTrainer calibrator = args.calibrator == null 
-                                    ? null 
+                ICalibratorTrainer calibrator = args.calibrator == null
+                                    ? null
                                     : ScikitSubComponent<ICalibratorTrainer, SignatureCalibrator>.AsSubComponent(args.calibrator).CreateInstance(host);
                 var nameTrainer = args.trainer.ToString().Replace("{", "").Replace("}", "").Replace(" ", "").Replace("=", "").Replace("+", "Y").Replace("-", "N");
                 var extTrainer = new ExtendedTrainer(trainer, nameTrainer);
@@ -240,7 +239,7 @@ namespace Scikit.ML.PipelineGraphTransforms
                 {
                     var mapper = new SchemaBindablePredictorWrapper(_predictor);
                     var roles = new RoleMappedSchema(input.Schema, null, feat, group: group);
-                    var bound = mapper.Bind(_host, roles);
+                    var bound = (mapper as ISchemaBindableMapper).Bind(_host, roles);
                     var scorPars = ScikitSubComponent<IDataScorerTransform, SignatureDataScorer>.AsSubComponent(_args.scorer);
                     _scorer = scorPars.CreateInstance(_host, input, bound, roles);
                 }

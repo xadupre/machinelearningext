@@ -3,15 +3,14 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using AppendViewTransform = Scikit.ML.PipelineGraphTransforms.AppendViewTransform;
 
 [assembly: LoadableClass(AppendViewTransform.Summary, typeof(AppendViewTransform),
@@ -165,10 +164,10 @@ namespace Scikit.ML.PipelineGraphTransforms
             return _mergedView.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_source, "_source");
-            return _mergedView.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _mergedView.GetRowCursorSet(predicate, n, rand);
         }
 
         #endregion

@@ -2,18 +2,17 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Model;
 using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineLambdaTransforms;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using DeTrendTransform = Scikit.ML.TimeSeries.DeTrendTransform;
 
 
@@ -107,15 +106,12 @@ namespace Scikit.ML.TimeSeries
         {
             Host.CheckValue(args, "args");
             _args = args;
-            int index;
             if (_args.columns == null || _args.columns.Length != 1)
                 Host.ExceptUserArg(nameof(_args.columns), "One column must be specified.");
-            if (!input.Schema.TryGetColumnIndex(args.timeColumn, out index))
-                Host.ExceptUserArg(nameof(_args.timeColumn));
-            if (!input.Schema.TryGetColumnIndex(args.columns[0].Source, out index))
-                Host.ExceptUserArg(nameof(Column1x1.Source));
-            _schema = Schema.Create(new ExtendedSchema(input.Schema, 
-                                                       new[] { _args.columns[0].Name }, 
+            SchemaHelper.GetColumnIndex(input.Schema, args.timeColumn);
+            SchemaHelper.GetColumnIndex(input.Schema, args.columns[0].Source);
+            _schema = Schema.Create(new ExtendedSchema(input.Schema,
+                                                       new[] { _args.columns[0].Name },
                                                        new[] { NumberType.R4 /*input.Schema.GetColumnType(index)*/ }));
             _trend = null;
             _transform = null;
@@ -152,11 +148,9 @@ namespace Scikit.ML.TimeSeries
 
             ctx.LoadModel<IPredictor, SignatureLoadModel>(host, out _trend, "trend");
 
-            int index;
             if (_args.columns == null || _args.columns.Length != 1)
                 Host.ExceptUserArg(nameof(_args.columns), "One column must be specified.");
-            if (!input.Schema.TryGetColumnIndex(_args.columns[0].Source, out index))
-                Host.ExceptUserArg(nameof(Column1x1.Source));
+            int index = SchemaHelper.GetColumnIndex(input.Schema, _args.columns[0].Source);
 
             _schema = Schema.Create(new ExtendedSchema(input.Schema,
                                     new[] { _args.columns[0].Name },
@@ -196,7 +190,7 @@ namespace Scikit.ML.TimeSeries
             return _transform.GetRowCursor(needCol, rand);
         }
 
-        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             if (_transform == null)
                 lock (_lock)
@@ -204,7 +198,7 @@ namespace Scikit.ML.TimeSeries
                         _transform = CreateTemplatedTransform();
             Host.AssertValue(_transform, "_transform");
             Host.AssertValue(_trend, "_trend");
-            return _transform.GetRowCursorSet(out consolidator, needCol, n, rand);
+            return _transform.GetRowCursorSet(needCol, n, rand);
         }
 
         #endregion
@@ -213,9 +207,8 @@ namespace Scikit.ML.TimeSeries
 
         private void ValidateInputs(out int indexLabel, out int indexTime, out ColumnType typeLabel, out ColumnType typeTime)
         {
-            if (!Source.Schema.TryGetColumnIndex(_args.columns[0].Source, out indexLabel))
-                throw Host.Except("InputColumn does not belong the input schema.");
-            typeLabel = Source.Schema.GetColumnType(indexLabel);
+            indexLabel = SchemaHelper.GetColumnIndex(Source.Schema, _args.columns[0].Source);
+            typeLabel = Source.Schema[indexLabel].Type;
             if (typeLabel.IsVector())
             {
                 if (typeLabel.AsVector().DimCount() != 1 || typeLabel.AsVector().GetDim(0) != 1)
@@ -223,9 +216,8 @@ namespace Scikit.ML.TimeSeries
             }
             if (typeLabel.RawKind() != DataKind.R4)
                 throw Host.ExceptNotImpl("InputColumn must be R4.");
-            if (!Source.Schema.TryGetColumnIndex(_args.timeColumn, out indexTime))
-                throw Host.Except("Time Column does not belong the input schema.");
-            typeTime = Source.Schema.GetColumnType(indexTime);
+            indexTime = SchemaHelper.GetColumnIndex(Source.Schema, _args.timeColumn);
+            typeTime = Source.Schema[indexTime].Type;
             if (typeTime.RawKind() != DataKind.R4)
                 throw Host.ExceptNotImpl("Time columne must be R4.");
         }

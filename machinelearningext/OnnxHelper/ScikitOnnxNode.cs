@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.UniversalModelFormat.Onnx;
-using Microsoft.ML.Runtime.Model.Onnx;
+using Microsoft.ML;
+using Microsoft.ML.UniversalModelFormat.Onnx;
+using Microsoft.ML.Model.Onnx;
 
 
 namespace Scikit.ML.OnnxHelper

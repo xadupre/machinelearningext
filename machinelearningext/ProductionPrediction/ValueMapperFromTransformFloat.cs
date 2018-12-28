@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 using Scikit.ML.PipelineHelper;
 
 
@@ -18,7 +18,7 @@ namespace Scikit.ML.ProductionPrediction
     /// </summary>
     public class ValueMapperFromTransformFloat<TColValue> : IValueMapper, IDisposable
     {
-        public ColumnType InputType { get { return _transform.Source.Schema.GetColumnType(_inputIndex); } }
+        public ColumnType InputType { get { return _transform.Source.Schema[_inputIndex].Type; } }
         public ColumnType OutputType { get { return _outputType; } }
 
         readonly IDataTransform _transform;
@@ -58,15 +58,10 @@ namespace Scikit.ML.ProductionPrediction
 
             var firstView = _sourceToReplace ?? DataViewHelper.GetFirstView(transform);
 
-            int index;
-            if (!firstView.Schema.TryGetColumnIndex(inputColumn, out index))
-                throw env.Except("Unable to find column '{0}' in input schema '{1}'.",
-                    inputColumn, SchemaHelper.ToString(firstView.Schema));
+            int index = SchemaHelper.GetColumnIndex(firstView.Schema, inputColumn);
             _inputIndex = index;
-            if (!transform.Schema.TryGetColumnIndex(outputColumn, out index))
-                throw env.Except("Unable to find column '{0}' in output schema '{1}'.",
-                    outputColumn, SchemaHelper.ToString(transform.Schema));
-            _outputType = _transform.Schema.GetColumnType(index);
+            index = SchemaHelper.GetColumnIndex(transform.Schema, outputColumn);
+            _outputType = _transform.Schema[index].Type;
 
             _disposeEnv = conc > 0;
             _computeEnv = _disposeEnv ? new PassThroughEnvironment(env, conc: conc, verbose: false) : env;
@@ -101,9 +96,7 @@ namespace Scikit.ML.ProductionPrediction
                                 ? ApplyTransformUtils.ApplyTransformToData(_computeEnv, _transform, inputView)
                                 : ApplyTransformUtils.ApplyAllTransformsToData(_computeEnv, _transform, inputView,
                                                                                _sourceToReplace);
-            int index;
-            if (!outputView.Schema.TryGetColumnIndex(_outputColumn, out index))
-                throw _env.Except("Unable to find column '{0}' in output schema.", _outputColumn);
+            int index = SchemaHelper.GetColumnIndex(outputView.Schema, _outputColumn);
             int newOutputIndex = index;
             var cur = outputView.GetRowCursor(i => i == newOutputIndex);
             var getter = cur.GetGetter<TDst>(newOutputIndex);

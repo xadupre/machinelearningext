@@ -2,7 +2,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Data;
 using Scikit.ML.TestHelper;
 using Scikit.ML.ScikitAPI;
 using Scikit.ML.DataManipulation;

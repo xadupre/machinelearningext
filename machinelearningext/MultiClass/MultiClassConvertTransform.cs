@@ -3,18 +3,17 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.ML.Data.Conversion;
+using Microsoft.ML.Internal.Utilities;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime.Data.Conversion;
-using Microsoft.ML.Runtime.Internal.Utilities;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using MultiClassConvertTransform = Scikit.ML.MultiClass.MultiClassConvertTransform;
 
 [assembly: LoadableClass(MultiClassConvertTransform.Summary, typeof(MultiClassConvertTransform), typeof(MultiClassConvertTransform.Arguments), typeof(SignatureDataTransform),
@@ -132,11 +131,9 @@ namespace Scikit.ML.MultiClass
 
                 PrimitiveType itemType;
                 if (!TryCreateEx(Host, Infos[i], kind, range, out itemType, out _exes[i]))
-                {
                     throw Host.ExceptUserArg("source",
-                        "source column '{0}' with item type '{1}' is not compatible with destination type '{2}'",
-                        input.Schema.GetColumnName(Infos[i].Source), Infos[i].TypeSrc.ItemType(), itemType);
-                }
+                        "Source column '{0}' with item type '{1}' is not compatible with destination type '{2}'",
+                        input.Schema[Infos[i].Source].Name, Infos[i].TypeSrc.ItemType(), itemType);
             }
             SetMetadata();
         }
@@ -397,10 +394,10 @@ namespace Scikit.ML.MultiClass
             Contracts.CheckValue(typeDst, "typeDst");
             Contracts.CheckParam(typeDst.IsPrimitive(), "typeDst");
             Contracts.CheckValue(row, "row");
-            Contracts.CheckParam(0 <= col && col < row.Schema.ColumnCount, "col");
+            Contracts.CheckParam(0 <= col && col < row.Schema.Count, "col");
             Contracts.CheckParam(row.IsColumnActive(col), "col", "column was not active");
 
-            var typeSrc = row.Schema.GetColumnType(col);
+            var typeSrc = row.Schema[col].Type;
             Contracts.Check(typeSrc.IsPrimitive(), "Source column type must be primitive");
 
             Func<ColumnType, ColumnType, Row, int, ValueGetter<int>> del = GetGetterAsCore<int, int>;

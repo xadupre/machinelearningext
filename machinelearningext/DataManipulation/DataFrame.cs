@@ -5,9 +5,8 @@ using System.Text;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 
 
@@ -119,9 +118,9 @@ namespace Scikit.ML.DataManipulation
             return _data.GetRowCursor(needCol, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
-            return _data.GetRowCursorSet(out consolidator, needCol, n, rand);
+            return _data.GetRowCursorSet(needCol, n, rand);
         }
 
         public RowCursor GetRowCursor(int[] rows, int[] columns, Func<int, bool> needCol, Random rand = null)
@@ -129,9 +128,9 @@ namespace Scikit.ML.DataManipulation
             return _data.GetRowCursor(rows, columns, needCol, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(int[] rows, int[] columns, Func<int, bool> needCol, int n, Random rand = null)
         {
-            return _data.GetRowCursorSet(rows, columns, out consolidator, needCol, n, rand);
+            return _data.GetRowCursorSet(rows, columns, needCol, n, rand);
         }
 
         /// <summary>
@@ -165,10 +164,7 @@ namespace Scikit.ML.DataManipulation
         /// </summary>
         public int GetColumnIndex(string name)
         {
-            int i;
-            if (!Schema.TryGetColumnIndex(name, out i))
-                throw new DataNameError($"Unable to find column '{name}'.");
-            return i;
+            return SchemaHelper.GetColumnIndex(Schema, name);
         }
 
         /// <summary>

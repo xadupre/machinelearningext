@@ -2,7 +2,6 @@
 
 using System;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime.Data;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -26,7 +25,7 @@ namespace Scikit.ML.PipelineHelper
 
         public override bool IsColumnActive(int col)
         {
-            if (col < _cursorSchema.ColumnCount)
+            if (col < _cursorSchema.Count)
                 return _inputCursor.IsColumnActive(col);
             return false;
         }

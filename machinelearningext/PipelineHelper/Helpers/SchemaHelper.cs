@@ -3,13 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data.Conversion;
-using Data = Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Model;
+using Microsoft.ML.CommandLine;
+using Microsoft.ML.Data.Conversion;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -101,22 +99,26 @@ namespace Scikit.ML.PipelineHelper
         /// <returns>schema as a string</returns>
         public static string ToString(ISchema schemaInst, string sep = "; ", bool vectorVec = true, bool keepHidden = false)
         {
-            var schema = Schema.Create(schemaInst);
+            return ToString(Schema.Create(schemaInst), sep, vectorVec, keepHidden);
+        }
+
+        public static string ToString(Schema schema, string sep = "; ", bool vectorVec = true, bool keepHidden = false)
+        {
             var builder = new StringBuilder();
             string name, type;
             string si;
             int lag = 0;
-            for (int i = 0; i < schema.ColumnCount; ++i)
+            for (int i = 0; i < schema.Count; ++i)
             {
                 if (!keepHidden && schema[i].IsHidden)
                     continue;
                 if (builder.Length > 0)
                     builder.Append(sep);
-                name = schema.GetColumnName(i);
-                var t = schema.GetColumnType(i);
+                name = schema[i].Name;
+                var t = schema[i].Type;
                 if (vectorVec || (!t.IsVector() && !t.IsKey()))
                 {
-                    type = schema.GetColumnType(i).ToString().Replace(" ", "");
+                    type = schema[i].Type.ToString().Replace(" ", "");
                     si = (i + lag).ToString();
                 }
                 else
@@ -162,6 +164,22 @@ namespace Scikit.ML.PipelineHelper
             }
         }
 
+        public static void CheckSchema(IHostEnvironment host, Schema sch1, Schema sch2)
+        {
+            if (sch1.Count != sch2.Count)
+                throw host.Except("Mismatch between input schema and cached schema #columns {0} != # cached columns {1}.\nSchema 1:{2}\nSchema 2: {3}",
+                    sch1.Count, sch2.Count, ToString(sch1), ToString(sch2));
+            for (int i = 0; i < sch2.Count; ++i)
+            {
+                if (sch1[i].Name != sch2[i].Name)
+                    throw host.Except("Name mismatch at column {0}: '{1}' != '{2}'.\nSchema 1:{3}\nSchema 2: {4}", i,
+                        sch1[i].Name, sch2[i].Name, ToString(sch1), ToString(sch2));
+                if (!sch1[i].Type.Equals(sch2[i].Type))
+                    throw host.Except("Type mismatch at column {0}: '{1}' != '{2}'.\nSchema 1:{3}\nSchema 2: {4}", i,
+                        sch1[i].Type, sch2[i].Type, ToString(sch1), ToString(sch2));
+            }
+        }
+
         public static bool CompareSchema(ISchema sch1, ISchema sch2, bool raise = false)
         {
             if (sch1.ColumnCount != sch2.ColumnCount)
@@ -188,6 +206,57 @@ namespace Scikit.ML.PipelineHelper
                 {
                     var t1 = sch1.GetColumnType(i);
                     var t2 = sch2.GetColumnType(i);
+                    bool r = t1 != t2;
+                    if (r && t1.IsVector() && t2.IsVector())
+                    {
+                        var v1 = t1.AsVector();
+                        var v2 = t2.AsVector();
+                        r = v1.DimCount() != v2.DimCount() || v1.KeyCount() != v2.KeyCount();
+                        r |= v1.RawKind() != v2.RawKind();
+                        r |= v1.ItemType() != v2.ItemType();
+                        r |= v1.IsKnownSizeVector() != v2.IsKnownSizeVector();
+                    }
+                    if (r)
+                    {
+                        if (raise)
+                        {
+                            throw Contracts.Except("Column type {0} is different {1} != {2}\nS1: {3}\nS2: {4}",
+                                    i, t1, t2, ToString(sch1), ToString(sch2));
+                        }
+                        else
+                            return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        public static bool CompareSchema(Schema sch1, Schema sch2, bool raise = false)
+        {
+            if (sch1.Count != sch2.Count)
+            {
+                if (raise)
+                    throw Contracts.Except("Different number of columns {0} != {1}\nS1: {2}\nS2: {3}",
+                        sch1.Count, sch2.Count,
+                        ToString(sch1), ToString(sch2));
+                else
+                    return false;
+            }
+            for (int i = 0; i < sch1.Count; ++i)
+            {
+                if (sch1[i].Name != sch2[i].Name)
+                {
+                    if (raise)
+                        throw Contracts.Except("Column name {0} is different {1} != {2}\nS1: {3}\nS2: {4}",
+                                i, sch1[i].Name, sch2[i].Name,
+                                ToString(sch1), ToString(sch2));
+                    else
+                        return false;
+                }
+                if (sch1[i].Type != sch2[i].Type)
+                {
+                    var t1 = sch1[i].Type;
+                    var t2 = sch2[i].Type;
                     bool r = t1 != t2;
                     if (r && t1.IsVector() && t2.IsVector())
                     {
@@ -362,13 +431,13 @@ namespace Scikit.ML.PipelineHelper
             switch (kind)
             {
                 case PredictionKind.BinaryClassification:
-                    return new ExtendedSchema(null, new[] { "Score" }, new[] { NumberType.R4 });
+                    return new ExtendedSchema((ISchema)null, new[] { "Score" }, new[] { NumberType.R4 });
                 case PredictionKind.Regression:
-                    return new ExtendedSchema(null, new[] { "Prediction" }, new[] { NumberType.R4 });
+                    return new ExtendedSchema((ISchema)null, new[] { "Prediction" }, new[] { NumberType.R4 });
                 case PredictionKind.MultiClassClassification:
-                    return new ExtendedSchema(null, new[] { "Scores" }, new[] { new VectorType(NumberType.R4, dim) });
+                    return new ExtendedSchema((ISchema)null, new[] { "Scores" }, new[] { new VectorType(NumberType.R4, dim) });
                 case PredictionKind.MultiOutputRegression:
-                    return new ExtendedSchema(null, new[] { "Predictions" }, new[] { new VectorType(NumberType.R4, dim) });
+                    return new ExtendedSchema((ISchema)null, new[] { "Predictions" }, new[] { new VectorType(NumberType.R4, dim) });
                 default:
                     throw Contracts.Except("Unable to build the schema for kind {0}", kind);
             }
@@ -552,12 +621,33 @@ namespace Scikit.ML.PipelineHelper
             return schema.GetColumnType(index);
         }
 
-        public static int GetColumnIndex(ISchema schema, string name)
+        public static ColumnType GetColumnType(Schema schema, string name)
+        {
+            int index = GetColumnIndex(schema, name);
+            return schema[index].Type;
+        }
+
+        public static int GetColumnIndex(ISchema schema, string name, bool allowNull = false)
         {
             int index;
             if (!schema.TryGetColumnIndex(name, out index))
+            {
+                if (allowNull)
+                    return -1;
                 throw Contracts.Except($"Unable to find column '{name}' in schema\n{ToString(schema)}.");
+            }
             return index;
+        }
+
+        public static int GetColumnIndex(Schema schema, string name, bool allowNull = false)
+        {
+            int index;
+            for (index = 0; index < schema.Count; ++index)
+                if (schema[index].Name == name)
+                    return index;
+            if (allowNull)
+                return -1;
+            throw Contracts.Except($"Unable to find column '{name}' in schema\n{ToString(schema)}.");
         }
 
         public static int NeedColumn(Dictionary<int, int> mapping, int col)
@@ -573,6 +663,12 @@ namespace Scikit.ML.PipelineHelper
         {
             for (int i = 0; i < sch.ColumnCount; ++i)
                 yield return sch.GetColumnName(i);
+        }
+
+        public static IEnumerable<string> EnumerateColumns(Schema sch)
+        {
+            for (int i = 0; i < sch.Count; ++i)
+                yield return sch[i].Name;
         }
     }
 }

@@ -3,9 +3,8 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.DataManipulation;
 
@@ -45,11 +44,11 @@ namespace Scikit.ML.ProductionPrediction
         public InfiniteLoopViewCursorDataFrame(int[] columns = null, Schema schema = null, RowCursor otherValues = null)
         {
             if (columns == null)
-                columns = Enumerable.Range(0, schema.ColumnCount).ToArray();
+                columns = Enumerable.Range(0, schema.Count).ToArray();
             _columns = columns;
             _columnsSchema = schema;
-            if (columns.Length != _columnsSchema.ColumnCount)
-                throw Contracts.Except($"Dimension mismatch expected columns is {columns.Length} not {_columnsSchema.ColumnCount}.");
+            if (columns.Length != _columnsSchema.Count)
+                throw Contracts.Except($"Dimension mismatch expected columns is {columns.Length} not {_columnsSchema.Count}.");
             _otherValues = otherValues;
             _schema = otherValues == null ? schema : otherValues.Schema;
             _ownCursor = null;
@@ -76,10 +75,9 @@ namespace Scikit.ML.ProductionPrediction
             return _ownCursor;
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            consolidator = new Consolidator();
             if (n >= 2)
             {
                 var setColumns = new HashSet<int>(_columns);
@@ -92,14 +90,6 @@ namespace Scikit.ML.ProductionPrediction
             }
             else
                 return new RowCursor[] { cur };
-        }
-
-        class Consolidator : IRowCursorConsolidator
-        {
-            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
-            {
-                return inputs[0];
-            }
         }
 
         class CursorType : RowCursor

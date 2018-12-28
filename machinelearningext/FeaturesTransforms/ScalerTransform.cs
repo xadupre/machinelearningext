@@ -3,16 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using ScalerTransform = Scikit.ML.FeaturesTransforms.ScalerTransform;
 
 [assembly: LoadableClass(ScalerTransform.Summary, typeof(ScalerTransform),
@@ -186,9 +185,8 @@ namespace Scikit.ML.FeaturesTransforms
             Func<string, ColumnType> getType = (string col) =>
             {
                 var schema = _input.Schema;
-                if (!schema.TryGetColumnIndex(col, out index))
-                    throw _host.Except("Unable to find column '{0}'.", col);
-                return schema.GetColumnType(index);
+                index = SchemaHelper.GetColumnIndex(schema, col);
+                return schema[index].Type;
             };
             var iterCols = _args.columns.Where(c => c.Name != c.Source);
             return iterCols.Any()
@@ -232,24 +230,13 @@ namespace Scikit.ML.FeaturesTransforms
             return new ScalerCursor(cursor, this, i => PredicatePropagation(i, predicate));
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             ComputeStatistics();
             _host.AssertValue(_input, "_input");
-            var cursors = _input.GetRowCursorSet(out consolidator, i => PredicatePropagation(i, predicate), n, rand);
+            var cursors = _input.GetRowCursorSet(i => PredicatePropagation(i, predicate), n, rand);
             var res = cursors.Select(c => new ScalerCursor(c, this, i => PredicatePropagation(i, predicate))).ToArray();
-            consolidator = new Consolidator();
             return res;
-        }
-
-        private sealed class Consolidator : IRowCursorConsolidator
-        {
-            private const int _batchShift = 6;
-            private const int _batchSize = 1 << _batchShift;
-            public RowCursor CreateCursor(IChannelProvider provider, RowCursor[] inputs)
-            {
-                return DataViewUtils.ConsolidateGeneric(provider, inputs, _batchSize);
-            }
         }
 
         public void Estimate()
@@ -273,10 +260,8 @@ namespace Scikit.ML.FeaturesTransforms
 
                         for (int i = 0; i < textCols.Length; ++i)
                         {
-                            int index;
-                            if (!sch.TryGetColumnIndex(textCols[i], out index))
-                                throw ch.Except("Unable to find column '{0}' in '{1}'", textCols[i], SchemaHelper.ToString(sch));
-                            var ty = sch.GetColumnType(index);
+                            int index = SchemaHelper.GetColumnIndex(sch, textCols[i]);
+                            var ty = sch[index].Type;
                             if (!(ty == NumberType.R4 || ty == NumberType.U4 || ty == TextType.Instance || ty == BoolType.Instance ||
                                 (ty.IsKey() && ty.AsKey().RawKind() == DataKind.U4) || (ty.IsVector() && ty.AsVector().ItemType() == NumberType.R4)))
                                 throw ch.Except("Only a float or a vector of floats or a uint or a text or a bool is allowed for column {0} (schema={1}).", _args.columns[i], SchemaHelper.ToString(sch));
@@ -288,20 +273,20 @@ namespace Scikit.ML.FeaturesTransforms
                         var requiredIndexes = required.OrderBy(c => c).ToArray();
                         using (var cur = _input.GetRowCursor(i => required.Contains(i)))
                         {
-                            bool[] isText = requiredIndexes.Select(c => sch.GetColumnType(c) == TextType.Instance).ToArray();
-                            bool[] isBool = requiredIndexes.Select(c => sch.GetColumnType(c) == BoolType.Instance).ToArray();
-                            bool[] isFloat = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.R4).ToArray();
-                            bool[] isUint = requiredIndexes.Select(c => sch.GetColumnType(c) == NumberType.U4 || sch.GetColumnType(c).RawKind() == DataKind.U4).ToArray();
-                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == BoolType.Instance || sch.GetColumnType(i).RawKind() == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
-                            ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.U4 || sch.GetColumnType(i).RawKind() == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
-                            ValueGetter<ReadOnlyMemory<char>>[] textGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == TextType.Instance ? cur.GetGetter<ReadOnlyMemory<char>>(i) : null).ToArray();
-                            ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch.GetColumnType(i) == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
-                            ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch.GetColumnType(i).IsVector() ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
+                            bool[] isText = requiredIndexes.Select(c => sch[c].Type == TextType.Instance).ToArray();
+                            bool[] isBool = requiredIndexes.Select(c => sch[c].Type == BoolType.Instance).ToArray();
+                            bool[] isFloat = requiredIndexes.Select(c => sch[c].Type == NumberType.R4).ToArray();
+                            bool[] isUint = requiredIndexes.Select(c => sch[c].Type == NumberType.U4 || sch[c].Type.RawKind() == DataKind.U4).ToArray();
+                            ValueGetter<bool>[] boolGetters = requiredIndexes.Select(i => sch[i].Type == BoolType.Instance || sch[i].Type.RawKind() == DataKind.BL ? cur.GetGetter<bool>(i) : null).ToArray();
+                            ValueGetter<uint>[] uintGetters = requiredIndexes.Select(i => sch[i].Type == NumberType.U4 || sch[i].Type.RawKind() == DataKind.U4 ? cur.GetGetter<uint>(i) : null).ToArray();
+                            ValueGetter<ReadOnlyMemory<char>>[] textGetters = requiredIndexes.Select(i => sch[i].Type == TextType.Instance ? cur.GetGetter<ReadOnlyMemory<char>>(i) : null).ToArray();
+                            ValueGetter<float>[] floatGetters = requiredIndexes.Select(i => sch[i].Type == NumberType.R4 ? cur.GetGetter<float>(i) : null).ToArray();
+                            ValueGetter<VBuffer<float>>[] vectorGetters = requiredIndexes.Select(i => sch[i].Type.IsVector() ? cur.GetGetter<VBuffer<float>>(i) : null).ToArray();
 
                             var schema = _input.Schema;
-                            for (int i = 0; i < schema.ColumnCount; ++i)
+                            for (int i = 0; i < schema.Count; ++i)
                             {
-                                string name = schema.GetColumnName(i);
+                                string name = schema[i].Name;
                                 if (!required.Contains(i))
                                     continue;
                                 _scalingStat[name] = new List<ColumnStatObs>();
@@ -333,7 +318,7 @@ namespace Scikit.ML.FeaturesTransforms
                             {
                                 for (int i = 0; i < requiredIndexes.Length; ++i)
                                 {
-                                    string name = curschema.GetColumnName(requiredIndexes[i]);
+                                    string name = curschema[requiredIndexes[i]].Name;
                                     if (!_scalingStat.ContainsKey(name))
                                         continue;
                                     if (isFloat[i])
@@ -521,18 +506,15 @@ namespace Scikit.ML.FeaturesTransforms
             var schema = _input.Schema;
             for (int i = 0; i < _args.columns.Length; ++i)
             {
-                if (!schema.TryGetColumnIndex(_args.columns[i].Source, out index))
-                    throw _host.Except("Unable to find column '{0}'.", _args.columns[i].Source);
-
-                string name = thisSchema.GetColumnName(index);
+                index = SchemaHelper.GetColumnIndex(schema, _args.columns[i].Source);
+                string name = thisSchema[index].Name;
                 var stats = _scalingStat[name];
 
                 if (_args.columns[i].Source == _args.columns[i].Name)
                     res[index] = new ScalingFactor(_host, index, _args.scaling, stats);
                 else
                 {
-                    if (!Schema.TryGetColumnIndex(_args.columns[i].Name, out index2))
-                        throw _host.Except("Unable to find column '{0}'.", _args.columns[i].Name);
+                    index2 = SchemaHelper.GetColumnIndex(Schema, _args.columns[i].Name);
                     res[index2] = new ScalingFactor(_host, index, _args.scaling, stats);
                 }
             }
@@ -563,7 +545,7 @@ namespace Scikit.ML.FeaturesTransforms
 
             public override bool IsColumnActive(int col)
             {
-                return col >= _inputCursor.Schema.ColumnCount || _inputCursor.IsColumnActive(col);
+                return col >= _inputCursor.Schema.Count || _inputCursor.IsColumnActive(col);
             }
 
             public override ValueGetter<RowId> GetIdGetter()
@@ -602,13 +584,13 @@ namespace Scikit.ML.FeaturesTransforms
                 var schema = _inputCursor.Schema;
                 if (_scalingFactors.ContainsKey(col))
                 {
-                    var type = schema.GetColumnType(_scalingFactors[col].columnId);
+                    var type = schema[_scalingFactors[col].columnId].Type;
                     if (type.IsVector())
                         return GetGetterVector(_scalingFactors[col]) as ValueGetter<TValue>;
                     else
                         return GetGetter(_scalingFactors[col]) as ValueGetter<TValue>;
                 }
-                else if (col < schema.ColumnCount)
+                else if (col < schema.Count)
                     return _inputCursor.GetGetter<TValue>(col);
                 else
                     throw Contracts.Except("Unexpected columns {0}.", col);

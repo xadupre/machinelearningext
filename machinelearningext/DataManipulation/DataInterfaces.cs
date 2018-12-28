@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 
 
 namespace Scikit.ML.DataManipulation
@@ -309,7 +309,7 @@ namespace Scikit.ML.DataManipulation
         /// <summary>
         /// Sames a GetRowCursorSet but on a subset of the data.
         /// </summary>
-        RowCursor[] GetRowCursorSet(int[] rows, int[] columns, out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null);
+        RowCursor[] GetRowCursorSet(int[] rows, int[] columns, Func<int, bool> needCol, int n, Random rand = null);
 
         /// <summary>
         /// Retrieves a column by its name.

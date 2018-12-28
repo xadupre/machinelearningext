@@ -3,9 +3,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 
 
 namespace Scikit.ML.ProductionPrediction

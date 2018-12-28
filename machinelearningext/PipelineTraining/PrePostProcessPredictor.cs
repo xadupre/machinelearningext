@@ -1,10 +1,9 @@
 ﻿// See the LICENSE file in the project root for more information.
 
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Internal.Utilities;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Internal.Utilities;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.ProductionPrediction;
 
@@ -95,7 +94,7 @@ namespace Scikit.ML.PipelineTraining
                 switch (type.AsVector().ItemType().RawKind())
                 {
                     case DataKind.R4:
-                        schema = Schema.Create(new ExtendedSchema(null, new[] { _inputColumn }, new[] { new VectorType(NumberType.R4) }));
+                        schema = Schema.Create(new ExtendedSchema((ISchema)null, new[] { _inputColumn }, new[] { new VectorType(NumberType.R4) }));
                         data = new TemporaryViewCursorColumn<VBuffer<float>>(default(VBuffer<float>), 0, schema);
                         break;
                     default:
@@ -107,7 +106,7 @@ namespace Scikit.ML.PipelineTraining
                 switch (type.RawKind())
                 {
                     case DataKind.R4:
-                        schema = Schema.Create(new ExtendedSchema(null, new[] { _inputColumn }, new[] { NumberType.R4 }));
+                        schema = Schema.Create(new ExtendedSchema((ISchema)null, new[] { _inputColumn }, new[] { NumberType.R4 }));
                         data = new TemporaryViewCursorColumn<float>(default(float), 0, schema);
                         break;
                     default:
@@ -149,10 +148,8 @@ namespace Scikit.ML.PipelineTraining
                         return val.InputType;
                     else
                     {
-                        int index;
-                        if (!_preProcess.Source.Schema.TryGetColumnIndex(_inputColumn, out index))
-                            throw Contracts.ExceptNotSupp("preProcess transform is not null, is not a IValueMapper and column '{0}' cannot be found. We cannot transform this predictor into a IValueMapper.", _inputColumn);
-                        return _preProcess.Source.Schema.GetColumnType(index);
+                        int index = SchemaHelper.GetColumnIndex(_preProcess.Source.Schema, _inputColumn);
+                        return _preProcess.Source.Schema[index].Type;
                     }
                 }
             }
@@ -196,10 +193,8 @@ namespace Scikit.ML.PipelineTraining
                     outType = valuemapper.OutputType;
                 else
                 {
-                    int index;
-                    if (!_preProcess.Source.Schema.TryGetColumnIndex(_inputColumn, out index))
-                        throw _host.Except("Unable to find column '{0}' in input schema", _inputColumn);
-                    outType = _preProcess.Source.Schema.GetColumnType(index);
+                    int index = SchemaHelper.GetColumnIndex(_preProcess.Source.Schema, _inputColumn);
+                    outType = _preProcess.Source.Schema[index].Type;
                 }
 
                 if (outType.IsVector())

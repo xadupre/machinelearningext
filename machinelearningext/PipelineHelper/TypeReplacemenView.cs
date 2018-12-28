@@ -2,9 +2,8 @@
 
 using System;
 using System.Linq;
+using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -52,10 +51,9 @@ namespace Scikit.ML.PipelineHelper
             return res;
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator,
-            Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
-            return _source.GetRowCursorSet(out consolidator, predicate, n, rand)
+            return _source.GetRowCursorSet(predicate, n, rand)
                           .Select(c => new TypeReplacementCursor(c, Schema)).ToArray();
         }
 
@@ -68,6 +66,12 @@ namespace Scikit.ML.PipelineHelper
             {
                 _cursor = cursor;
                 _schema = Schema.Create(newSchema);
+            }
+
+            public TypeReplacementCursor(RowCursor cursor, Schema newSchema)
+            {
+                _cursor = cursor;
+                _schema = newSchema;
             }
 
             public override Schema Schema { get { return _schema; } }

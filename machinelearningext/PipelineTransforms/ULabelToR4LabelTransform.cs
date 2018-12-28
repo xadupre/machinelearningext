@@ -2,16 +2,15 @@
 
 using System;
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
+using Microsoft.ML.Model;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using ULabelToR4LabelTransform = Scikit.ML.PipelineTransforms.ULabelToR4LabelTransform;
 
 
@@ -93,11 +92,9 @@ namespace Scikit.ML.PipelineTransforms
 
             _input = input;
 
-            int ind;
             var schema = _input.Schema;
             for (int i = 0; i < args.columns.Length; ++i)
-                if (!schema.TryGetColumnIndex(args.columns[i].Source, out ind))
-                    throw _host.ExceptParam("inputColumn", "Column '{0}' not found in schema.", args.columns[i].Source);
+                SchemaHelper.GetColumnIndex(schema, args.columns[i].Source);
             _args = args;
             _transform = CreateTemplatedTransform();
         }
@@ -162,10 +159,10 @@ namespace Scikit.ML.PipelineTransforms
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
-            return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _transform.GetRowCursorSet(predicate, n, rand);
         }
 
         #endregion
@@ -182,9 +179,8 @@ namespace Scikit.ML.PipelineTransforms
             int index;
             for (int i = 0; i < _args.columns.Length; ++i)
             {
-                if (!schema.TryGetColumnIndex(_args.columns[i].Source, out index))
-                    throw _host.Except("Unable to find '{0}'", _args.columns[i].Source);
-                var typeCol = schema.GetColumnType(index);
+                index = SchemaHelper.GetColumnIndex(schema, _args.columns[i].Source);
+                var typeCol = schema[index].Type;
                 if (typeCol.IsVector())
                     throw _host.Except("Expected a number as input.");
 

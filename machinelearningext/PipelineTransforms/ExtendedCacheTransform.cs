@@ -4,33 +4,32 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Scikit.ML.PipelineHelper;
 
 
 // This indicates where to find objects in ML.net assemblies.
-using DataSaverUtils = Microsoft.ML.Runtime.Data.DataSaverUtils;
-using IDataTransform = Microsoft.ML.Runtime.Data.IDataTransform;
-using IDataSaver = Microsoft.ML.Runtime.Data.IDataSaver;
-using IDataView = Microsoft.ML.Runtime.Data.IDataView;
-using RowCursor = Microsoft.ML.Runtime.Data.RowCursor;
-using IRowCursorConsolidator = Microsoft.ML.Runtime.Data.IRowCursorConsolidator;
+using DataSaverUtils = Microsoft.ML.Data.DataSaverUtils;
+using IDataTransform = Microsoft.ML.Data.IDataTransform;
+using IDataSaver = Microsoft.ML.Data.IDataSaver;
+using IDataView = Microsoft.ML.Data.IDataView;
+using RowCursor = Microsoft.ML.Data.RowCursor;
 using Schema = Microsoft.ML.Data.Schema;
-using TransformBase = Microsoft.ML.Runtime.Data.TransformBase;
-using MultiFileSource = Microsoft.ML.Runtime.Data.MultiFileSource;
+using TransformBase = Microsoft.ML.Data.TransformBase;
+using MultiFileSource = Microsoft.ML.Data.MultiFileSource;
 using CacheDataView = Microsoft.ML.Data.CacheDataView;
-using SignatureDataSaver = Microsoft.ML.Runtime.Data.SignatureDataSaver;
-using ModelLoadContext = Microsoft.ML.Runtime.Model.ModelLoadContext;
-using ModelSaveContext = Microsoft.ML.Runtime.Model.ModelSaveContext;
-using VersionInfo = Microsoft.ML.Runtime.Model.VersionInfo;
-using ICanSaveOnnx = Microsoft.ML.Runtime.Model.Onnx.ICanSaveOnnx;
-using OnnxContext = Microsoft.ML.Runtime.Model.Onnx.OnnxContext;
+using SignatureDataSaver = Microsoft.ML.Data.SignatureDataSaver;
+using ModelLoadContext = Microsoft.ML.Model.ModelLoadContext;
+using ModelSaveContext = Microsoft.ML.Model.ModelSaveContext;
+using VersionInfo = Microsoft.ML.Model.VersionInfo;
+using ICanSaveOnnx = Microsoft.ML.Model.Onnx.ICanSaveOnnx;
+using OnnxContext = Microsoft.ML.Model.Onnx.OnnxContext;
 using SchemaHelper = Scikit.ML.PipelineHelper.SchemaHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using ExtendedCacheTransform = Scikit.ML.PipelineTransforms.ExtendedCacheTransform;
 
 [assembly: LoadableClass(ExtendedCacheTransform.Summary, typeof(ExtendedCacheTransform),
@@ -232,10 +231,10 @@ namespace Scikit.ML.PipelineTransforms
             return _pipedTransform.GetRowCursor(needCol, rand);
         }
 
-        public override RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> needCol, int n, Random rand = null)
+        public override RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             Host.AssertValue(_pipedTransform, "_pipedTransform");
-            return _pipedTransform.GetRowCursorSet(out consolidator, needCol, n, rand);
+            return _pipedTransform.GetRowCursorSet(needCol, n, rand);
         }
 
         #endregion

@@ -7,11 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.ML;
 using Microsoft.ML.Core.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML.Data;
 using Microsoft.ML.Transforms.Text;
 using Microsoft.ML.Trainers;
-using Microsoft.ML.Data;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 using Scikit.ML.TestHelper;
@@ -181,7 +179,7 @@ namespace TestMachineLearningExt
 
                 if (engine == "mlnet")
                 {
-                    var model = trscorer.MakePredictionFunction<SentimentData, SentimentPrediction>(env);
+                    var model = ComponentCreation.CreatePredictionEngine<SentimentData, SentimentPrediction>(env, trscorer);
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {

@@ -2,8 +2,8 @@
 
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.Data;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 
 
 namespace Scikit.ML.PipelineHelper
@@ -58,14 +58,14 @@ namespace Scikit.ML.PipelineHelper
                 // There is an issue with the code creating the default scorer. It expects to find a Float
                 // as the output of DistType (from by IValueMapperDist)
                 var newPred = new WrappedPredictorWithNoDistInterface(ipredictor);
-                scorer = ScoreUtils.GetScorer(null, newPred, roles.Data, roles.Schema.Feature.Name,
-                                              roles.Schema.Group == null ? null : roles.Schema.Group.Name,
+                scorer = ScoreUtils.GetScorer(null, newPred, roles.Data, roles.Schema.Feature.Value.Name,
+                                              roles.Schema.Group == null ? null : roles.Schema.Group.Value.Name,
                                               iter, env, trainSchema);
             }
             else
                 scorer = ScoreUtils.GetScorer(null, ipredictor, roles.Data,
-                                              roles.Schema.Feature == null ? null : roles.Schema.Feature.Name,
-                                              roles.Schema.Group == null ? null : roles.Schema.Group.Name,
+                                              roles.Schema.Feature == null ? null : roles.Schema.Feature.Value.Name,
+                                              roles.Schema.Group == null ? null : roles.Schema.Group.Value.Name,
                                               iter, env, trainSchema);
             return scorer;
         }

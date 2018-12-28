@@ -1,17 +1,16 @@
 ﻿// See the LICENSE file in the project root for more information.
 
 using System.Linq;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Training;
+using Microsoft.ML.Model;
+using Microsoft.ML.Training;
 using Microsoft.ML.Transforms;
 using Scikit.ML.PipelineHelper;
 using Scikit.ML.PipelineTransforms;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
 using MultiToRankerTrainer = Scikit.ML.MultiClass.MultiToRankerTrainer;
 
 [assembly: LoadableClass(MultiToRankerTrainer.Summary, typeof(MultiToRankerTrainer), typeof(MultiToRankerTrainer.Arguments),
@@ -167,10 +166,8 @@ namespace Scikit.ML.MultiClass
             var newFeatures = trans.Schema.GetTempColumnName() + "NF";
 
             // We check the label is not boolean.
-            int indexLab;
-            if (!trans.Schema.TryGetColumnIndex(dstName, out indexLab))
-                throw Host.Except("Column '{0}' was not found.", dstName);
-            var typeLab = trans.Schema.GetColumnType(indexLab);
+            int indexLab = SchemaHelper.GetColumnIndex(trans.Schema, dstName);
+            var typeLab = trans.Schema[indexLab].Type;
             if (typeLab.RawKind() == DataKind.BL)
                 throw Host.Except("Column '{0}' has an unexpected type {1}.", dstName, typeLab.RawKind());
 
@@ -178,7 +175,7 @@ namespace Scikit.ML.MultiClass
             var desc = new DescribeTransform(Host, args3, trans);
 
             IDataView viewI;
-            if (_args.singleColumn && data.Schema.Label.Type.RawKind() == DataKind.R4)
+            if (_args.singleColumn && data.Schema.Label.Value.Type.RawKind() == DataKind.R4)
                 viewI = desc;
             else if (_args.singleColumn)
             {
@@ -190,9 +187,9 @@ namespace Scikit.ML.MultiClass
 #endif
                 #endregion
             }
-            else if (data.Schema.Label.Type.IsKey())
+            else if (data.Schema.Label.Value.Type.IsKey())
             {
-                int nb = data.Schema.Label.Type.AsKey().KeyCount();
+                int nb = data.Schema.Label.Value.Type.AsKey().KeyCount();
                 var sch = new TypeReplacementSchema(desc.Schema, new[] { labName }, new[] { new VectorType(NumberType.R4, nb) });
                 viewI = new TypeReplacementDataView(desc, sch);
                 #region debug
@@ -224,8 +221,8 @@ namespace Scikit.ML.MultiClass
                 #endregion
             }
 
-            ch.Info("Merging column label '{0}' with features '{1}'", labName, data.Schema.Feature.Name);
-            var args = string.Format("Concat{{col={0}:{1},{2}}}", newFeatures, data.Schema.Feature.Name, labName);
+            ch.Info("Merging column label '{0}' with features '{1}'", labName, data.Schema.Feature.Value.Name);
+            var args = string.Format("Concat{{col={0}:{1},{2}}}", newFeatures, data.Schema.Feature.Value.Name, labName);
             var after_concatenation_ = ComponentCreation.CreateTransform(Host, args, viewI);
 
             #endregion
@@ -275,8 +272,8 @@ namespace Scikit.ML.MultiClass
 
             #endregion
 
-            ch.Info("New Features: {0}:{1}", trainer_input.Schema.Feature.Name, trainer_input.Schema.Feature.Type);
-            ch.Info("New Label: {0}:{1}", trainer_input.Schema.Label.Name, trainer_input.Schema.Label.Type);
+            ch.Info("New Features: {0}:{1}", trainer_input.Schema.Feature.Value.Name, trainer_input.Schema.Feature.Value.Type);
+            ch.Info("New Label: {0}:{1}", trainer_input.Schema.Label.Value.Name, trainer_input.Schema.Label.Value.Type);
 
             // We train the unique binary classifier.
             var trainedPredictor = trainer.Train(trainer_input);
@@ -302,12 +299,9 @@ namespace Scikit.ML.MultiClass
             var trans_ = trans;
             trans = MapLabelsAndInsertTransform(ch, data, out dstName, out labName, count, false, _args);
             trans.Steal(trans_);
-
-            if (!trans.Schema.TryGetColumnIndex(labName, out indexLab))
-                throw ch.Except("Unable to find column '{0}' in \n{1}", labName, SchemaHelper.ToString(trans.Schema));
-
-            var labType = trans.Schema.GetColumnType(indexLab);
-            var initialLabKind = data.Schema.Label.Type.RawKind();
+            indexLab = SchemaHelper.GetColumnIndex(trans.Schema, labName);
+            var labType = trans.Schema[indexLab].Type;
+            var initialLabKind = data.Schema.Label.Value.Type.RawKind();
 
             TVectorPredictor predictor;
             switch (initialLabKind)

@@ -4,17 +4,16 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.ML;
+using Microsoft.ML.CommandLine;
 using Microsoft.ML.Data;
-using Microsoft.ML.Runtime;
-using Microsoft.ML.Runtime.CommandLine;
-using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Runtime.Model;
-using Microsoft.ML.Runtime.Data.Conversion;
+using Microsoft.ML.Model;
+using Microsoft.ML.Data.Conversion;
 using Scikit.ML.PipelineHelper;
 
-using LoadableClassAttribute = Microsoft.ML.Runtime.LoadableClassAttribute;
-using SignatureDataTransform = Microsoft.ML.Runtime.Data.SignatureDataTransform;
-using SignatureLoadDataTransform = Microsoft.ML.Runtime.Data.SignatureLoadDataTransform;
+using LoadableClassAttribute = Microsoft.ML.LoadableClassAttribute;
+using SignatureDataTransform = Microsoft.ML.Data.SignatureDataTransform;
+using SignatureLoadDataTransform = Microsoft.ML.Data.SignatureLoadDataTransform;
 using MultiToBinaryTransform = Scikit.ML.MultiClass.MultiToBinaryTransform;
 
 [assembly: LoadableClass(MultiToBinaryTransform.Summary, typeof(MultiToBinaryTransform),
@@ -138,10 +137,7 @@ namespace Scikit.ML.MultiClass
             _host.CheckValue(args, "args");
             _input = input;
 
-            int labels;
-            if (!input.Schema.TryGetColumnIndex(args.label, out labels))
-                throw _host.ExceptParam("label", "Column '{0}' not found in schema.", args.label);
-
+            SchemaHelper.GetColumnIndex(input.Schema, args.label);
             _args = args;
             _transform = CreateTemplatedTransform();
         }
@@ -217,10 +213,10 @@ namespace Scikit.ML.MultiClass
             return _transform.GetRowCursor(predicate, rand);
         }
 
-        public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+        public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
         {
             _host.AssertValue(_transform, "_transform");
-            return _transform.GetRowCursorSet(out consolidator, predicate, n, rand);
+            return _transform.GetRowCursorSet(predicate, n, rand);
         }
 
         #endregion
@@ -229,10 +225,8 @@ namespace Scikit.ML.MultiClass
 
         private IDataTransform CreateTemplatedTransform()
         {
-            int labelIndex;
-            if (!_input.Schema.TryGetColumnIndex(_args.label, out labelIndex))
-                throw _host.ExceptParam("Column '{0}' was not found in the input schema.", _args.label);
-            var typeLabel = _input.Schema.GetColumnType(labelIndex);
+            int labelIndex = SchemaHelper.GetColumnIndex(_input.Schema, _args.label);
+            var typeLabel = _input.Schema[labelIndex].Type;
 
             switch (typeLabel.RawKind())
             {
@@ -253,10 +247,8 @@ namespace Scikit.ML.MultiClass
 
         private IDataTransform CreateTemplatedTransform(ModelLoadContext ctx)
         {
-            int labelIndex;
-            if (!_input.Schema.TryGetColumnIndex(_args.label, out labelIndex))
-                throw _host.ExceptParam("Column '{0}' was not found in the input schema.", _args.label);
-            var typeLabel = _input.Schema.GetColumnType(labelIndex);
+            int labelIndex = SchemaHelper.GetColumnIndex(_input.Schema, _args.label);
+            var typeLabel = _input.Schema[labelIndex].Type;
 
             switch (typeLabel.RawKind())
             {
@@ -393,12 +385,10 @@ namespace Scikit.ML.MultiClass
                 BuildSchema(input);
                 _labelDistribution = null;
                 _averageMultiplication = -1;
-                if (!_input.Schema.TryGetColumnIndex(_args.label, out _colLabel))
-                    throw _host.ExceptParam("Column '{0}' was not found in the input schema.", _args.label);
+                _colLabel = SchemaHelper.GetColumnIndex(_input.Schema, _args.label);
                 if (string.IsNullOrEmpty(_args.weight))
                     _colWeight = -1;
-                else if (!_input.Schema.TryGetColumnIndex(_args.weight, out _colWeight))
-                    throw _host.ExceptParam("Column '{0}' was not found in the input schema.", _args.weight);
+                else SchemaHelper.GetColumnIndex(_input.Schema, _args.weight);
             }
 
             void BuildSchema(IDataView input)
@@ -446,21 +436,17 @@ namespace Scikit.ML.MultiClass
                 _lock = new object();
                 _args = args;
                 BuildSchema(input);
-
-                if (!_input.Schema.TryGetColumnIndex(_args.label, out _colLabel))
-                    throw _host.ExceptParam("Column '{0}' was not found in the input schema.", _args.label);
+                _colLabel = SchemaHelper.GetColumnIndex(_input.Schema, _args.label);
                 if (string.IsNullOrEmpty(_args.weight))
                     _colWeight = -1;
-                else if (!_input.Schema.TryGetColumnIndex(_args.weight, out _colWeight))
-                    throw _host.ExceptParam("Column '{0}' was not found in the input schema.", _args.weight);
+                else _colWeight = SchemaHelper.GetColumnIndex(_input.Schema, _args.weight);
 
                 int nb = ctx.Reader.ReadInt32();
                 if (nb == 0)
                     _labelDistribution = null;
                 else
                 {
-                    var typeLabel = _input.Schema.GetColumnType(_colLabel);
-
+                    var typeLabel = _input.Schema[_colLabel].Type;
                     bool identity;
                     ValueMapper<long, TLabel> mapper = Conversions.Instance.GetStandardConversion<long, TLabel>(NumberType.I8, typeLabel, out identity);
 
@@ -493,10 +479,8 @@ namespace Scikit.ML.MultiClass
 
             void ComputeLabelDistribution(IChannel ch, Random rand)
             {
-                IRowCursorConsolidator consolidator;
-
                 int nt = DataViewUtils.GetThreadCount(_host, _args.numThreads ?? 0);
-                var cursors = nt <= 1 ? null : _input.GetRowCursorSet(out consolidator, col => col == _colLabel || col == _colWeight, nt, rand);
+                var cursors = nt <= 1 ? null : _input.GetRowCursorSet(col => col == _colLabel || col == _colWeight, nt, rand);
                 if (cursors != null && cursors.Length == 1)
                 {
                     cursors[0].Dispose();
@@ -687,11 +671,11 @@ namespace Scikit.ML.MultiClass
                 }
             }
 
-            public RowCursor[] GetRowCursorSet(out IRowCursorConsolidator consolidator, Func<int, bool> predicate, int n, Random rand = null)
+            public RowCursor[] GetRowCursorSet(Func<int, bool> predicate, int n, Random rand = null)
             {
                 TrainTransform(rand);
                 _host.AssertValue(_labelDistribution, "_labelDistribution");
-                var cursors = _input.GetRowCursorSet(out consolidator, i => PredicatePropagation(i, predicate), n, rand);
+                var cursors = _input.GetRowCursorSet(i => PredicatePropagation(i, predicate), n, rand);
                 switch (_args.algo)
                 {
                     case MultiplicationAlgorithm.Default:
@@ -734,7 +718,7 @@ namespace Scikit.ML.MultiClass
             public MultiToBinaryCursor(MultiToBinaryState<TFeatures, TLabel> view, RowCursor cursor, int colLabel, int colWeight, int maxReplica, MultiplicationAlgorithm algo, int seed)
             {
                 _view = view;
-                _colName = view.Source.Schema.ColumnCount;
+                _colName = view.Source.Schema.Count;
                 _colLabel = colLabel;
                 _colWeight = colWeight;
                 _inputCursor = cursor;
@@ -786,7 +770,7 @@ namespace Scikit.ML.MultiClass
 
             public override bool IsColumnActive(int col)
             {
-                if (col < _inputCursor.Schema.ColumnCount)
+                if (col < _inputCursor.Schema.Count)
                 {
                     Contracts.Assert(_inputCursor.IsColumnActive(_colLabel) &&
                                      (_colWeight == -1 || _inputCursor.IsColumnActive(_colWeight)));
@@ -1073,9 +1057,9 @@ namespace Scikit.ML.MultiClass
                         return getter as ValueGetter<TValue>;
                     }
                 }
-                else if (col < _view.Source.Schema.ColumnCount)
+                else if (col < _view.Source.Schema.Count)
                     return _inputCursor.GetGetter<TValue>(col);
-                else if (col == _view.Source.Schema.ColumnCount)
+                else if (col == _view.Source.Schema.Count)
                 {
                     ValueGetter<TLabelInter> getter = (ref TLabelInter value) =>
                     {
@@ -1085,7 +1069,7 @@ namespace Scikit.ML.MultiClass
                     return getter as ValueGetter<TValue>;
                 }
                 else
-                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, _view.Source.Schema.ColumnCount);
+                    throw Contracts.Except("Unexpected columns {0} > {1}.", col, _view.Source.Schema.Count);
             }
         }
 
