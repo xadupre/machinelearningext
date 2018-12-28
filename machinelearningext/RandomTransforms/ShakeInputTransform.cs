@@ -579,7 +579,6 @@ namespace Scikit.ML.RandomTransforms
                         break;
                     default:
                         throw Contracts.Except("Unkown aggregation strategy {0}", _args.aggregation);
-
                 }
             }
 

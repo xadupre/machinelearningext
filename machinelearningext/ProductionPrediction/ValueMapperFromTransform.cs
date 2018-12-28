@@ -78,9 +78,8 @@ namespace Scikit.ML.ProductionPrediction
         {
             var firstView = _sourceToReplace ?? DataViewHelper.GetFirstView(_transform);
             var schema = SchemaDefinition.Create(typeof(TRowOutput), SchemaDefinition.Direction.Read);
-
-
-            var inputView = new InfiniteLoopViewCursorRow<TRowInput>(null, firstView.Schema, overwriteRowGetter: GetterSetterHelper.GetGetter<TRowInput>());
+            var inputView = new InfiniteLoopViewCursorRow<TRowInput>(null, firstView.Schema,
+                                overwriteRowGetter: GetterSetterHelper.GetGetter<TRowInput>());
 
             // This is extremely time consuming as the transform is serialized and deserialized.
             var outputView = _sourceToReplace == _transform.Source

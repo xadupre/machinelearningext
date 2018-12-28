@@ -73,19 +73,20 @@ namespace Scikit.ML.ProductionPrediction
         public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            /*
             if (n >= 2)
             {
                 // This trick avoids the cursor to be split into multiple later.
+                /*
                 var res = new RowCursor[n];
                 var empty = new EmptyCursor(this,
                                     col => col == _column || needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col)));
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
                 return res;
+                */
+                return new RowCursor[] { cur };
             }
             else
-            */
                 return new RowCursor[] { cur };
         }
 
@@ -264,7 +265,7 @@ namespace Scikit.ML.ProductionPrediction
             if (columns == null)
                 columns = columnsSchema.Select((c, i) => i).ToArray();
             if (columns.Length != columnsSchema.Count)
-                throw Contracts.Except($"Dimension mismatch expected columns is {columns.Length}, number of fields for {typeof(TRowValue)} is {columnsSchema.Count}.");
+                throw Contracts.Except($"Dimension mismatch, expected columns is {columns.Length}, number of fields for {typeof(TRowValue)} is {columnsSchema.Count}.");
             _columns = columns;
             _otherValues = otherValues;
             _schema = otherValues == null ? schema : otherValues.Schema;
@@ -297,9 +298,9 @@ namespace Scikit.ML.ProductionPrediction
         public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            /*
             if (n >= 2)
             {
+                /*
                 // This trick avoids the cursor to be split into multiple later.
                 var setColumns = new HashSet<int>(_columns);
                 var res = new RowCursor[n];
@@ -307,10 +308,11 @@ namespace Scikit.ML.ProductionPrediction
                                     col => setColumns.Contains(col) || needCol(col) || (_otherValues != null && _otherValues.IsColumnActive(col)));
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
-                return res.Take(1).ToArray();
+                return res;
+                */
+                return new RowCursor[] { cur };
             }
             else
-            */
                 return new RowCursor[] { cur };
         }
 
@@ -345,6 +347,7 @@ namespace Scikit.ML.ProductionPrediction
                     _columns[view.ReplacedCol[i]] = i;
             }
 
+            public override int Count() { return 1; }
             public override CursorState State { get { return _state; } }
             public override RowCursor GetRootCursor() { return this; }
             public override long Batch { get { return _batch; } }

@@ -55,9 +55,9 @@ namespace Scikit.ML.ProductionPrediction
         public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            /*
             if (n >= 2)
             {
+                /*
                 // This trick avoids the cursor to be split into multiple later.
                 var res = new RowCursor[n];
                 var empty = new EmptyCursor(this,
@@ -66,9 +66,10 @@ namespace Scikit.ML.ProductionPrediction
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
                 return res.Take(1).ToArray();
+                */
+                return new RowCursor[] { cur };
             }
             else
-            */
                 return new RowCursor[] { cur };
         }
 
@@ -246,9 +247,9 @@ namespace Scikit.ML.ProductionPrediction
         public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            /*
             if (n >= 2)
             {
+                /*
                 // This trick avoids the cursor to be split into multiple later.
                 var setColumns = new HashSet<int>(_columns);
                 var res = new RowCursor[n];
@@ -257,9 +258,10 @@ namespace Scikit.ML.ProductionPrediction
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
                 return res.Take(1).ToArray();
+                */
+                return new RowCursor[] { cur };
             }
             else
-            */
                 return new RowCursor[] { cur };
         }
 

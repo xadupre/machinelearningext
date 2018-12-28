@@ -75,8 +75,7 @@ namespace TestMachineLearningExt
             {
                 Separator = "tab",
                 HasHeader = true,
-                Column = new[]
-                {
+                Column = new[] {
                     new TextLoader.Column("Label", DataKind.BL, 0),
                     new TextLoader.Column("SentimentText", DataKind.Text, 1)
                 }
@@ -105,7 +104,6 @@ namespace TestMachineLearningExt
             {
                 // Pipeline
                 var loader = new TextLoader(env, args).Read(new MultiFileSource(trainFilename));
-
                 var trans = TextFeaturizingEstimator.Create(env, args2, loader);
 
                 // Train
@@ -129,8 +127,7 @@ namespace TestMachineLearningExt
             {
                 Separator = "tab",
                 HasHeader = true,
-                Column = new[]
-                           {
+                Column = new[] {
                     new TextLoader.Column("Label", DataKind.BL, 0),
                     new TextLoader.Column("SentimentText", DataKind.Text, 1)
                 }
@@ -149,37 +146,35 @@ namespace TestMachineLearningExt
         private List<Tuple<int, TimeSpan, int, float[]>> _MeasureTime(int conc,
             string strategy, string engine, IDataScorerTransform scorer, ITransformer trscorer, int ncall)
         {
-            var args = new TextLoader.Arguments()
-            {
-                Separator = "tab",
-                HasHeader = true,
-                Column = new[]
-                {
-                    new TextLoader.Column("Label", DataKind.BL, 0),
-                    new TextLoader.Column("SentimentText", DataKind.Text, 1)
-                }
-            };
-
             var testFilename = FileHelper.GetTestFile("wikipedia-detox-250-line-test.tsv");
             var times = new List<Tuple<int, TimeSpan, int, float[]>>();
 
             using (var env = EnvHelper.NewTestEnvironment(seed: 1, conc: conc))
             {
-
-                // Take a couple examples out of the test data and run predictions on top.
-                var testLoader = new TextLoader(env, args).Read(new MultiFileSource(testFilename));
-                IDataView cache;
-                if (strategy.Contains("extcache"))
-                    cache = new ExtendedCacheTransform(env, new ExtendedCacheTransform.Arguments(), testLoader);
-                else
-                    cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
-                var testData = cache.AsEnumerable<SentimentData>(env, false);
-                var testDataArray = cache.AsEnumerable<SentimentData>(env, false).ToArray();
-                int N = 1;
-
                 if (engine == "mlnet")
                 {
-                    var model = ComponentCreation.CreatePredictionEngine<SentimentData, SentimentPrediction>(env, trscorer);
+                    var args = new TextLoader.Arguments()
+                    {
+                        Separator = "tab",
+                        HasHeader = true,
+                        Column = new[] {
+                            new TextLoader.Column("Label", DataKind.BL, 0),
+                            new TextLoader.Column("SentimentText", DataKind.Text, 1)
+                        }
+                    };
+
+                    // Take a couple examples out of the test data and run predictions on top.
+                    var testLoader = new TextLoader(env, args).Read(new MultiFileSource(testFilename));
+                    IDataView cache;
+                    if (strategy.Contains("extcache"))
+                        cache = new ExtendedCacheTransform(env, new ExtendedCacheTransform.Arguments(), testLoader);
+                    else
+                        cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
+                    var testData = cache.AsEnumerable<SentimentDataBoolFloat>(env, false);
+                    var testDataArray = cache.AsEnumerable<SentimentDataBoolFloat>(env, false).ToArray();
+                    int N = 1;
+
+                    var model = ComponentCreation.CreatePredictionEngine<SentimentDataBoolFloat, SentimentPrediction>(env, trscorer);
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {
@@ -205,10 +200,31 @@ namespace TestMachineLearningExt
                 }
                 else if (engine == "scikit")
                 {
+                    var args = new TextLoader.Arguments()
+                    {
+                        Separator = "tab",
+                        HasHeader = true,
+                        Column = new[] {
+                            new TextLoader.Column("Label", DataKind.Bool, 0),
+                            new TextLoader.Column("SentimentText", DataKind.Text, 1)
+                        }
+                    };
+
+                    // Take a couple examples out of the test data and run predictions on top.
+                    var testLoader = new TextLoader(env, args).Read(new MultiFileSource(testFilename));
+                    IDataView cache;
+                    if (strategy.Contains("extcache"))
+                        cache = new ExtendedCacheTransform(env, new ExtendedCacheTransform.Arguments(), testLoader);
+                    else
+                        cache = new CacheDataView(env, testLoader, new[] { 0, 1 });
+                    var testData = cache.AsEnumerable<SentimentDataBool>(env, false);
+                    var testDataArray = cache.AsEnumerable<SentimentDataBool>(env, false).ToArray();
+                    int N = 1;
+
                     string allSchema = SchemaHelper.ToString(scorer.Schema);
                     Assert.IsTrue(allSchema.Contains("PredictedLabel:Bool:4; Score:R4:5; Probability:R4:6"));
-                    var model = new ValueMapperPredictionEngine<SentimentData>(env, scorer, conc: conc);
-                    var output = new ValueMapperPredictionEngine<SentimentData>.PredictionTypeForBinaryClassification();
+                    var model = new ValueMapperPredictionEngine<SentimentDataBool>(env, scorer, conc: conc);
+                    var output = new ValueMapperPredictionEngine<SentimentDataBool>.PredictionTypeForBinaryClassification();
                     var sw = new Stopwatch();
                     for (int call = 1; call <= ncall; ++call)
                     {

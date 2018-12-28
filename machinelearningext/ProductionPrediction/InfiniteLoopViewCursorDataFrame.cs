@@ -78,9 +78,9 @@ namespace Scikit.ML.ProductionPrediction
         public RowCursor[] GetRowCursorSet(Func<int, bool> needCol, int n, Random rand = null)
         {
             var cur = GetRowCursor(needCol, rand);
-            /*
             if (n >= 2)
             {
+                /*
                 var setColumns = new HashSet<int>(_columns);
                 var res = new RowCursor[n];
                 var empty = new EmptyCursor(this,
@@ -88,9 +88,10 @@ namespace Scikit.ML.ProductionPrediction
                 for (int i = 0; i < n; ++i)
                     res[i] = i == 0 ? cur : empty;
                 return res.Take(1).ToArray();
+                */
+                return new RowCursor[] { cur };
             }
             else
-            */
                 return new RowCursor[] { cur };
         }
 
@@ -125,6 +126,7 @@ namespace Scikit.ML.ProductionPrediction
                     _columns[view.ReplacedCol[i]] = i;
             }
 
+            public long? GetRowCount() { return 1; }
             public override CursorState State { get { return _state; } }
             public override RowCursor GetRootCursor() { return this; }
             public override long Batch { get { return _batch; } }
